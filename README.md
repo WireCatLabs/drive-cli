@@ -4,7 +4,7 @@
 documents. It reads Google Docs across all tabs, keeps source identity through renames and moves,
 and reuses WireCat's shared keyword search and optional local embeddings.
 
-Status: initial local implementation, not published. It uses Google's official Node clients.
+Status: development implementation on GitHub; no npm release yet. It uses Google's official Node clients.
 Sources supported now: native Google Docs and uploaded Markdown/TXT. Other types and shortcuts
 are reported as skipped; shortcuts are not followed outside the selected scope.
 
@@ -28,6 +28,9 @@ bin/drive session start --client-file /path/to/desktop-client.json
 bin/drive folders add https://drive.google.com/drive/folders/FOLDER_ID
 bin/drive sync --json
 ```
+
+For Google Cloud setup and an isolated first run, follow the
+[browser sign-in and live validation guide](docs/dev/GOOGLE_OAUTH.md).
 
 Sign-in opens the system browser and receives Google's callback on a temporary loopback port.
 `--no-browser` prints the URL. `drive.readonly` grants account-wide reading; our selected-folder

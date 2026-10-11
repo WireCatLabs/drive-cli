@@ -20,3 +20,5 @@ jobs:
     with:
       pack: ${{ inputs.pack || false }}
       bun: true
+      bun-run: pnpm build && pnpm smoke:bun
+      checks: pnpm docs:check && pnpm smoke
