@@ -28,6 +28,7 @@ Replace `DOC_ID` with an imported document's Google ID:
 ```sh
 drive tags add DOC_ID budget follow-up
 drive notes add DOC_ID 'Ask Rin to confirm the revised totals'
+drive search 'tag:follow-up' --exact --json
 drive documents context DOC_ID --json
 ```
 

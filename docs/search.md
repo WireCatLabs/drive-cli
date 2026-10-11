@@ -12,14 +12,15 @@ For manual use:
 
 ```sh
 drive search 'budget decision' --exact --json
+drive search 'budget AND tag:follow-up' --exact --json
 drive documents show DOC_ID --json
 drive tags list DOC_ID --json
 ```
 
 Replace `DOC_ID` with a result's Google ID. `--exact` uses word search. Document detail includes
 tab IDs, titles and text. Tables and footnotes are included; headers, footers, comments, images
-and suggested edits are not part of the indexed text. Local tags are shown in context; do not
-assume message-search syntax or a `--tag` filter is supported by `drive search`.
+and suggested edits are not part of the indexed text. Use `tag:follow-up` to search local labels,
+alone or with words. `drive search` has no `--tag` flag; message-only fields are not supported.
 
 ## Search by meaning
 
