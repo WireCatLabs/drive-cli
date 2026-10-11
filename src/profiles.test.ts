@@ -79,10 +79,12 @@ describe("explicit account selection", () => {
       ["api", "methods"],
     ])
       await createProgram({ env: f.env, streams: captureStreams() }).parseAsync(args, { from: "user" })
+    const help = captureStreams()
     await expect(
-      createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["session", "start", "--help"], {
+      createProgram({ env: f.env, streams: help }).parseAsync(["session", "start", "--help"], {
         from: "user",
       }),
     ).rejects.toMatchObject({ exitCode: 0 })
+    expect(help.stdout.join("")).toContain("drive <profile> session start")
   })
 })

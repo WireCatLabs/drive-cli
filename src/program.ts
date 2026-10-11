@@ -12,7 +12,7 @@ import {
 import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-core/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-core/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
-import { Command, InvalidArgumentError, Option } from "commander"
+import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { operationOf, validateRequest } from "./api-contract.js"
 import { activeProfile, application, fileId, profileName, readConfig, writeConfig } from "./config.js"
 import { googleError } from "./errors.js"
@@ -664,6 +664,14 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
+    command.configureHelp({
+      commandUsage: (target) => {
+        const usage = new Help().commandUsage(target)
+        return ACCOUNT_FREE_COMMANDS.has(pathOf(target).join(" "))
+          ? usage
+          : usage.replace(/^drive /, "drive <profile> ")
+      },
+    })
     command.exitOverride().configureOutput({
       writeOut: (text) => streams.data(text),
       writeErr: (text) => streams.diagnostic(text),
