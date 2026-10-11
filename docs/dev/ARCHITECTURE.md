@@ -13,6 +13,10 @@ or separate embedding engine exists here.
 | sync.ts | folder graph, durable jobs, retries and source removal |
 | store.ts | shared public store/services adapter and account-scoped search |
 | program.ts | commands, dependency injection and shared registry |
+| google-api.ts, remote-commands.ts | SDK method catalog, JSON requests, remote actions and permission boundaries |
+| knowledge.ts, knowledge-commands.ts | shared tags, memos, links, identity associations and source-backed memories |
+| extraction.ts | shared model gateway, structured proposals and exact source quote validation |
+| profile-lock.ts | shared heartbeat lock for sync and document knowledge operations |
 | bin/drive.ts | process, browser, cancellation and sanitized errors |
 
 Initial scanning captures a token first; subsequent polling replays changes made during the scan.
@@ -35,5 +39,23 @@ body, table and footnote text is indexed. Headers, footers, images, comments and
 are excluded. Native conversion fidelity remains a live-validation item, not a claimed guarantee.
 
 No public Google OAuth identity is registered yet. Development takes a Desktop client JSON or
-explicit application environment settings. Only drive.readonly is requested. The source exposes
-no remote document mutations. Token values stay in the shared secure credential helper.
+explicit application environment settings. Read-only is the default; explicit write, activity and
+apps options request the corresponding grants. Ingestion's source port remains read-only; remote
+management uses a separate SDK adapter. Tokens stay in the shared secure credential helper.
+
+Source metadata supplies owners and the last editor. Stable Google permission IDs, with an email
+fallback, create identities in the shared store; name similarity never merges identities. Observed
+roles carry Google provenance as file links; explicit owner links survive resync. A manual identity
+link uses the shared decision API to connect an observed Google editor to another known person.
+
+Notes are internal shared notes whose primary subject is the source document. Memories carry a
+subject, evidence reference and explicit personal/work scope. Content-hash changes or removal mark
+active memories stale before ingestion commits its checkpoint. Invalidation drains proposed and
+confirmed batches through the public API; no new SQL or independent knowledge store exists here.
+
+AI extraction is an explicit command, with preview as the default and optional saving of proposed
+memories. Shared AI settings/schema and modelGateway own provider transport. A bounded structured
+response requires exact source quotes; validation finishes before any memory writes. The current
+snapshot hash is rechecked after the model call. Quotes support review, not automatic factual approval.
+Saving then takes the same profile lock as sync and checks the hash again before writing, so a
+source cannot change between final verification and memory creation through this CLI.

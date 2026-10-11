@@ -1,14 +1,19 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-core"
+import { AI_ENTRIES } from "@wirecat/cli-messaging/cli"
 import * as v from "valibot"
 
 const Profile = v.object({
   principal: v.string(),
   roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
   storage: v.picklist(["keyring", "file"]),
+  ...AI_ENTRIES,
 })
-export const ConfigSchema = v.object({ profiles: v.record(v.string(), Profile) })
+export const ConfigSchema = v.object({
+  profiles: v.record(v.string(), Profile),
+  defaults: v.optional(v.object(AI_ENTRIES)),
+})
 export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
 export const readConfig = (env: NodeJS.ProcessEnv): Config => {
@@ -18,8 +23,11 @@ export const readConfig = (env: NodeJS.ProcessEnv): Config => {
     throw new CliError("configuration_error", "drive configuration is invalid; no configuration values were logged")
   }
 }
-export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) =>
-  saveConfigFile(join(paths(env).config, "config.json"), config)
+export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
+  const checked = v.safeParse(ConfigSchema, config)
+  if (!checked.success) throw new CliError("configuration_error", "drive settings are invalid; no values were logged")
+  saveConfigFile(join(paths(env).config, "config.json"), checked.output)
+}
 export const profileName = (name: string): string => {
   if (!/^[a-z][a-z0-9-]{0,63}$/.test(name))
     throw new CliError("validation_error", "profile uses lowercase letters, digits and hyphens")

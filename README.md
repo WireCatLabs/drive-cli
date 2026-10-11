@@ -2,7 +2,8 @@
 
 `drive` imports selected Google Drive folders into local Markdown snapshots and searchable
 documents. It reads Google Docs across all tabs, keeps source identity through renames and moves,
-and reuses WireCat's shared keyword search and optional local embeddings.
+and reuses WireCat's shared keyword search and optional local embeddings. Shared tags, notes,
+editor identities and evidence-backed memories stay attached to the imported documents.
 
 Status: development implementation on GitHub; no npm release yet. It uses Google's official Node clients.
 Sources supported now: native Google Docs and uploaded Markdown/TXT. Other types and shortcuts
@@ -34,7 +35,8 @@ For Google Cloud setup and an isolated first run, follow the
 
 Sign-in opens the system browser and receives Google's callback on a temporary loopback port.
 `--no-browser` prints the URL. `drive.readonly` grants account-wide reading; our selected-folder
-scope limits ingestion. The CLI never updates, uploads, trashes or deletes remote Drive files.
+scope limits ingestion. Sync reads remote files. Optional remote management commands need a
+new sign-in with `session start --write`; history events need `session start --activity`.
 
 Credentials use the OS keyring. Without one, explicitly choose `--credential-storage file`;
 the shared helper writes an owner-only private file. Tokens never enter regular config, output
@@ -124,3 +126,32 @@ pnpm docs:check
 
 See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
 [development](docs/dev/DEVELOPMENT.md) and [releasing](docs/dev/RELEASING.md).
+
+## Document knowledge and remote actions
+
+```sh
+bin/drive tags add DOC_ID project-budget review
+bin/drive documents list --tag review
+bin/drive notes add DOC_ID 'Check the assumptions' --title Review
+bin/drive people list DOC_ID
+bin/drive documents context DOC_ID
+bin/drive memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+bin/drive memories extract DOC_ID --scope work
+bin/drive documents history DOC_ID
+bin/drive api methods --service docs
+```
+
+AI extraction explicitly sends selected cached text to the configured model. It previews proposals
+unless `--save` is given; saved proposals include source quotes, snapshot hashes and model authorship.
+Use the shared model setup with `models configure --provider openai --model MODEL_ID`. Provider keys
+come from the corresponding API-key environment variable and never enter regular configuration.
+Source content changes and scope removals mark source-backed memories stale. User notes stay local.
+
+The official SDK catalog exposes 68 Drive, Docs and Activity methods. Convenient commands include
+file listing/copying/moving, trash/restore, folder creation, Docs creation/batch updates, comments,
+permissions, revisions and Shared Drives. Read grants remain the default. JSON API calls require
+explicit flags for mutation and permanent deletion; Google still enforces file roles and API policy.
+
+Read the [knowledge and API command guide](docs/dev/KNOWLEDGE_AND_API.md) for complete examples,
+permissions, history limits, AI settings and supported request formats. Live Google and real model
+validation remain pending; automated tests use synthetic sources and mocked provider requests.

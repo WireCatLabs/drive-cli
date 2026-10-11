@@ -6,6 +6,7 @@ import { fileId, paths, profileName } from "./config.js"
 import type { DocumentContent, SyncState } from "./model.js"
 
 const ID = v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))
+const User = v.object({ id: v.optional(v.string()), email: v.optional(v.string()), name: v.optional(v.string()) })
 const File = v.object({
   id: ID,
   name: v.string(),
@@ -16,6 +17,11 @@ const File = v.object({
   url: v.string(),
   trashed: v.boolean(),
   canDownload: v.boolean(),
+  createdAt: v.optional(v.string()),
+  description: v.optional(v.string()),
+  driveId: v.optional(v.string()),
+  owners: v.optional(v.array(User)),
+  lastModifiedBy: v.optional(User),
 })
 const State = v.object({
   version: v.literal(1),

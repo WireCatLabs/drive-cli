@@ -1,0 +1,195 @@
+import { captureStreams } from "@wirecat/cli-core"
+import { describe, expect, it, vi } from "vitest"
+import { readConfig } from "./config.js"
+import { createProgram } from "./program.js"
+import { content, file, fixture } from "./testing.js"
+
+describe("document knowledge commands", () => {
+  it("runs notes, tags, links, memories and extraction through the released shared store", async () => {
+    const f = fixture()
+    f.source.content = async (id) => ({
+      ...content({ ...file(id), owners: [{ id: "google-owner", name: "Sample" }] }),
+      tabs: [{ id: "tab-one", title: "Budget", text: "budget decision" }],
+    })
+    const complete = vi.fn(async () => ({
+      text: JSON.stringify({ items: [{ kind: "fact", body: "Budget fact", quote: "budget decision" }] }),
+      tokens: 20,
+      provider: "openai",
+      model: "fixture-model",
+    }))
+    const call = async (...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, source: async () => f.source, complete }).parseAsync(
+        [...args, "--json"],
+        { from: "user" },
+      )
+      return JSON.parse(streams.stdout.join(""))
+    }
+    await call("sync")
+    expect((await call("tags", "add", "doc-a", "budget")).tags).toEqual(["budget"])
+    expect((await call("tags", "list", "doc-a")).tags).toEqual(["budget"])
+    expect((await call("documents", "list", "--tag", "Budget")).items).toHaveLength(1)
+    expect((await call("documents", "list", "--tag", "missing")).items).toHaveLength(0)
+    await call("tags", "remove", "doc-a", "budget")
+    const note = await call("memos", "add", "doc-a", "Review memo", "--title", "Review")
+    expect((await call("notes", "list", "doc-a", "--search", "memo")).items).toHaveLength(1)
+    expect((await call("notes", "show", "doc-a", note.ref)).text).toBe("Review memo")
+    const edited = await call("notes", "edit", "doc-a", note.ref, "Reviewed memo", "--revision", String(note.revision))
+    expect(edited.text).toBe("Reviewed memo")
+    const link = await call("links", "add", "doc-a", note.ref, "--kind", "related-to", "--role", "review")
+    expect((await call("links", "list", "doc-a")).items.some((item: { id: string }) => item.id === link.id)).toBe(true)
+    await call("links", "remove", "doc-a", link.id)
+    const memory = await call("memories", "add", "doc-a", "Budget decision", "--scope", "work", "--kind", "fact")
+    expect((await call("memories", "list", "doc-a", "--scope", "work")).items).toHaveLength(1)
+    expect((await call("memories", "show", "doc-a", memory.ref)).status).toBe("proposed")
+    expect((await call("memories", "confirm", "doc-a", memory.ref)).status).toBe("confirmed")
+    expect((await call("memories", "search", "doc-a", "budget", "--scope", "work")).items).toHaveLength(1)
+    expect((await call("memories", "stale", "doc-a", memory.ref)).status).toBe("stale")
+    const preview = await call("memories", "extract", "doc-a", "--scope", "work", "--tab", "tab-one")
+    expect(preview.saved).toEqual([])
+    const saved = await call("memories", "extract", "doc-a", "--scope", "work", "--save")
+    expect(saved.saved[0]).toMatchObject({ model: "fixture-model", status: "proposed" })
+    expect(saved.saved[0].body).toContain("Source quote: budget decision")
+    expect((await call("documents", "context", "doc-a")).memories).toHaveLength(2)
+    const people = await call("people", "list", "doc-a")
+    expect(people.items[0].googleId).toBe("google-owner")
+    expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)
+    expect((await call("documents", "list", "--person", "person:missing")).items).toHaveLength(0)
+    expect((await call("people", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(
+      people.items[0].person.uid,
+    )
+    await call("notes", "remove", "doc-a", note.ref)
+    await expect(call("memories", "extract", "doc-a", "--scope", "work", "--tab", "missing")).rejects.toThrow("tab")
+    await call("models", "configure", "--provider", "openai", "--model", "fixture-model")
+    expect(readConfig(f.env).defaults?.models?.memories?.model).toBe("fixture-model")
+    await expect(
+      call("models", "configure", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
+    ).rejects.toThrow("invalid")
+  })
+  it("refuses stale extraction results after the source changes while the model is running", async () => {
+    const f = fixture()
+    const options = { env: f.env, source: async () => f.source }
+    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["sync"], { from: "user" })
+    const complete = async () => {
+      const { readState, saveState } = await import("./state.js")
+      const state = readState(f.env, "default", "synthetic-principal")
+      if (state.documents["doc-a"]) state.documents["doc-a"].hash = "changed-hash"
+      saveState(f.env, "default", state)
+      return { text: JSON.stringify({ items: [] }), tokens: 20, provider: "openai", model: "fixture-model" }
+    }
+    await expect(
+      createProgram({ ...options, complete, streams: captureStreams() }).parseAsync(
+        ["memories", "extract", "doc-a", "--scope", "work", "--save"],
+        { from: "user" },
+      ),
+    ).rejects.toThrow("source changed")
+  })
+})
+
+describe("remote action commands", () => {
+  const cases: [string[], string, object, object?][] = [
+    [["files", "get", "doc-a"], "drive.files.get", { fileId: "doc-a" }],
+    [
+      ["files", "list", "--parent", "root", "--page-token", "next"],
+      "drive.files.list",
+      { pageToken: "next", q: "'root' in parents and (trashed = false)" },
+    ],
+    [
+      ["files", "copy", "doc-a", "--name", "Copy", "--parent", "root"],
+      "drive.files.copy",
+      { fileId: "doc-a" },
+      { name: "Copy", parents: ["root"] },
+    ],
+    [
+      ["files", "move", "doc-a", "--to", "root", "--from", "old"],
+      "drive.files.update",
+      { addParents: "root", removeParents: "old" },
+      {},
+    ],
+    [
+      ["files", "update", "doc-a", "--body", '{"name":"Renamed"}'],
+      "drive.files.update",
+      { fileId: "doc-a" },
+      { name: "Renamed" },
+    ],
+    [["files", "trash", "doc-a"], "drive.files.update", { fileId: "doc-a" }, { trashed: true }],
+    [["files", "restore", "doc-a"], "drive.files.update", { fileId: "doc-a" }, { trashed: false }],
+    [["files", "mkdir", "Folder", "--parent", "root"], "drive.files.create", {}, { name: "Folder", parents: ["root"] }],
+    [["documents", "get", "doc-a"], "docs.documents.get", { includeTabsContent: true }],
+    [["documents", "create", "--title", "Document"], "docs.documents.create", {}, { title: "Document" }],
+    [
+      ["documents", "update", "doc-a", "--body", '{"requests":[]}'],
+      "docs.documents.batchUpdate",
+      { documentId: "doc-a" },
+      { requests: [] },
+    ],
+    [
+      ["documents", "history", "doc-a", "--page-token", "next"],
+      "drive.revisions.list",
+      { fileId: "doc-a", pageToken: "next" },
+    ],
+    [
+      ["documents", "history", "doc-a", "--activity", "--page-token", "next"],
+      "driveactivity.activity.query",
+      {},
+      { itemName: "items/doc-a", pageToken: "next" },
+    ],
+    [["comments", "list", "doc-a"], "drive.comments.list", { fileId: "doc-a" }],
+    [["comments", "get", "doc-a", "comment-one"], "drive.comments.get", { commentId: "comment-one" }],
+    [["permissions", "list", "doc-a"], "drive.permissions.list", { supportsAllDrives: true }],
+    [["permissions", "get", "doc-a", "permission-one"], "drive.permissions.get", { permissionId: "permission-one" }],
+    [["revisions", "list", "doc-a"], "drive.revisions.list", { fileId: "doc-a" }],
+    [["revisions", "get", "doc-a", "revision-one"], "drive.revisions.get", { revisionId: "revision-one" }],
+    [["shared-drives", "--page-token", "next"], "drive.drives.list", { pageToken: "next" }],
+  ]
+  it.each(cases)("maps %j to a bounded official API request", async (args, method, params, body) => {
+    const f = fixture()
+    const call = vi.fn(async () => ({ synthetic: true }))
+    const streams = captureStreams()
+    await createProgram({ env: f.env, streams, api: { call } }).parseAsync([...args, "--json"], { from: "user" })
+    expect(call).toHaveBeenCalledWith(
+      method,
+      expect.objectContaining(params),
+      body ? expect.objectContaining(body) : undefined,
+    )
+  })
+  it("requires explicit generic writes/deletions and protects transport parameters before any request", async () => {
+    const f = fixture()
+    const request = vi.fn(async () => ({}))
+    const call = (...args: string[]) =>
+      createProgram({ env: f.env, streams: captureStreams(), api: { call: request } }).parseAsync(args, {
+        from: "user",
+      })
+    await call("api", "methods", "--service", "docs")
+    await expect(call("api", "call", "drive.files.delete", "--params", '{"fileId":"doc-a"}')).rejects.toThrow(
+      "allow-write",
+    )
+    await expect(call("api", "call", "drive.files.delete", "--allow-write")).rejects.toThrow("allow-delete")
+    await expect(call("api", "call", "drive.files.get", "--params", '{"auth":"override"}')).rejects.toThrow("override")
+    expect(request).not.toHaveBeenCalled()
+    await call("api", "call", "drive.files.delete", "--allow-write", "--allow-delete", "--params", '{"fileId":"doc-a"}')
+    await call(
+      "api",
+      "call",
+      "docs.documents.batchUpdate",
+      "--allow-write",
+      "--params",
+      '{"documentId":"doc-a"}',
+      "--body",
+      '{"requests":[]}',
+    )
+    expect(request).toHaveBeenCalledTimes(2)
+  })
+  it("exposes local and remote write metadata accurately", async () => {
+    const f = fixture()
+    for (const [path, local] of [
+      [["tags", "add"], true],
+      [["documents", "update"], false],
+      [["memories", "extract"], false],
+    ] as const) {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams }).parseAsync(["commands", ...path, "--json"], { from: "user" })
+      expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ mutates: true, local })
+    }
+  })
+})

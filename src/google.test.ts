@@ -28,6 +28,33 @@ const scripted = (respond: (request: Request) => unknown) => {
   return { source: googleSource(auth), request }
 }
 describe("official Google SDK source", () => {
+  it("hydrates owner/editor provenance and retains it in validated checkpoints", async () => {
+    const f = scripted((request) => {
+      expect(String(request.params?.fields)).toContain("lastModifyingUser")
+      return {
+        ...metadata(),
+        createdTime: "2026-10-01T00:00:00Z",
+        description: "Synthetic",
+        driveId: "drive-one",
+        owners: [{ permissionId: "owner-user", displayName: "Owner Sample" }],
+        lastModifyingUser: { permissionId: "editor-user", emailAddress: "editor@example.invalid" },
+      }
+    })
+    const file = await f.source.metadata("doc-a")
+    expect(file).toMatchObject({
+      owners: [{ id: "owner-user", name: "Owner Sample" }],
+      lastModifiedBy: { id: "editor-user" },
+    })
+    const { fixture } = await import("./testing.js")
+    const { readState, saveState } = await import("./state.js")
+    const local = fixture()
+    const state = readState(local.env, "default", "synthetic-principal")
+    state.documents["doc-a"] = { metadata: file, hash: "hash", reference: "document:1", tabs: 1 }
+    saveState(local.env, "default", state)
+    expect(readState(local.env, "default", "synthetic-principal").documents["doc-a"]?.metadata.lastModifiedBy?.id).toBe(
+      "editor-user",
+    )
+  })
   it("requests all tabs and preserves native Markdown independently of searchable tab text", async () => {
     const f = scripted((request) => {
       const url = String(request.url)

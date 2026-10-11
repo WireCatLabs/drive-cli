@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto"
 import { CliError } from "@wirecat/cli-core"
-import lockfile from "proper-lockfile"
 import { activeProfile } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
@@ -12,7 +11,8 @@ import {
   type SyncState,
   type WorkItem,
 } from "./model.js"
-import { ensureProfileDir, profileDir, readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
+import { lockProfile } from "./profile-lock.js"
+import { readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
 
 const scopeHash = (roots: string[]) =>
   createHash("sha256")
@@ -182,21 +182,8 @@ export const sync = async (
   rescan = false,
 ): Promise<SyncResult> => {
   const profile = activeProfile(env, name)
-  ensureProfileDir(env, name)
-  let compromised = false
-  let release: () => Promise<void>
   if (signal?.aborted) throw new CliError("cancelled", "sync was cancelled")
-  try {
-    release = await lockfile.lock(profileDir(env, name), {
-      stale: 30000,
-      retries: 0,
-      onCompromised: () => {
-        compromised = true
-      },
-    })
-  } catch {
-    throw new CliError("provider_unavailable", "another sync holds this profile's lock; retry later")
-  }
+  const lock = await lockProfile(env, name)
   const result: SyncResult = {
     saved: 0,
     removed: 0,
@@ -226,7 +213,7 @@ export const sync = async (
     const jobs = [...pending.jobs].slice(0, max)
     for (const job of jobs) {
       if (signal?.aborted) throw new CliError("cancelled", "sync was cancelled; pending operations are retained")
-      if (compromised) throw new CliError("provider_unavailable", "sync lock was lost; resume the pending batch")
+      lock.assertHeld()
       try {
         if (job.kind === "remove") {
           await index.remove(profile.principal, job.id)
@@ -294,6 +281,6 @@ export const sync = async (
     }
     return result
   } finally {
-    await release()
+    await lock.release()
   }
 }

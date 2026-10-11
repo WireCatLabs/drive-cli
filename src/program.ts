@@ -1,11 +1,16 @@
 import { writeFileSync } from "node:fs"
 import { CliError, createRenderer, type KeyringStore, processStreams, type Streams } from "@wirecat/cli-core"
 import { annotate, describeProgram, flatten } from "@wirecat/cli-core/commands"
-import { Command, InvalidArgumentError } from "commander"
+import { Command, InvalidArgumentError, Option } from "commander"
 import { activeProfile, application, fileId, profileName, readConfig, writeConfig } from "./config.js"
+import { type Complete, memoryModel } from "./extraction.js"
 import { googleSource } from "./google.js"
+import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
+import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
+import { lockProfile } from "./profile-lock.js"
+import { installRemoteCommands } from "./remote-commands.js"
 import { readSnapshot, readState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
@@ -20,6 +25,8 @@ export interface ProgramOptions {
   source?: (profile: string) => Promise<GoogleSource>
   index?: () => Promise<DocumentIndex>
   signal?: AbortSignal
+  api?: GoogleApi
+  complete?: Complete
 }
 const positive = (input: string) => {
   const n = Number(input)
@@ -35,7 +42,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const env = options.env ?? process.env
   const streams = options.streams ?? processStreams
   const program = new Command("drive")
-    .description("Read Google Drive and Docs into Markdown snapshots and local search")
+    .description("Manage Google Drive and Docs, local Markdown, shared knowledge and search")
     .version(VERSION)
     .option("--profile <name>", "Google account profile", "default")
     .option("--json", "print machine-readable JSON")
@@ -71,26 +78,41 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const session = program.command("session").description("Google browser sign-in and local account profiles")
   session
     .command("start")
-    .description("Approve read-only Google access in your browser")
+    .description("Approve Google access in your browser; read-only unless --write is requested")
     .option("--client-file <file>", "Desktop OAuth application JSON")
     .option("--credential-storage <storage>", "keyring or explicit private-file storage", "keyring")
     .option("--no-browser", "print the sign-in URL without opening a browser")
-    .action(async (args: { clientFile?: string; credentialStorage: string; browser: boolean }) => {
-      if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
-        throw new CliError("validation_error", "credential storage is keyring or file")
-      output(
-        await login({
-          env,
-          profile: selected(),
-          application: application(env, args.clientFile),
-          storage: args.credentialStorage,
-          ...(options.keyring ? { keyring: options.keyring } : {}),
-          ...(options.signal ? { signal: options.signal } : {}),
-          openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
-          showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
-        }),
-      )
-    })
+    .option("--write", "request remote Drive/Docs mutation permissions")
+    .option("--activity", "also request Drive Activity history permissions")
+    .option("--apps", "also request the installed Drive applications permission")
+    .action(
+      async (args: {
+        clientFile?: string
+        credentialStorage: string
+        browser: boolean
+        write?: boolean
+        activity?: boolean
+        apps?: boolean
+      }) => {
+        if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
+          throw new CliError("validation_error", "credential storage is keyring or file")
+        output(
+          await login({
+            env,
+            profile: selected(),
+            application: application(env, args.clientFile),
+            storage: args.credentialStorage,
+            ...(args.write ? { write: true } : {}),
+            ...(args.activity ? { activity: true } : {}),
+            ...(args.apps ? { apps: true } : {}),
+            ...(options.keyring ? { keyring: options.keyring } : {}),
+            ...(options.signal ? { signal: options.signal } : {}),
+            openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
+            showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
+          }),
+        )
+      },
+    )
   session
     .command("list")
     .description("Configured account profiles; no credentials are printed")
@@ -191,11 +213,22 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   documents
     .command("list")
     .description("Imported sources with original Google URLs")
-    .action(() => {
+    .option("--tag <tag>", "filter by a local shared tag")
+    .option("--person <reference>", "filter by a linked shared person reference")
+    .action(async (args: { tag?: string; person?: string }) => {
       const profile = activeProfile(env, selected())
       const state = readState(env, selected(), profile.principal)
+      let docs = Object.values(state.documents)
+      if (args.tag || args.person)
+        docs = await withIndex(async (index) => {
+          if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
+          const filtered = []
+          for (const doc of docs)
+            if (await index.knowledge.matches(profile.principal, doc.reference, args)) filtered.push(doc)
+          return filtered
+        })
       output({
-        items: Object.values(state.documents).map((doc) => ({
+        items: docs.map((doc) => ({
           ...doc.metadata,
           reference: doc.reference,
           tabs: doc.tabs,
@@ -207,7 +240,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const profile = activeProfile(env, selected())
     const state = readState(env, selected(), profile.principal)
     if (!state.documents[id]) throw new CliError("not_found", "this source is not imported in the selected profile")
-    return { id, snapshot: readSnapshot(env, selected(), id) }
+    const doc = state.documents[id]
+    return { id, ref: doc.reference, hash: doc.hash, snapshot: readSnapshot(env, selected(), id) }
   }
   documents
     .command("show")
@@ -241,6 +275,59 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ),
       ),
     )
+  installKnowledgeCommands(program, {
+    document: imported,
+    output,
+    positive,
+    offset,
+    complete: () => options.complete ?? memoryModel(env, selected(), options.signal),
+    run: async (input, fn) => {
+      const lock = await lockProfile(env, selected())
+      try {
+        const { ref } = imported(input)
+        return await withIndex(async (index) => {
+          lock.assertHeld()
+          if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
+          const result = await fn(index.knowledge, activeProfile(env, selected()).principal, ref)
+          lock.assertHeld()
+          return result
+        })
+      } finally {
+        await lock.release()
+      }
+    },
+  })
+  installRemoteCommands(program, {
+    output,
+    positive,
+    call: async (method, params, body) => {
+      const descriptor = apiMethod(method)
+      if (options.api) return options.api.call(method, params, body)
+      const client = authorizedClient(env, selected(), options.keyring, options.signal)
+      await checkAuthorization(client, descriptor.scope)
+      return googleApi(client).call(method, params, body)
+    },
+  })
+  program
+    .command("models")
+    .description("Configure the shared model gateway; keys stay outside config")
+    .command("configure")
+    .option("--purpose <purpose>", "shared model purpose", "memories")
+    .addOption(new Option("--provider <provider>").choices(["openai", "anthropic", "off"]).makeOptionMandatory())
+    .option("--model <model>", "model identifier for the selected provider")
+    .option("--base-url <url>", "optional HTTP/S model endpoint without URL credentials")
+    .action((args) => {
+      const config = readConfig(env)
+      config.defaults ??= {}
+      config.defaults.models ??= {}
+      config.defaults.models[args.purpose] = {
+        provider: args.provider,
+        ...(args.model ? { model: args.model } : {}),
+        ...(args.baseUrl ? { baseUrl: args.baseUrl } : {}),
+      }
+      writeConfig(env, config)
+      output({ purpose: args.purpose, configured: true })
+    })
   program
     .command("commands")
     .argument("[path...]")
@@ -254,11 +341,43 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   for (const info of flatten(describeProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
-    const localWrites = ["session start", "session end", "folders add", "folders remove", "sync", "documents export"]
+    const localWrites = [
+      "session start",
+      "session end",
+      "folders add",
+      "folders remove",
+      "sync",
+      "documents export",
+      "tags add",
+      "tags remove",
+      "links add",
+      "links remove",
+      "notes add",
+      "notes edit",
+      "notes remove",
+      "memories add",
+      "memories confirm",
+      "memories stale",
+      "memories extract",
+      "people link",
+      "models configure",
+    ]
+    const remoteWrites = [
+      "api call",
+      "files copy",
+      "files move",
+      "files update",
+      "files trash",
+      "files restore",
+      "files mkdir",
+      "documents create",
+      "documents update",
+    ]
+    const name = info.path.join(" ")
     annotate(command, {
       origin: "handwritten",
-      mutates: localWrites.includes(info.path.join(" ")),
-      local: localWrites.includes(info.path.join(" ")) && info.path.join(" ") !== "session start",
+      mutates: localWrites.includes(name) || remoteWrites.includes(name),
+      local: localWrites.includes(name) && name !== "session start" && name !== "memories extract",
       state: "beta",
     })
   }
