@@ -1,12 +1,31 @@
 # Find a document
 
-Find a decision in imported documents without reopening every file. Search uses the local copy;
-sync first when you need recent changes, and check the source link before acting on an answer.
+Find a decision, passage or follow-up across the documents you imported. This guide shows how
+to search words or meaning, narrow results with local tags, and read the evidence without
+opening every Google file. Search uses the local copy; sync when you need the newest edits.
+
+A result is a passage from an indexed source with its reference, title and original link.
+**Word search** matches query terms; **search by meaning** uses locally computed embeddings to
+find related wording. Neither expands the selected import scope or fetches Google files.
 
 ```text prompt
 Use drive CLI with profile personal to find the budget decision in my imported project documents.
 Show the matching passage and original Google link. Tell me which selected sources were skipped.
 ```
+
+## Choose a search
+
+| What you remember | How to search |
+| --- | --- |
+| A distinctive word | `drive personal search 'budget' --exact --json` |
+| Either of two topics | `drive personal search 'budget OR launch' --exact --json` |
+| A labelled follow-up | `drive personal search 'budget AND tag:follow-up' --exact --json` |
+| The question, rather than its wording | Prepare local embeddings, then search a natural-language question |
+| The person associated with a source | Use `documents list --person person:PERSON_ID`, then inspect the sources |
+
+Metadata is available in document detail and listings; it is not a universal field-search API.
+Use local tags and the supported person/list filters rather than inventing Google fields in a
+text query. Search does not index live comments, permissions or revision history.
 
 For manual use:
 
@@ -48,7 +67,8 @@ drive personal --offline search 'budget' --exact --limit 10 --offset 0 --json
 drive personal --offline documents show DOC_ID --json
 ```
 
-Read the passage and its source before interpreting it as a decision. If you see `meaningSkipped`,
+Read the saved passage and source metadata before interpreting it as a decision. You can inspect
+them offline; open the original link when you need to verify the current Google version. If you see `meaningSkipped`,
 inspect its explanation rather than assuming semantic search ran. For a folder containing PDF,
 Sheets or other unsupported content, exact and semantic search both omit those files.
 See [file-type coverage](usage.md#which-document-types-are-searchable) and

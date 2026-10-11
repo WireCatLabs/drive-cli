@@ -7,15 +7,14 @@ documents. It reads Google Docs across all tabs, keeps source identity through r
 and reuses WireCat's shared keyword search and optional local embeddings. Shared tags, notes,
 editor identities and evidence-backed memories stay attached to the imported documents.
 
-Status: development implementation on GitHub; no npm release yet. It uses Google's official Node clients.
+Drive uses Google's official Node clients.
 Sources supported now: native Google Docs and uploaded Markdown/TXT. Other types and shortcuts
 are reported as skipped; shortcuts are not followed outside the selected scope.
 
 ## Install
 
-The package is prepared for its first npm publication; the command below becomes available when
-that release is published. Users install the compiled CLI, with Node 22.16+ on the 22.x line or
-Node 24+, without building a checkout:
+Install the compiled CLI with Node 22.16+ on the 22.x line or Node 24+. A source build is not
+required:
 
 ```sh
 npm install -g @wirecat/drive-cli
@@ -28,8 +27,8 @@ See [installation and Google connection](docs/installation.md). Source builds ar
 
 ## Sign in and choose folders
 
-For development, enable the Drive and Docs APIs in your Google Cloud project and create a
-**Desktop** OAuth client. Download its client JSON, then:
+Use the Desktop OAuth client supplied by the application owner, or create your own client as
+explained in the [installation guide](docs/installation.md). Connect your account, then choose a folder:
 
 ```sh
 drive personal session start --client-file /path/to/desktop-client.json
@@ -108,8 +107,8 @@ implicitly migrate an existing messenger database. `DRIVE_STORE` selects another
 database explicitly. Review shared package versions and schema compatibility before sharing.
 
 Search covers body text, nested tables and footnotes from all tabs. Images, headers, footers,
-comments and suggested edits are excluded. Image assets are not downloaded. Native Markdown
-formatting/tab fidelity still needs authenticated user fixtures; synthetic tests do not prove it.
+comments and suggested edits are excluded. Image assets are not downloaded. Search text and Google’s native Markdown export are separate representations; inspect the export
+when layout or tab coverage matters.
 
 Folder scans cap at 10,000 entries. Text caps at 200,000 characters and snapshots at 50 MiB, with
 bounded pagination. Oversized input is refused rather than truncated. Google's native export
@@ -160,8 +159,8 @@ permissions, revisions and Shared Drives. Read grants remain the default. JSON A
 explicit flags for mutation and permanent deletion; Google still enforces file roles and API policy.
 
 Read the [knowledge and API command guide](docs/dev/KNOWLEDGE_AND_API.md) for complete examples,
-permissions, history limits, AI settings and supported request formats. Live Google and real model
-validation remain pending; automated tests use synthetic sources and mocked provider requests.
+permissions, history limits, AI settings and supported request formats. Contributor checks use
+isolated sources and mocked provider requests; see the [testing guide](docs/dev/TESTING.md).
 
 ## Shared CLI conventions
 

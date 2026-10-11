@@ -5,12 +5,20 @@ search. A **profile** is a name you choose for that account, such as `personal` 
 account command must name it. Google opens a browser for your consent, so you never paste access
 tokens into the terminal or an agent conversation.
 
-## Install the tool
+<a id="install-the-tool"></a>
 
-The npm package is prepared for its first publication. Until that release is published,
-`npm install -g @wirecat/drive-cli` returns “package not found”. The application owner publishes
-it once; users then install the compiled command with the instructions below. Building a source
-checkout belongs to [development](dev/DEVELOPMENT.md).
+## Install yourself or ask an agent
+
+If an agent handles installation, ask:
+
+```text prompt
+Use drive CLI. Install @wirecat/drive-cli from npm and check drive --help.
+Ask me for the profile name and Google folder. Follow the Google connection guide; I will approve sign-in in my browser.
+Do not request tokens or credential contents in chat.
+```
+
+See the [official Drive repository installation instructions](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
+for installation, updates and Google connection.
 
 You need [Node.js](https://nodejs.org/en/download) 22.16+ on the 22.x line or Node.js 24+.
 Open a terminal on the computer where your agent runs:
@@ -47,17 +55,6 @@ npm uninstall -g @wirecat/drive-cli
 
 Removal leaves your local configuration, credentials and indexed documents in place. To forget
 a Google sign-in first, run `drive personal session end` for each connected profile.
-
-If an agent handles installation, ask:
-
-```text prompt
-Install @wirecat/drive-cli from npm and check drive --help. Ask me for the profile name and
-Google folder. Follow the Google connection guide; I will approve sign-in in my browser.
-Do not request tokens or credential contents in chat.
-```
-
-See the [official Drive repository installation instructions](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
-for installation, updates and Google connection.
 
 ## Choose how to connect
 
@@ -104,8 +101,11 @@ If the platform is unconfigured, choose **Get Started**. Fill the setup screens:
 name (for example, WireCat Drive), a support email, an **External** audience for accounts outside
 your Workspace organization, and a contact email. Complete Google's policy step and create the
 configuration. If it is already configured, edit the relevant fields under Branding instead.
-For public launch, the shared app owner also prepares the homepage, privacy policy and authorized
-domain details. Those launch details belong to the owner, not each connecting user.
+For WireCat's app, use `https://wirecat.dev/en/docs/drive` as the homepage,
+`https://wirecat.dev/en/privacy` as the privacy policy and `https://wirecat.dev/en/terms` as the
+terms of service. Add `wirecat.dev` under Authorized domains without a scheme or page path,
+and verify ownership in Google Search Console using a Cloud project owner/editor account.
+Those launch details belong to the owner, not each connecting user.
 
 Google's [official consent-screen walkthrough](https://developers.google.com/workspace/guides/configure-oauth-consent)
 explains Branding, Audience and Data Access.
@@ -158,6 +158,11 @@ The downloaded JSON contains an `installed` application section. It is not your 
 Give your agent only its path, not its contents.
 
 ## Connect your account
+
+Publishing the Google application does not connect this computer to your account. Each user
+still opens the consent screen and approves their own account. A supplied WireCat Desktop
+client identifies the shared application; a custom client identifies your own application.
+Both use the same command and keep tokens in that user's local credential store.
 
 Choose your profile name and replace the client-file path:
 

@@ -1,7 +1,8 @@
 # Fix a connection or missing result
 
-Use this page when the tool is unavailable, Google rejects sign-in or a document is missing from
-search. Check the failed step before changing accounts or widening permissions.
+Recover when Drive is unavailable, Google rejects sign-in or a saved document cannot be found.
+Start with the symptom below, check the relevant step and verify the result before retrying a
+larger import or changing permissions. Keep the error code and profile name for a support request.
 
 | Symptom | What to do |
 | --- | --- |
@@ -39,3 +40,25 @@ Enabling an API does not create an OAuth client. Configure **Google Auth platfor
 add your account under **Audience → Test users**, then create **Clients → Desktop app** and
 download its JSON. Follow the [console walkthrough](installation.md#prepare-google-sign-in).
 Use a Desktop client JSON, not an API key or service-account key.
+
+## A published Google app still asks for sign-in
+
+Publishing the application does not authorize your account or this computer. Run the
+[account connection step](installation.md#connect-your-account) and approve access in Google's
+browser screen. With an owner-supplied client, ordinary users do not repeat Google Cloud setup.
+A custom Desktop client remains an alternative. Workspace policy and Google scope verification
+can still restrict which accounts or permissions are available.
+
+## Offline content differs from Google
+
+Check `drive personal --offline status --json` for the last sync and pending work. Cached reads
+show that saved version. Run `drive personal sync --json` online to refresh it, then repeat the
+same search. Live metadata, comments and history need Google access and are refused with
+`--offline`; cached `documents show` is the operation for reading an imported source.
+
+## A remote write has an unknown outcome
+
+If a command reports an uncertain result after a timeout or interrupted response, inspect the
+file in Google before repeating it. Creating a Doc or copying a file again can duplicate the
+successful operation. The [command reference](commands.md) explains errors; include the sanitized
+error code when asking for help rather than SDK responses or private content.
