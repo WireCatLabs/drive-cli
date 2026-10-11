@@ -33,7 +33,7 @@
     "contracts:check": "cli-contract contracts/plan.json",
     "contracts:upgrade": "pnpm --dir contracts/previous install --frozen-lockfile --ignore-scripts && cli-contract contracts/upgrade.json",
     "security:no-leak": "cli-testing security no-leak . contracts/no-leak.json",
-    "build": "tsc --build",
+    "build": "tsc --build --force",
     "typecheck": "tsc --build --force --emitDeclarationOnly && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
