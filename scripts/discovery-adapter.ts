@@ -1,6 +1,8 @@
 import type { ApiModel, ApiOperation, ApiSchema, Effect, HttpMethod, SchemaNode } from "@wirecat/cli-core/codegen"
 
 type Json = Record<string, unknown>
+const description = (value: unknown): string =>
+  String(value ?? "").replace(/\]\((\/workspace\/[^)]+)\)/g, "](https://developers.google.com$1)")
 const object = (value: unknown): value is Json => !!value && typeof value === "object" && !Array.isArray(value)
 const descriptive = new Set([
   "id",
@@ -61,7 +63,7 @@ export const adaptDiscovery = (
     if (value.format !== undefined && !formats.has(String(value.format)))
       throw new Error(`${where}: unsupported format`)
     const common = {
-      ...(typeof value.description === "string" ? { description: value.description } : {}),
+      ...(typeof value.description === "string" ? { description: description(value.description) } : {}),
       ...(value.nullable === true ? { nullable: true } : {}),
       ...(value.deprecated === true ? { deprecated: true } : {}),
       ...(value.default !== undefined ? { default: value.default } : {}),
@@ -158,8 +160,8 @@ export const adaptDiscovery = (
               id: raw.id,
               binding: { kind: "http", method, path: raw.path },
               effect,
-              summary: String(raw.description ?? raw.id).split("\n")[0],
-              description: String(raw.description ?? ""),
+              summary: description(raw.description ?? raw.id).split("\n")[0],
+              description: description(raw.description),
               tags: [service],
               parameters: safe.map(([key, value]) => {
                 if (!object(value) || !["path", "query"].includes(String(value.location)))
@@ -169,7 +171,7 @@ export const adaptDiscovery = (
                   name: key,
                   in: value.location as "path" | "query",
                   required: value.required === true,
-                  ...(typeof value.description === "string" ? { description: value.description } : {}),
+                  ...(typeof value.description === "string" ? { description: description(value.description) } : {}),
                   schema: value.repeated === true ? { type: "array" as const, items: schema } : schema,
                 }
               }),

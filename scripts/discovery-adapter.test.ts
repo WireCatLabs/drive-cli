@@ -24,6 +24,16 @@ const fixture = () => ({
   },
 })
 describe("Discovery consumer adapter into shared codegen", () => {
+  it("makes provider documentation links absolute for generated Markdown consumers", () => {
+    const source = fixture()
+    Object.assign(source.drive.resources.files.methods.get, {
+      description: "See [search](/workspace/drive/api/guides/search-files).",
+    })
+    const { model } = adaptDiscovery(source)
+    expect(model.operations[0]?.description).toContain(
+      "https://developers.google.com/workspace/drive/api/guides/search-files",
+    )
+  })
   it("retains references, exact string IDs, required parameters and OAuth metadata", () => {
     const { model, metadata } = adaptDiscovery(fixture())
     expect(model.operations[0]).toMatchObject({

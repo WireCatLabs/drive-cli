@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Resolve Google Discovery documentation links to Google's site in generated references.
+
 - Add source-install user guides for ingestion, search, tags, notes, memories and local MCP.
 - Expose the full CLI/global-option discovery contract for documentation validation while retaining item listings.
 
