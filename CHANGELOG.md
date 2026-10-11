@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Document Google Cloud browser sign-in setup and isolated live validation.
+- Build before Bun's installed-package check in a clean CI job; run Node package acceptance in full validation.
 - Add standalone Google Drive/Docs ingestion through the official Node clients.
 - Add browser OAuth, secure profiles, selected folders and resumable read-only sync.
 - Save native Markdown and all-tab text with source provenance.
