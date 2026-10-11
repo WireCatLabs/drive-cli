@@ -21,4 +21,10 @@ jobs:
       pack: ${{ inputs.pack || false }}
       bun: true
       bun-run: pnpm build && pnpm smoke:bun
-      checks: pnpm docs:check && pnpm smoke
+      checks: |
+        pnpm generate:check
+        pnpm contracts:check
+        pnpm contracts:upgrade
+        pnpm security:no-leak
+        pnpm docs:check
+        pnpm smoke

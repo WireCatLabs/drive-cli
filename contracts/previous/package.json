@@ -1,0 +1,9 @@
+{
+  "name": "drive-cli-previous-store-fixture",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.20.0",
+  "dependencies": {
+    "@wirecat/cli-messaging": "0.226.0"
+  }
+}

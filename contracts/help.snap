@@ -1,0 +1,64 @@
+Usage: drive [options] [command]
+
+Manage Google Drive and Docs, local Markdown, shared knowledge and search
+
+Options:
+  -V, --version             output the version number
+  --profile <name>          Google account profile (default: "default")
+  --json                    print machine-readable JSON
+  --jsonl                   print machine-readable JSON lines
+  --agent-json              show control and direction characters visibly in
+                            machine output
+  --quiet                   suppress optional diagnostics
+  --timeout <duration>      whole-command deadline, e.g. 30s
+  --max-output-bytes <n>    bound buffered result output (default: 4194304)
+  --read-only               refuse local and remote mutations
+  --offline                 answer only operations that use local cached data
+  --dry-run                 validate command/policy and preview without acting
+  --yes                     answer a policy confirmation; cannot override deny
+                            or readonly
+  --allow-dangerous         answer a permanent-deletion confirmation
+  --permission <key=level>  temporary policy override; repeat to add keys
+  -h, --help                display help for command
+
+Commands:
+  session                   Google browser sign-in and local account profiles
+  folders                   Select Google folders for local ingestion
+  sync [options]            Fetch selected sources and resume a durable pending
+                            batch
+  status                    Local sync checkpoint, cached sources and pending
+                            work
+  documents                 Locally imported sources and exports
+  search [options] <query>  Shared keyword and optional semantic search over
+                            imported Google sources
+  tags                      Local tags on shared documents; preserved through
+                            resync
+  links                     Connect documents to shared people, projects, notes
+                            and other references
+  notes|memos               Local shared memos about a source document
+  memories                  Evidence-backed shared memories; AI output remains
+                            proposed
+  people                    Google-observed identities and explicit links to
+                            shared people
+  api                       Discover and call the official Drive, Docs and
+                            Activity SDK methods
+  files                     Remote Google Drive files; results are not
+                            automatically imported
+  comments                  Remote file comments; pagination tokens are returned
+  permissions               Remote file permissions; pagination tokens are
+                            returned
+  revisions                 Remote file revisions; pagination tokens are
+                            returned
+  shared-drives [options]   List accessible Google Shared Drives
+  config                    Shared-style defaults/profile settings; credentials
+                            are separate
+  complete [words...]       Shell completion from the shared command registry
+  schema <method>           Generated request schema and operation contract
+                            without Google access
+  models                    Configure the shared model gateway; keys stay
+                            outside config
+  mcp [options]             Expose guarded commands over MCP stdio
+  commands [path...]        Discover the command tree and options as shared
+                            registry data
+  help [command]            display help for command
+

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Generate Google API commands, validators, schemas and references through the shared MAX codegen pipeline.
+- Apply shared profile permission levels to local and remote actions; add guarded write journals and uncertain-outcome handling.
+- Add profile-first syntax, config paths, completion, MCP stdio, offline/dry-run, bounded output and deadlines.
+- Align shared package/preset versions and validate upgrades from the prior shared document store.
 - Add shared document tags, memos, links, editor identities and evidence-backed memories.
 - Add explicit AI memory extraction through the shared model gateway, with exact source quotes and stale-source handling.
 - Add 68-method official SDK discovery/calls, common remote management commands and optional write/activity/app grants.

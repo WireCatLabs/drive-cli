@@ -1,0 +1,33 @@
+import { resolve } from "node:path"
+import { writeArtifacts } from "@wirecat/cli-core/codegen"
+import { COMMANDS_PAGE_LABELS, commandsPage, describeOptions, describeProgram } from "@wirecat/cli-core/commands"
+import { createProgram } from "../dist/program.js"
+
+const root = resolve(import.meta.dirname, "..")
+const program = createProgram({ env: {} })
+const content = commandsPage({
+  cli: "drive",
+  commands: describeProgram(program),
+  options: describeOptions(program),
+  labels: COMMANDS_PAGE_LABELS.en,
+  text: {
+    banner: "<!-- Generated from the command tree by pnpm generate. Do not edit. -->",
+    title: "Drive commands",
+    intro: "Command and option reference for the built Drive CLI.",
+    globalHeading: "Global options",
+    globalIntro: "These options apply to the selected profile and current invocation.",
+    mutates: "This command can change Google data or send data to the configured model.",
+    mutatesLocal: "This command changes local state.",
+    exitHeading: "Exit codes",
+    exitIntro: "Failures use the shared WireCat error contract.",
+    outro: "",
+  },
+})
+const stale = writeArtifacts([{ path: "docs/commands.md", content: content.replace(/\n{3,}/g, "\n\n") }], {
+  root,
+  check: process.argv.includes("--check"),
+})
+if (process.argv.includes("--check") && stale.length) {
+  process.stderr.write("Command reference is stale; run pnpm generate\n")
+  process.exitCode = 1
+}

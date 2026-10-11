@@ -1,16 +1,31 @@
-import { writeFileSync } from "node:fs"
-import { CliError, createRenderer, type KeyringStore, processStreams, type Streams } from "@wirecat/cli-core"
-import { annotate, describeProgram, flatten } from "@wirecat/cli-core/commands"
+import { readFileSync, writeFileSync } from "node:fs"
+import {
+  CliError,
+  createDeadline,
+  createOutputBuffer,
+  createRenderer,
+  type KeyringStore,
+  processStreams,
+  type Streams,
+  visibleControls,
+} from "@wirecat/cli-core"
+import { annotate, describeOptions, describeProgram, flatten, metaOf } from "@wirecat/cli-core/commands"
+import { formatSuggestions, suggest } from "@wirecat/cli-core/completion"
+import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
 import { Command, InvalidArgumentError, Option } from "commander"
+import { operationOf, validateRequest } from "./api-contract.js"
 import { activeProfile, application, fileId, profileName, readConfig, writeConfig } from "./config.js"
+import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
 import { googleSource } from "./google.js"
 import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
+import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { installRemoteCommands } from "./remote-commands.js"
+import { requestSchema } from "./schema.js"
 import { readSnapshot, readState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
@@ -27,6 +42,8 @@ export interface ProgramOptions {
   signal?: AbortSignal
   api?: GoogleApi
   complete?: Complete
+  ask?: (key: string) => Promise<boolean>
+  readBody?: (path: string | number) => string
 }
 const positive = (input: string) => {
   const n = Number(input)
@@ -44,8 +61,25 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const program = new Command("drive")
     .description("Manage Google Drive and Docs, local Markdown, shared knowledge and search")
     .version(VERSION)
-    .option("--profile <name>", "Google account profile", "default")
+    .option("--profile <name>", "Google account profile", env.DRIVE_PROFILE ?? "default")
     .option("--json", "print machine-readable JSON")
+    .option("--jsonl", "print machine-readable JSON lines")
+    .option("--agent-json", "show control and direction characters visibly in machine output")
+    .option("--quiet", "suppress optional diagnostics")
+    .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
+      parseDuration(raw, "--timeout"),
+    )
+    .option("--max-output-bytes <n>", "bound buffered result output", offset, 4 * 1024 * 1024)
+    .option("--read-only", "refuse local and remote mutations")
+    .option("--offline", "answer only operations that use local cached data")
+    .option("--dry-run", "validate command/policy and preview without acting")
+    .option("--yes", "answer a policy confirmation; cannot override deny or readonly")
+    .option("--allow-dangerous", "answer a permanent-deletion confirmation")
+    .option(
+      "--permission <key=level>",
+      "temporary policy override; repeat to add keys",
+      (value: string, previous: string[] = []) => [...previous, value],
+    )
   program
     .configureOutput({
       writeOut: (text) => streams.data(text),
@@ -53,17 +87,53 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       outputError: () => undefined,
     })
     .exitOverride()
-  const selected = () => profileName(program.opts<{ profile: string }>().profile)
-  const output = (value: unknown) =>
+  const selected = () =>
+    profileName(
+      program.getOptionValueSource("profile") === "default" && !env.DRIVE_PROFILE
+        ? (readConfig(env).defaultProfile ?? program.opts<{ profile: string }>().profile)
+        : program.opts<{ profile: string }>().profile,
+    )
+  let currentAction: Command | undefined
+  let activeSignal = options.signal
+  let deadline: ReturnType<typeof createDeadline> | undefined
+  const confirmations = new Set<string>()
+  const askOnce = async (key: string) => {
+    if (confirmations.has(key)) return true
+    const answered = (await options.ask?.(key)) ?? false
+    if (answered) confirmations.add(key)
+    return answered
+  }
+  const policyFlags = (): PolicyFlags & { offline?: boolean } => ({
+    ...program.opts(),
+    allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
+  })
+  const safeForAgent = (value: unknown): unknown => {
+    if (typeof value === "string") return visibleControls(value)
+    if (Array.isArray(value)) return value.map(safeForAgent)
+    if (value && typeof value === "object")
+      return Object.fromEntries(
+        Object.entries(value).map(([key, field]) => [visibleControls(key), safeForAgent(field)]),
+      )
+    return value
+  }
+  const output = (value: unknown) => {
+    const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
     createRenderer({
-      format: program.opts<{ json?: boolean }>().json || !process.stdout.isTTY ? "json" : "pretty",
+      format: program.opts().jsonl
+        ? "jsonl"
+        : program.opts().json || program.opts().agentJson || !process.stdout.isTTY
+          ? "json"
+          : "pretty",
       color: false,
-      streams,
-    }).result(value)
+      streams: { ...streams, data: (text) => buffer.data(text) },
+      quiet: program.opts().quiet === true,
+    }).result(program.opts().agentJson ? safeForAgent(value) : value)
+    buffer.flush((text) => streams.data(text))
+  }
   const source = async () => {
     const name = selected()
     if (options.source) return options.source(name)
-    const client = authorizedClient(env, name, options.keyring, options.signal)
+    const client = authorizedClient(env, name, options.keyring, activeSignal)
     await checkAuthorization(client)
     return googleSource(client)
   }
@@ -106,7 +176,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
             ...(args.activity ? { activity: true } : {}),
             ...(args.apps ? { apps: true } : {}),
             ...(options.keyring ? { keyring: options.keyring } : {}),
-            ...(options.signal ? { signal: options.signal } : {}),
+            ...(activeSignal ? { signal: activeSignal } : {}),
             openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
             showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
           }),
@@ -182,7 +252,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .action(async (args: { max: number; embed?: boolean; rescan?: boolean }) => {
       const remote = activeProfile(env, selected()).roots.length ? await source() : undefined
       const result = await withIndex(async (index) => ({
-        ...(await sync(remote, index, env, selected(), args.max, options.signal, args.rescan)),
+        ...(await sync(remote, index, env, selected(), args.max, activeSignal, args.rescan)),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),
       }))
       output(result)
@@ -280,7 +350,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     output,
     positive,
     offset,
-    complete: () => options.complete ?? memoryModel(env, selected(), options.signal),
+    complete: () => options.complete ?? memoryModel(env, selected(), activeSignal),
     run: async (input, fn) => {
       const lock = await lockProfile(env, selected())
       try {
@@ -300,14 +370,105 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installRemoteCommands(program, {
     output,
     positive,
+    readBody: options.readBody ?? ((path) => readFileSync(path, "utf8")),
     call: async (method, params, body) => {
       const descriptor = apiMethod(method)
-      if (options.api) return options.api.call(method, params, body)
-      const client = authorizedClient(env, selected(), options.keyring, options.signal)
-      await checkAuthorization(client, descriptor.scope)
-      return googleApi(client).call(method, params, body)
+      validateRequest(method, params, body)
+      const flags = policyFlags()
+      for (const key of methodPolicyKeys(method))
+        await checkPolicy(env, selected(), key, descriptor.mutates, flags, askOnce)
+      if (flags.offline) throw new CliError("permission_error", "this operation needs Google; --offline was requested")
+      if (flags.dryRun)
+        return {
+          dryRun: true,
+          method,
+          mutates: descriptor.mutates,
+          parameters: params,
+          bodyProvided: body !== undefined,
+        }
+      const act = async () => {
+        try {
+          if (options.api) return await options.api.call(method, params, body)
+          const client = authorizedClient(env, selected(), options.keyring, activeSignal)
+          await checkAuthorization(client, descriptor.scope)
+          return await googleApi(client).call(method, params, body)
+        } catch (error) {
+          throw googleError(error)
+        }
+      }
+      return descriptor.mutates ? guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce) : act()
     },
   })
+  const config = program
+    .command("config")
+    .description("Shared-style defaults/profile settings; credentials are separate")
+  config.command("show").action(() => output(readConfig(env)))
+  config
+    .command("set")
+    .argument("<key>")
+    .argument("<json-value>")
+    .option("--defaults", "change defaults rather than the selected profile")
+    .action((key: string, raw: string, args: { defaults?: boolean }) => {
+      const value = readConfig(env)
+      if (args.defaults) value.defaults ??= {}
+      const target = args.defaults
+        ? (value.defaults as NonNullable<typeof value.defaults>)
+        : activeProfile(env, selected())
+      if (!args.defaults) value.profiles[selected()] = target as (typeof value.profiles)[string]
+      const [head, ...parts] = key.split(".")
+      if (
+        !["readOnly", "permissions", "models"].includes(head ?? "") ||
+        parts.some((part) => ["__proto__", "prototype", "constructor"].includes(part))
+      )
+        throw new CliError("validation_error", "config set accepts readOnly, permissions or models")
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(raw)
+      } catch {
+        throw new CliError("validation_error", "setting value must be JSON")
+      }
+      if (!parts.length) Object.assign(target, { [key]: parsed })
+      else if (head === "permissions") {
+        target.permissions ??= {}
+        Object.assign(target.permissions, { [parts.join(".")]: parsed })
+      } else if (head === "models" && parts.length === 2 && parts[0] && parts[1]) {
+        target.models ??= {}
+        target.models[parts[0]] ??= {}
+        Object.assign(target.models[parts[0]] as object, { [parts[1]]: parsed })
+      } else throw new CliError("validation_error", "unknown setting path")
+      writeConfig(env, value)
+      output({ key, updated: true, scope: args.defaults ? "defaults" : selected() })
+    })
+  program
+    .command("complete")
+    .description("Shell completion from the shared command registry")
+    .argument("[words...]")
+    .allowUnknownOption()
+    .helpOption(false)
+    .action(async (words: string[]) => {
+      if (!(program as Command & { rawArgs: string[] }).rawArgs.includes("--")) {
+        if (!["bash", "zsh", "fish", "powershell"].includes(words[0] ?? ""))
+          throw new CliError("validation_error", "choose a supported shell")
+        const { script } = await import("@bomb.sh/tab")
+        script(words[0] as "zsh", "drive", "drive")
+      } else
+        streams.data(
+          formatSuggestions(
+            suggest({ commands: describeProgram(program), globalOptions: describeOptions(program), words }),
+          ),
+        )
+    })
+  program
+    .command("schema")
+    .argument("<method>")
+    .description("Generated request schema and operation contract without Google access")
+    .action((method: string) => {
+      const operation = operationOf(method)
+      output({
+        operation,
+        requestSchema: requestSchema(method),
+      })
+    })
   program
     .command("models")
     .description("Configure the shared model gateway; keys stay outside config")
@@ -328,6 +489,20 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       writeConfig(env, config)
       output({ purpose: args.purpose, configured: true })
     })
+  const mcp = program.command("mcp").description("Expose guarded commands over MCP stdio")
+  mcp.option("--tools", "list offered tools without starting a server").action(async (args: { tools?: boolean }) => {
+    const { mcpTools, serveMcp } = await import("./mcp.js")
+    if (args.tools)
+      output({
+        items: mcpTools({ ...options, env }, selected(), policyFlags()).map(({ name, schema, command }) => ({
+          name,
+          inputSchema: schema,
+          mutates: command.mutates,
+        })),
+      })
+    else
+      await serveMcp({ ...options, env, ...(activeSignal ? { signal: activeSignal } : {}) }, selected(), policyFlags())
+  })
   program
     .command("commands")
     .argument("[path...]")
@@ -361,6 +536,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "memories extract",
       "people link",
       "models configure",
+      "config set",
     ]
     const remoteWrites = [
       "api call",
@@ -375,10 +551,100 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ]
     const name = info.path.join(" ")
     annotate(command, {
-      origin: "handwritten",
-      mutates: localWrites.includes(name) || remoteWrites.includes(name),
+      origin: metaOf(command).origin ?? "handwritten",
+      mutates: metaOf(command).mutates ?? (localWrites.includes(name) || remoteWrites.includes(name)),
       local: localWrites.includes(name) && name !== "session start" && name !== "memories extract",
       state: "beta",
+    })
+  }
+  class Preview extends Error {}
+  const pathOf = (command: Command) => {
+    const path: string[] = []
+    for (let at: Command | null = command; at?.parent; at = at.parent) path.unshift(at.name())
+    return path
+  }
+  program.hook("preAction", async (_root, action) => {
+    currentAction = action
+    if (program.opts().timeout !== undefined && !deadline) {
+      deadline = createDeadline({
+        timeoutMs: program.opts().timeout,
+        ...(options.signal ? { signal: options.signal } : {}),
+      })
+      activeSignal = deadline.signal
+    }
+    const path = pathOf(action)
+    const words = path.join(" ")
+    if (["commands", "complete", "schema", "config show", "config set", "session list"].includes(words)) return
+    const flags = policyFlags()
+    const metadata = metaOf(action)
+    const rawMethod = words === "api call" ? action.args[0] : undefined
+    const method = metadata.operationId ?? rawMethod
+    if (rawMethod) {
+      const descriptor = apiMethod(rawMethod)
+      if (descriptor.mutates && !action.opts().allowWrite)
+        throw new CliError("permission_error", "this method changes Google data; pass --allow-write")
+      if (descriptor.destructive && !action.opts().allowDelete && !flags.allowDangerous)
+        throw new CliError(
+          "permission_error",
+          "this method deletes Google data; pass --allow-delete or --allow-dangerous",
+        )
+      if (flags.allowDangerous) action.setOptionValue("allowDelete", true)
+    }
+    const mutates = method ? apiMethod(method).mutates : metadata.mutates === true
+    const key = method ? `api.${method}` : path.join(".")
+    for (const permission of method ? methodPolicyKeys(method) : [key])
+      await checkPolicy(env, selected(), permission, mutates, flags, askOnce)
+    if (
+      flags.offline &&
+      (method ||
+        ["files", "comments", "permissions", "revisions", "shared-drives"].includes(path[0] ?? "") ||
+        [
+          "session start",
+          "folders add",
+          "documents get",
+          "documents history",
+          "documents create",
+          "documents update",
+          "memories extract",
+          "sync",
+        ].includes(words))
+    )
+      throw new CliError("permission_error", "this command may require network access; --offline was requested")
+    if (
+      flags.dryRun &&
+      path[0] !== "api" &&
+      !["files", "comments", "permissions", "revisions", "shared-drives"].includes(path[0] ?? "") &&
+      !["documents get", "documents create", "documents update", "documents history"].includes(words)
+    ) {
+      output({ dryRun: true, command: words, mutates, local: metadata.local === true })
+      throw new Preview()
+    }
+    if (words === "session start") refuseCommandName(selected(), commandWords(program), "drive")
+  })
+  const parse = program.parseAsync.bind(program)
+  program.parseAsync = async (argv = process.argv, settings) => {
+    const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
+    const args = settings?.from === "user" ? argv : argv.slice(2)
+    const lifted = liftProfile([...args], commandWords(program))
+    const rest = lifted.profile ? ["--profile", profileName(lifted.profile), ...lifted.rest] : lifted.rest
+    try {
+      const running = parse([...prefix, ...rest], settings)
+      return deadline ? await deadline.race(async () => running) : await running
+    } catch (error) {
+      if (error instanceof Preview) return program
+      throw error
+    } finally {
+      deadline?.dispose()
+    }
+  }
+  // Imported generated children have their own Commander exit/output configuration.
+  for (const info of flatten(describeProgram(program))) {
+    let command = program
+    for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
+    command.exitOverride().configureOutput({
+      writeOut: (text) => streams.data(text),
+      writeErr: (text) => streams.diagnostic(text),
+      outputError: () => {},
     })
   }
   return program

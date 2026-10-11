@@ -1,6 +1,14 @@
 import { CliError } from "@wirecat/cli-core"
-import { apiPlainJson, parseApiJson } from "@wirecat/cli-messaging/cli"
+import {
+  apiPlainJson,
+  checkApiBody,
+  checkApiParameter,
+  generatedApiCommand,
+  parseApiJson,
+  readApiBody,
+} from "@wirecat/cli-messaging/cli"
 import type { Command } from "commander"
+import { operations, schemas, validateRequest } from "./api-contract.js"
 import { fileId } from "./config.js"
 import { apiMethod, apiMethods, validateApiParams } from "./google-api.js"
 
@@ -14,6 +22,7 @@ export interface RemoteCommands {
   call(method: string, params: Record<string, unknown>, body?: Record<string, unknown>): Promise<unknown>
   output(value: unknown): void
   positive(input: string): number
+  readBody?: (path: string | number) => string
 }
 export const installRemoteCommands = (program: Command, helpers: RemoteCommands) => {
   const { call, output, positive } = helpers
@@ -42,8 +51,24 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         throw new CliError("permission_error", "this method changes Google data; pass --allow-write")
       if (method.destructive && !args.allowDelete)
         throw new CliError("permission_error", "this method permanently deletes Google data; pass --allow-delete")
+      validateRequest(name, args.params, args.body)
       output(await call(name, args.params, args.body))
     })
+  const generated = generatedApiCommand({
+    operations,
+    checkParameter: (name, schema, raw) => checkApiParameter(name, schema, raw, schemas),
+    checkBody: (operation, text) => checkApiBody(operation, text, schemas),
+    readBody: (_command, opts) => readApiBody(opts, helpers.readBody),
+    execute: async (_command, operation, input) =>
+      output(
+        await call(
+          operation.id,
+          { ...input.path, ...input.query },
+          input.body === undefined ? undefined : jsonObject(input.body),
+        ),
+      ),
+  })
+  for (const child of generated.commands) api.addCommand(child)
   const files = program
     .command("files")
     .description("Remote Google Drive files; results are not automatically imported")

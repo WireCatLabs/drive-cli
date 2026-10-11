@@ -98,7 +98,8 @@ The next content-changing sync or source removal stales active memories derived 
 ## Remote management and the SDK surface
 
 The pinned official clients expose 68 callable methods: 29 read methods and 39 mutating methods.
-The catalog comes from those SDK resource classes and needs no credentials or network request.
+The catalog comes from pinned Google Discovery snapshots through the shared code generator and
+needs no credentials or network request. Both generated and friendly commands use its validators.
 It includes Drive v3, Docs v1 and Drive Activity v2. Upload/download streaming, a full Drive Labels
 API client, automatic revision downloads, background watches and other Workspace products are
 not implemented as product workflows. JSON methods support normal query/path parameters and

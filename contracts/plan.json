@@ -1,0 +1,48 @@
+{
+  "command": "node",
+  "args": ["../dist/bin/drive.js"],
+  "cases": [
+    { "id": "help", "args": ["--help"], "exit": 0, "stream": "stdout", "kind": "text", "snapshot": "help.snap" },
+    {
+      "id": "discovery",
+      "args": ["commands", "api", "drive-files-get", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "contains": "\"generated\""
+    },
+    {
+      "id": "invalid-option",
+      "args": ["--unknown-option"],
+      "exit": 2,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "validation_error"
+    },
+    {
+      "id": "missing-generated-id",
+      "args": ["api", "drive-files-get"],
+      "exit": 2,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "validation_error"
+    },
+    {
+      "id": "readonly-before-auth",
+      "args": ["--read-only", "files", "copy", "synthetic-doc"],
+      "exit": 5,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "permission_error"
+    },
+    {
+      "id": "dry-run-before-auth",
+      "args": ["--dry-run", "api", "drive-files-get", "--file-id", "synthetic-doc", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "json": { "dryRun": true, "method": "drive.files.get" }
+    }
+  ],
+  "mcp": { "args": ["--read-only", "mcp"], "snapshot": "mcp-tools.json" }
+}

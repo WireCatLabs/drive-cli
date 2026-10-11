@@ -13,7 +13,9 @@ or separate embedding engine exists here.
 | sync.ts | folder graph, durable jobs, retries and source removal |
 | store.ts | shared public store/services adapter and account-scoped search |
 | program.ts | commands, dependency injection and shared registry |
-| google-api.ts, remote-commands.ts | SDK method catalog, JSON requests, remote actions and permission boundaries |
+| google-api.ts, remote-commands.ts | generated operation contracts, SDK requests and remote actions |
+| api-contract.ts, generated/, schema.ts | shared generated validators, metadata and agent-visible schemas |
+| policy.ts, mcp.ts | shared permission/write guards and the registry-derived agent adapter |
 | knowledge.ts, knowledge-commands.ts | shared tags, memos, links, identity associations and source-backed memories |
 | extraction.ts | shared model gateway, structured proposals and exact source quote validation |
 | profile-lock.ts | shared heartbeat lock for sync and document knowledge operations |
@@ -59,3 +61,10 @@ response requires exact source quotes; validation finishes before any memory wri
 snapshot hash is rechecked after the model call. Quotes support review, not automatic factual approval.
 Saving then takes the same profile lock as sync and checks the hash again before writing, so a
 source cannot change between final verification and memory creation through this CLI.
+
+Google Discovery snapshots feed cli-core's format-neutral ApiModel and shared generators.
+cli-messaging generatedApiCommand registers the API tree. The same validators guard friendly
+and legacy raw calls. Local policy precedes credentials, provider requests and local writes;
+OAuth remains an independent gate. MCP reconstructs an invocation of this CLI rather than
+implementing another provider executor. Generation/docs/schema snapshots and real prior-store
+upgrade contracts keep the shared seams reviewable. See [CLI alignment](CLI_ALIGNMENT.md).

@@ -3,7 +3,9 @@ import { drive } from "@googleapis/drive"
 import { driveactivity } from "@googleapis/driveactivity"
 import { CliError } from "@wirecat/cli-core"
 import type { OAuth2Client } from "google-auth-library"
+import { operations, validateRequest } from "./api-contract.js"
 import { googleError } from "./errors.js"
+import { metadata } from "./generated/metadata.js"
 import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 
 export interface ApiMethod {
@@ -15,41 +17,28 @@ export interface ApiMethod {
 export interface GoogleApi {
   call(method: string, params?: Record<string, unknown>, body?: Record<string, unknown>): Promise<unknown>
 }
-const reads = new Set(["get", "list", "getStartPageToken", "listLabels", "generateIds", "download", "query"])
 const roots = (auth?: OAuth2Client) => ({
   drive: drive({ version: "v3", ...(auth ? { auth } : {}) }),
   docs: docs({ version: "v1", ...(auth ? { auth } : {}) }),
   driveactivity: driveactivity({ version: "v2", ...(auth ? { auth } : {}) }),
 })
 type Resource = Record<string, unknown>
-const collect = (root: object, prefix: string, found: ApiMethod[]) => {
-  for (const [name, value] of Object.entries(root)) {
-    if (name === "context" || !value || typeof value !== "object") continue
-    const path = `${prefix}.${name}`
-    for (const method of Object.getOwnPropertyNames(Object.getPrototypeOf(value))) {
-      if (method === "constructor" || typeof (value as Resource)[method] !== "function") continue
-      const mutates = !reads.has(method)
-      found.push({
-        name: `${path}.${method}`,
-        mutates,
-        destructive: method === "delete" || method === "emptyTrash",
-        scope:
-          prefix === "driveactivity"
-            ? ACTIVITY_SCOPE
-            : path === "drive.apps"
-              ? APPS_SCOPE
-              : mutates || method === "generateIds"
-                ? WRITE_SCOPE
-                : READ_SCOPE,
-      })
-    }
-    collect(value, path, found)
-  }
-}
 export const apiMethods = (): ApiMethod[] => {
-  const methods: ApiMethod[] = []
-  for (const [name, root] of Object.entries(roots())) collect(root, name, methods)
-  return methods.sort((a, b) => a.name.localeCompare(b.name))
+  return operations.map((operation) => {
+    const scopes = (metadata.scopes as Record<string, readonly string[]>)[operation.id] ?? []
+    const preference =
+      operation.effect === "read"
+        ? [READ_SCOPE, ACTIVITY_SCOPE, APPS_SCOPE, WRITE_SCOPE]
+        : [WRITE_SCOPE, READ_SCOPE, ACTIVITY_SCOPE, APPS_SCOPE]
+    const scope = preference.find((candidate) => scopes.includes(candidate))
+    if (!scope) throw new CliError("configuration_error", "generated method has no supported OAuth scope")
+    return {
+      name: operation.id,
+      mutates: operation.effect !== "read",
+      destructive: operation.effect === "destructive",
+      scope,
+    }
+  })
 }
 export const apiMethod = (name: string): ApiMethod => {
   const found = apiMethods().find((method) => method.name === name)
@@ -92,6 +81,7 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
       validateApiParams(params)
       if (body !== undefined && (!body || typeof body !== "object" || Array.isArray(body)))
         throw new CliError("validation_error", "API request body must be a JSON object")
+      validateRequest(name, params, body)
       const parts = name.split(".")
       let resource: Resource = api as unknown as Resource
       for (const part of parts.slice(0, -1)) resource = resource[part] as Resource
@@ -106,12 +96,21 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
           {
             timeout: 30000,
             maxContentLength: 50 * 1024 * 1024,
+            ...(apiMethod(name).mutates ? { retry: false } : {}),
           },
         )
         if (Buffer.byteLength(JSON.stringify(response.data ?? null), "utf8") > 50 * 1024 * 1024)
           throw new CliError("provider_error", "Google response exceeded the output bound")
         return response.data ?? null
       } catch (error) {
+        const value = error as { status?: number; response?: { status?: number } }
+        const status = value?.status ?? value?.response?.status
+        if (apiMethod(name).mutates && (status === undefined || status >= 500))
+          throw new CliError(
+            "outcome_unknown",
+            "Google write has no certain outcome; check Google before repeating it",
+            { retryable: false },
+          )
         throw googleError(error)
       }
     },
