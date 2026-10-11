@@ -1,4 +1,4 @@
-import type { ApiModel, ApiOperation, ApiSchema, Effect, HttpMethod, SchemaNode } from "@wirecat/cli-core/codegen"
+import type { ApiModel, ApiOperation, ApiSchema, Effect, HttpMethod, SchemaNode } from "@wirecat/cli-base/codegen"
 
 type Json = Record<string, unknown>
 const description = (value: unknown): string =>

@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto"
 import { createServer } from "node:http"
-import { CliError, type KeyringStore } from "@wirecat/cli-core"
+import { CliError, type KeyringStore } from "@wirecat/cli-base"
 import { CodeChallengeMethod, type Credentials as GoogleTokens, OAuth2Client } from "google-auth-library"
 import { type OAuthApplication, profileName, readConfig, writeConfig } from "./config.js"
 import { googleSource } from "./google.js"

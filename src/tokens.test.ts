@@ -1,6 +1,6 @@
 import { readFileSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { memoryKeyring } from "@wirecat/cli-core"
+import { memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it } from "vitest"
 import { application, paths } from "./config.js"
 import { googleError } from "./errors.js"

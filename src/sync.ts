@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import { activeProfile } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"

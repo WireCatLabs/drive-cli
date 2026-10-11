@@ -1,4 +1,4 @@
-import { CliError, Credentials, type KeyringStore, pathsAreOverridden } from "@wirecat/cli-core"
+import { CliError, Credentials, type KeyringStore, pathsAreOverridden } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"

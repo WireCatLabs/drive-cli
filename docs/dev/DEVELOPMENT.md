@@ -22,7 +22,7 @@ installation/build. A global source link (`npm install -g .`) depends on retaini
 Tests inject ports; production opens the released shared store implementation. No memory fallback is allowed.
 
 Keep Google types below the source port. Generic store/search changes belong in cli-messaging,
-through its reviewed release. Use cli-core's helpers instead of copying them. Use public exports,
+through its reviewed release. Use cli-base's helpers instead of copying them. Use public exports,
 never dependency-internal imports. Sibling dependency pins differ, so database sharing is explicit.
 
 Fast checks are standards:check, lint, docs:lint and ci:quick. Full validation adds tests, coverage,

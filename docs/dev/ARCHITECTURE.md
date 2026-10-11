@@ -1,6 +1,6 @@
 # Architecture
 
-cli-core owns credentials, paths, atomic writes, output, errors and command registry data.
+cli-base owns credentials, paths, atomic writes, output, errors and command registry data.
 cli-messaging owns document storage, chunking, keyword/vector search and local models. Provider
 types stay in the Google modules; a source port feeds domain metadata into ingestion. No SQL
 or separate embedding engine exists here.
@@ -64,7 +64,7 @@ snapshot hash is rechecked after the model call. Quotes support review, not auto
 Saving then takes the same profile lock as sync and checks the hash again before writing, so a
 source cannot change between final verification and memory creation through this CLI.
 
-Google Discovery snapshots feed cli-core's format-neutral ApiModel and shared generators.
+Google Discovery snapshots feed cli-base's format-neutral ApiModel and shared generators.
 cli-messaging generatedApiCommand registers the API tree. The same validators guard friendly
 and legacy raw calls. Local policy precedes credentials, provider requests and local writes;
 OAuth remains an independent gate. MCP reconstructs an invocation of this CLI rather than

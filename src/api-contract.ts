@@ -1,5 +1,5 @@
-import { CliError } from "@wirecat/cli-core"
-import type { ManifestOperation } from "@wirecat/cli-core/codegen"
+import { CliError } from "@wirecat/cli-base"
+import type { ManifestOperation } from "@wirecat/cli-base/codegen"
 import { apiJson, checkApiBody, checkApiParameter } from "@wirecat/cli-messaging/cli"
 import { operations } from "./generated/manifest.js"
 import { schemas } from "./generated/schemas.js"

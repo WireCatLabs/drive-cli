@@ -2,7 +2,7 @@
 // Source: spec/google/*.json, verified by provenance.json
 // Run: pnpm generate
 
-import { integer, number } from "@wirecat/cli-core/codegen/runtime"
+import { integer, number } from "@wirecat/cli-base/codegen/runtime"
 import * as v from "valibot"
 import type * as T from "./types.js"
 

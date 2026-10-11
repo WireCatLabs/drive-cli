@@ -1,4 +1,4 @@
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import type { Memory } from "@wirecat/cli-messaging/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"

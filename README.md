@@ -166,7 +166,7 @@ isolated sources and mocked provider requests; see the [testing guide](docs/dev/
 ## Shared CLI conventions
 
 Drive now uses MAX's API generation approach: committed Google Discovery snapshots feed a
-provider adapter into cli-core's shared code generators. cli-messaging builds the generated
+provider adapter into cli-base's shared code generators. cli-messaging builds the generated
 commands and validates their input; Google's SDK remains the transport. `pnpm generate` rebuilds
 types, validators, the operation manifest, coverage and [command reference](docs/commands.md).
 `pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.

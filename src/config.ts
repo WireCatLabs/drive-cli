@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-core"
+import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
 import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-messaging/cli"
 import { LEVELS } from "@wirecat/cli-messaging/sends"
 import * as v from "valibot"

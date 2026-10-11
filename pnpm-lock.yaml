@@ -23,12 +23,12 @@ importers:
       '@modelcontextprotocol/server':
         specifier: 2.1.0
         version: 2.1.0
-      '@wirecat/cli-core':
-        specifier: 0.19.4
-        version: 0.19.4(commander@15.0.0)(typescript@7.0.2)
+      '@wirecat/cli-base':
+        specifier: 0.21.0
+        version: 0.21.0(commander@15.0.0)(typescript@7.0.2)
       '@wirecat/cli-messaging':
-        specifier: 0.231.0
-        version: 0.231.0(@wirecat/cli-core@0.19.4(commander@15.0.0)(typescript@7.0.2))(commander@15.0.0)(typescript@7.0.2)(zod@4.6.5)
+        specifier: 0.253.0
+        version: 0.253.0(@wirecat/cli-base@0.21.0(commander@15.0.0)(typescript@7.0.2))(commander@15.0.0)(typescript@7.0.2)(zod@4.6.5)
       commander:
         specifier: 15.0.0
         version: 15.0.0
@@ -64,8 +64,8 @@ importers:
         specifier: ^5.0.3
         version: 5.0.3(vitest@5.0.3)
       '@wirecat/cli-testing':
-        specifier: 0.3.0
-        version: 0.3.0(zod@4.6.5)
+        specifier: 0.4.0
+        version: 0.4.0(zod@4.6.5)
       cspell:
         specifier: 10.3.6
         version: 10.3.6
@@ -1015,8 +1015,8 @@ packages:
   '@wasm-audio-decoders/opus-ml@0.0.3':
     resolution: {integrity: sha512-SEeTmk0eb3q5etJA/NHCRWW6BivTx9tqvNTmG0kg2ynuATEQRUZnwQE6Ibvl1BBvqIGHqI57+qyJMWmJBwb5XQ==}
 
-  '@wirecat/cli-core@0.19.4':
-    resolution: {integrity: sha512-UDXPvzMxdetvm5XS/DL33oCVkHAvw3t0pPPYWg7BlgHjYRAKQh57M4+alih+hOtnw7QXBL+sqNkE4mYlUrJmkA==}
+  '@wirecat/cli-base@0.21.0':
+    resolution: {integrity: sha512-MGd5BcKK+ckO9E2ubxgCWgXhSJxVCvnPbqn5CdyHQtEfED1VsOCbtY0oMrGW7j73WjudS6zu9lL5X/aXfKK6Ag==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -1025,25 +1025,19 @@ packages:
       commander:
         optional: true
 
-  '@wirecat/cli-meetings@0.3.0':
-    resolution: {integrity: sha512-YFldgDOoDu/CWFCJY5OKYIw47i38K87l8oXaiXuqzLOU6uaKqI5DotAJU2rCk0MGuS/VC1rIFLz+coS9hn8lbg==}
-    engines: {node: '>=22.12.0'}
-    peerDependencies:
-      '@wirecat/cli-core': '>=0.18.1 <0.20.0'
-
   '@wirecat/cli-messaging-onnx@1.0.1':
     resolution: {integrity: sha512-e0ewPI3k417jvzoXy4I/4KW3PBnGWhRXy/YDshya0+d1D8QlajmswGpsh6UJlVr3DbAPuQLLc0qkqgGmh1+eNw==}
 
   '@wirecat/cli-messaging-sqlite@1.0.1':
     resolution: {integrity: sha512-hnB4eL6ER/++nTPrlSCAUzDJH7MN3V+Obx9B2xXMwBN1KrLkJHIrybQCikfNOnwnyrkultSkLulM7vd+qSG5Hg==}
 
-  '@wirecat/cli-messaging@0.231.0':
-    resolution: {integrity: sha512-EpTGDkgJUZlw6qWn4zdmeaQpal3BJjXIjgDyl8etAWOHrsuZDOUFPS1X4tvLu/RJUxpiEo7/Tfgvc0pQhS9FyQ==}
+  '@wirecat/cli-messaging@0.253.0':
+    resolution: {integrity: sha512-Wy1pHoD2XOMyFHaekm1Eajn+HcV4rYuwGqGs90AV/lCc5Mb/IlteZsJubJr7aksmudSG7bcq17LIyKL464oOWw==}
     engines: {node: ^22.16.0 || >=24}
     hasBin: true
     peerDependencies:
       '@napi-rs/canvas': '>=0.1.69 <2'
-      '@wirecat/cli-core': '>=0.19.2 <0.20.0'
+      '@wirecat/cli-base': '>=0.21.0 <0.22.0'
       commander: '>=15'
       mammoth: '>=1.8.0 <2'
       unpdf: '>=1.0.0 <2'
@@ -1055,12 +1049,8 @@ packages:
       unpdf:
         optional: true
 
-  '@wirecat/cli-tasks@0.3.1':
-    resolution: {integrity: sha512-sNjtlKnhKSjswSH9Zg5hdu+0eHglhpAC0HrPzKn4LAk5dWRK3PRu9TJSgIiTqlX8AnKKxEaCfSeQWpuU5f109w==}
-    engines: {node: '>=22'}
-
-  '@wirecat/cli-testing@0.3.0':
-    resolution: {integrity: sha512-j9ogvZGnHycxWpDuoAiDlFqLAM8wosxZ5QtgmV/7fy7aDWCUOkRmLpNy5cEkWGLWDnCwEv+yofjoG31kPnT83w==}
+  '@wirecat/cli-testing@0.4.0':
+    resolution: {integrity: sha512-/4fywtTtox8c5HrASNGqR5mM0w7pfF83u6iY2Wj/xWqxH49//a99eQFqLyf1ViH7s45yXMqd9T3dA7QRMnUmow==}
     engines: {node: ^22.16.0 || >=24}
     hasBin: true
 
@@ -3076,11 +3066,10 @@ snapshots:
     dependencies:
       '@wasm-audio-decoders/common': 9.0.7
 
-  '@wirecat/cli-core@0.19.4(commander@15.0.0)(typescript@7.0.2)':
+  '@wirecat/cli-base@0.21.0(commander@15.0.0)(typescript@7.0.2)':
     dependencies:
       cli-table3: 0.6.5
       cross-spawn: 7.0.6
-      env-paths: 4.0.0
       picocolors: 1.1.1
       pino: 10.4.0
       valibot: 1.5.0(typescript@7.0.2)
@@ -3090,18 +3079,13 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@wirecat/cli-meetings@0.3.0(@wirecat/cli-core@0.19.4(commander@15.0.0)(typescript@7.0.2))':
-    dependencies:
-      '@wirecat/cli-core': 0.19.4(commander@15.0.0)(typescript@7.0.2)
-      commander: 15.0.0
-
   '@wirecat/cli-messaging-onnx@1.0.1':
     dependencies:
       onnxruntime-common: 1.30.0
 
   '@wirecat/cli-messaging-sqlite@1.0.1': {}
 
-  '@wirecat/cli-messaging@0.231.0(@wirecat/cli-core@0.19.4(commander@15.0.0)(typescript@7.0.2))(commander@15.0.0)(typescript@7.0.2)(zod@4.6.5)':
+  '@wirecat/cli-messaging@0.253.0(@wirecat/cli-base@0.21.0(commander@15.0.0)(typescript@7.0.2))(commander@15.0.0)(typescript@7.0.2)(zod@4.6.5)':
     dependencies:
       '@anthropic-ai/sdk': 0.131.0(zod@4.6.5)
       '@bomb.sh/tab': 0.0.22(commander@15.0.0)
@@ -3109,11 +3093,9 @@ snapshots:
       '@modelcontextprotocol/server': 2.1.0
       '@resvg/resvg-js': 2.6.2
       '@valibot/to-json-schema': 1.8.0(valibot@1.5.0(typescript@7.0.2))
-      '@wirecat/cli-core': 0.19.4(commander@15.0.0)(typescript@7.0.2)
-      '@wirecat/cli-meetings': 0.3.0(@wirecat/cli-core@0.19.4(commander@15.0.0)(typescript@7.0.2))
+      '@wirecat/cli-base': 0.21.0(commander@15.0.0)(typescript@7.0.2)
       '@wirecat/cli-messaging-onnx': 1.0.1
       '@wirecat/cli-messaging-sqlite': 1.0.1
-      '@wirecat/cli-tasks': 0.3.1
       '@xmldom/xmldom': 0.9.12
       chardet: 2.2.0
       commander: 15.0.0
@@ -3136,9 +3118,7 @@ snapshots:
       - typescript
       - zod
 
-  '@wirecat/cli-tasks@0.3.1': {}
-
-  '@wirecat/cli-testing@0.3.0(zod@4.6.5)':
+  '@wirecat/cli-testing@0.4.0(zod@4.6.5)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.32.1(zod@4.6.5)
     transitivePeerDependencies:

@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import type { MessageStore, Note } from "@wirecat/cli-messaging/store"
 import { paths } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"

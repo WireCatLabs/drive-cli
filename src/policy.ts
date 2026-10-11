@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import {
   guardedWrite,
   type Level,

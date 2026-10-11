@@ -1,4 +1,4 @@
-import { CliError, isCliError } from "@wirecat/cli-core"
+import { CliError, isCliError } from "@wirecat/cli-base"
 
 // Google errors can contain bearer headers and document content in their request/response objects.
 export const googleError = (error: unknown): CliError => {

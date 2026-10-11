@@ -1,4 +1,4 @@
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import { resolveAISettings } from "@wirecat/cli-messaging/cli"
 import { type ModelAnswer, type ModelRequest, modelGateway, modelTarget } from "@wirecat/cli-messaging/models"
 import * as v from "valibot"
