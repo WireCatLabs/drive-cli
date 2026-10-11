@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "node:fs"
+import { readFileSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { memoryKeyring } from "@wirecat/cli-core"
 import { describe, expect, it } from "vitest"
@@ -32,8 +32,38 @@ describe("shared credential persistence", () => {
     if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o600)
   })
   it("does not quote malformed application data in diagnostics", () => {
-    expect(() => application({})).toThrow("Desktop OAuth")
+    const f = fixture()
+    const file = join(paths(f.env).config, "desktop-client.json")
+    writeFileSync(file, JSON.stringify({ web: { client_secret: "fixture-sensitive-data" } }))
+    expect(() => application({}, file)).toThrow("valid Desktop OAuth client JSON")
     expect(() => authorizedClient(fixture().env, "default", memoryKeyring())).toThrow("sign-in")
+  })
+  it("uses WireCat by default and returns independent application objects", () => {
+    const first = application({})
+    expect(first.clientId.endsWith(".apps.googleusercontent.com")).toBe(true)
+    expect(typeof first.clientSecret === "string" && first.clientSecret.length > 0).toBe(true)
+    first.clientId = "fixture-replacement"
+    expect(application({}).clientId === "fixture-replacement").toBe(false)
+  })
+  it("keeps custom environment clients separate from WireCat's client secret", () => {
+    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom" })).toEqual({ clientId: "fixture-custom" })
+    expect(
+      application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom", DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" }),
+    ).toEqual({ clientId: "fixture-custom", clientSecret: "fixture-secret" })
+    expect(() => application({ DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" })).toThrow("requires")
+  })
+  it("prefers an explicit Desktop file and never falls back after an invalid file", () => {
+    const f = fixture()
+    const file = join(paths(f.env).config, "desktop-client.json")
+    writeFileSync(
+      file,
+      JSON.stringify({ installed: { client_id: "fixture-file", client_secret: "fixture-file-secret" } }),
+    )
+    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-env" }, file)).toEqual({
+      clientId: "fixture-file",
+      clientSecret: "fixture-file-secret",
+    })
+    expect(() => application({}, join(paths(f.env).config, "missing.json"))).toThrow("valid Desktop OAuth")
   })
   it("classifies OAuth rejection, quota limits and cancellation without provider messages", () => {
     expect(googleError({ response: { status: 400, data: { error: "invalid_grant" } } }).code).toBe(

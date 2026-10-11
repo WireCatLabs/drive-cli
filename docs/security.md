@@ -24,6 +24,13 @@ an agent takes outside this tool.
 
 ## What is stored locally
 
+The bundled Desktop OAuth client ID and accompanying client secret identify WireCat's public
+application. They do not grant access to an account. Google treats installed applications as
+public clients that cannot keep this identity confidential; each user must grant their own
+access. Account access and refresh tokens remain private and are never bundled. A custom
+`--client-file` takes priority over environment application settings, which take priority over
+WireCat's included identity. See [Google's native-app OAuth explanation](https://developers.google.com/identity/protocols/oauth2/native-app).
+
 | Data | Location and protection |
 | --- | --- |
 | Google sign-in tokens | Operating-system keyring; private-file storage only when explicitly selected |

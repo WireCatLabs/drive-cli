@@ -160,7 +160,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   session
     .command("start")
     .description("Approve Google access in your browser; read-only unless --write is requested")
-    .option("--client-file <file>", "Desktop OAuth application JSON")
+    .option("--client-file <file>", "use your own Desktop OAuth application JSON instead of WireCat's app")
     .option("--credential-storage <storage>", "keyring or explicit private-file storage", "keyring")
     .option("--no-browser", "print the sign-in URL without opening a browser")
     .option("--write", "request remote Drive/Docs mutation permissions")

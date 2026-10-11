@@ -40,8 +40,10 @@ Native Markdown and searchable all-tab text are separate artifacts. Tab IDs/titl
 body, table and footnote text is indexed. Headers, footers, images, comments and suggested edits
 are excluded. Native conversion fidelity remains a live-validation item, not a claimed guarantee.
 
-No public Google OAuth identity is registered yet. Development takes a Desktop client JSON or
-explicit application environment settings. Read-only is the default; explicit write, activity and
+WireCat's public Desktop OAuth identity is included in the CLI. An explicit Desktop client JSON
+takes priority over application environment settings, which take priority over the bundled identity.
+Only installed-app client metadata is bundled; private account tokens remain in credential storage.
+Read-only is the default; explicit write, activity and
 apps options request the corresponding grants. Ingestion's source port remains read-only; remote
 management uses a separate SDK adapter. Tokens stay in the shared secure credential helper.
 

@@ -4,6 +4,7 @@ import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat
 import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-messaging/cli"
 import { LEVELS } from "@wirecat/cli-messaging/sends"
 import * as v from "valibot"
+import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
   ...AI_ENTRIES,
@@ -59,11 +60,11 @@ export interface OAuthApplication {
 }
 export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication => {
   if (!file) {
-    if (!env.DRIVE_GOOGLE_CLIENT_ID)
-      throw new CliError(
-        "configuration_error",
-        "provide a Desktop OAuth client with --client-file, or set DRIVE_GOOGLE_CLIENT_ID",
-      )
+    if (!env.DRIVE_GOOGLE_CLIENT_ID) {
+      if (env.DRIVE_GOOGLE_CLIENT_SECRET)
+        throw new CliError("configuration_error", "DRIVE_GOOGLE_CLIENT_SECRET requires DRIVE_GOOGLE_CLIENT_ID")
+      return { ...WIRECAT_APPLICATION }
+    }
     return {
       clientId: env.DRIVE_GOOGLE_CLIENT_ID,
       ...(env.DRIVE_GOOGLE_CLIENT_SECRET ? { clientSecret: env.DRIVE_GOOGLE_CLIENT_SECRET } : {}),
