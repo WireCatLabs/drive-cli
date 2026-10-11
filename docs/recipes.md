@@ -139,11 +139,16 @@ native Doc and move it into a selected folder:
 drive personal session start --client-file /path/to/desktop-client.json --write
 drive personal documents create --title 'Project review'
 drive personal documents update NEW_DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"Review notes\n"}}]}'
-drive personal files move NEW_DOC_ID --to FOLDER_ID
+drive personal files get NEW_DOC_ID --json
+drive personal files move NEW_DOC_ID --to FOLDER_ID --from OLD_PARENT_ID
 drive personal sync --json
 ```
 
-Replace `NEW_DOC_ID` with the create response's `documentId`. Confirm the selected folder contains
+Replace `NEW_DOC_ID` with the create response's `documentId`. Docs creates it in My Drive's root.
+Read its `parents` from `files get` and replace `OLD_PARENT_ID` with that parent ID; `--from` removes
+the old parent while adding the selected one. Google files have one parent; see the
+[official folder-move guide](https://developers.google.com/workspace/drive/api/guides/folder#move-files-between-folders).
+Confirm the selected folder contains
 it and that local search finds the new text. Existing-document edits should use the Docs
 `writeControl` revision check exposed by [the update schema](commands.md#drive-documents-update).
 Creating a native Doc from text is supported; uploading arbitrary local PDF/Office/media files
