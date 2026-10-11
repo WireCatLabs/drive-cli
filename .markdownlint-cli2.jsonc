@@ -5,7 +5,7 @@
     "CONTRIBUTING.md",
     "SUPPORT.md",
     "CODE_OF_CONDUCT.md",
-    "docs/commands.md",
+    "docs/*.md",
     "docs/dev/**/*.md"
   ],
   "ignores": ["node_modules", "dist", ".worktrees", "config/wirecat"],
