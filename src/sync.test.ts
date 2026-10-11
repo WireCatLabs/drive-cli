@@ -1,0 +1,195 @@
+import { createHash } from "node:crypto"
+import { readFileSync } from "node:fs"
+import { CliError } from "@wirecat/cli-core"
+import lockfile from "proper-lockfile"
+import { describe, expect, it, vi } from "vitest"
+import { readConfig, writeConfig } from "./config.js"
+import { FOLDER } from "./model.js"
+import { profileDir, readState, snapshotPath } from "./state.js"
+import { sync } from "./sync.js"
+import { content, file, fixture } from "./testing.js"
+
+describe("durable source sync", () => {
+  it("cleans a possibly indexed pending source when scope changes before recovery", async () => {
+    const f = fixture()
+    vi.mocked(f.index.save).mockImplementation(async (_principal, doc) => {
+      f.stored.set(doc.metadata.id, doc)
+      throw new Error("interrupted after index save")
+    })
+    expect((await sync(f.source, f.index, f.env, "default", 1)).pending).toBe(2)
+    const config = readConfig(f.env)
+    const profile = config.profiles.default
+    if (!profile) throw new Error("fixture profile missing")
+    profile.roots = []
+    writeConfig(f.env, config)
+    await sync(undefined, f.index, f.env, "default", 200)
+    expect(f.stored.size).toBe(0)
+  })
+  it("retains explicit skipped coverage across polls without new changes", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([file("unsupported", ["root"], "application/pdf")])
+    await sync(f.source, f.index, f.env, "default", 200)
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(readState(f.env, "default", "synthetic-principal").skipped[0]?.id).toBe("unsupported")
+  })
+  it("does not block later batches on a source that is confirmed unavailable", async () => {
+    const f = fixture()
+    vi.mocked(f.source.content).mockRejectedValue(new CliError("not_found", "source unavailable"))
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.pending).toBe(0)
+    expect(result.skipped).toHaveLength(2)
+    expect(readState(f.env, "default", "synthetic-principal").cursor).toBe("before-crawl")
+  })
+  it("evicts descendants if a selected root loses access without file events", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.metadata).mockRejectedValue(new CliError("not_found", "root unavailable"))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).removed).toBe(2)
+    expect(f.stored.size).toBe(0)
+  })
+  it("reports cancellation without misclassifying it as lock contention", async () => {
+    const f = fixture()
+    const controller = new AbortController()
+    controller.abort()
+    await expect(sync(f.source, f.index, f.env, "default", 200, controller.signal)).rejects.toMatchObject({
+      code: "cancelled",
+    })
+  })
+  it("handles overlapping selected roots without mistaking them for a cycle", async () => {
+    const f = fixture(["nested", "root"])
+    vi.mocked(f.source.metadata).mockImplementation(async (id) => file(id, id === "nested" ? ["root"] : [], FOLDER))
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root" ? [file("nested", ["root"], FOLDER)] : [file("doc-a", ["nested"])],
+    )
+    vi.mocked(f.source.content).mockResolvedValue(content(file("doc-a", ["nested"])))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("rescans from a new token when explicitly requested", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    await sync(f.source, f.index, f.env, "default", 200, undefined, true)
+    expect(f.source.startToken).toHaveBeenCalledTimes(2)
+    expect(f.source.changes).not.toHaveBeenCalled()
+  })
+  it("keeps duplicate names distinct and captures the token before crawling", async () => {
+    const f = fixture()
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.saved).toBe(2)
+    expect([...f.stored.keys()]).toEqual(["doc-a", "doc-b"])
+    const start = vi.mocked(f.source.startToken).mock.invocationCallOrder[0] as number
+    expect(start).toBeLessThan(vi.mocked(f.source.children).mock.invocationCallOrder[0] as number)
+    expect(readState(f.env, "default", "synthetic-principal").cursor).toBe("before-crawl")
+  })
+  it("resumes a bounded batch without refetching or duplicating indexed sources", async () => {
+    const f = fixture()
+    const first = await sync(f.source, f.index, f.env, "default", 1)
+    expect(first.pending).toBe(1)
+    expect(readState(f.env, "default", "synthetic-principal").cursor).toBeUndefined()
+    const second = await sync(f.source, f.index, f.env, "default", 1)
+    expect(second.pending).toBe(0)
+    expect(f.source.children).toHaveBeenCalledTimes(1)
+    expect([...f.stored.keys()]).toHaveLength(2)
+  })
+  it("retains a failed export for replay while saving other successful sources", async () => {
+    const f = fixture()
+    vi.mocked(f.source.content).mockImplementation(async (id) => {
+      if (id === "doc-a") throw new Error("fixture-secret must not escape")
+      return content(file(id))
+    })
+    const failed = await sync(f.source, f.index, f.env, "default", 200)
+    expect(failed.pending).toBe(1)
+    expect(JSON.stringify(failed)).not.toContain("fixture-secret")
+    vi.mocked(f.source.content).mockImplementation(async (id) => content(file(id)))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).pending).toBe(0)
+    expect(f.source.children).toHaveBeenCalledTimes(1)
+  })
+  it("honours removal and removes source snapshots as well as search entries", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.changes).mockResolvedValue({ items: [{ id: "doc-a", removed: true }], cursor: "after-remove" })
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.removed).toBe(1)
+    expect(f.stored.has("doc-a")).toBe(false)
+    expect(() => readFileSync(snapshotPath(f.env, "default", "doc-a"))).toThrow()
+  })
+  it("removes descendants when a folder leaves scope without document events", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root" ? [file("nested", ["root"], FOLDER)] : [file("doc-a", ["nested"])],
+    )
+    vi.mocked(f.source.content).mockResolvedValue(content(file("doc-a", ["nested"])))
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "nested", removed: false, file: file("nested", ["outside"], FOLDER) }],
+      cursor: "after-move",
+    })
+    expect((await sync(f.source, f.index, f.env, "default", 200)).removed).toBe(1)
+  })
+  it("discovers existing descendants of a folder entering scope", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([])
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "incoming", removed: false, file: file("incoming", ["root"], FOLDER) }],
+      cursor: "after-entry",
+    })
+    vi.mocked(f.source.children).mockResolvedValue([file("doc-new", ["incoming"])])
+    vi.mocked(f.source.content).mockResolvedValue(content(file("doc-new", ["incoming"])))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("does not commit incomplete discovery or delete previous sources", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "incoming", removed: false, file: file("incoming", ["root"], FOLDER) }],
+      cursor: "unsafe",
+    })
+    vi.mocked(f.source.children).mockRejectedValue(new CliError("provider_error", "incomplete listing"))
+    await expect(sync(f.source, f.index, f.env, "default", 200)).rejects.toThrow("incomplete listing")
+    expect(readState(f.env, "default", "synthetic-principal").cursor).toBe("before-crawl")
+    expect(f.stored.size).toBe(2)
+  })
+  it("metadata-only updates retain the text hash and source reference", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const renamed = { ...file("doc-a"), name: "Renamed", version: "2" }
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "doc-a", removed: false, file: renamed }],
+      cursor: "after-rename",
+    })
+    vi.mocked(f.source.content).mockResolvedValue(content(renamed))
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.unchanged).toBe(1)
+    const doc = readState(f.env, "default", "synthetic-principal").documents["doc-a"]
+    expect(doc?.hash).toBe(createHash("sha256").update("budget decision").digest("hex"))
+    expect(doc?.reference).toBe("document:doc-a")
+    expect(doc?.metadata.name).toBe("Renamed")
+  })
+  it("removing the last selected folder clears cached sources on reconciliation", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const config = readConfig(f.env)
+    const selected = config.profiles.default
+    if (!selected) throw new Error("fixture profile missing")
+    selected.roots = []
+    writeConfig(f.env, config)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).removed).toBe(2)
+  })
+  it("reports unsupported content without downloading it", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([file("binary", ["root"], "application/pdf")])
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.skipped).toHaveLength(1)
+    expect(f.source.content).not.toHaveBeenCalled()
+  })
+  it("prevents concurrent profile sync", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const release = await lockfile.lock(profileDir(f.env, "default"))
+    try {
+      await expect(sync(f.source, f.index, f.env, "default", 200)).rejects.toThrow("another sync")
+    } finally {
+      await release()
+    }
+  })
+})

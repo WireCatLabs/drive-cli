@@ -1,0 +1,74 @@
+{
+  "name": "@wirecat/drive-cli",
+  "version": "0.1.0",
+  "description": "Google Drive and Docs sync, Markdown snapshots and local search",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": "^22.16.0 || >=24"
+  },
+  "packageManager": "pnpm@11.20.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WireCatLabs/drive-cli.git"
+  },
+  "bin": {
+    "drive": "dist/bin/drive.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc --build",
+    "typecheck": "tsc --build --force --emitDeclarationOnly && tsc -p tsconfig.test.json && tsc -p tsconfig.scripts.json",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "smoke:bun": "bun scripts/smoke.ts",
+    "prepublishOnly": "pnpm build",
+    "docs:check": "pnpm docs:lint",
+    "docs:lint": "markdownlint-cli2",
+    "ci:quick": "pnpm typecheck",
+    "standards:check": "node config/wirecat/check.mjs",
+    "smoke": "node --experimental-strip-types scripts/smoke.ts",
+    "docs:spell": "cspell lint --config cspell.json --no-progress README.md",
+    "prepare": "lefthook install || true"
+  },
+  "dependencies": {
+    "@wirecat/cli-core": "0.19.4",
+    "@wirecat/cli-messaging": "0.226.0",
+    "@googleapis/drive": "26.0.2",
+    "@googleapis/docs": "14.1.0",
+    "google-auth-library": "11.2.0",
+    "commander": "15.0.0",
+    "valibot": "1.5.0",
+    "proper-lockfile": "4.1.2"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.15",
+    "@cspell/dict-en-gb": "5.0.34",
+    "@cspell/dict-ru_ru": "2.3.3",
+    "@types/node": "^22.20.5",
+    "@vitest/coverage-v8": "^5.0.3",
+    "cspell": "10.3.6",
+    "lefthook": "2.1.16",
+    "rumdl": "^0.2.78",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3",
+    "@types/proper-lockfile": "4.1.4",
+    "@cspell/dict-es-es": "3.0.9",
+    "markdownlint-cli2": "0.23.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
