@@ -43,6 +43,14 @@ const setup = () => {
   return { ...f, options, client, keyring, redirect: () => redirect }
 }
 describe("browser OAuth", () => {
+  it("requests broader permissions only when write/activity options are explicit", async () => {
+    const f = setup()
+    await login({ ...f.options, write: true, activity: true, apps: true })
+    const url = new URL(vi.mocked(f.options.showUrl).mock.calls[0]?.[0] ?? "")
+    expect(url.searchParams.get("scope")).toBe(
+      "https://www.googleapis.com/auth/drive https://www.googleapis.com/auth/drive.activity.readonly https://www.googleapis.com/auth/drive.apps.readonly",
+    )
+  })
   it("requests read-only access, exchanges PKCE and stores refresh credentials securely", async () => {
     const f = setup()
     expect(await login(f.options)).toEqual({ profile: "default", signedIn: true, storage: "keyring" })

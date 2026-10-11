@@ -1,5 +1,10 @@
 export const FOLDER = "application/vnd.google-apps.folder"
 export const DOC = "application/vnd.google-apps.document"
+export interface GoogleUser {
+  id?: string
+  email?: string
+  name?: string
+}
 export interface FileMetadata {
   id: string
   name: string
@@ -10,6 +15,11 @@ export interface FileMetadata {
   url: string
   trashed: boolean
   canDownload: boolean
+  createdAt?: string
+  description?: string
+  driveId?: string
+  owners?: GoogleUser[]
+  lastModifiedBy?: GoogleUser
 }
 export interface TabText {
   id: string
@@ -65,6 +75,7 @@ export interface SyncState {
   lastSync?: string
 }
 export interface DocumentIndex {
+  knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
   remove(principal: string, id: string): Promise<void>
   search(principal: string, query: string, options: { limit: number; offset: number; exact: boolean }): Promise<unknown>

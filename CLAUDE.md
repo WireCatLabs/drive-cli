@@ -16,7 +16,14 @@ No implicit model download or credential-file fallback.
 
 Browser login uses PKCE and state checks; its listener closes on success, failure, cancellation
 and timeout. Help, version and command discovery never load config, keyring or database. Remote
-document operations are reads. Account setup and local ingestion are explicit.
+document operations default to reads. Remote writes require an explicitly requested OAuth write
+grant; generic mutating methods also require --allow-write, and permanent deletion requires
+--allow-delete. Account setup and local ingestion are explicit. No live remote writes in tests.
+
+Shared notes, tags, relationships, identity links and memories stay in cli-messaging's public
+store APIs. AI extraction uses its public model gateway and settings schema, validates exact
+source quotes and saves agent-authored proposed memories. Source changes/removals stale those
+memories. Never automatically merge people by display name or claim complete Google edit history.
 
 Use a branch and isolated checkout. Commit hooks check staged Biome and secrets. Fast CI checks
 presets, lint, Markdown and bounded typechecking. Full validation adds tests, coverage, build,

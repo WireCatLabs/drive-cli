@@ -4,9 +4,15 @@ import { CliError } from "@wirecat/cli-core"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
-import { DOC, type FileMetadata, type GoogleSource } from "./model.js"
+import { DOC, type FileMetadata, type GoogleSource, type GoogleUser } from "./model.js"
 
-const FIELDS = "id,name,mimeType,parents,version,modifiedTime,trashed,webViewLink,capabilities(canDownload)"
+const USER_FIELDS = "permissionId,displayName,emailAddress"
+const FIELDS = `id,name,mimeType,parents,version,modifiedTime,createdTime,description,driveId,trashed,webViewLink,capabilities(canDownload),owners(${USER_FIELDS}),lastModifyingUser(${USER_FIELDS})`
+export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
+  ...(user.permissionId ? { id: user.permissionId } : {}),
+  ...(user.emailAddress ? { email: user.emailAddress } : {}),
+  ...(user.displayName ? { name: user.displayName } : {}),
+})
 const MAX_PAGES = 1000
 const MAX_BYTES = 50 * 1024 * 1024
 export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
@@ -22,6 +28,11 @@ export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
     canDownload: file.capabilities?.canDownload !== false,
     ...(file.version ? { version: file.version } : {}),
     ...(file.modifiedTime ? { modifiedAt: file.modifiedTime } : {}),
+    ...(file.createdTime ? { createdAt: file.createdTime } : {}),
+    ...(file.description ? { description: file.description } : {}),
+    ...(file.driveId ? { driveId: file.driveId } : {}),
+    ...(file.owners ? { owners: file.owners.map(userOf) } : {}),
+    ...(file.lastModifyingUser ? { lastModifiedBy: userOf(file.lastModifyingUser) } : {}),
   }
 }
 export const supported = (file: FileMetadata): boolean => {

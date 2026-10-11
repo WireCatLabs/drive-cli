@@ -4,7 +4,7 @@ import { CliError, type KeyringStore } from "@wirecat/cli-core"
 import { CodeChallengeMethod, type Credentials as GoogleTokens, OAuth2Client } from "google-auth-library"
 import { type OAuthApplication, profileName, readConfig, writeConfig } from "./config.js"
 import { googleSource } from "./google.js"
-import { READ_SCOPE, saveSession } from "./tokens.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, saveSession, WRITE_SCOPE } from "./tokens.js"
 
 export interface LoginOptions {
   env: NodeJS.ProcessEnv
@@ -18,6 +18,9 @@ export interface LoginOptions {
   signal?: AbortSignal
   makeClient?: (redirect: string) => OAuth2Client
   identity?: (client: OAuth2Client) => Promise<string>
+  write?: boolean
+  activity?: boolean
+  apps?: boolean
 }
 export const login = async (options: LoginOptions): Promise<{ profile: string; signedIn: true; storage: string }> => {
   const name = profileName(options.profile)
@@ -84,7 +87,11 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     const url = client.generateAuthUrl({
       access_type: "offline",
       prompt: "select_account consent",
-      scope: [READ_SCOPE],
+      scope: [
+        options.write ? WRITE_SCOPE : READ_SCOPE,
+        ...(options.activity ? [ACTIVITY_SCOPE] : []),
+        ...(options.apps ? [APPS_SCOPE] : []),
+      ],
       state,
       code_challenge: codeChallenge,
       code_challenge_method: CodeChallengeMethod.S256,

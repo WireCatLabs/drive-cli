@@ -15,6 +15,10 @@ An API key or service-account key does not supply this user sign-in flow.
    user while the application is in Testing. Workspace-only applications can use Internal when
    the organization permits it.
 5. In Data Access, configure the scope `https://www.googleapis.com/auth/drive.readonly`.
+   Optional write actions use `https://www.googleapis.com/auth/drive`; activity history uses
+   `https://www.googleapis.com/auth/drive.activity.readonly` and requires enabling Drive Activity API.
+   Installed-app API methods use `https://www.googleapis.com/auth/drive.apps.readonly`.
+   Declare these only when enabling the corresponding product feature.
 6. In Clients, select Create Client, choose **Desktop app**, and download its JSON.
 7. Keep that file outside the repository. Give the agent only its local path.
 
@@ -72,9 +76,10 @@ After the isolated validation passes, prepare the shared application for public 
 Google lists backup/sync among the permitted Drive application categories; our application must
 still demonstrate its actual use. See the [Drive scope requirements](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
 
-Our present CLI stores documents and embeddings locally. If a later hosted connector processes
-restricted data through our servers, Google requires an additional security assessment. Disclose
-the actual deployment and data flow; Google determines the review requirements. See
+The CLI stores documents and embeddings locally. Optional AI memory extraction sends selected
+text to the configured model endpoint. Include that flow in the privacy policy and verification
+submission. Server or third-party processing of restricted data requires a security assessment;
+disclose the actual deployment and data flow so Google can determine the review requirements. See
 [restricted-scope verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/restricted-scope-verification)
 and [brand verification](https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification).
 

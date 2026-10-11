@@ -1,4 +1,7 @@
+export { type Complete, extractMemories } from "./extraction.js"
 export { googleSource } from "./google.js"
+export { type ApiMethod, apiMethods, type GoogleApi, googleApi } from "./google-api.js"
+export type { DocumentKnowledge } from "./knowledge.js"
 export { type LoginOptions, login } from "./login.js"
 export type { DocumentContent, DocumentIndex, FileMetadata, GoogleSource, SyncState } from "./model.js"
 export { createProgram, type ProgramOptions } from "./program.js"

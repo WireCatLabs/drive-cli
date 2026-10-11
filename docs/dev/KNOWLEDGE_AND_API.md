@@ -1,0 +1,155 @@
+# Document knowledge and Google API commands
+
+Google ingestion and local knowledge use the same released WireCat document schema. Source
+documents have `document:...` references; memos use `note:...`; memories use `memory:...`.
+People use the shared `person:...` identity. Commands below accept a Google document ID or URL
+as their source argument and resolve its shared reference in the selected profile.
+
+## Tags, links and notes
+
+```sh
+drive tags add DOC_ID budget review
+drive tags list DOC_ID
+drive documents list --tag review
+drive tags remove DOC_ID review
+drive notes add DOC_ID 'Check the assumptions' --title Review
+drive notes list DOC_ID --search assumptions
+drive notes show DOC_ID note:NOTE_ID
+drive notes edit DOC_ID note:NOTE_ID 'Assumptions reviewed' --revision 1
+drive links add DOC_ID project:PROJECT_ID --kind about
+drive links list DOC_ID
+drive links remove DOC_ID LINK_ID
+drive documents context DOC_ID
+```
+
+Use the actual references returned by your store. Note edits require their latest revision to
+protect against stale edits. Local tags, memos and owner links survive document renames and
+resync. Removing a source from ingestion retains owner-created notes; its source-backed memories
+become stale. These commands do not write Google comments or Google Drive labels.
+
+Each command verifies the source belongs to the selected Google account. Note and memory
+operations also check that the item is attached to that document. Explicit links can connect
+the document to other known shared entities. The database remains isolated by default; sharing
+with memo or messenger tools requires an explicit compatible store path and aligned package pins.
+
+## Editors and history
+
+```sh
+drive people list DOC_ID
+drive people link DOC_ID GOOGLE_ID person:PERSON_UID
+drive documents list --person person:PERSON_UID
+drive documents history DOC_ID --limit 100
+drive session start --client-file /path/to/client.json --activity
+drive documents history DOC_ID --activity
+```
+
+Sync saves the owners and last modifying user that Google exposes. Their permission IDs identify
+Google identities; an available email is the fallback. Matching names does not merge people.
+Use `people link` to explicitly connect an observed Google identity to a person already known
+through another provider. The `GOOGLE_ID` comes from `people list`.
+Identity decisions are shared across the store. Linking refreshes Google-derived document
+relationships across imported Google folders; it preserves owner-added links and names.
+
+The standard history command returns a page of revision metadata, including Google's modifying
+user when available. Revision access can require an editor/owner role even with a read-only
+OAuth grant. Google's revision list can omit older revisions. Activity events use a separate
+scope and API; enable **Drive Activity API** in the application project. These events do not give
+a complete character-level diff or necessarily reveal every actor's name. See Google's
+[revision guide](https://developers.google.com/workspace/drive/api/guides/manage-revisions) and
+[Activity query reference](https://developers.google.com/workspace/drive/activity/v2/reference/rest/v2/activity/query).
+Pass a returned `nextPageToken` as `--page-token` to read another page.
+
+## Memories and AI extraction
+
+```sh
+drive memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+drive memories list DOC_ID --scope work
+drive memories show DOC_ID memory:MEMORY_ID
+drive memories confirm DOC_ID memory:MEMORY_ID
+drive memories add DOC_ID 'Corrected budget fact' --scope work --supersedes memory:MEMORY_ID
+drive memories search DOC_ID budget --scope work
+drive memories stale DOC_ID memory:MEMORY_ID
+drive models configure --provider openai --model YOUR_MODEL
+drive memories extract DOC_ID --scope work
+drive memories extract DOC_ID --scope work --tab TAB_ID --save
+```
+
+Scopes are explicitly `personal` or `work`; kinds are fact, summary, digest or preference.
+`--supersedes` replaces an earlier memory about this document; the earlier one becomes superseded.
+The shared store owns memory persistence, evidence references and search. Memory search filters
+the shared search result to this document and reports when its bounded candidate limit is reached.
+
+Extraction uses cli-messaging's public modelGateway, AI settings schema and provider adapters.
+Configure a provider/model once or use the standard `DRIVE_MODELS_MEMORIES_PROVIDER`,
+`DRIVE_MODELS_MEMORIES_MODEL` and optional `DRIVE_MODELS_MEMORIES_BASE_URL` environment settings.
+Shared defaults (`defaults.models.default`) apply when purpose-specific settings are absent.
+Anthropic and OpenAI-compatible endpoints are supported by the shared gateway. Keys come from
+`DRIVE_OPENAI_API_KEY`/`OPENAI_API_KEY` or `DRIVE_ANTHROPIC_API_KEY`/`ANTHROPIC_API_KEY`; never put
+keys in ordinary model configuration. This adapter does not import another CLI's private key files.
+
+Invoking extraction explicitly sends the chosen cached text to that configured endpoint.
+Preview is the default. `--save` stores agent-authored **proposed** memories with model identity,
+supporting quotes and the snapshot hash. Every quote must occur verbatim in the source. Invalid
+JSON, unsupported quotes, input above 50,000 characters or a changed source hash prevents saving.
+Pick a smaller tab for large documents. A quote supports review; it does not establish that the
+model interpreted the document correctly. Only an explicit confirm command approves a memory.
+The next content-changing sync or source removal stales active memories derived from that source.
+
+## Remote management and the SDK surface
+
+The pinned official clients expose 68 callable methods: 29 read methods and 39 mutating methods.
+The catalog comes from those SDK resource classes and needs no credentials or network request.
+It includes Drive v3, Docs v1 and Drive Activity v2. Upload/download streaming, a full Drive Labels
+API client, automatic revision downloads, background watches and other Workspace products are
+not implemented as product workflows. JSON methods support normal query/path parameters and
+structured request bodies; binary media upload and arbitrary transport settings are excluded.
+
+```sh
+drive api methods
+drive api methods --service docs
+drive files list --parent FOLDER_ID
+drive files get FILE_ID
+drive comments list FILE_ID
+drive permissions list FILE_ID
+drive revisions get FILE_ID REVISION_ID
+drive shared-drives
+drive session start --client-file /path/to/client.json --write
+drive files mkdir 'Research' --parent FOLDER_ID
+drive files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
+drive files move FILE_ID --to NEW_FOLDER_ID --from OLD_FOLDER_ID
+drive files update FILE_ID --body '{"name":"Renamed"}'
+drive files trash FILE_ID
+drive files restore FILE_ID
+drive documents create --title 'Planning'
+drive documents get DOC_ID
+drive documents update DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"New paragraph\n"}}]}'
+drive api call drive.about.get --params '{"fields":"user,storageQuota"}'
+drive api call docs.documents.batchUpdate --allow-write --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
+```
+
+Creation, movement and editing require the explicit `--write` grant (`drive`). Listing and
+ingestion use `drive.readonly` by default. Activity needs `--activity`; installed-app methods
+need `session start --apps` (`drive.apps.readonly`). Generating file IDs needs the write grant
+even though it is a read-style method. See Google's [apps scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/apps/list)
+and [file-ID scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/generateIds).
+
+Generic mutating calls require `--allow-write`; permanent deletion and emptyTrash additionally
+require `--allow-delete`. Convenient named commands already describe their action. Google file
+roles, domain policy and API availability remain authoritative. The SDK forwards structured Docs
+batch requests for text, formatting, tables and tabs. Use `writeControl.requiredRevisionId` from
+a live Docs read when an update must reject concurrent changes. Run sync after remote mutations
+to update local snapshots and search. All pagination commands return Google's continuation token;
+one page does not claim complete coverage.
+
+## Public application rollout
+
+Declare only the optional scopes offered by the product in Google Auth platform > Data Access.
+Optional writes broaden the app's capabilities; show and justify them in the verification demo.
+The privacy policy must describe local notes/memory retention and optional text transmission to
+the configured model provider. Google restricted-scope review must consider that AI data flow;
+server/third-party processing can require an additional security assessment. See the
+[shared application setup guide](GOOGLE_OAUTH.md) before launching these features publicly.
+
+Current automated evidence uses temporary stores, synthetic Google responses, fake OAuth
+callbacks and mocked model transport. Live Google permissions, native conversion, mutation
+behavior and real model quality remain unverified until the owner registers the application.

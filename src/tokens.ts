@@ -5,6 +5,9 @@ import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
 
 export const READ_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
+export const WRITE_SCOPE = "https://www.googleapis.com/auth/drive"
+export const ACTIVITY_SCOPE = "https://www.googleapis.com/auth/drive.activity.readonly"
+export const APPS_SCOPE = "https://www.googleapis.com/auth/drive.apps.readonly"
 const Session = v.object({
   principal: v.string(),
   clientId: v.string(),
@@ -78,13 +81,16 @@ export const authorizedClient = (
   })
   return client
 }
-export const checkAuthorization = async (client: OAuth2Client): Promise<void> => {
+export const checkAuthorization = async (client: OAuth2Client, required = READ_SCOPE): Promise<void> => {
   try {
     const { token } = await client.getAccessToken()
     if (!token) throw new CliError("authentication_error", "Google returned no access token")
     const info = await client.getTokenInfo(token)
-    if (!info.scopes.includes(READ_SCOPE))
-      throw new CliError("permission_error", "sign-in did not grant drive.readonly — run drive session start again")
+    if (!info.scopes.includes(required) && !(required === READ_SCOPE && info.scopes.includes(WRITE_SCOPE)))
+      throw new CliError(
+        "permission_error",
+        "sign-in lacks the required permission; run drive session start with --write, --activity or --apps when needed",
+      )
   } catch (error) {
     throw googleError(error)
   }

@@ -3,6 +3,9 @@
 Synthetic tests cover identity, folder scope, duplicate names, SDK pagination, all tabs, durable
 jobs, unavailable content, locking, OAuth state/PKCE, listener cleanup and shared-store retrieval.
 SDK responses are scripted at the request seam. These tests do not certify live Google exports.
+Extended workflows cover real temporary-store tags, memos, links, editor association, memory
+scope/staleness, guarded note edits, AI quote validation, extraction races, all common remote
+command mappings, SDK method discovery and explicit write/delete/scope boundaries.
 OAuth callbacks use invented codes and a memory keyring over local loopback HTTP.
 
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, DRIVE_STORE, MESSAGING_STORE
