@@ -3,6 +3,25 @@ import { openIndex } from "./store.js"
 import { content, file, fixture } from "./testing.js"
 
 describe("released shared store and search", () => {
+  it("searches document tags through the shared query language and preserves account scope", async () => {
+    const f = fixture()
+    const index = await openIndex(f.env)
+    try {
+      const tagged = await index.save("synthetic-principal", content(file("doc-a")), "hash-one")
+      await index.save("synthetic-principal", content(file("doc-b")), "hash-two")
+      const other = await index.save("other-principal", content(file("doc-c")), "hash-three")
+      await index.knowledge?.tags("synthetic-principal", tagged, "add", ["budget"])
+      await index.knowledge?.tags("other-principal", other, "add", ["budget"])
+      const result = (await index.search("synthetic-principal", "tag:budget", {
+        limit: 10,
+        offset: 0,
+        exact: true,
+      })) as { hits: { ref: string }[] }
+      expect(result.hits.map((hit) => hit.ref)).toEqual([tagged])
+    } finally {
+      await index.close()
+    }
+  })
   it("preserves note identity across edits and removes text from retrieval", async () => {
     const f = fixture()
     const index = await openIndex(f.env)

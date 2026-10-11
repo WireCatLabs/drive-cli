@@ -511,7 +511,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const commands = describeProgram(program)
       const found = path.length ? flatten(commands).filter((item) => item.path.join(" ") === path.join(" ")) : commands
       if (path.length && !found.length) throw new CliError("not_found", "command path was not found")
-      output({ items: found })
+      output({
+        items: found,
+        ...(path.length ? {} : { cli: "drive", commands, globalOptions: describeOptions(program) }),
+      })
     })
   for (const info of flatten(describeProgram(program))) {
     let command = program
