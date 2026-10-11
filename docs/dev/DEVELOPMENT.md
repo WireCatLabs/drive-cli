@@ -5,8 +5,21 @@ fixtures were pruned. Shared tooling, license, exports, lifecycle, release separ
 acceptance boundaries remain. Community presets are recorded under config/wirecat and checked
 offline by standards:check.
 
-Use Node 22.16 or newer, or Node 24. Run pnpm install and pnpm build, then bin/drive. Tests inject
-ports; production opens the released shared store implementation. No memory fallback is allowed.
+Users install the compiled package from npm; this source workflow is for contributors.
+Use Node 22.16+ on the 22.x line or Node 24+, Git and pnpm 11.20.0:
+
+```sh
+git clone https://github.com/WireCatLabs/drive-cli.git
+cd drive-cli
+pnpm install --frozen-lockfile
+pnpm build
+bin/drive --help
+```
+
+Use `bin/drive personal ...` while developing. To update a checkout, pull the branch and repeat
+installation/build. A global source link (`npm install -g .`) depends on retaining the checkout.
+
+Tests inject ports; production opens the released shared store implementation. No memory fallback is allowed.
 
 Keep Google types below the source port. Generic store/search changes belong in cli-messaging,
 through its reviewed release. Use cli-core's helpers instead of copying them. Use public exports,

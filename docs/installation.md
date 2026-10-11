@@ -7,36 +7,63 @@ tokens into the terminal or an agent conversation.
 
 ## Install the tool
 
-The current distribution is a source checkout. You need Git, pnpm and Node.js 22.16+ on the
-22.x line or Node.js 24+. Open a terminal on the computer where your agent runs:
+The npm package is prepared for its first publication. Until that release is published,
+`npm install -g @wirecat/drive-cli` returns “package not found”. The application owner publishes
+it once; users then install the compiled command with the instructions below. Building a source
+checkout belongs to [development](dev/DEVELOPMENT.md).
+
+You need [Node.js](https://nodejs.org/en/download) 22.16+ on the 22.x line or Node.js 24+.
+Open a terminal on the computer where your agent runs:
 
 ```sh
-git clone https://github.com/WireCatLabs/drive-cli.git
-cd drive-cli
-pnpm install --frozen-lockfile
-pnpm build
-npm install -g .
+npm install -g @wirecat/drive-cli
+drive --version
 drive --help
 ```
 
-The last command should display Drive's commands. Keep the checkout because the global command
-uses it. To update, run `git pull` there and repeat installation/build. On Windows, use `npm.cmd`
-if PowerShell blocks `npm.ps1`. If an agent handles installation, ask:
+The package contains compiled JavaScript. Users do not need Git, pnpm or a source build.
+`drive --help` should display the commands. Installation does not sign in or import documents.
+On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Reopen the terminal or agent if it
+cannot find `drive` after installation.
+
+If you already use pnpm or Bun, choose one of these alternatives:
+
+```sh
+pnpm add -g @wirecat/drive-cli
+bun add -g @wirecat/drive-cli
+```
+
+To try the command without a global installation:
+
+```sh
+npx @wirecat/drive-cli --help
+```
+
+To update, repeat `npm install -g @wirecat/drive-cli`. To remove the command:
+
+```sh
+npm uninstall -g @wirecat/drive-cli
+```
+
+Removal leaves your local configuration, credentials and indexed documents in place. To forget
+a Google sign-in first, run `drive personal session end` for each connected profile.
+
+If an agent handles installation, ask:
 
 ```text prompt
-Help me install drive CLI from https://github.com/WireCatLabs/drive-cli using its installation
-instructions. Check Git, Node.js and pnpm. Ask me for the profile name and Google folder.
-I will approve sign-in in my browser. Do not request tokens or credential contents in chat.
+Install @wirecat/drive-cli from npm and check drive --help. Ask me for the profile name and
+Google folder. Follow the Google connection guide; I will approve sign-in in my browser.
+Do not request tokens or credential contents in chat.
 ```
 
 See the [official Drive repository installation instructions](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
-for source installation and updates.
+for installation, updates and Google connection.
 
 ## Choose how to connect
 
 Using **WireCat's shared Google application** means users approve their own accounts in the
 browser; only the application owner sets up Google Cloud. That is the intended default connection
-path. The current source distribution does not bundle that client identity yet, so today you
+path. The CLI does not bundle that client identity yet, so today you
 need a Desktop client JSON supplied by the app owner or one you create yourself below.
 
 If the owner supplied a Desktop client JSON, skip Google Cloud setup and go to
