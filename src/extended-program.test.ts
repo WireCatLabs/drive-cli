@@ -20,7 +20,7 @@ describe("document knowledge commands", () => {
     const call = async (...args: string[]) => {
       const streams = captureStreams()
       await createProgram({ env: f.env, streams, source: async () => f.source, complete }).parseAsync(
-        [...args, "--json"],
+        ["default", ...args, "--json"],
         { from: "user" },
       )
       return JSON.parse(streams.stdout.join(""))
@@ -69,7 +69,7 @@ describe("document knowledge commands", () => {
   it("refuses stale extraction results after the source changes while the model is running", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source }
-    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["sync"], { from: "user" })
+    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
     const complete = async () => {
       const { readState, saveState } = await import("./state.js")
       const state = readState(f.env, "default", "synthetic-principal")
@@ -79,7 +79,7 @@ describe("document knowledge commands", () => {
     }
     await expect(
       createProgram({ ...options, complete, streams: captureStreams() }).parseAsync(
-        ["memories", "extract", "doc-a", "--scope", "work", "--save"],
+        ["default", "memories", "extract", "doc-a", "--scope", "work", "--save"],
         { from: "user" },
       ),
     ).rejects.toThrow("source changed")
@@ -146,7 +146,9 @@ describe("remote action commands", () => {
     const f = fixture()
     const call = vi.fn(async () => ({ synthetic: true }))
     const streams = captureStreams()
-    await createProgram({ env: f.env, streams, api: { call } }).parseAsync([...args, "--json"], { from: "user" })
+    await createProgram({ env: f.env, streams, api: { call } }).parseAsync(["default", ...args, "--json"], {
+      from: "user",
+    })
     expect(call).toHaveBeenCalledWith(
       method,
       expect.objectContaining(params),
@@ -157,9 +159,12 @@ describe("remote action commands", () => {
     const f = fixture()
     const request = vi.fn(async () => ({}))
     const call = (...args: string[]) =>
-      createProgram({ env: f.env, streams: captureStreams(), api: { call: request } }).parseAsync(args, {
-        from: "user",
-      })
+      createProgram({ env: f.env, streams: captureStreams(), api: { call: request } }).parseAsync(
+        ["default", ...args],
+        {
+          from: "user",
+        },
+      )
     await call("api", "methods", "--service", "docs")
     await expect(call("api", "call", "drive.files.delete", "--params", '{"fileId":"doc-a"}')).rejects.toThrow(
       "allow-write",
@@ -188,7 +193,9 @@ describe("remote action commands", () => {
       [["memories", "extract"], false],
     ] as const) {
       const streams = captureStreams()
-      await createProgram({ env: f.env, streams }).parseAsync(["commands", ...path, "--json"], { from: "user" })
+      await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", ...path, "--json"], {
+        from: "user",
+      })
       expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ mutates: true, local })
     }
   })

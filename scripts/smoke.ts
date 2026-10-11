@@ -66,7 +66,7 @@ assert.equal(registry.items[0].name, "sync")
 assert.equal(registry.items[0].mutates, true)
 let failed = false
 try {
-  run(["status", "--json"])
+  run(["synthetic", "status", "--json"])
 } catch (error) {
   failed = true
   assert.equal(JSON.parse(String((error as { stderr?: unknown }).stderr).trim()).error.code, "configuration_error")

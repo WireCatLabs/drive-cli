@@ -19,7 +19,7 @@ spec/google/*.json + provenance.json
 ```sh
 pnpm generate
 pnpm generate:check
-bin/drive api drive-files-get --help
+bin/drive personal api drive-files-get --help
 bin/drive schema docs.documents.batchUpdate --json
 ```
 
@@ -44,11 +44,11 @@ then defaults. `readOnly` prevents mutation even when another level allows it. H
 as command discovery and owner configuration remains available so a policy can be inspected/fixed.
 
 ```sh
-drive config set permissions.files '"readonly"' --defaults
-drive config set permissions.api.drive.files.delete '"ask"' --defaults
-drive config set models.memories.provider '"openai"' --defaults
-drive --read-only documents list
-drive --dry-run api drive-files-get --file-id synthetic-doc --json
+drive personal config set permissions.files '"readonly"' --defaults
+drive personal config set permissions.api.drive.files.delete '"ask"' --defaults
+drive personal config set models.memories.provider '"openai"' --defaults
+drive personal --read-only documents list
+drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
 ```
 
 The dry-run file ID above is explicitly synthetic: it validates and previews without calling
@@ -78,8 +78,8 @@ Google actions and AI extraction; cached-document and knowledge reads remain ava
 ```sh
 drive complete zsh
 drive complete -- api drive-files-g
-drive --read-only mcp --tools --json
-drive --read-only mcp
+drive personal --read-only mcp --tools --json
+drive personal --read-only mcp
 ```
 
 Completion uses cli-core's registry and suggestion engine plus the same shell-script library as
@@ -120,3 +120,12 @@ Differences that remain: this CLI has Google-specific profile/state configuratio
 registry-to-MCP adapter because shared messenger/bot factories require messenger capabilities.
 There is no HTTP MCP/OAuth hosting, Windows installer suite, messenger parity mapping, full
 media-upload workflow or automatic background watches. Those are not reported as MAX parity.
+
+## Explicit profiles
+
+Drive reuses the shared `commandWords`, `liftProfile`, `refuseCommandName` and `usableProfileName`
+helpers used by MAX. Account actions require an explicit first-word profile or `--profile`;
+legacy config/environment defaults are ignored and repeated/conflicting selectors are rejected.
+Help/version and account-independent discovery remain configuration-free. MAX's inspected shared
+parser still permits an implicit default; Drive intentionally enforces the owner's stricter
+cross-CLI account-selection requirement. No account records are renamed or migrated.

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Require an explicit profile for account operations; ignore implicit environment/config defaults,
+  reject conflicting selectors and reuse MAX-compatible profile-name validation.
+- Expand task recipes, file-format/storage explanations and profile-aware command reference.
+
+
 - Resolve Google Discovery documentation links to Google's site in generated references.
 
 - Add source-install user guides for ingestion, search, tags, notes, memories and local MCP.

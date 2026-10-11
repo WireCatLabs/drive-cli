@@ -1,17 +1,17 @@
 # Settings
 
-Choose the account, storage and allowed actions for the way you use Drive. Defaults keep its
+Choose storage and allowed actions for the way you use Drive. Defaults keep its
 database separate from your messenger archive; sharing data is an explicit choice.
 
 ```sh
-drive config show --json
-drive --profile work config show --json
-drive config set readOnly true --defaults
+drive personal config show --json
+drive work config show --json
+drive personal config set readOnly true --defaults
 ```
 
 | Setting | Purpose |
 | --- | --- |
-| `--profile NAME` | Select the account profile for this invocation. |
+| `drive NAME …` or `--profile NAME` | Explicit account selection is required. `DRIVE_PROFILE` and legacy `defaultProfile` do not select an account. |
 | `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR`, `DRIVE_CACHE_DIR` | Override configuration, snapshot/state and tool-cache locations. |
 | `CLI_COMMON_CACHE_DIR` | Override the shared local search-model cache; use the same setting when downloading and embedding. |
 | `DRIVE_STORE` | Explicit database path. Back up an existing store and use compatible shared package versions before opening it with another tool. |
@@ -28,9 +28,9 @@ not combine logins, Google permissions or selected folders.
 The shared AI settings select the provider and model used for memory extraction:
 
 ```sh
-drive config set models.memories.provider '"openai"' --defaults
-drive config set models.memories.model '"YOUR_MODEL_ID"' --defaults
-drive config show --json
+drive personal config set models.memories.provider '"openai"' --defaults
+drive personal config set models.memories.model '"YOUR_MODEL_ID"' --defaults
+drive personal config show --json
 ```
 
 Replace `YOUR_MODEL_ID` with your provider's identifier. Supply the provider key through its

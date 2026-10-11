@@ -16,11 +16,26 @@ search. Check the failed step before changing accounts or widening permissions.
 | A link target cannot be found | Use a reference from the selected database. Check explicit store sharing before linking to messenger people/projects. |
 
 ```sh
-drive status --json
-drive folders list --json
-drive sync --json
-drive search 'known word' --exact --json
+drive personal status --json
+drive personal folders list --json
+drive personal sync --json
+drive personal search 'known word' --exact --json
 ```
 
 Share the sanitized error code and command when asking for help. Do not include client JSON,
 tokens or private document text. Once the expected source appears, return to [search](search.md).
+
+## “Choose a profile explicitly”
+
+Run the command as `drive personal …` or `drive --profile personal …`, replacing `personal` with
+the account name you chose. The error lists configured profile names. Neither `DRIVE_PROFILE`
+nor an old saved default bypasses selection. For the first connection, follow
+[sign-in](installation.md#connect-your-account). For existing profiles, `drive personal session list`
+shows all configured names.
+
+## Google Cloud setup is confusing
+
+Enabling an API does not create an OAuth client. Configure **Google Auth platform → Branding**,
+add your account under **Audience → Test users**, then create **Clients → Desktop app** and
+download its JSON. Follow the [console walkthrough](installation.md#prepare-google-sign-in).
+Use a Desktop client JSON, not an API key or service-account key.

@@ -2,7 +2,14 @@
   "command": "node",
   "args": ["../dist/bin/drive.js"],
   "cases": [
-    { "id": "help", "args": ["--help"], "exit": 0, "stream": "stdout", "kind": "text", "snapshot": "help.snap" },
+    {
+      "id": "help",
+      "args": ["--help"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "text",
+      "snapshot": "help.snap"
+    },
     {
       "id": "discovery",
       "args": ["commands", "api", "drive-files-get", "--json"],
@@ -21,7 +28,7 @@
     },
     {
       "id": "missing-generated-id",
-      "args": ["api", "drive-files-get"],
+      "args": ["default", "api", "drive-files-get"],
       "exit": 2,
       "stream": "stderr",
       "kind": "json",
@@ -29,7 +36,7 @@
     },
     {
       "id": "readonly-before-auth",
-      "args": ["--read-only", "files", "copy", "synthetic-doc"],
+      "args": ["default", "--read-only", "files", "copy", "synthetic-doc"],
       "exit": 5,
       "stream": "stderr",
       "kind": "json",
@@ -37,12 +44,27 @@
     },
     {
       "id": "dry-run-before-auth",
-      "args": ["--dry-run", "api", "drive-files-get", "--file-id", "synthetic-doc", "--json"],
+      "args": ["default", "--dry-run", "api", "drive-files-get", "--file-id", "synthetic-doc", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",
-      "json": { "dryRun": true, "method": "drive.files.get" }
+      "json": {
+        "dryRun": true,
+        "method": "drive.files.get"
+      }
+    },
+    {
+      "id": "missing-explicit-profile",
+      "args": ["status", "--json"],
+      "exit": 2,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "validation_error",
+      "contains": "choose a profile explicitly"
     }
   ],
-  "mcp": { "args": ["--read-only", "mcp"], "snapshot": "mcp-tools.json" }
+  "mcp": {
+    "args": ["default", "--read-only", "mcp"],
+    "snapshot": "mcp-tools.json"
+  }
 }

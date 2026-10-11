@@ -2,7 +2,7 @@
 
 # Drive commands
 
-Command and option reference for the built Drive CLI.
+Look up every supported command and option here. Account operations require an explicit profile: `drive personal documents show DOC_ID` or `drive --profile personal documents show DOC_ID`. Help, discovery, API method listings, schemas and shell completion do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.
 
 ## Global options
 
@@ -11,7 +11,7 @@ These options apply to the selected profile and current invocation.
 | Option | What it does |
 |---|---|
 | `-V, --version` | output the version number. |
-| `--profile <name>` | Google account profile. Default: `default`. |
+| `--profile <name>` | explicit Google account profile (alternative to the first word). |
 | `--json` | print machine-readable JSON. |
 | `--jsonl` | print machine-readable JSON lines. |
 | `--agent-json` | show control and direction characters visibly in machine output. |

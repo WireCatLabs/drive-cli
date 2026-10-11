@@ -19,7 +19,7 @@ Remote edits require reconnecting with `session start --write`. Permanent deleti
 confirmation controls. Use `--read-only` when the task is to inspect existing data. Google roles
 and organization policies still apply; a local guard does not control actions outside this tool.
 
-`drive session end` removes local sign-in but retains cached documents and settings. Revoke the
+`drive personal session end` removes local sign-in but retains cached documents and settings. Revoke the
 application in your Google Account to remove its Google access. To remove cached data, first
 identify this tool's directories and database; do not delete a database shared with other tools.
 Read [settings](configuration.md) before changing storage.

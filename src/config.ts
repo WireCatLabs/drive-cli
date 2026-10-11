@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-core"
-import { AI_ENTRIES } from "@wirecat/cli-messaging/cli"
+import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-messaging/cli"
 import { LEVELS } from "@wirecat/cli-messaging/sends"
 import * as v from "valibot"
 
@@ -35,11 +35,7 @@ export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
   if (!checked.success) throw new CliError("configuration_error", "drive settings are invalid; no values were logged")
   saveConfigFile(join(paths(env).config, "config.json"), checked.output)
 }
-export const profileName = (name: string): string => {
-  if (!/^[a-z][a-z0-9-]{0,63}$/.test(name))
-    throw new CliError("validation_error", "profile uses lowercase letters, digits and hyphens")
-  return name
-}
+export const profileName = usableProfileName
 export const fileId = (input: string): string => {
   let id = input
   if (input.startsWith("https://")) {
@@ -54,10 +50,7 @@ export const fileId = (input: string): string => {
 export const activeProfile = (env: NodeJS.ProcessEnv, name: string) => {
   const profile = readConfig(env).profiles[profileName(name)]
   if (!profile)
-    throw new CliError(
-      "authentication_error",
-      `profile ${name} is not signed in — drive session start --profile ${name}`,
-    )
+    throw new CliError("authentication_error", `profile ${name} is not signed in — drive ${name} session start`)
   return profile
 }
 export interface OAuthApplication {

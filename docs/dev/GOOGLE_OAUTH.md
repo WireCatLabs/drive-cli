@@ -6,10 +6,12 @@ their own access; each installation stores its own refresh token. Users do not n
 Cloud project or client JSON once our registered client identity is included in the release.
 An API key or service-account key does not supply this user sign-in flow.
 
+For a click-by-click console walkthrough, use [installation](../installation.md#prepare-google-sign-in).
+
 ## Create the application credentials
 
 1. Select a project in [Google Cloud Console](https://console.cloud.google.com/).
-2. Enable **Google Drive API** and **Google Docs API** in APIs & Services > Library.
+2. Enable **Google Drive API**, **Google Docs API** and **Google Drive Activity API** in APIs & Services > Library.
 3. Configure Google Auth platform > Branding with the application name and support details.
 4. For a personal Google account, choose External in Audience and add your account as a test
    user while the application is in Testing. Workspace-only applications can use Internal when
@@ -91,10 +93,10 @@ reach its loopback listener. A CLI on a remote server needs an appropriate callb
 The intended released user flow is:
 
 ```sh
-drive session start
-drive folders add https://drive.google.com/drive/folders/FOLDER_ID
-drive sync
-drive search 'project decision'
+drive personal session start
+drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
+drive personal sync
+drive personal search 'project decision'
 ```
 
 Only the application owner performs Google Cloud setup. Each user chooses their own Google
@@ -127,7 +129,7 @@ is requested; it contains the documents selected for this run.
 Choose a disposable folder containing synthetic documents. Include a Google Doc with two tabs,
 a nested tab, a heading, a table and a footnote; give each tab a distinct searchable phrase.
 Include a nested folder and two documents with the same title. Prepare and edit these fixtures
-in Google Drive itself: the CLI's remote operations are read-only.
+in Google Drive itself; this validation connects with a read-only grant.
 
 ```sh
 bin/drive --profile validation folders add https://drive.google.com/drive/folders/FOLDER_ID

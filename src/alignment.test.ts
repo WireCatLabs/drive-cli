@@ -42,14 +42,17 @@ describe("schema-generated Google contracts", () => {
     const request = vi.fn(async () => ({ id: "doc-a" }))
     const streams = captureStreams()
     await createProgram({ env: f.env, streams, api: { call: request } }).parseAsync(
-      ["api", "drive-files-get", "--file-id", "doc-a"],
+      ["default", "api", "drive-files-get", "--file-id", "doc-a"],
       { from: "user" },
     )
     expect(request).toHaveBeenCalledWith("drive.files.get", { fileId: "doc-a" }, undefined)
     const registry = captureStreams()
-    await createProgram({ env: f.env, streams: registry }).parseAsync(["commands", "api", "drive-files-get"], {
-      from: "user",
-    })
+    await createProgram({ env: f.env, streams: registry }).parseAsync(
+      ["default", "commands", "api", "drive-files-get"],
+      {
+        from: "user",
+      },
+    )
     expect(JSON.parse(registry.stdout.join("")).items[0]).toMatchObject({
       origin: "generated",
       operationId: "drive.files.get",
@@ -57,7 +60,7 @@ describe("schema-generated Google contracts", () => {
     })
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
-        ["api", "drive-files-list", "--page-size", "1001"],
+        ["default", "api", "drive-files-list", "--page-size", "1001"],
         { from: "user" },
       ),
     ).rejects.toThrow("1000")
@@ -69,20 +72,20 @@ describe("shared CLI policy and execution", () => {
     const request = vi.fn(async () => ({ text: "budget\u202eunsafe" }))
     const streams = captureStreams()
     await createProgram({ env: f.env, api: { call: request }, streams }).parseAsync(
-      ["--agent-json", "files", "get", "doc-a"],
+      ["default", "--agent-json", "files", "get", "doc-a"],
       { from: "user" },
     )
     expect(streams.stdout.join("")).not.toContain("\u202e")
     const bounded = captureStreams()
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: bounded }).parseAsync(
-        ["--max-output-bytes", "4", "files", "get", "doc-a"],
+        ["default", "--max-output-bytes", "4", "files", "get", "doc-a"],
         { from: "user" },
       ),
     ).rejects.toThrow("byte limit")
     expect(bounded.stdout).toEqual([])
     await createProgram({ env: f.env, streams: captureStreams() }).parseAsync(
-      ["config", "set", "permissions.files", '"readonly"', "--defaults"],
+      ["default", "config", "set", "permissions.files", '"readonly"', "--defaults"],
       { from: "user" },
     )
     expect(readConfig(f.env).defaults?.permissions?.files).toBe("readonly")
@@ -100,9 +103,12 @@ describe("shared CLI policy and execution", () => {
       ["api", "drive-files-copy", "--file-id", "doc-a"],
     ]) {
       await expect(
-        createProgram({ env: f.env, api: { call: request }, index, streams: captureStreams() }).parseAsync(args, {
-          from: "user",
-        }),
+        createProgram({ env: f.env, api: { call: request }, index, streams: captureStreams() }).parseAsync(
+          ["default", ...args],
+          {
+            from: "user",
+          },
+        ),
       ).rejects.toThrow("policy")
     }
     expect(request).not.toHaveBeenCalled()
@@ -111,7 +117,7 @@ describe("shared CLI policy and execution", () => {
     writeConfig(f.env, config)
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
-        ["api", "drive-files-copy", "--file-id", "doc-a"],
+        ["default", "api", "drive-files-copy", "--file-id", "doc-a"],
         { from: "user" },
       ),
     ).rejects.toThrow("policy")
@@ -119,7 +125,7 @@ describe("shared CLI policy and execution", () => {
     writeConfig(f.env, config)
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
-        ["files", "get", "doc-a"],
+        ["default", "files", "get", "doc-a"],
         { from: "user" },
       ),
     ).rejects.toThrow("policy")
@@ -129,10 +135,12 @@ describe("shared CLI policy and execution", () => {
     const request = vi.fn(async () => ({}))
     const run = async (...args: string[]) => {
       const streams = captureStreams()
-      await createProgram({ env: f.env, api: { call: request }, streams }).parseAsync(args, { from: "user" })
+      await createProgram({ env: f.env, api: { call: request }, streams }).parseAsync(["default", ...args], {
+        from: "user",
+      })
       return streams.stdout.join("")
     }
-    await run("default", "config", "set", "permissions", '{"api":"readonly"}', "--defaults")
+    await run("config", "set", "permissions", '{"api":"readonly"}', "--defaults")
     expect(readConfig(f.env).defaults?.permissions?.api).toBe("readonly")
     expect(await run("complete", "--", "fil")).toContain("files")
     await expect(run("--offline", "files", "get", "doc-a")).rejects.toThrow("offline")
@@ -153,7 +161,7 @@ describe("shared CLI policy and execution", () => {
     const ask = vi.fn(async () => true)
     const request = vi.fn(async () => ({ id: "created" }))
     await createProgram({ env: f.env, ask, api: { call: request }, streams: captureStreams() }).parseAsync(
-      ["documents", "create", "--title", "private-synthetic-title"],
+      ["default", "documents", "create", "--title", "private-synthetic-title"],
       { from: "user" },
     )
     expect(ask).toHaveBeenCalledOnce()
@@ -162,12 +170,12 @@ describe("shared CLI policy and execution", () => {
     expect(journal).not.toContain("private-synthetic-title")
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
-        ["api", "drive-files-delete", "--file-id", "doc-a"],
+        ["default", "api", "drive-files-delete", "--file-id", "doc-a"],
         { from: "user" },
       ),
     ).rejects.toThrow("allow-dangerous")
     await createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
-      ["--allow-dangerous", "api", "drive-files-delete", "--file-id", "doc-a"],
+      ["default", "--allow-dangerous", "api", "drive-files-delete", "--file-id", "doc-a"],
       { from: "user" },
     )
   })
