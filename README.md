@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/WireCatLabs/drive-cli/main/docs/images/social-preview.png" alt="Google Drive for your AI agents: Docs as local Markdown, search with sources" width="100%">
+
 # drive-cli
 
 `drive` imports selected Google Drive folders into local Markdown snapshots and searchable
