@@ -145,7 +145,7 @@ drive personal sync --json
 
 Replace `NEW_DOC_ID` with the create response's `documentId`. Confirm the selected folder contains
 it and that local search finds the new text. Existing-document edits should use the Docs
-`writeControl` revision check exposed by [the update schema](commands.md#documents-update).
+`writeControl` revision check exposed by [the update schema](commands.md#drive-documents-update).
 Creating a native Doc from text is supported; uploading arbitrary local PDF/Office/media files
 or converting local Markdown into a formatted Doc is not an implemented upload workflow.
 
