@@ -61,7 +61,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const program = new Command("drive")
     .description("Manage Google Drive and Docs, local Markdown, shared knowledge and search")
     .version(VERSION)
-    .option("--profile <name>", "Google account profile", env.DRIVE_PROFILE ?? "default")
+    .usage("<profile> [options] <command>")
+    .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
     .option("--json", "print machine-readable JSON")
     .option("--jsonl", "print machine-readable JSON lines")
     .option("--agent-json", "show control and direction characters visibly in machine output")
@@ -87,12 +88,21 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       outputError: () => undefined,
     })
     .exitOverride()
-  const selected = () =>
-    profileName(
-      program.getOptionValueSource("profile") === "default" && !env.DRIVE_PROFILE
-        ? (readConfig(env).defaultProfile ?? program.opts<{ profile: string }>().profile)
-        : program.opts<{ profile: string }>().profile,
-    )
+  const selected = (): string => {
+    const name = program.opts<{ profile?: string }>().profile
+    if (!name) {
+      const choices = Object.keys(readConfig(env).profiles).sort()
+      throw new CliError(
+        "validation_error",
+        "choose a profile explicitly: drive <profile> <command> or drive --profile <name> <command>; " +
+          (choices.length
+            ? `configured profiles: ${choices.join(", ")}`
+            : "no profiles configured; connect with drive personal session start"),
+        { profiles: choices },
+      )
+    }
+    return profileName(name)
+  }
   let currentAction: Command | undefined
   let activeSignal = options.signal
   let deadline: ReturnType<typeof createDeadline> | undefined
@@ -188,6 +198,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .description("Configured account profiles; no credentials are printed")
     .action(() =>
       output({
+        scope: "all-configured-profiles",
         items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
           profile: name,
           selectedFolders: p.roots.length,
@@ -241,7 +252,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       profile.roots = profile.roots.filter((root) => root !== id)
       config.profiles[name] = profile
       writeConfig(env, config)
-      output({ id, removed: true, next: "run drive sync to reconcile cached sources" })
+      output({ id, removed: true, next: `run drive ${name} sync to reconcile cached sources` })
     })
   program
     .command("sync")
@@ -257,7 +268,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }))
       output(result)
       if (result.errors.length || result.pending)
-        streams.diagnostic(`${result.pending} source operations remain; run drive sync again\n`)
+        streams.diagnostic(`${result.pending} source operations remain; run drive ${selected()} sync again\n`)
       if (result.errors.length)
         throw new CliError("provider_error", "sync completed partially; failed operations remain pending")
     })
@@ -577,6 +588,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     }
     const path = pathOf(action)
     const words = path.join(" ")
+    // Discovery is account-independent and must not load config, credentials or the store.
+    if (["commands", "complete", "schema", "api methods"].includes(words)) return
+    selected()
     if (["commands", "complete", "schema", "config show", "config set", "session list"].includes(words)) return
     const flags = policyFlags()
     const metadata = metaOf(action)
@@ -629,6 +643,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
     const args = settings?.from === "user" ? argv : argv.slice(2)
     const lifted = liftProfile([...args], commandWords(program))
+    // Refuse conflicting/repeated selectors rather than letting Commander pick the last one.
+    const flags = lifted.rest.slice(0, lifted.rest.indexOf("--") < 0 ? lifted.rest.length : lifted.rest.indexOf("--"))
+    const selectors = flags.filter((arg) => arg === "--profile" || arg.startsWith("--profile="))
+    if (selectors.length > 1 || (lifted.profile && selectors.length))
+      throw new CliError("validation_error", "select a profile once: use the first word or --profile")
     const rest = lifted.profile ? ["--profile", profileName(lifted.profile), ...lifted.rest] : lifted.rest
     try {
       const running = parse([...prefix, ...rest], settings)

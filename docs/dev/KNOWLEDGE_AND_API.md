@@ -8,18 +8,18 @@ as their source argument and resolve its shared reference in the selected profil
 ## Tags, links and notes
 
 ```sh
-drive tags add DOC_ID budget review
-drive tags list DOC_ID
-drive documents list --tag review
-drive tags remove DOC_ID review
-drive notes add DOC_ID 'Check the assumptions' --title Review
-drive notes list DOC_ID --search assumptions
-drive notes show DOC_ID note:NOTE_ID
-drive notes edit DOC_ID note:NOTE_ID 'Assumptions reviewed' --revision 1
-drive links add DOC_ID project:PROJECT_ID --kind about
-drive links list DOC_ID
-drive links remove DOC_ID LINK_ID
-drive documents context DOC_ID
+drive personal tags add DOC_ID budget review
+drive personal tags list DOC_ID
+drive personal documents list --tag review
+drive personal tags remove DOC_ID review
+drive personal notes add DOC_ID 'Check the assumptions' --title Review
+drive personal notes list DOC_ID --search assumptions
+drive personal notes show DOC_ID note:NOTE_ID
+drive personal notes edit DOC_ID note:NOTE_ID 'Assumptions reviewed' --revision 1
+drive personal links add DOC_ID project:PROJECT_ID --kind about
+drive personal links list DOC_ID
+drive personal links remove DOC_ID LINK_ID
+drive personal documents context DOC_ID
 ```
 
 Use the actual references returned by your store. Note edits require their latest revision to
@@ -35,12 +35,12 @@ with memo or messenger tools requires an explicit compatible store path and alig
 ## Editors and history
 
 ```sh
-drive people list DOC_ID
-drive people link DOC_ID GOOGLE_ID person:PERSON_UID
-drive documents list --person person:PERSON_UID
-drive documents history DOC_ID --limit 100
-drive session start --client-file /path/to/client.json --activity
-drive documents history DOC_ID --activity
+drive personal people list DOC_ID
+drive personal people link DOC_ID GOOGLE_ID person:PERSON_UID
+drive personal documents list --person person:PERSON_UID
+drive personal documents history DOC_ID --limit 100
+drive personal session start --client-file /path/to/client.json --activity
+drive personal documents history DOC_ID --activity
 ```
 
 Sync saves the owners and last modifying user that Google exposes. Their permission IDs identify
@@ -62,16 +62,16 @@ Pass a returned `nextPageToken` as `--page-token` to read another page.
 ## Memories and AI extraction
 
 ```sh
-drive memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
-drive memories list DOC_ID --scope work
-drive memories show DOC_ID memory:MEMORY_ID
-drive memories confirm DOC_ID memory:MEMORY_ID
-drive memories add DOC_ID 'Corrected budget fact' --scope work --supersedes memory:MEMORY_ID
-drive memories search DOC_ID budget --scope work
-drive memories stale DOC_ID memory:MEMORY_ID
-drive models configure --provider openai --model YOUR_MODEL
-drive memories extract DOC_ID --scope work
-drive memories extract DOC_ID --scope work --tab TAB_ID --save
+drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+drive personal memories list DOC_ID --scope work
+drive personal memories show DOC_ID memory:MEMORY_ID
+drive personal memories confirm DOC_ID memory:MEMORY_ID
+drive personal memories add DOC_ID 'Corrected budget fact' --scope work --supersedes memory:MEMORY_ID
+drive personal memories search DOC_ID budget --scope work
+drive personal memories stale DOC_ID memory:MEMORY_ID
+drive personal models configure --provider openai --model YOUR_MODEL
+drive personal memories extract DOC_ID --scope work
+drive personal memories extract DOC_ID --scope work --tab TAB_ID --save
 ```
 
 Scopes are explicitly `personal` or `work`; kinds are fact, summary, digest or preference.
@@ -108,24 +108,24 @@ structured request bodies; binary media upload and arbitrary transport settings 
 ```sh
 drive api methods
 drive api methods --service docs
-drive files list --parent FOLDER_ID
-drive files get FILE_ID
-drive comments list FILE_ID
-drive permissions list FILE_ID
-drive revisions get FILE_ID REVISION_ID
+drive personal files list --parent FOLDER_ID
+drive personal files get FILE_ID
+drive personal comments list FILE_ID
+drive personal permissions list FILE_ID
+drive personal revisions get FILE_ID REVISION_ID
 drive shared-drives
-drive session start --client-file /path/to/client.json --write
-drive files mkdir 'Research' --parent FOLDER_ID
-drive files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
-drive files move FILE_ID --to NEW_FOLDER_ID --from OLD_FOLDER_ID
-drive files update FILE_ID --body '{"name":"Renamed"}'
-drive files trash FILE_ID
-drive files restore FILE_ID
-drive documents create --title 'Planning'
-drive documents get DOC_ID
-drive documents update DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"New paragraph\n"}}]}'
-drive api call drive.about.get --params '{"fields":"user,storageQuota"}'
-drive api call docs.documents.batchUpdate --allow-write --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
+drive personal session start --client-file /path/to/client.json --write
+drive personal files mkdir 'Research' --parent FOLDER_ID
+drive personal files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
+drive personal files move FILE_ID --to NEW_FOLDER_ID --from OLD_FOLDER_ID
+drive personal files update FILE_ID --body '{"name":"Renamed"}'
+drive personal files trash FILE_ID
+drive personal files restore FILE_ID
+drive personal documents create --title 'Planning'
+drive personal documents get DOC_ID
+drive personal documents update DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"New paragraph\n"}}]}'
+drive personal api call drive.about.get --params '{"fields":"user,storageQuota"}'
+drive personal api call docs.documents.batchUpdate --allow-write --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
 ```
 
 Creation, movement and editing require the explicit `--write` grant (`drive`). Listing and

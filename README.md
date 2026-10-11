@@ -27,9 +27,9 @@ For development, enable the Drive and Docs APIs in your Google Cloud project and
 **Desktop** OAuth client. Download its client JSON, then:
 
 ```sh
-bin/drive session start --client-file /path/to/desktop-client.json
-bin/drive folders add https://drive.google.com/drive/folders/FOLDER_ID
-bin/drive sync --json
+bin/drive personal session start --client-file /path/to/desktop-client.json
+bin/drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
+bin/drive personal sync --json
 ```
 
 For Google Cloud setup and an isolated first run, follow the
@@ -56,12 +56,12 @@ configuration so re-login preserves document identities.
 ## Search and export
 
 ```sh
-bin/drive search 'budget decision' --json
-bin/drive search 'budget' --exact --json
-bin/drive documents list --json
-bin/drive documents show DOC_ID --json
-bin/drive documents export DOC_ID --out ./document.md
-bin/drive status --json
+bin/drive personal search 'budget decision' --json
+bin/drive personal search 'budget' --exact --json
+bin/drive personal documents list --json
+bin/drive personal documents show DOC_ID --json
+bin/drive personal documents export DOC_ID --out ./document.md
+bin/drive personal status --json
 bin/drive commands sync --json
 ```
 
@@ -70,16 +70,16 @@ and title. Native Markdown exports are saved separately from the all-tab text us
 Export refuses to overwrite an existing destination file.
 
 Semantic search uses an already-downloaded shared text model. Prepare the existing model cache
-with `tg models text download e5-small` or its `max` equivalent, then use `drive sync --embed`.
+with `tg personal models text download e5-small` or its `max` equivalent, then use `drive personal sync --embed`.
 There is no replacement model downloader or implicit download here. Missing models are reported.
 `--exact` searches words without semantic retrieval.
 
 ## Keep it current
 
 ```sh
-bin/drive sync --max 200 --json
-bin/drive folders remove FOLDER_ID
-bin/drive sync --json
+bin/drive personal sync --max 200 --json
+bin/drive personal folders remove FOLDER_ID
+bin/drive personal sync --json
 ```
 
 A batch is persisted before processing; interrupted work resumes next run. The change cursor
@@ -132,14 +132,14 @@ See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
 ## Document knowledge and remote actions
 
 ```sh
-bin/drive tags add DOC_ID project-budget review
-bin/drive documents list --tag review
-bin/drive notes add DOC_ID 'Check the assumptions' --title Review
-bin/drive people list DOC_ID
-bin/drive documents context DOC_ID
-bin/drive memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
-bin/drive memories extract DOC_ID --scope work
-bin/drive documents history DOC_ID
+bin/drive personal tags add DOC_ID project-budget review
+bin/drive personal documents list --tag review
+bin/drive personal notes add DOC_ID 'Check the assumptions' --title Review
+bin/drive personal people list DOC_ID
+bin/drive personal documents context DOC_ID
+bin/drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+bin/drive personal memories extract DOC_ID --scope work
+bin/drive personal documents history DOC_ID
 bin/drive api methods --service docs
 ```
 
@@ -167,11 +167,11 @@ types, validators, the operation manifest, coverage and [command reference](docs
 `pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.
 
 ```sh
-bin/drive api drive-files-get --help
+bin/drive personal api drive-files-get --help
 bin/drive schema docs.documents.batchUpdate --json
-bin/drive --dry-run api drive-files-get --file-id synthetic-doc --json
+bin/drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
 bin/drive complete zsh
-bin/drive --read-only mcp --tools --json
+bin/drive personal --read-only mcp --tools --json
 ```
 
 Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,

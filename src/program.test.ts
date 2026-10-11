@@ -10,19 +10,21 @@ describe("standalone command workflow", () => {
   it("lists and exports imported snapshots without overwriting existing files", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source, index: async () => f.index }
-    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["sync"], { from: "user" })
+    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
     const listed = captureStreams()
-    await createProgram({ ...options, streams: listed }).parseAsync(["documents", "list", "--json"], { from: "user" })
+    await createProgram({ ...options, streams: listed }).parseAsync(["default", "documents", "list", "--json"], {
+      from: "user",
+    })
     expect(JSON.parse(listed.stdout.join("")).items).toHaveLength(2)
     const target = join(f.directory, "export.md")
     await createProgram({ ...options, streams: captureStreams() }).parseAsync(
-      ["documents", "export", "doc-a", "--out", target],
+      ["default", "documents", "export", "doc-a", "--out", target],
       { from: "user" },
     )
     expect(readFileSync(target, "utf8")).toContain("budget decision")
     await expect(
       createProgram({ ...options, streams: captureStreams() }).parseAsync(
-        ["documents", "export", "doc-a", "--out", target],
+        ["default", "documents", "export", "doc-a", "--out", target],
         { from: "user" },
       ),
     ).rejects.toThrow()
@@ -31,7 +33,7 @@ describe("standalone command workflow", () => {
     const f = fixture([])
     const streams = captureStreams()
     await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
-      ["folders", "add", "root", "--json"],
+      ["default", "folders", "add", "root", "--json"],
       { from: "user" },
     )
     expect(JSON.parse(streams.stdout.join("")).added).toBe(true)
@@ -39,10 +41,10 @@ describe("standalone command workflow", () => {
   it("exposes shared registry metadata without remote access", async () => {
     const f = fixture()
     const streams = captureStreams()
-    await createProgram({ env: f.env, streams }).parseAsync(["commands", "sync", "--json"], { from: "user" })
+    await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", "sync", "--json"], { from: "user" })
     expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ name: "sync", mutates: true, local: true })
     const root = captureStreams()
-    await createProgram({ env: f.env, streams: root }).parseAsync(["commands", "--json"], { from: "user" })
+    await createProgram({ env: f.env, streams: root }).parseAsync(["default", "commands", "--json"], { from: "user" })
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
     expect(contract.commands).toEqual(contract.items)
@@ -52,7 +54,7 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams, source: async () => f.source, index: async () => f.index }).parseAsync(
-      ["sync", "--json"],
+      ["default", "sync", "--json"],
       { from: "user" },
     )
     expect(JSON.parse(streams.stdout.join("")).saved).toBe(2)
@@ -60,7 +62,7 @@ describe("standalone command workflow", () => {
     expect(Object.keys(readState(f.env, "default", "synthetic-principal").documents)).toHaveLength(2)
     const searched = captureStreams()
     await createProgram({ env: f.env, streams: searched, index: async () => f.index }).parseAsync(
-      ["search", "budget", "--exact", "--json"],
+      ["default", "search", "budget", "--exact", "--json"],
       { from: "user" },
     )
     expect(f.index.search).toHaveBeenCalledWith("synthetic-principal", "budget", { limit: 20, offset: 0, exact: true })
@@ -68,7 +70,7 @@ describe("standalone command workflow", () => {
   it("shows local status without calling Google or opening an index", async () => {
     const f = fixture()
     const streams = captureStreams()
-    await createProgram({ env: f.env, streams }).parseAsync(["status", "--json"], { from: "user" })
+    await createProgram({ env: f.env, streams }).parseAsync(["default", "status", "--json"], { from: "user" })
     expect(JSON.parse(streams.stdout.join("")).remoteChecked).toBe(false)
   })
 })

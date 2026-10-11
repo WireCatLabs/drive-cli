@@ -9,29 +9,41 @@
       "exit": 0,
       "stream": "stdout",
       "kind": "json",
-      "json": { "seeded": true },
-      "capture": { "document": "/document" }
+      "json": {
+        "seeded": true
+      },
+      "capture": {
+        "document": "/document"
+      }
     },
     {
       "id": "search-upgraded-store",
-      "args": ["search", "budget", "--exact", "--json"],
+      "args": ["default", "search", "budget", "--exact", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",
-      "json": { "hits": [{ "ref": "{{document}}" }] },
+      "json": {
+        "hits": [
+          {
+            "ref": "{{document}}"
+          }
+        ]
+      },
       "allowSensitiveOutput": true
     },
     {
       "id": "tags-survive",
-      "args": ["tags", "list", "synthetic-doc", "--json"],
+      "args": ["default", "tags", "list", "synthetic-doc", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",
-      "json": { "tags": ["budget"] }
+      "json": {
+        "tags": ["budget"]
+      }
     },
     {
       "id": "notes-survive",
-      "args": ["notes", "list", "synthetic-doc", "--json"],
+      "args": ["default", "notes", "list", "synthetic-doc", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",
@@ -40,7 +52,7 @@
     },
     {
       "id": "memories-survive",
-      "args": ["memories", "list", "synthetic-doc", "--scope", "work", "--json"],
+      "args": ["default", "memories", "list", "synthetic-doc", "--scope", "work", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",

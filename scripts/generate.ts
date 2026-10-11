@@ -36,7 +36,7 @@ const artifacts = generate(
     coverageGenerator({
       path: "docs/dev/API_COVERAGE.md",
       title: "Google API coverage",
-      command: (op) => `drive api ${op.command}`,
+      command: (op) => `drive <profile> api ${op.command}`,
     }),
   ],
   { banner: ["Source: spec/google/*.json, verified by provenance.json", "Run: pnpm generate"] },
