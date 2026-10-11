@@ -12,7 +12,8 @@ drive config set readOnly true --defaults
 | Setting | Purpose |
 | --- | --- |
 | `--profile NAME` | Select the account profile for this invocation. |
-| `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR`, `DRIVE_CACHE_DIR` | Override configuration, snapshot/state and model-cache locations. |
+| `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR`, `DRIVE_CACHE_DIR` | Override configuration, snapshot/state and tool-cache locations. |
+| `CLI_COMMON_CACHE_DIR` | Override the shared local search-model cache; use the same setting when downloading and embedding. |
 | `DRIVE_STORE` | Explicit database path. Back up an existing store and use compatible shared package versions before opening it with another tool. |
 | `--read-only` | Block local and remote mutations for this invocation. |
 | `--offline` | Use cached reads; refuse sync, Google requests and AI extraction. |
