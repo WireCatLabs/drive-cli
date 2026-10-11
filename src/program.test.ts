@@ -41,6 +41,12 @@ describe("standalone command workflow", () => {
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["commands", "sync", "--json"], { from: "user" })
     expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ name: "sync", mutates: true, local: true })
+    const root = captureStreams()
+    await createProgram({ env: f.env, streams: root }).parseAsync(["commands", "--json"], { from: "user" })
+    const contract = JSON.parse(root.stdout.join(""))
+    expect(contract.cli).toBe("drive")
+    expect(contract.commands).toEqual(contract.items)
+    expect(contract.globalOptions.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
   })
   it("syncs, lists and searches using injected shared ports and closes the index", async () => {
     const f = fixture()

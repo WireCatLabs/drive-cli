@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Add source-install user guides for ingestion, search, tags, notes, memories and local MCP.
+- Expose the full CLI/global-option discovery contract for documentation validation while retaining item listings.
+
 - Generate Google API commands, validators, schemas and references through the shared MAX codegen pipeline.
 - Apply shared profile permission levels to local and remote actions; add guarded write journals and uncertain-outcome handling.
 - Add profile-first syntax, config paths, completion, MCP stdio, offline/dry-run, bounded output and deadlines.
