@@ -7,8 +7,8 @@ larger import or changing permissions. Keep the error code and profile name for 
 | Symptom | What to do |
 | --- | --- |
 | `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
-| Google blocks sign-in | Check the Desktop client, enabled APIs, consent setup and test-user account. Use the account added to the application. |
-| Sign-in expired | Run `session start` again with your client file. External Testing grants usually expire after seven days. |
+| Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
+| Sign-in expired | Run `drive personal session start` again. Add `--client-file` only for your own application. External Testing grants usually expire after seven days. |
 | No keyring is available | Reconnect with the explicit `--credential-storage file` option if private-file storage fits your setup. |
 | Search is empty | Run `status`, check selected roots with `folders list`, then `sync`. Try a known word with `search --exact`. |
 | A file was skipped | Check its type and download permission. Google Docs and uploaded Markdown/TXT are supported; PDF, Office, Sheets, Slides and shortcuts are not imported. |
