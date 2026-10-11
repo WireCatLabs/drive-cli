@@ -10,3 +10,4 @@
 - Read and manage Drive files, folders and native Docs through the official clients, with 68 generated API methods and optional activity history.
 - Require explicit account profiles, separate OAuth grants from command permissions, and provide structured output, offline/dry-run modes, completion and local MCP.
 - Install compiled JavaScript through npm; use the shared WireCat validation, package acceptance and MAX release workflow conventions.
+- Sign in with WireCat's included Google Desktop application, or select your own OAuth client with a file or environment settings; keep private user tokens in local credential storage.

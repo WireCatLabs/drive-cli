@@ -45,7 +45,7 @@ Use a Desktop client JSON, not an API key or service-account key.
 
 Publishing the application does not authorize your account or this computer. Run the
 [account connection step](installation.md#connect-your-account) and approve access in Google's
-browser screen. With an owner-supplied client, ordinary users do not repeat Google Cloud setup.
+browser screen. With WireCat's included client, ordinary users do not repeat Google Cloud setup.
 A custom Desktop client remains an alternative. Workspace policy and Google scope verification
 can still restrict which accounts or permissions are available.
 

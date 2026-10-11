@@ -27,11 +27,12 @@ See [installation and Google connection](docs/installation.md). Source builds ar
 
 ## Sign in and choose folders
 
-Use the Desktop OAuth client supplied by the application owner, or create your own client as
-explained in the [installation guide](docs/installation.md). Connect your account, then choose a folder:
+Sign in with WireCat's included Google application. Each user approves their own account in the
+browser. You can also create your own Desktop client as explained in the
+[installation guide](docs/installation.md). Connect your account, then choose a folder:
 
 ```sh
-drive personal session start --client-file /path/to/desktop-client.json
+drive personal session start
 drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
 drive personal sync --json
 ```
@@ -47,8 +48,8 @@ new sign-in with `session start --write`; history events need `session start --a
 Credentials use the OS keyring. Without one, explicitly choose `--credential-storage file`;
 the shared helper writes an owner-only private file. Tokens never enter regular config, output
 or diagnostics. `DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET` can provide application
-settings instead of a client file. A public application can supply its registered Desktop client
-settings, but the CLI does not bundle a public OAuth application identity yet. Public distribution with
+settings instead of the bundled application; `--client-file` takes priority. The included Desktop
+client identity is public application metadata, separate from private user tokens. Public distribution with
 this restricted scope needs Google verification; external Testing grants usually expire in
 seven days. [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
 [Drive permissions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).

@@ -83,7 +83,7 @@ These values apply to the process that runs Drive; they are not saved by `config
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
 | `DRIVE_STORE` | Select an explicit database file instead of the default `drive.db` |
 | `CLI_COMMON_CACHE_DIR` | Select the shared local search-model cache |
-| `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Supply a Desktop OAuth application identity instead of a client file |
+| `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Use your own Desktop OAuth application instead of WireCat's included app; set the ID before supplying its secret |
 | `DRIVE_MODELS_MEMORIES_PROVIDER`, `DRIVE_MODELS_MEMORIES_MODEL`, `DRIVE_MODELS_MEMORIES_BASE_URL` | Override optional AI extraction choices for this process |
 | `DRIVE_OPENAI_API_KEY`, `DRIVE_ANTHROPIC_API_KEY` | Supply the selected provider's credential; the corresponding unprefixed API-key variable is also accepted |
 

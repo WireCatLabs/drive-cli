@@ -59,13 +59,13 @@ a Google sign-in first, run `drive personal session end` for each connected prof
 ## Choose how to connect
 
 Using **WireCat's shared Google application** means users approve their own accounts in the
-browser; only the application owner sets up Google Cloud. That is the intended default connection
-path. The CLI does not bundle that client identity yet, so today you
-need a Desktop client JSON supplied by the app owner or one you create yourself below.
+browser; only the application owner sets up Google Cloud. WireCat's Desktop client identity is
+included in the CLI. Skip Google Cloud setup and go to [connect your account](#connect-your-account).
+Google's verification status and your organization's policy may affect access to the shared app.
 
-If the owner supplied a Desktop client JSON, skip Google Cloud setup and go to
-[connect your account](#connect-your-account). The JSON identifies the application; it is not a
-file granting access to your account. Your browser consent creates that access separately.
+Prefer your own application? Create a Desktop client below and pass its JSON with `--client-file`.
+The JSON identifies the application; it is not a file granting access to your account.
+Your browser consent creates that access separately.
 
 ## Prepare Google sign-in
 
@@ -160,15 +160,21 @@ Give your agent only its path, not its contents.
 ## Connect your account
 
 Publishing the Google application does not connect this computer to your account. Each user
-still opens the consent screen and approves their own account. A supplied WireCat Desktop
+still opens the consent screen and approves their own account. The included WireCat Desktop
 client identifies the shared application; a custom client identifies your own application.
 Both use the same command and keep tokens in that user's local credential store.
 
-Choose your profile name and replace the client-file path:
+Choose your profile name and sign in with WireCat's shared application:
 
 ```sh
-drive personal session start --client-file /absolute/path/to/wirecat-drive-desktop.json
+drive personal session start
 drive personal session list --json
+```
+
+For your own application, replace the file path and run:
+
+```sh
+drive personal session start --client-file /absolute/path/to/desktop-client.json
 ```
 
 In the opened browser, choose the account you intended and review Google's requested permissions.
