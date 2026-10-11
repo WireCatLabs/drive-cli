@@ -1,0 +1,1910 @@
+[
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "comments-view-mode": {
+          "type": "string"
+        },
+        "document-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "include-tabs-content": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "suggestions-view-mode": {
+          "type": "string"
+        }
+      },
+      "required": ["document-id"],
+      "type": "object"
+    },
+    "name": "drive_api_docs_documents_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_about_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "proposal-id": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["proposal-id", "file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_accessproposals_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_accessproposals_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "approval-id": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id", "approval-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_approvals_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_approvals_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "app-id": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["app-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_apps_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "app-filter-extensions": {
+          "type": "string"
+        },
+        "app-filter-mime-types": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "language-code": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_apps_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "drive-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        },
+        "team-drive-id": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_changes_get_start_page_token"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "drive-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "include-corpus-removals": {
+          "type": "string"
+        },
+        "include-items-from-all-drives": {
+          "type": "string"
+        },
+        "include-labels": {
+          "type": "string"
+        },
+        "include-permissions-for-view": {
+          "type": "string"
+        },
+        "include-removed": {
+          "type": "string"
+        },
+        "include-team-drive-items": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "restrict-to-my-drive": {
+          "type": "string"
+        },
+        "spaces": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        },
+        "team-drive-id": {
+          "type": "string"
+        }
+      },
+      "required": ["page-token"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_changes_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "comment-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-deleted": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id", "comment-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_comments_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-deleted": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "start-modified-time": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_comments_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "drive-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": ["drive-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_drives_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "q": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_drives_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "mime-type": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "revision-id": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_download"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "mime-type": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["mime-type", "file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_export"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_generate_cse_token"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "count": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "space": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_generate_ids"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledge-abuse": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-labels": {
+          "type": "string"
+        },
+        "include-permissions-for-view": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "corpora": {
+          "type": "string"
+        },
+        "corpus": {
+          "type": "string"
+        },
+        "drive-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "include-items-from-all-drives": {
+          "type": "string"
+        },
+        "include-labels": {
+          "type": "string"
+        },
+        "include-permissions-for-view": {
+          "type": "string"
+        },
+        "include-team-drive-items": {
+          "type": "string"
+        },
+        "order-by": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "q": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "spaces": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        },
+        "team-drive-id": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "max-results": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_files_list_labels"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["name"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_operations_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "permission-id": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": ["permission-id", "file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_permissions_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-permissions-for-view": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "supports-all-drives": {
+          "type": "string"
+        },
+        "supports-team-drives": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_permissions_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "comment-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-deleted": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "reply-id": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id", "comment-id", "reply-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_replies_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "comment-id": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "include-deleted": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id", "comment-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_replies_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledge-abuse": {
+          "type": "string"
+        },
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "revision-id": {
+          "type": "string"
+        }
+      },
+      "required": ["revision-id", "file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_revisions_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "file-id": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": ["file-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_revisions_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "team-drive-id": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": ["team-drive-id"],
+      "type": "object"
+    },
+    "name": "drive_api_drive_teamdrives_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "page-size": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "q": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "use-domain-admin-access": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_drive_teamdrives_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_driveactivity_activity_query"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "service": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_api_methods"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "items": {
+            "maxLength": 100000,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_commands"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file", "id"],
+      "type": "object"
+    },
+    "name": "drive_comments_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_comments_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_documents_context"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_documents_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "activity": {
+          "type": "boolean"
+        },
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_documents_history"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "person": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_documents_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "url-or-id": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["url-or-id"],
+      "type": "object"
+    },
+    "name": "drive_documents_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_files_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "query": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_files_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_folders_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_links_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "kind": {
+          "enum": ["summary", "digest", "fact", "preference"],
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "scope": {
+          "enum": ["personal", "work"],
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_memories_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "query": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "scope": {
+          "enum": ["personal", "work"],
+          "type": "string"
+        }
+      },
+      "required": ["document", "query", "scope"],
+      "type": "object"
+    },
+    "name": "drive_memories_search"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "memory-reference": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document", "memory-reference"],
+      "type": "object"
+    },
+    "name": "drive_memories_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "string"
+        },
+        "search": {
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_notes_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "note-reference": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document", "note-reference"],
+      "type": "object"
+    },
+    "name": "drive_notes_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_people_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file", "id"],
+      "type": "object"
+    },
+    "name": "drive_permissions_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_permissions_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file", "id"],
+      "type": "object"
+    },
+    "name": "drive_revisions_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_revisions_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["method"],
+      "type": "object"
+    },
+    "name": "drive_schema"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "exact": {
+          "type": "boolean"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "offset": {
+          "type": "string"
+        },
+        "query": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["query"],
+      "type": "object"
+    },
+    "name": "drive_search"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "string"
+        },
+        "page-token": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_shared_drives"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_status"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_tags_list"
+  }
+]

@@ -96,9 +96,9 @@ drive-cli. Override with `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR` and `DRIVE_CACHE_
 `profiles/<profile>/documents/<file-id>.md` plus private JSON metadata and raw Docs responses.
 
 The database defaults to `drive.db` in this CLI's state directory. It uses the released shared
-WireCat store and search engine. It defaults to a separate file because sibling dependency pins
-currently differ; starting this CLI must not migrate a messenger database. `DRIVE_STORE` selects
-another compatible database explicitly. Align versions before sharing an existing store.
+WireCat store and search engine. It defaults to a separate file so connecting Google does not
+implicitly migrate an existing messenger database. `DRIVE_STORE` selects another compatible
+database explicitly. Review shared package versions and schema compatibility before sharing.
 
 Search covers body text, nested tables and footnotes from all tabs. Images, headers, footers,
 comments and suggested edits are excluded. Image assets are not downloaded. Native Markdown
@@ -147,7 +147,7 @@ Use the shared model setup with `models configure --provider openai --model MODE
 come from the corresponding API-key environment variable and never enter regular configuration.
 Source content changes and scope removals mark source-backed memories stale. User notes stay local.
 
-The official SDK catalog exposes 68 Drive, Docs and Activity methods. Convenient commands include
+The generated API exposes 68 Drive, Docs and Activity methods. Convenient commands include
 file listing/copying/moving, trash/restore, folder creation, Docs creation/batch updates, comments,
 permissions, revisions and Shared Drives. Read grants remain the default. JSON API calls require
 explicit flags for mutation and permanent deletion; Google still enforces file roles and API policy.
@@ -155,3 +155,34 @@ explicit flags for mutation and permanent deletion; Google still enforces file r
 Read the [knowledge and API command guide](docs/dev/KNOWLEDGE_AND_API.md) for complete examples,
 permissions, history limits, AI settings and supported request formats. Live Google and real model
 validation remain pending; automated tests use synthetic sources and mocked provider requests.
+
+## Shared CLI conventions
+
+Drive now uses MAX's API generation approach: committed Google Discovery snapshots feed a
+provider adapter into cli-core's shared code generators. cli-messaging builds the generated
+commands and validates their input; Google's SDK remains the transport. `pnpm generate` rebuilds
+types, validators, the operation manifest, coverage and [command reference](docs/commands.md).
+`pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.
+
+```sh
+bin/drive api drive-files-get --help
+bin/drive schema docs.documents.batchUpdate --json
+bin/drive --dry-run api drive-files-get --file-id synthetic-doc --json
+bin/drive complete zsh
+bin/drive --read-only mcp --tools --json
+```
+
+Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,
+readonly, ask and allow, configured under profile/default permissions. OAuth permission is a
+separate gate. `--read-only` also stops local mutations; `--yes` and `--allow-dangerous` answer
+confirmation but cannot override a denial. `--offline` refuses commands that may require network.
+Writes use the shared journal and uncertain Google outcomes are reported without automatic retry.
+
+MCP stdio tools derive from the same command registry and call the CLI executor with its guards.
+They exclude sign-in/config changes, arbitrary file export, body-file access and raw API dispatch.
+Generated typed methods remain available according to the profile's permissions. Agent-facing
+output shows control characters visibly; results use a shared output buffer and optional deadline.
+
+See the [alignment guide](docs/dev/CLI_ALIGNMENT.md) for policy examples, generation, compatibility
+checks and the remaining differences from MAX. The shared package pins now match the reviewed
+MAX versions; existing stores still require an explicit path and compatibility review.

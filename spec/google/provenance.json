@@ -1,0 +1,26 @@
+{
+  "drive": {
+    "source": "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
+    "revision": "20261005",
+    "sha256": "972ab7c52f880cd4842f9894e5bf949d735f28208894ab9b3edc28d4b7b36e82",
+    "version": "v3",
+    "sourceSha256": "37033061efc570fc892f5894396b29a9765aa79c00aa2c1811657f9d0bdc3ccb",
+    "normalization": "Biome JSON formatting; source content unchanged"
+  },
+  "docs": {
+    "source": "https://docs.googleapis.com/$discovery/rest?version=v1",
+    "revision": "20261006",
+    "sha256": "cc27132639bfbb7b9fe40e27a1972eb0ccb01456127cc2fa231a156b4aa10770",
+    "version": "v1",
+    "sourceSha256": "1b2240a34e0628cc6bfd8fad02b1ad404e437f5866803b29c1c8c2a5be4897dc",
+    "normalization": "Biome JSON formatting; source content unchanged"
+  },
+  "driveactivity": {
+    "source": "https://driveactivity.googleapis.com/$discovery/rest?version=v2",
+    "revision": "20261006",
+    "sha256": "4bfa7e7fe271944fbd4505619c4b18880af1fd2ed2955c4543b2459cc299f58d",
+    "version": "v2",
+    "sourceSha256": "11979c5cc178246c02a25748e5b510b86bf398fe0fdc5ee42e86d8dc28e60390",
+    "normalization": "Biome JSON formatting; source content unchanged"
+  }
+}

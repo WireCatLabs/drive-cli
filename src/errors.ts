@@ -28,7 +28,9 @@ export const googleError = (error: unknown): CliError => {
   if (status === 401)
     return new CliError("authentication_error", "Google sign-in expired — run drive session start again")
   if (status === 403)
-    return new CliError("permission_error", "Google denied this read; check access and OAuth permissions", { status })
+    return new CliError("permission_error", "Google denied this operation; check access and OAuth permissions", {
+      status,
+    })
   if (status === 404)
     return new CliError("not_found", "Google source is unavailable or no longer accessible", { status })
   if (status === 429)

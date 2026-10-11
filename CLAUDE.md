@@ -9,7 +9,8 @@ Public code, fixtures and docs contain synthetic data only. Plans and journals l
 Tests inject a memory keyring, local source fixtures and temporary database/config/model-cache
 paths. Never run tests against the owner's account or store. No memory production fallback.
 
-Default storage is isolated until shared dependency pins align. Pin shared packages exactly.
+Default storage is isolated; sharing an existing messenger store requires explicit configuration.
+Pin shared packages exactly and keep reviewed community presets aligned with MAX.
 Credentials use the keyring unless the user explicitly chooses private-file storage. Never log
 SDK error objects, headers, OAuth responses or document bodies. Data belongs in requested output.
 No implicit model download or credential-file fallback.
@@ -24,6 +25,11 @@ Shared notes, tags, relationships, identity links and memories stay in cli-messa
 store APIs. AI extraction uses its public model gateway and settings schema, validates exact
 source quotes and saves agent-authored proposed memories. Source changes/removals stale those
 memories. Never automatically merge people by display name or claim complete Google edit history.
+
+Google API contracts come from committed Discovery snapshots through cli-core generators. Do not
+hand-edit src/generated or generated command references. Refresh specs explicitly, review the
+provenance and diff, then run generation and freshness checks. Friendly commands, raw dispatch
+and MCP must use the same validation and permission guards; MCP runs the CLI executor.
 
 Use a branch and isolated checkout. Commit hooks check staged Biome and secrets. Fast CI checks
 presets, lint, Markdown and bounded typechecking. Full validation adds tests, coverage, build,

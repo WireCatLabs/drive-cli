@@ -1,0 +1,7 @@
+packages:
+  - .
+minimumReleaseAgeExclude:
+  - '@wirecat/cli-core@0.19.2'
+  - '@wirecat/cli-meetings@0.2.7'
+  - '@wirecat/cli-messaging@0.226.0'
+  - '@wirecat/cli-tasks@0.3.1'

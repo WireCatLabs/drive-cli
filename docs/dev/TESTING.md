@@ -5,7 +5,11 @@ jobs, unavailable content, locking, OAuth state/PKCE, listener cleanup and share
 SDK responses are scripted at the request seam. These tests do not certify live Google exports.
 Extended workflows cover real temporary-store tags, memos, links, editor association, memory
 scope/staleness, guarded note edits, AI quote validation, extraction races, all common remote
-command mappings, SDK method discovery and explicit write/delete/scope boundaries.
+command mappings, generated schema validation and explicit write/delete/scope boundaries.
+Alignment tests cover local/remote policy denial, generated flags, operation aliases, atomic
+output, agent controls, profile/config syntax, dry-run/offline and shared write journaling.
+Executable contracts verify missing generated arguments produce JSON errors, MCP schemas remain
+stable and a store seeded with the real 0.226.0 shared package retains data under 0.231.0.
 OAuth callbacks use invented codes and a memory keyring over local loopback HTTP.
 
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, DRIVE_STORE, MESSAGING_STORE

@@ -2,17 +2,24 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-core"
 import { AI_ENTRIES } from "@wirecat/cli-messaging/cli"
+import { LEVELS } from "@wirecat/cli-messaging/sends"
 import * as v from "valibot"
 
-const Profile = v.object({
+const Common = {
+  ...AI_ENTRIES,
+  readOnly: v.optional(v.boolean()),
+  permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
+}
+const Profile = v.strictObject({
   principal: v.string(),
   roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
   storage: v.picklist(["keyring", "file"]),
-  ...AI_ENTRIES,
+  ...Common,
 })
-export const ConfigSchema = v.object({
+export const ConfigSchema = v.strictObject({
   profiles: v.record(v.string(), Profile),
-  defaults: v.optional(v.object(AI_ENTRIES)),
+  defaults: v.optional(v.strictObject(Common)),
+  defaultProfile: v.optional(v.string()),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
