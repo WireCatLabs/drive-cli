@@ -1,8 +1,13 @@
 # Import and organize
 
-Use this guide to turn a selected Google folder into searchable local documents and understand
-what stays on disk. You must connect an account first. Every account command names its profile;
-these examples use `personal`. Replace it with the profile you chose at [sign-in](installation.md).
+Turn selected Google folders into a local copy your agent can search and read without returning
+to Drive for every question. This guide shows how to choose the scope, check what was saved,
+keep it current and export a document when another tool needs it. Examples use profile
+`personal`; replace it with your connected profile's name.
+
+**Sync** downloads supported source content and updates its local index. A **snapshot** is the
+saved source content and metadata from that sync. An **export** is an additional file you request;
+it is not required for search.
 
 ## Choose the right operation
 
@@ -63,6 +68,31 @@ returns a `nextPageToken`, pass it to `files list --page-token TOKEN` for the ne
 `folders list` shows selected roots. Folder IDs and parents are saved in profile sync state;
 there is no navigable folder tree in the shared database yet. Documents are grouped by account.
 Duplicate names are safe: use IDs, rather than titles, to select a document.
+
+## Read content and metadata offline
+
+After import, these commands use the local copy and do not contact Google:
+
+```sh
+drive personal --offline documents list --json
+drive personal --offline documents show DOC_ID --json
+drive personal --offline documents context DOC_ID --json
+drive personal --offline people list DOC_ID --json
+drive personal --offline search 'budget' --exact --json
+```
+
+`documents list` returns cached titles, IDs, original links, MIME types, parent IDs, owners and
+last editor, plus timestamps and source versions when Google supplied them. `documents show`
+adds indexed text and tab IDs/titles. `documents context` adds your local labels, notes, links
+and memories. Read the saved content directly; opening its Google link is optional.
+
+Offline means the last saved version, not a fresh check of Google. `status` reports the last
+sync and pending/skipped work. Full permission lists, comments, revisions, activity events and
+arbitrary API responses are not automatically cached. Live `files get` and `documents get`
+are different from cached `documents show`; `--offline` refuses them. Imported content and
+selected metadata are saved, rather than every field available from every Google API.
+To retain a full available file-metadata response separately, use the
+[offline JSON metadata recipe](recipes.md#save-full-available-metadata-for-offline-use).
 
 ## Keep the index current
 

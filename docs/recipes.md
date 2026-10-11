@@ -1,9 +1,22 @@
 # Recipes
 
-Use these workflows after connecting an account to import a project, find evidence and save
-useful context. Every account command below uses profile `personal`; replace it with your named
-profile. Agent requests should name that profile too. [Import and storage](usage.md) explains
-supported file types and the local copies these recipes keep.
+Give your agent a complete task: import a project, prepare a brief, keep follow-ups, or reuse a
+source-backed decision. Each recipe connects a request to the commands and checks that produce
+the result. Examples use profile `personal`; replace it with your connected account's profile.
+
+Choose whether the task may refresh Google data, change only local context, or change a Google
+file. [Import and storage](usage.md) explains what the saved copy contains.
+
+## Choose a recipe
+
+| Task | Uses Google | Changes local data | Changes Google files |
+| --- | --- | --- | --- |
+| Import or refresh a project | Yes | Index and snapshots | No |
+| Prepare a brief from the saved copy | No | No | No |
+| Add follow-up tags, notes or links | No | Yes | No |
+| Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--save` or confirmation | No |
+| Inspect comments or history | Yes | No automatic import | No |
+| Create or edit a Doc | Yes | Imported on the next sync | Yes |
 
 ## First searchable folder, without extra exports
 
@@ -42,9 +55,53 @@ drive personal search 'budget OR launch' --exact --json
 drive personal documents context DOC_ID --json
 ```
 
-Open the cited Google links to check the decisions. A brief cannot account for unsupported or
+Read the saved passages and source metadata to check the decisions. Open their Google links when
+you need the current online version. A brief cannot account for unsupported or
 unimported sources. Live `documents get` can inspect an accessible native Doc without importing
 it; it prints Docs JSON and does not make that document searchable.
+
+## Prepare a brief entirely offline
+
+```text prompt
+Use drive CLI with profile personal and --offline. Find budget and launch decisions in the saved
+project documents. Prepare a brief with exact passages, source titles and links, and the last sync
+information. Do not contact Google or an AI extraction provider through the CLI.
+```
+
+```sh
+drive personal --offline status --json
+drive personal --offline search 'budget OR launch' --exact --json
+drive personal --offline documents show DOC_ID --json
+drive personal --offline documents context DOC_ID --json
+```
+
+The result uses the last saved copy. It must not present that timestamp as a fresh Google check.
+`--offline` controls the CLI; a cloud agent may still send the returned evidence to its own
+provider. Use the agent's own settings when the whole workflow must stay on your computer.
+
+## Save full available metadata for offline use
+
+```text prompt
+Use drive CLI with profile personal. Fetch all metadata Google exposes for the file I select,
+save the JSON locally, and explain its fields. Read that saved file for later questions instead
+of contacting Google again. Do not download its binary contents or change Google files.
+```
+
+```sh
+drive personal files get FILE_ID --json > ./file-metadata.json
+drive personal files list --parent FOLDER_ID --json > ./folder-metadata.json
+```
+
+These commands request all available file metadata fields from Google. The first saves one
+file's response; the second saves a page of immediate children, including metadata for formats
+that content indexing does not support. Continue any returned page token if you need the whole
+listing. Google roles and policy determine which fields it exposes.
+
+Your agent can read the saved JSON without Google. It is a separate, user-managed snapshot;
+it is not automatically imported into the database or made searchable by `drive search`.
+Normal sync keeps the selected metadata described in [offline reading](usage.md#read-content-and-metadata-offline).
+Permission listings, comments and history remain separate API operations. Refresh or remove
+these extra JSON files when you no longer need their saved version.
 
 ## Keep a follow-up list beside your sources
 
