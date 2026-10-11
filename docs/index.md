@@ -12,8 +12,8 @@ attach tags, notes and source-backed memories to documents.
 Supported content is Google Docs and uploaded Markdown/plain text. PDF, Office files, Sheets,
 Slides and shortcuts are not imported. Folder selection includes descendants; it does not grant
 Google access to just those folders. Sync reads Google; your tags and notes stay local.
-Installation is from source and requires a Desktop OAuth client JSON supplied by the app owner
-or created in Google Cloud. Every account command names a profile, such as `drive personal sync`.
+The compiled CLI is prepared for npm publication. Connecting requires a Desktop OAuth client
+JSON supplied by the app owner or created in Google Cloud. Every account command names a profile, such as `drive personal sync`.
 
 Start with [installation and Google connection](installation.md), then
 [import your first folder](usage.md). For worked requests, see [recipes](recipes.md).

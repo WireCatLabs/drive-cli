@@ -11,15 +11,20 @@ Status: development implementation on GitHub; no npm release yet. It uses Google
 Sources supported now: native Google Docs and uploaded Markdown/TXT. Other types and shortcuts
 are reported as skipped; shortcuts are not followed outside the selected scope.
 
-## Run it locally
+## Install
 
-Use Node 22.16 or newer, or Node 24, and pnpm 11.20.0:
+The package is prepared for its first npm publication; the command below becomes available when
+that release is published. Users install the compiled CLI, with Node 22.16+ on the 22.x line or
+Node 24+, without building a checkout:
 
 ```sh
-pnpm install
-pnpm build
-bin/drive --help
+npm install -g @wirecat/drive-cli
+drive --version
+drive --help
 ```
+
+See [installation and Google connection](docs/installation.md). Source builds are for
+[contributors](docs/dev/DEVELOPMENT.md).
 
 ## Sign in and choose folders
 
@@ -27,9 +32,9 @@ For development, enable the Drive and Docs APIs in your Google Cloud project and
 **Desktop** OAuth client. Download its client JSON, then:
 
 ```sh
-bin/drive personal session start --client-file /path/to/desktop-client.json
-bin/drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
-bin/drive personal sync --json
+drive personal session start --client-file /path/to/desktop-client.json
+drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
+drive personal sync --json
 ```
 
 For Google Cloud setup and an isolated first run, follow the
@@ -44,7 +49,7 @@ Credentials use the OS keyring. Without one, explicitly choose `--credential-sto
 the shared helper writes an owner-only private file. Tokens never enter regular config, output
 or diagnostics. `DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET` can provide application
 settings instead of a client file. A public application can supply its registered Desktop client
-settings, but no public OAuth application is registered or bundled yet. Public distribution with
+settings, but the CLI does not bundle a public OAuth application identity yet. Public distribution with
 this restricted scope needs Google verification; external Testing grants usually expire in
 seven days. [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
 [Drive permissions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
@@ -56,13 +61,13 @@ configuration so re-login preserves document identities.
 ## Search and export
 
 ```sh
-bin/drive personal search 'budget decision' --json
-bin/drive personal search 'budget' --exact --json
-bin/drive personal documents list --json
-bin/drive personal documents show DOC_ID --json
-bin/drive personal documents export DOC_ID --out ./document.md
-bin/drive personal status --json
-bin/drive commands sync --json
+drive personal search 'budget decision' --json
+drive personal search 'budget' --exact --json
+drive personal documents list --json
+drive personal documents show DOC_ID --json
+drive personal documents export DOC_ID --out ./document.md
+drive personal status --json
+drive commands sync --json
 ```
 
 Search results include the original Google URL. `documents show` includes each tab's text, ID
@@ -77,9 +82,9 @@ There is no replacement model downloader or implicit download here. Missing mode
 ## Keep it current
 
 ```sh
-bin/drive personal sync --max 200 --json
-bin/drive personal folders remove FOLDER_ID
-bin/drive personal sync --json
+drive personal sync --max 200 --json
+drive personal folders remove FOLDER_ID
+drive personal sync --json
 ```
 
 A batch is persisted before processing; interrupted work resumes next run. The change cursor
@@ -132,15 +137,15 @@ See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
 ## Document knowledge and remote actions
 
 ```sh
-bin/drive personal tags add DOC_ID project-budget review
-bin/drive personal documents list --tag review
-bin/drive personal notes add DOC_ID 'Check the assumptions' --title Review
-bin/drive personal people list DOC_ID
-bin/drive personal documents context DOC_ID
-bin/drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
-bin/drive personal memories extract DOC_ID --scope work
-bin/drive personal documents history DOC_ID
-bin/drive api methods --service docs
+drive personal tags add DOC_ID project-budget review
+drive personal documents list --tag review
+drive personal notes add DOC_ID 'Check the assumptions' --title Review
+drive personal people list DOC_ID
+drive personal documents context DOC_ID
+drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+drive personal memories extract DOC_ID --scope work
+drive personal documents history DOC_ID
+drive api methods --service docs
 ```
 
 AI extraction explicitly sends selected cached text to the configured model. It previews proposals
@@ -167,11 +172,11 @@ types, validators, the operation manifest, coverage and [command reference](docs
 `pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.
 
 ```sh
-bin/drive personal api drive-files-get --help
-bin/drive schema docs.documents.batchUpdate --json
-bin/drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
-bin/drive complete zsh
-bin/drive personal --read-only mcp --tools --json
+drive personal api drive-files-get --help
+drive schema docs.documents.batchUpdate --json
+drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
+drive complete zsh
+drive personal --read-only mcp --tools --json
 ```
 
 Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,

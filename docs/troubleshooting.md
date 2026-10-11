@@ -5,7 +5,7 @@ search. Check the failed step before changing accounts or widening permissions.
 
 | Symptom | What to do |
 | --- | --- |
-| `drive` is not found | Reopen the terminal/agent; check the source checkout still exists and repeat [installation](installation.md). |
+| `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
 | Google blocks sign-in | Check the Desktop client, enabled APIs, consent setup and test-user account. Use the account added to the application. |
 | Sign-in expired | Run `session start` again with your client file. External Testing grants usually expire after seven days. |
 | No keyring is available | Reconnect with the explicit `--credential-storage file` option if private-file storage fits your setup. |

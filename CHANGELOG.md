@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Prepare compiled npm installation, with source builds kept in contributor documentation.
+- Align releases with MAX: validate and pack once, verify the tarball digest, separate
+  credential-free publication dry runs and create a GitHub release after npm publication.
+
 - Require an explicit profile for account operations; ignore implicit environment/config defaults,
   reject conflicting selectors and reuse MAX-compatible profile-name validation.
 - Expand task recipes, file-format/storage explanations and profile-aware command reference.
