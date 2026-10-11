@@ -1,13 +1,14 @@
 import { resolve } from "node:path"
 import { writeArtifacts } from "@wirecat/cli-core/codegen"
-import { COMMANDS_PAGE_LABELS, commandsPage, describeOptions, describeProgram } from "@wirecat/cli-core/commands"
+import { COMMANDS_PAGE_LABELS, commandsPage, describeOptions } from "@wirecat/cli-core/commands"
 import { createProgram } from "../dist/program.js"
+import { describeDriveProgram } from "../dist/registry.js"
 
 const root = resolve(import.meta.dirname, "..")
 const program = createProgram({ env: {} })
 const content = commandsPage({
   cli: "drive",
-  commands: describeProgram(program),
+  commands: describeDriveProgram(program),
   options: describeOptions(program),
   labels: COMMANDS_PAGE_LABELS.en,
   text: {

@@ -1,11 +1,12 @@
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams, isCliError } from "@wirecat/cli-core"
-import { type CommandInfo, describeProgram, flatten } from "@wirecat/cli-core/commands"
+import { type CommandInfo, flatten } from "@wirecat/cli-core/commands"
 import { levelFor } from "@wirecat/cli-messaging/sends"
 import { CommanderError } from "commander"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
 import { createProgram, type ProgramOptions } from "./program.js"
+import { describeDriveProgram } from "./registry.js"
 import { VERSION } from "./version.js"
 
 interface ToolDefinition {
@@ -16,7 +17,7 @@ interface ToolDefinition {
 const excluded = new Set(["session", "config", "complete", "mcp", "models"])
 export const mcpTools = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}): ToolDefinition[] => {
   const settings = policySettings(options.env ?? process.env, profile, flags)
-  return flatten(describeProgram(createProgram(options)))
+  return flatten(describeDriveProgram(createProgram(options)))
     .filter((command) => {
       if (
         command.commands.length ||

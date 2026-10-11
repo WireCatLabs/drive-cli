@@ -9,7 +9,7 @@ import {
   type Streams,
   visibleControls,
 } from "@wirecat/cli-core"
-import { annotate, describeOptions, describeProgram, flatten, metaOf } from "@wirecat/cli-core/commands"
+import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-core/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-core/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
 import { Command, InvalidArgumentError, Option } from "commander"
@@ -24,6 +24,7 @@ import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
+import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
 import { installRemoteCommands } from "./remote-commands.js"
 import { requestSchema } from "./schema.js"
 import { readSnapshot, readState } from "./state.js"
@@ -465,7 +466,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       } else
         streams.data(
           formatSuggestions(
-            suggest({ commands: describeProgram(program), globalOptions: describeOptions(program), words }),
+            suggest({ commands: describeDriveProgram(program), globalOptions: describeOptions(program), words }),
           ),
         )
     })
@@ -519,7 +520,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .argument("[path...]")
     .description("Discover the command tree and options as shared registry data")
     .action((path: string[]) => {
-      const commands = describeProgram(program)
+      const commands = describeDriveProgram(program)
       const found = path.length ? flatten(commands).filter((item) => item.path.join(" ") === path.join(" ")) : commands
       if (path.length && !found.length) throw new CliError("not_found", "command path was not found")
       output({
@@ -527,7 +528,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ...(path.length ? {} : { cli: "drive", commands, globalOptions: describeOptions(program) }),
       })
     })
-  for (const info of flatten(describeProgram(program))) {
+  for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
     const localWrites = [
@@ -589,7 +590,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const path = pathOf(action)
     const words = path.join(" ")
     // Discovery is account-independent and must not load config, credentials or the store.
-    if (["commands", "complete", "schema", "api methods"].includes(words)) return
+    if (ACCOUNT_FREE_COMMANDS.has(words)) return
     selected()
     if (["commands", "complete", "schema", "config show", "config set", "session list"].includes(words)) return
     const flags = policyFlags()
@@ -660,7 +661,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     }
   }
   // Imported generated children have their own Commander exit/output configuration.
-  for (const info of flatten(describeProgram(program))) {
+  for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
     command.exitOverride().configureOutput({

@@ -48,6 +48,8 @@ describe("standalone command workflow", () => {
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
     expect(contract.commands).toEqual(contract.items)
+    expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
+    expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.globalOptions.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
   })
   it("syncs, lists and searches using injected shared ports and closes the index", async () => {
