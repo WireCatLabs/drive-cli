@@ -29,7 +29,7 @@ The shared AI settings select the provider and model used for memory extraction:
 ```sh
 drive config set models.memories.provider '"openai"' --defaults
 drive config set models.memories.model '"YOUR_MODEL_ID"' --defaults
-drive models settings --purpose memories --json
+drive config show --json
 ```
 
 Replace `YOUR_MODEL_ID` with your provider's identifier. Supply the provider key through its
