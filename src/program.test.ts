@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { captureStreams } from "@wirecat/cli-core"
+import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
 import { readState } from "./state.js"

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import lockfile from "proper-lockfile"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"

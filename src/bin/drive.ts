@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFile } from "node:child_process"
-import { CliError, exitCodeFor, isCliError } from "@wirecat/cli-core"
+import { CliError, exitCodeFor, isCliError } from "@wirecat/cli-base"
 import { CommanderError } from "commander"
 import { createProgram } from "../program.js"
 

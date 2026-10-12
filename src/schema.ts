@@ -1,4 +1,4 @@
-import { identifier, type SchemaNode } from "@wirecat/cli-core/codegen"
+import { identifier, type SchemaNode } from "@wirecat/cli-base/codegen"
 import { operationOf } from "./api-contract.js"
 import { definitions } from "./generated/definitions.js"
 export const requestSchema = (method: string) => {

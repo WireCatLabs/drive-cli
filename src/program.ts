@@ -8,9 +8,9 @@ import {
   processStreams,
   type Streams,
   visibleControls,
-} from "@wirecat/cli-core"
-import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-core/commands"
-import { formatSuggestions, suggest } from "@wirecat/cli-core/completion"
+} from "@wirecat/cli-base"
+import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/commands"
+import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { operationOf, validateRequest } from "./api-contract.js"
@@ -549,6 +549,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "memories confirm",
       "memories stale",
       "memories extract",
+      "facts add",
+      "facts accept",
       "people link",
       "models configure",
       "config set",

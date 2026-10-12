@@ -1,4 +1,4 @@
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import lockfile from "proper-lockfile"
 import { ensureProfileDir, profileDir } from "./state.js"
 

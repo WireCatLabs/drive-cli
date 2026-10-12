@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-12
+
+- **Facts are their own thing, as in the shared store.** `drive facts add|list|show|accept` keep what happened —
+  a fact, statement, question, decision or promise — on a document; yours is accepted at once. `memories
+  extract --save` saves the facts it finds as proposed facts and the rest as memories. A memory's kind is
+  summary, digest or preference (default summary): `--kind fact` is gone, and memories of kind fact saved by
+  0.1.0 show under `facts list` after the shared store upgrades. `documents context` lists the facts too.
+  Agents over MCP can list and read facts, not add or accept them.
+- Built on the shared framework under its new name, `@wirecat/cli-base` 0.21.0, and `@wirecat/cli-messaging`
+  0.253.0 (from 0.231.0); an install holds one framework copy.
+
 ## 0.1.0 — 2026-10-11
 
 - Import selected Google folders recursively, including native Docs across tabs and uploaded Markdown/TXT.

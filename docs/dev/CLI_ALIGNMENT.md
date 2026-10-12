@@ -10,10 +10,10 @@ The offline pipeline is:
 
 ```text
 spec/google/*.json + provenance.json
-  -> scripts/discovery-adapter.ts -> cli-core ApiModel
+  -> scripts/discovery-adapter.ts -> cli-base ApiModel
   -> shared types, Valibot schemas, manifest, definitions and coverage generators
   -> cli-messaging generatedApiCommand
-  -> cli-core command registry and generated reference
+  -> cli-base command registry and generated reference
 ```
 
 ```sh
@@ -68,7 +68,7 @@ never titles, document text, tokens or request bodies. An uncertain response is 
 automatic write retry is disabled. No provider idempotency is invented.
 
 `--timeout 30s` supplies a whole-command deadline; transports retain their own request bounds.
-`--max-output-bytes` uses cli-core's atomic output buffer (4 MiB default, zero disables the cap).
+`--max-output-bytes` uses cli-base's atomic output buffer (4 MiB default, zero disables the cap).
 An oversized result fails before partial stdout. `--jsonl`, `--agent-json`, `--quiet` and `--offline`
 are available. Agent mode displays control/direction characters visibly. Offline refuses sync,
 Google actions and AI extraction; cached-document and knowledge reads remain available.
@@ -82,7 +82,7 @@ drive personal --read-only mcp --tools --json
 drive personal --read-only mcp
 ```
 
-Completion uses cli-core's registry and suggestion engine plus the same shell-script library as
+Completion uses cli-base's registry and suggestion engine plus the same shell-script library as
 MAX. It does not load Google credentials, open a store or fetch names over the network.
 MCP stdio uses the same SDK version as MAX. Tool names and input flags come from the command tree;
 tool calls construct argv and run the same CLI, so schemas, profile selection and policies cannot
@@ -106,7 +106,7 @@ pnpm smoke:bun
 ```
 
 The reviewed community preset revision and cli-messaging 0.231.0 match the audited MAX checkout;
-cli-core remains 0.19.4. Upgrade contracts use the real previous shared-store package 0.226.0 to
+cli-base remains 0.19.4. Upgrade contracts use the real previous shared-store package 0.226.0 to
 seed an isolated database, then verify current search, document identity, tags, notes and memories.
 There is no previous published Drive release to pretend to test. The default database remains
 isolated; adopting an existing messenger store is an explicit operation, not a side effect.

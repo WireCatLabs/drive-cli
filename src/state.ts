@@ -1,6 +1,6 @@
 import { mkdirSync, readFileSync, unlinkSync } from "node:fs"
 import { join } from "node:path"
-import { CliError, writeSecurely } from "@wirecat/cli-core"
+import { CliError, writeSecurely } from "@wirecat/cli-base"
 import * as v from "valibot"
 import { fileId, paths, profileName } from "./config.js"
 import type { DocumentContent, SyncState } from "./model.js"

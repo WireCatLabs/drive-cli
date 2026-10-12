@@ -1490,6 +1490,59 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        },
+        "status": {
+          "enum": ["proposed", "accepted", "superseded", "reversed"],
+          "type": "string"
+        },
+        "type": {
+          "enum": ["fact", "statement", "question", "decision", "promise"],
+          "type": "string"
+        }
+      },
+      "required": ["document"],
+      "type": "object"
+    },
+    "name": "drive_facts_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "document": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "fact-reference": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["document", "fact-reference"],
+      "type": "object"
+    },
+    "name": "drive_facts_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
         "file": {
           "maxLength": 100000,
           "type": "string"
@@ -1574,7 +1627,7 @@
           "type": "string"
         },
         "kind": {
-          "enum": ["summary", "digest", "fact", "preference"],
+          "enum": ["summary", "digest", "preference"],
           "type": "string"
         },
         "limit": {

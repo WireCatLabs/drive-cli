@@ -150,7 +150,9 @@ With an [AI provider configured](configuration.md#optional-ai-extraction):
 drive personal memories extract DOC_ID --scope work
 drive personal memories extract DOC_ID --scope work --save
 drive personal memories list DOC_ID --scope work --json
+drive personal facts list DOC_ID --status proposed --json
 drive personal memories confirm DOC_ID memory:MEMORY_ID
+drive personal facts accept DOC_ID fact:FACT_ID
 ```
 
 Extraction previews by default; `--save` creates proposals. Replace `MEMORY_ID` with a returned

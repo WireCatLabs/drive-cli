@@ -1,4 +1,4 @@
-import { CliError, memoryKeyring } from "@wirecat/cli-core"
+import { CliError, memoryKeyring } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"

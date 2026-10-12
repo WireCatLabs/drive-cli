@@ -1,4 +1,4 @@
-import { captureStreams } from "@wirecat/cli-core"
+import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
 import { createProgram } from "./program.js"
@@ -12,7 +12,12 @@ describe("document knowledge commands", () => {
       tabs: [{ id: "tab-one", title: "Budget", text: "budget decision" }],
     })
     const complete = vi.fn(async () => ({
-      text: JSON.stringify({ items: [{ kind: "fact", body: "Budget fact", quote: "budget decision" }] }),
+      text: JSON.stringify({
+        items: [
+          { kind: "fact", body: "Budget fact", quote: "budget decision" },
+          { kind: "summary", body: "Budget summary", quote: "budget decision" },
+        ],
+      }),
       tokens: 20,
       provider: "openai",
       model: "fixture-model",
@@ -39,7 +44,7 @@ describe("document knowledge commands", () => {
     const link = await call("links", "add", "doc-a", note.ref, "--kind", "related-to", "--role", "review")
     expect((await call("links", "list", "doc-a")).items.some((item: { id: string }) => item.id === link.id)).toBe(true)
     await call("links", "remove", "doc-a", link.id)
-    const memory = await call("memories", "add", "doc-a", "Budget decision", "--scope", "work", "--kind", "fact")
+    const memory = await call("memories", "add", "doc-a", "Budget decision", "--scope", "work", "--kind", "summary")
     expect((await call("memories", "list", "doc-a", "--scope", "work")).items).toHaveLength(1)
     expect((await call("memories", "show", "doc-a", memory.ref)).status).toBe("proposed")
     expect((await call("memories", "confirm", "doc-a", memory.ref)).status).toBe("confirmed")
@@ -48,9 +53,16 @@ describe("document knowledge commands", () => {
     const preview = await call("memories", "extract", "doc-a", "--scope", "work", "--tab", "tab-one")
     expect(preview.saved).toEqual([])
     const saved = await call("memories", "extract", "doc-a", "--scope", "work", "--save")
-    expect(saved.saved[0]).toMatchObject({ model: "fixture-model", status: "proposed" })
-    expect(saved.saved[0].body).toContain("Source quote: budget decision")
-    expect((await call("documents", "context", "doc-a")).memories).toHaveLength(2)
+    expect(saved.saved[0]).toMatchObject({ type: "fact", model: "fixture-model", status: "proposed" })
+    expect(saved.saved[0].statement).toContain("Source quote: budget decision")
+    expect(saved.saved[1]).toMatchObject({ kind: "summary", model: "fixture-model", status: "proposed" })
+    const context = await call("documents", "context", "doc-a")
+    expect([context.memories.length, context.facts.length]).toEqual([2, 1])
+    const decision = await call("facts", "add", "doc-a", "Budget approved", "--type", "decision", "--scope", "work")
+    expect(decision).toMatchObject({ type: "decision", status: "accepted" })
+    expect((await call("facts", "list", "doc-a", "--status", "proposed")).items).toHaveLength(1)
+    expect((await call("facts", "accept", "doc-a", saved.saved[0].ref)).status).toBe("accepted")
+    expect((await call("facts", "show", "doc-a", decision.ref)).statement).toBe("Budget approved")
     const people = await call("people", "list", "doc-a")
     expect(people.items[0].googleId).toBe("google-owner")
     expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)

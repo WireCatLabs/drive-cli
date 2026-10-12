@@ -1,7 +1,7 @@
 # drive-cli — working rules
 
 Read architecture and testing before changes. Google-specific sign-in, read-only sources and
-ingestion coordination live here. Reuse cli-core for credentials, paths, output, errors and
+ingestion coordination live here. Reuse cli-base for credentials, paths, output, errors and
 command discovery; reuse cli-messaging's public store/services for indexing, search and embeddings.
 No SQL, replacement embedding engine or gog subprocess belongs here.
 
@@ -26,7 +26,7 @@ store APIs. AI extraction uses its public model gateway and settings schema, val
 source quotes and saves agent-authored proposed memories. Source changes/removals stale those
 memories. Never automatically merge people by display name or claim complete Google edit history.
 
-Google API contracts come from committed Discovery snapshots through cli-core generators. Do not
+Google API contracts come from committed Discovery snapshots through cli-base generators. Do not
 hand-edit src/generated or generated command references. Refresh specs explicitly, review the
 provenance and diff, then run generation and freshness checks. Friendly commands, raw dispatch
 and MCP must use the same validation and permission guards; MCP runs the CLI executor.

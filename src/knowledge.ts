@@ -1,6 +1,8 @@
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import { normalizeTag } from "@wirecat/cli-messaging"
 import type {
+  Author,
+  Fact,
   Link,
   LinkInput,
   Memory,
@@ -39,6 +41,17 @@ export interface DocumentKnowledge {
   ): Promise<Memory[]>
   memory(principal: string, ref: string, memoryRef: string, action?: "show" | "confirm" | "stale"): Promise<Memory>
   searchMemories(principal: string, ref: string, query: string, scope: Memory["scope"]): Promise<unknown>
+  addFact(
+    principal: string,
+    ref: string,
+    input: { statement: string; type: Fact["type"]; scope?: Memory["scope"]; by?: Author },
+  ): Promise<Fact>
+  facts(
+    principal: string,
+    ref: string,
+    options?: { type?: Fact["type"]; status?: Fact["status"]; limit?: number },
+  ): Promise<Fact[]>
+  fact(principal: string, ref: string, factRef: string, action?: "show" | "accept"): Promise<Fact>
   people(principal: string, ref: string): Promise<unknown>
   linkPerson(principal: string, ref: string, googleId: string, personRef: string): Promise<PersonRecord>
 }
@@ -78,6 +91,13 @@ export const documentKnowledge = (
       throw new CliError("not_found", "memory is not attached to this document")
     return memory
   }
+  const factFor = async (principal: string, ref: string, factRef: string) => {
+    await document(principal, ref)
+    const fact = await store.facts.get(factRef)
+    if (fact.subject !== ref || !fact.evidence.includes(ref))
+      throw new CliError("not_found", "fact is not attached to this document")
+    return fact
+  }
   const port: DocumentKnowledge = {
     matches: async (principal, ref, filters) => {
       const note = await document(principal, ref)
@@ -98,6 +118,7 @@ export const documentKnowledge = (
         links: await store.notes.links({ from: ref }),
         notes: await store.notes.notes({ source: "internal", about: ref, limit: 100 }),
         memories: await store.memories.list({ subject: ref, limit: 100 }),
+        facts: await store.facts.list({ subject: ref, limit: 100 }),
         people: await port.people(principal, ref),
       }
     },
@@ -161,6 +182,25 @@ export const documentKnowledge = (
         items: candidates.filter((memory) => memory.subject === ref),
         candidateLimitReached: candidates.length === 200,
       }
+    },
+    addFact: async (principal, ref, { statement, type, scope, by }) => {
+      await document(principal, ref)
+      return store.facts.add({
+        type,
+        statement,
+        by: by ?? "owner",
+        subject: ref,
+        evidence: [ref],
+        ...(scope === undefined ? {} : { scope }),
+      })
+    },
+    facts: async (principal, ref, options) => {
+      await document(principal, ref)
+      return store.facts.list({ ...options, subject: ref })
+    },
+    fact: async (principal, ref, factRef, action = "show") => {
+      const fact = await factFor(principal, ref, factRef)
+      return action === "accept" ? store.facts.accept(fact.ref) : fact
     },
     people: async (principal, ref) => {
       const note = await document(principal, ref)

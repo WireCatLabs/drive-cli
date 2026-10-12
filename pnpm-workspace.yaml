@@ -2,10 +2,10 @@ allowBuilds:
   esbuild: true
   lefthook: true
 minimumReleaseAgeExclude:
-  - '@wirecat/cli-core@0.18.1 || 0.19.4'
+  - '@wirecat/cli-base@0.21.0'
   - '@wirecat/cli-meetings@0.2.0 || 0.2.1 || 0.2.3 || 0.2.7 || 0.3.0'
-  - '@wirecat/cli-messaging@0.226.0 || 0.231.0'
+  - '@wirecat/cli-messaging@0.226.0 || 0.231.0 || 0.253.0'
   - '@wirecat/cli-tasks@0.3.1'
   - '@wirecat/cli-messaging-onnx@1.0.1'
   - '@wirecat/cli-messaging-sqlite@1.0.1'
-  - '@wirecat/cli-testing@0.3.0'
+  - '@wirecat/cli-testing@0.3.0 || 0.4.0'

@@ -10,7 +10,7 @@ import {
   typesGenerator,
   valibotGenerator,
   writeArtifacts,
-} from "@wirecat/cli-core/codegen"
+} from "@wirecat/cli-base/codegen"
 import { adaptDiscovery } from "./discovery-adapter.ts"
 
 const root = resolve(import.meta.dirname, "..")

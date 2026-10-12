@@ -2,7 +2,7 @@
 // Source: spec/google/*.json, verified by provenance.json
 // Run: pnpm generate
 
-import type { SchemaNode } from "@wirecat/cli-core/codegen"
+import type { SchemaNode } from "@wirecat/cli-base/codegen"
 
 export const definitions: Readonly<Record<string, SchemaNode>> = {
   DriveOperation: {

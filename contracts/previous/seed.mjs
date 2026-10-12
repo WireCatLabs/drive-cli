@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { resolvePaths } from "@wirecat/cli-core"
+import { resolvePaths } from "@wirecat/cli-base"
 import { ensureSqlite } from "@wirecat/cli-messaging/sqlite-runtime"
 import { openStore } from "@wirecat/cli-messaging/store"
 

@@ -1,4 +1,4 @@
-import { type CommandInfo, describeProgram } from "@wirecat/cli-core/commands"
+import { type CommandInfo, describeProgram } from "@wirecat/cli-base/commands"
 import type { Command } from "commander"
 
 /** These commands do not select an account or load account configuration. */

@@ -1,7 +1,7 @@
 import { docs } from "@googleapis/docs"
 import { drive } from "@googleapis/drive"
 import { driveactivity } from "@googleapis/driveactivity"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import type { OAuth2Client } from "google-auth-library"
 import { operations, validateRequest } from "./api-contract.js"
 import { googleError } from "./errors.js"

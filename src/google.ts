@@ -1,6 +1,6 @@
 import { docs } from "@googleapis/docs"
 import { drive, type drive_v3 } from "@googleapis/drive"
-import { CliError } from "@wirecat/cli-core"
+import { CliError } from "@wirecat/cli-base"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
