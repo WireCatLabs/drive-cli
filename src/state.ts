@@ -24,7 +24,13 @@ const File = v.object({
   owners: v.optional(v.array(User)),
   lastModifiedBy: v.optional(User),
 })
-const Skip = v.object({ id: ID, reason: v.string(), file: v.optional(File), textLimit: v.optional(v.number()) })
+const Skip = v.object({
+  id: ID,
+  reason: v.string(),
+  file: v.optional(File),
+  textLimit: v.optional(v.number()),
+  storeRefusedIn: v.optional(v.string()),
+})
 const State = v.object({
   version: v.literal(1),
   principal: v.string(),

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, isCliError } from "@wirecat/cli-base"
 import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
@@ -14,6 +14,7 @@ import {
 } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
+import { VERSION } from "./version.js"
 
 const scopeHash = (roots: string[]) =>
   createHash("sha256")
@@ -26,6 +27,8 @@ const retryable = (skip: Skip, limit: number) =>
   skip.reason === "downloads restricted" ||
   skip.reason.startsWith("unsupported type: ") ||
   (skip.textLimit !== undefined && skip.textLimit < limit) ||
+  // The store's own bounds change only with the shared package drive pins.
+  (skip.storeRefusedIn !== undefined && skip.storeRefusedIn !== VERSION) ||
   // 0.2.0 and earlier skipped text over 200 000 characters with this reason and no recorded limit.
   (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000)
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
@@ -254,7 +257,12 @@ export const sync = async (
           } else {
             const hash = hashText(content.text)
             const previous = state.documents[job.id]
-            const reference = await index.save(profile.principal, content, hash)
+            const reference = await index.save(profile.principal, content, hash).catch((error: unknown) => {
+              if (!isCliError(error) || error.code !== "validation_error") throw error
+              throw new CliError("validation_error", `the local store refused this text: ${error.message}`, {
+                storeRefusedIn: VERSION,
+              })
+            })
             saveSnapshot(env, name, content)
             state.documents[job.id] = { metadata: content.metadata, hash, reference, tabs: content.tabs.length }
             if (previous?.hash === hash) result.unchanged++
@@ -275,6 +283,7 @@ export const sync = async (
             reason: safe.message,
             ...(job.file ? { file: job.file } : {}),
             ...(safe.details.textLimit ? { textLimit: limit } : {}),
+            ...(safe.details.storeRefusedIn ? { storeRefusedIn: VERSION } : {}),
           }
           state.skipped = state.skipped.filter((item) => item.id !== job.id)
           state.skipped.push(skipped)

@@ -215,6 +215,21 @@ describe("durable source sync", () => {
     vi.mocked(f.source.content).mockResolvedValue(content(sheet))
     expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
   })
+  it("retries a file the local store refused once drive is upgraded", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([file("doc-a")])
+    vi.mocked(f.index.save).mockRejectedValueOnce(
+      new CliError("validation_error", "a note's text takes 0–200000 characters"),
+    )
+    const first = await sync(f.source, f.index, f.env, "default", 200)
+    expect(first.skipped[0]?.reason).toContain("local store refused")
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.source.content).toHaveBeenCalledTimes(1)
+    const state = readState(f.env, "default", "synthetic-principal")
+    state.skipped = state.skipped.map((item) => ({ ...item, storeRefusedIn: "0.0.1" }))
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
   it("retries a file that 0.2.0 skipped for passing 200 000 characters", async () => {
     const f = fixture()
     await sync(f.source, f.index, f.env, "default", 200)

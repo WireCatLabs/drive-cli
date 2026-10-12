@@ -64,6 +64,7 @@ export interface Skip {
   reason: string
   file?: FileMetadata
   textLimit?: number
+  storeRefusedIn?: string
 }
 export interface SyncState {
   version: 1
