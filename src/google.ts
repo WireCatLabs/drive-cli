@@ -1,13 +1,14 @@
 import { docs } from "@googleapis/docs"
 import { drive, type drive_v3 } from "@googleapis/drive"
 import { CliError } from "@wirecat/cli-base"
+import { type Engine, extractText } from "@wirecat/cli-messaging/documents"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
-import { DOC, type FileMetadata, type GoogleSource, type GoogleUser } from "./model.js"
+import { DOC, type FileMetadata, type GoogleSource, type GoogleUser, SHEET, type TabText } from "./model.js"
 
 const USER_FIELDS = "permissionId,displayName,emailAddress"
-const FIELDS = `id,name,mimeType,parents,version,modifiedTime,createdTime,description,driveId,trashed,webViewLink,capabilities(canDownload),owners(${USER_FIELDS}),lastModifyingUser(${USER_FIELDS})`
+const FIELDS = `id,name,mimeType,parents,version,modifiedTime,createdTime,description,driveId,trashed,webViewLink,size,capabilities(canDownload),owners(${USER_FIELDS}),lastModifyingUser(${USER_FIELDS})`
 export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
   ...(user.permissionId ? { id: user.permissionId } : {}),
   ...(user.emailAddress ? { email: user.emailAddress } : {}),
@@ -15,6 +16,14 @@ export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
 })
 const MAX_PAGES = 1000
 const MAX_BYTES = 50 * 1024 * 1024
+const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+const READABLE = new Set([
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  XLSX,
+  "text/csv",
+  "text/tab-separated-values",
+])
 export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
   if (!file.id || !file.mimeType || file.name === undefined || file.name === null)
     throw new CliError("invalid_response", "Google returned incomplete file metadata")
@@ -26,6 +35,7 @@ export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
     url: file.webViewLink ?? `https://drive.google.com/file/d/${file.id}/view`,
     trashed: file.trashed ?? false,
     canDownload: file.capabilities?.canDownload !== false,
+    ...(file.size ? { size: Number(file.size) } : {}),
     ...(file.version ? { version: file.version } : {}),
     ...(file.modifiedTime ? { modifiedAt: file.modifiedTime } : {}),
     ...(file.createdTime ? { createdAt: file.createdTime } : {}),
@@ -36,9 +46,39 @@ export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
   }
 }
 export const supported = (file: FileMetadata): boolean => {
-  if (file.mime === DOC) return true
+  if (file.mime === DOC || file.mime === SHEET || READABLE.has(file.mime)) return true
   if (file.mime.startsWith("application/vnd.google-apps.")) return false
   return file.mime === "text/plain" || file.mime === "text/markdown" || /\.(md|markdown|txt)$/i.test(file.name)
+}
+
+const ENGINE_LABEL: Record<Engine, string> = { unpdf: "PDF", mammoth: "Word", "@napi-rs/canvas": "scanned PDF" }
+
+const sheetTabs = (text: string): TabText[] =>
+  text
+    .split(/^\[Sheet: (.*)\]$/m)
+    .slice(1)
+    .flatMap((part, index, parts) =>
+      index % 2 ? [] : [{ id: part, title: part, text: (parts[index + 1] ?? "").trim() }],
+    )
+
+export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: string): Promise<string> => {
+  const read = await extractText(
+    bytes,
+    { kind: "document", name: file.name, mime, path: file.name },
+    (name) => import(name),
+  )
+  if (read.status === "extracted" && !read.truncated) return read.text
+  const reason =
+    read.status === "needs-agent"
+      ? "file has no text layer (a scan or images only); OCR is not supported"
+      : read.status === "engine-missing"
+        ? `${ENGINE_LABEL[read.engine]} files need the package ${read.engine} installed next to drive; then run drive sync --rescan`
+        : read.status === "unreadable"
+          ? "file could not be read as text; it may be damaged or protected"
+          : read.status === "unsupported"
+            ? "file contents do not match its type"
+            : "file exceeds the ingestion bound; it was not silently truncated"
+  throw new CliError("validation_error", reason)
 }
 
 export const googleSource = (auth: OAuth2Client): GoogleSource => {
@@ -148,9 +188,11 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (!before.canDownload) throw new CliError("permission_error", "downloads are restricted for this source")
         if (!supported(before))
           throw new CliError("validation_error", "this source type is not supported for text ingestion")
+        if ((before.size ?? 0) > MAX_BYTES)
+          throw new CliError("validation_error", "file exceeds the ingestion bound; it was not downloaded")
         let markdown: string
         let text: string
-        let tabs: ReturnType<typeof documentTabs> = []
+        let tabs: TabText[] = []
         let raw: unknown
         if (before.mime === DOC) {
           raw = (
@@ -169,6 +211,21 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           markdown = exported
           // Search covers all tabs independently of the native export's tab-flattening behaviour.
           text = tabs.map((tab) => `${tab.title ? `# ${tab.title}\n\n` : ""}${tab.text}`).join("\n\n")
+        } else if (before.mime === SHEET || READABLE.has(before.mime)) {
+          const mime = before.mime === SHEET ? XLSX : before.mime
+          const bytes = (before.mime === SHEET
+            ? await api.files.export({ fileId: id, mimeType: XLSX }, { responseType: "arraybuffer", timeout: 120000 })
+            : await api.files.get(
+                { fileId: id, alt: "media", supportsAllDrives: true },
+                { responseType: "arraybuffer", timeout: 120000 },
+              )
+          ).data as unknown as ArrayBuffer
+          text = await readFile(new Uint8Array(bytes), before, mime)
+          if (mime === XLSX) {
+            tabs = sheetTabs(text)
+            text = tabs.map((tab) => `# ${tab.title}\n\n${tab.text}`).join("\n\n")
+          }
+          markdown = text
         } else {
           markdown = (
             await api.files.get(

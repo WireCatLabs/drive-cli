@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- **Sheets, PDFs and Office files are searchable.** `drive sync` exports native Google Sheets as `.xlsx` and reads
+  every sheet, and reads uploaded PDF, Word `.docx`, Excel `.xlsx`, CSV and TSV files with the shared document
+  readers. `documents show` lists each sheet as a heading; a cell reads as `A1: value`. A scanned PDF without a
+  text layer, a Sheet over Google's 10 MB export cap and a file over 50 MB are skipped with that reason. Files
+  that an older version skipped only for their type are read on the next sync. Adds `unpdf` and `mammoth`.
+
 ## 0.2.0 — 2026-10-12
 
 - **Facts are their own thing, as in the shared store.** `drive facts add|list|show|accept` keep what happened —

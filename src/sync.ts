@@ -18,6 +18,10 @@ const scopeHash = (roots: string[]) =>
   createHash("sha256")
     .update(JSON.stringify([...roots].sort()))
     .digest("hex")
+const skipReason = (file: FileMetadata) =>
+  !file.canDownload ? "downloads restricted" : supported(file) ? undefined : `unsupported type: ${file.mime}`
+// Skips decided by type alone are retried once a newer version can read that type.
+const typeSkip = (reason: string) => reason === "downloads restricted" || reason.startsWith("unsupported type: ")
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
 export const within = (
   file: FileMetadata,
@@ -129,15 +133,17 @@ const plan = async (
   for (const [id, file] of files) {
     if (!within(file, roots, folders)) continue
     const previousSkip = state.skipped.find((item) => item.id === id)
-    if (previousSkip && !changed.has(id) && !initial) {
+    const reason = skipReason(file)
+    const retry = previousSkip && typeSkip(previousSkip.reason) && !reason
+    if (previousSkip && !changed.has(id) && !initial && !retry) {
       skipped.push({ ...previousSkip, file })
       continue
     }
-    if (!supported(file) || !file.canDownload) {
-      skipped.push({ id, reason: !file.canDownload ? "downloads restricted" : `unsupported type: ${file.mime}`, file })
+    if (reason) {
+      skipped.push({ id, reason, file })
       continue
     }
-    if (changed.has(id)) {
+    if (changed.has(id) || retry) {
       const previous = state.documents[id]?.metadata
       if (
         !previous ||
@@ -220,11 +226,8 @@ export const sync = async (
           removeSnapshot(env, name, job.id)
           delete state.documents[job.id]
           result.removed++
-        } else if (job.file && (!supported(job.file) || !job.file.canDownload)) {
-          const skipped = {
-            id: job.id,
-            reason: !job.file.canDownload ? "downloads restricted" : `unsupported type: ${job.file.mime}`,
-          }
+        } else if (job.file && skipReason(job.file)) {
+          const skipped = { id: job.id, reason: skipReason(job.file) as string }
           if (state.documents[job.id]) {
             await index.remove(profile.principal, job.id)
             removeSnapshot(env, name, job.id)

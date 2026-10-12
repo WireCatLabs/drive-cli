@@ -1,6 +1,9 @@
+import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
+import { googleSource } from "./google.js"
+import { SHEET } from "./model.js"
 import { openIndex } from "./store.js"
-import { content, file, fixture } from "./testing.js"
+import { content, file, fixture, workbook } from "./testing.js"
 
 describe("released shared store and search", () => {
   it("searches document tags through the shared query language and preserves account scope", async () => {
@@ -53,6 +56,28 @@ describe("released shared store and search", () => {
         hits: unknown[]
       }
       expect(result.hits).toHaveLength(0)
+    } finally {
+      await index.close()
+    }
+  })
+  it("finds a word from a native Sheet cell", async () => {
+    const auth = new OAuth2Client("fixture-client")
+    Object.defineProperty(auth, "request", {
+      value: async (options: { url: string }) => ({
+        data: options.url.endsWith("/export")
+          ? workbook({ Семантика: "аренда функциональной кровати" })
+          : { id: "sheet-a", name: "Core", mimeType: SHEET, parents: ["root"], version: "1" },
+      }),
+    })
+    const sheet = await googleSource(auth).content("sheet-a")
+    const index = await openIndex(fixture().env)
+    try {
+      const ref = await index.save("synthetic-principal", sheet, "hash")
+      const found = (await index.search("synthetic-principal", "кровати", { limit: 10, offset: 0, exact: true })) as {
+        hits: { ref: string; tabs: { title: string }[] }[]
+      }
+      expect(found.hits.map((hit) => hit.ref)).toEqual([ref])
+      expect(found.hits[0]?.tabs).toEqual([{ id: "Семантика", title: "Семантика" }])
     } finally {
       await index.close()
     }

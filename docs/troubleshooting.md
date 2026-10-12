@@ -11,7 +11,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | Sign-in expired | Run `drive personal session start` again. Add `--client-file` only for your own application. External Testing grants usually expire after seven days. |
 | No keyring is available | Reconnect with the explicit `--credential-storage file` option if private-file storage fits your setup. |
 | Search is empty | Run `status`, check selected roots with `folders list`, then `sync`. Try a known word with `search --exact`. |
-| A file was skipped | Check its type and download permission. Google Docs and uploaded Markdown/TXT are supported; PDF, Office, Sheets, Slides and shortcuts are not imported. |
+| A file was skipped | Check its type and download permission. Docs, Sheets and uploaded Markdown/TXT, PDF, `.docx`, `.xlsx` and CSV are imported; scanned PDFs, Slides and shortcuts are not. |
 | Sync stopped with errors | Repeat sync; pending work resumes. Read the report rather than treating a partial import as complete. |
 | Semantic search reports a missing model | Prepare the shared model cache as described in [search](search.md#search-by-meaning), or use `--exact`. |
 | A link target cannot be found | Use a reference from the selected database. Check explicit store sharing before linking to messenger people/projects. |

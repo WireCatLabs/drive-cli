@@ -1,5 +1,6 @@
 export const FOLDER = "application/vnd.google-apps.folder"
 export const DOC = "application/vnd.google-apps.document"
+export const SHEET = "application/vnd.google-apps.spreadsheet"
 export interface GoogleUser {
   id?: string
   email?: string
@@ -15,6 +16,7 @@ export interface FileMetadata {
   url: string
   trashed: boolean
   canDownload: boolean
+  size?: number
   createdAt?: string
   description?: string
   driveId?: string

@@ -17,6 +17,7 @@ const File = v.object({
   url: v.string(),
   trashed: v.boolean(),
   canDownload: v.boolean(),
+  size: v.optional(v.number()),
   createdAt: v.optional(v.string()),
   description: v.optional(v.string()),
   driveId: v.optional(v.string()),
