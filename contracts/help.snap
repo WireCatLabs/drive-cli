@@ -39,6 +39,8 @@ Commands:
   notes|memos               Local shared memos about a source document
   memories                  Evidence-backed shared memories; AI output remains
                             proposed
+  facts                     What happened, as a document shows it; yours are
+                            accepted, an extraction's stay proposed
   people                    Google-observed identities and explicit links to
                             shared people
   api                       Discover and call the official Drive, Docs and

@@ -23,7 +23,11 @@ describe("shared document knowledge", () => {
       expect(await f.k.tags(f.principal, f.ref, "add", ["budget", "review"])).toEqual(["budget", "review"])
       const note = await f.k.addNote(f.principal, f.ref, "Check the budget", "Review")
       const link = await f.k.addLink(f.principal, f.ref, { to: note.ref, kind: "related-to" })
-      const memory = await f.k.addMemory(f.principal, f.ref, { body: "Budget decision", scope: "work", kind: "fact" })
+      const memory = await f.k.addMemory(f.principal, f.ref, {
+        body: "Budget decision",
+        scope: "work",
+        kind: "summary",
+      })
       expect(memory).toMatchObject({ subject: f.ref, evidence: [f.ref], status: "proposed", scope: "work" })
       await f.k.memory(f.principal, f.ref, memory.ref, "confirm")
       await f.index.save(f.principal, content({ ...f.metadata, name: "Renamed" }), "hash-one")
@@ -60,7 +64,7 @@ describe("shared document knowledge", () => {
       await expect(
         f.k.addMemory(f.principal, other, {
           body: "Wrong source",
-          kind: "fact",
+          kind: "summary",
           scope: "personal",
           supersedes: memory.ref,
         }),
@@ -72,7 +76,7 @@ describe("shared document knowledge", () => {
       await f.k.memory(f.principal, f.ref, memory.ref, "stale")
       const replacement = await f.k.addMemory(f.principal, f.ref, {
         body: "Corrected budget",
-        kind: "fact",
+        kind: "summary",
         scope: "personal",
         supersedes: memory.ref,
       })
@@ -124,12 +128,33 @@ describe("shared document knowledge", () => {
     const f = await setup()
     const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env, command: "drive" })
     try {
-      const memory = await f.k.addMemory(f.principal, f.ref, { body: "Source fact", kind: "fact", scope: "work" })
+      const memory = await f.k.addMemory(f.principal, f.ref, { body: "Source summary", kind: "summary", scope: "work" })
       await f.index.remove(f.principal, "doc-a")
       expect((await store.memories.get(memory.ref)).status).toBe("stale")
       await expect(f.k.context(f.principal, f.ref)).rejects.toThrow("account")
     } finally {
       await store.close()
+      await f.index.close()
+    }
+  })
+  it("keeps facts on their document: the owner's accepted at once, an extraction's proposed", async () => {
+    const f = await setup()
+    try {
+      const owned = await f.k.addFact(f.principal, f.ref, { statement: "The budget was approved", type: "decision" })
+      expect(owned).toMatchObject({ type: "decision", status: "accepted", subject: f.ref, evidence: [f.ref] })
+      const drawn = await f.k.addFact(f.principal, f.ref, {
+        statement: "Alice Example owns the budget",
+        type: "fact",
+        scope: "work",
+        by: { bot: "drive-memory", model: "example-model" },
+      })
+      expect(drawn).toMatchObject({ status: "proposed", model: "example-model", scope: "work" })
+      expect((await f.k.facts(f.principal, f.ref, { status: "proposed" })).map((fact) => fact.ref)).toEqual([drawn.ref])
+      expect((await f.k.fact(f.principal, f.ref, drawn.ref, "accept")).status).toBe("accepted")
+      await expect(
+        f.k.addMemory(f.principal, f.ref, { body: "A fact", kind: "fact" as never, scope: "work" }),
+      ).rejects.toThrow("summary, digest, preference")
+    } finally {
       await f.index.close()
     }
   })

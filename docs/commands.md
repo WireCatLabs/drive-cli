@@ -448,7 +448,7 @@ drive <profile> memories add <document> <text> [options]
 | Option | What it does |
 |---|---|
 | `--scope <scope>` |  One of: `personal`, `work`. |
-| `--kind <kind>` |  One of: `summary`, `digest`, `fact`, `preference`. Default: `fact`. |
+| `--kind <kind>` |  One of: `summary`, `digest`, `preference`. Default: `summary`. |
 | `--supersedes <memory-reference>` | replace an earlier memory about this same source. |
 
 ### `drive memories list`
@@ -464,7 +464,7 @@ drive <profile> memories list <document> [options]
 | Option | What it does |
 |---|---|
 | `--scope <scope>` |  One of: `personal`, `work`. |
-| `--kind <kind>` |  One of: `summary`, `digest`, `fact`, `preference`. |
+| `--kind <kind>` |  One of: `summary`, `digest`, `preference`. |
 | `--limit <n>` | maximum memories. Default: `50`. |
 
 ### `drive memories show`
@@ -538,6 +538,68 @@ drive <profile> memories extract <document> [options]
 | `--scope <scope>` |  One of: `personal`, `work`. |
 | `--tab <id>` | extract only this cached Google Docs tab. |
 | `--save` | save proposed memories with quotes and source snapshot hash. |
+
+## `drive facts`
+
+What happened, as a document shows it; yours are accepted, an extraction's stay proposed
+
+### `drive facts add`
+
+This command changes local state.
+
+```sh
+drive <profile> facts add <document> <statement> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required |  |
+| `statement` | required |  |
+
+| Option | What it does |
+|---|---|
+| `--type <type>` |  One of: `fact`, `statement`, `question`, `decision`, `promise`. Default: `fact`. |
+| `--scope <scope>` |  One of: `personal`, `work`. |
+
+### `drive facts list`
+
+```sh
+drive <profile> facts list <document> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required |  |
+
+| Option | What it does |
+|---|---|
+| `--type <type>` |  One of: `fact`, `statement`, `question`, `decision`, `promise`. |
+| `--status <status>` |  One of: `proposed`, `accepted`, `superseded`, `reversed`. |
+| `--limit <n>` | maximum facts. Default: `50`. |
+
+### `drive facts show`
+
+```sh
+drive <profile> facts show <document> <fact-reference>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required |  |
+| `fact-reference` | required |  |
+
+### `drive facts accept`
+
+This command changes local state.
+
+```sh
+drive <profile> facts accept <document> <fact-reference>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required |  |
+| `fact-reference` | required |  |
 
 ## `drive people`
 

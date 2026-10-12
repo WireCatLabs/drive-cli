@@ -51,8 +51,8 @@
       "allowSensitiveOutput": true
     },
     {
-      "id": "memories-survive",
-      "args": ["default", "memories", "list", "synthetic-doc", "--scope", "work", "--json"],
+      "id": "fact-memories-survive-as-facts",
+      "args": ["default", "facts", "list", "synthetic-doc", "--json"],
       "exit": 0,
       "stream": "stdout",
       "kind": "json",

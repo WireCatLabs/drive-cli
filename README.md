@@ -142,7 +142,8 @@ drive personal documents list --tag review
 drive personal notes add DOC_ID 'Check the assumptions' --title Review
 drive personal people list DOC_ID
 drive personal documents context DOC_ID
-drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope work
+drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
 drive personal memories extract DOC_ID --scope work
 drive personal documents history DOC_ID
 drive api methods --service docs

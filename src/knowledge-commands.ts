@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import type { Memory } from "@wirecat/cli-messaging/store"
+import { FACT_STATUSES, FACT_TYPES, MEMORY_KINDS, type Memory } from "@wirecat/cli-messaging/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"
 import { extractMemories } from "./extraction.js"
@@ -101,7 +101,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<document>")
     .argument("<text>")
     .addOption(new Option("--scope <scope>").choices(["personal", "work"]).makeOptionMandatory())
-    .addOption(new Option("--kind <kind>").choices(["summary", "digest", "fact", "preference"]).default("fact"))
+    .addOption(new Option("--kind <kind>").choices(MEMORY_KINDS).default("summary"))
     .option("--supersedes <memory-reference>", "replace an earlier memory about this same source")
     .action(async (doc: string, body: string, args) =>
       output(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" }))),
@@ -110,7 +110,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .command("list")
     .argument("<document>")
     .addOption(new Option("--scope <scope>").choices(["personal", "work"]))
-    .addOption(new Option("--kind <kind>").choices(["summary", "digest", "fact", "preference"]))
+    .addOption(new Option("--kind <kind>").choices(MEMORY_KINDS))
     .option("--limit <n>", "maximum memories", positive, 50)
     .action(async (doc: string, args) => output({ items: await run(doc, (k, p, ref) => k.memories(p, ref, args)) }))
   for (const action of ["show", "confirm", "stale"] as const)
@@ -156,21 +156,54 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
             if (helpers.document(doc).hash !== source.hash)
               throw new CliError("validation_error", "source changed during extraction; no memories were saved")
             const items = []
-            for (const item of result.items)
+            const by = { bot: "drive-memory", model: result.model }
+            for (const item of result.items) {
+              const body = `${item.body}\n\nSource quote: ${item.quote}\nSnapshot: ${source.hash}`
               items.push(
-                await k.addMemory(p, ref, {
-                  kind: item.kind,
-                  body: `${item.body}\n\nSource quote: ${item.quote}\nSnapshot: ${source.hash}`,
-                  scope: args.scope,
-                  status: "proposed",
-                  author: { bot: "drive-memory", model: result.model },
-                }),
+                item.kind === "fact"
+                  ? await k.addFact(p, ref, { statement: body, type: "fact", scope: args.scope, by })
+                  : await k.addMemory(p, ref, {
+                      kind: item.kind,
+                      body,
+                      scope: args.scope,
+                      status: "proposed",
+                      author: by,
+                    }),
               )
+            }
             return items
           })
         : []
       output({ ...result, provenance, saved })
     })
+  const facts = program
+    .command("facts")
+    .description("What happened, as a document shows it; yours are accepted, an extraction's stay proposed")
+  facts
+    .command("add")
+    .argument("<document>")
+    .argument("<statement>")
+    .addOption(new Option("--type <type>").choices(FACT_TYPES).default("fact"))
+    .addOption(new Option("--scope <scope>").choices(["personal", "work"]))
+    .action(
+      async (doc: string, statement: string, args: { type: (typeof FACT_TYPES)[number]; scope?: Memory["scope"] }) =>
+        output(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args }))),
+    )
+  facts
+    .command("list")
+    .argument("<document>")
+    .addOption(new Option("--type <type>").choices(FACT_TYPES))
+    .addOption(new Option("--status <status>").choices(FACT_STATUSES))
+    .option("--limit <n>", "maximum facts", positive, 50)
+    .action(async (doc: string, args) => output({ items: await run(doc, (k, p, ref) => k.facts(p, ref, args)) }))
+  for (const action of ["show", "accept"] as const)
+    facts
+      .command(action)
+      .argument("<document>")
+      .argument("<fact-reference>")
+      .action(async (doc: string, factRef: string) =>
+        output(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action))),
+      )
   const people = program.command("people").description("Google-observed identities and explicit links to shared people")
   people
     .command("list")

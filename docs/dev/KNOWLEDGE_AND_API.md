@@ -59,14 +59,17 @@ a complete character-level diff or necessarily reveal every actor's name. See Go
 [Activity query reference](https://developers.google.com/workspace/drive/activity/v2/reference/rest/v2/activity/query).
 Pass a returned `nextPageToken` as `--page-token` to read another page.
 
-## Memories and AI extraction
+## Memories, facts and AI extraction
 
 ```sh
-drive personal memories add DOC_ID 'Budget approved for Q4' --scope work --kind fact
+drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope work
+drive personal facts list DOC_ID --status proposed
+drive personal facts accept DOC_ID fact:FACT_ID
+drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
 drive personal memories list DOC_ID --scope work
 drive personal memories show DOC_ID memory:MEMORY_ID
 drive personal memories confirm DOC_ID memory:MEMORY_ID
-drive personal memories add DOC_ID 'Corrected budget fact' --scope work --supersedes memory:MEMORY_ID
+drive personal memories add DOC_ID 'Corrected budget summary' --scope work --supersedes memory:MEMORY_ID
 drive personal memories search DOC_ID budget --scope work
 drive personal memories stale DOC_ID memory:MEMORY_ID
 drive personal models configure --provider openai --model YOUR_MODEL
@@ -74,7 +77,10 @@ drive personal memories extract DOC_ID --scope work
 drive personal memories extract DOC_ID --scope work --tab TAB_ID --save
 ```
 
-Scopes are explicitly `personal` or `work`; kinds are fact, summary, digest or preference.
+Scopes are explicitly `personal` or `work`; memory kinds are summary, digest or preference. What happened —
+a fact, statement, question, decision or promise — is a fact: `facts add` records yours as accepted, and
+`memories extract --save` saves the facts it finds as proposed, next to the memories. Old memories of kind
+fact became facts when the shared store upgraded (cli-messaging 0.247.0).
 `--supersedes` replaces an earlier memory about this document; the earlier one becomes superseded.
 The shared store owns memory persistence, evidence references and search. Memory search filters
 the shared search result to this document and reports when its bounded candidate limit is reached.
