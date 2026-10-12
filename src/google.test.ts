@@ -173,6 +173,15 @@ describe("official Google SDK source", () => {
     const f = scripted((request) => (request.params?.alt === "media" ? bytes() : metadata("upload", mime)))
     expect((await f.source.content("upload")).text).toContain(needle)
   })
+  it("refuses text that reaches the per-file limit and names the setting to raise it", async () => {
+    const f = scripted((request) => (request.params?.alt === "media" ? "0123456789" : metadata("long", "text/plain")))
+    await expect(f.source.content("long", 10)).rejects.toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("config set maxTextChars"),
+      details: { textLimit: 10 },
+    })
+    expect((await f.source.content("long", 11)).text).toBe("0123456789")
+  })
   it("refuses a PDF without a text layer instead of guessing", async () => {
     const f = scripted((request) => (request.params?.alt === "media" ? pdf() : metadata("scan", "application/pdf")))
     await expect(f.source.content("scan")).rejects.toMatchObject({

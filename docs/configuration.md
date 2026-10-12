@@ -30,6 +30,7 @@ before moving or deleting them.
 | --- | --- | --- |
 | `readOnly` | Refuses local and remote mutations, including sync and adding notes | A profile or `defaults` |
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
+| `maxTextChars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
 | `models.memories.baseUrl` | Optional endpoint for the configured provider | A profile or `defaults` |
@@ -68,7 +69,9 @@ drive work config set readOnly false
 drive personal config show --json
 ```
 
-The first line changes the shared default; the second overrides it for `work`. The final command
+The first line changes the shared default; the second overrides it for `work`.
+`drive personal config set maxTextChars 500000` makes sync skip longer files with that reason; a
+file skipped for its length is read again on the next sync after the limit is raised. The final command
 prints the configuration with both sections, not a merged list of effective values.
 A missing profile is an error: `DRIVE_PROFILE` and a legacy saved default do not select one.
 

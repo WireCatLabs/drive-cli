@@ -7,6 +7,10 @@
   readers. `documents show` lists each sheet as a heading; a cell reads as `A1: value`. A scanned PDF without a
   text layer, a Sheet over Google's 10 MB export cap and a file over 50 MB are skipped with that reason. Files
   that an older version skipped only for their type are read on the next sync. Adds `unpdf` and `mammoth`.
+- **Longer files are imported, and the limit is a setting.** A file's text may now be up to 2 000 000
+  characters (was 200 000), the most the document readers return; text that reaches the limit is skipped, never
+  stored cut off. `drive <profile> config set maxTextChars <n>` lowers it for a profile or, with `--defaults`, for
+  all. A file skipped for its length, including by 0.2.0, is read again on the next sync once the limit allows it.
 
 ## 0.2.0 — 2026-10-12
 

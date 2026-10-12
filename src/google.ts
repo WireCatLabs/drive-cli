@@ -1,7 +1,7 @@
 import { docs } from "@googleapis/docs"
 import { drive, type drive_v3 } from "@googleapis/drive"
 import { CliError } from "@wirecat/cli-base"
-import { type Engine, extractText } from "@wirecat/cli-messaging/documents"
+import { type Engine, extractText, MAX_TEXT_CHARS } from "@wirecat/cli-messaging/documents"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
@@ -67,7 +67,8 @@ export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: stri
     { kind: "document", name: file.name, mime, path: file.name },
     (name) => import(name),
   )
-  if (read.status === "extracted" && !read.truncated) return read.text
+  // A truncated read is caught by the caller's length limit, which names the setting to raise.
+  if (read.status === "extracted") return read.text
   const reason =
     read.status === "needs-agent"
       ? "file has no text layer (a scan or images only); OCR is not supported"
@@ -77,7 +78,7 @@ export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: stri
           ? "file could not be read as text; it may be damaged or protected"
           : read.status === "unsupported"
             ? "file contents do not match its type"
-            : "file exceeds the ingestion bound; it was not silently truncated"
+            : `file is too large for the document readers (over 50 MB, or over ${MAX_TEXT_CHARS} characters of text)`
   throw new CliError("validation_error", reason)
 }
 
@@ -182,7 +183,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         }
         throw new CliError("provider_error", "change-feed pagination exceeded its bound; sync state was preserved")
       }),
-    content: (id) =>
+    content: (id, maxChars = MAX_TEXT_CHARS) =>
       safe(async () => {
         const before = await metadata(id)
         if (!before.canDownload) throw new CliError("permission_error", "downloads are restricted for this source")
@@ -235,8 +236,17 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           ).data as string
           text = markdown
         }
-        if (Buffer.byteLength(markdown) > MAX_BYTES || text.length > 200000)
-          throw new CliError("validation_error", "document exceeds the ingestion bound; it was not silently truncated")
+        if (Buffer.byteLength(markdown) > MAX_BYTES)
+          throw new CliError("validation_error", "document text is over 50 MB; it was not imported")
+        // >= so text the reader cut off at exactly its cap is never stored as complete.
+        if (text.length >= maxChars)
+          throw new CliError(
+            "validation_error",
+            maxChars >= MAX_TEXT_CHARS
+              ? `text reaches ${MAX_TEXT_CHARS} characters, the most the document readers return; it was not imported`
+              : `text reaches the ${maxChars}-character limit; raise it with drive <profile> config set maxTextChars <n>`,
+            { textLimit: maxChars },
+          )
         const after = await metadata(id)
         if (after.version !== before.version || after.modifiedAt !== before.modifiedAt)
           throw new CliError("provider_error", "document changed during export; retry sync", { retryable: true })

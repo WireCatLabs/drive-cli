@@ -194,6 +194,42 @@ describe("durable source sync", () => {
     saveState(f.env, "default", state)
     expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
   })
+  it("retries a file skipped for its length once the limit is raised, without a rescan", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    const profile = config.profiles.default as NonNullable<typeof config.profiles.default>
+    profile.maxTextChars = 1_000
+    writeConfig(f.env, config)
+    const sheet = file("sheet-a", ["root"], SHEET)
+    vi.mocked(f.source.children).mockResolvedValue([sheet])
+    vi.mocked(f.source.content).mockRejectedValue(new CliError("validation_error", "too long", { textLimit: 1_000 }))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).skipped).toEqual([
+      { id: "sheet-a", reason: "too long" },
+    ])
+    expect(vi.mocked(f.source.content).mock.calls[0]?.[1]).toBe(1_000)
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.source.content).toHaveBeenCalledTimes(1)
+    delete profile.maxTextChars
+    config.defaults = { maxTextChars: 2_000_000 }
+    writeConfig(f.env, config)
+    vi.mocked(f.source.content).mockResolvedValue(content(sheet))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("retries a file that 0.2.0 skipped for passing 200 000 characters", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const state = readState(f.env, "default", "synthetic-principal")
+    delete state.documents["doc-a"]
+    state.skipped = [
+      {
+        id: "doc-a",
+        reason: "document exceeds the ingestion bound; it was not silently truncated",
+        file: file("doc-a"),
+      },
+    ]
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
   it("skips a scanned PDF with its reason and keeps the batch moving", async () => {
     const f = fixture()
     vi.mocked(f.source.children).mockResolvedValue([file("scan", ["root"], "application/pdf"), file("doc-a")])
@@ -203,6 +239,7 @@ describe("durable source sync", () => {
       return content(file(id))
     })
     const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(vi.mocked(f.source.content).mock.calls[0]?.[1]).toBe(2_000_000)
     expect(result).toMatchObject({
       saved: 1,
       pending: 0,

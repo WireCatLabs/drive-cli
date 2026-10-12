@@ -38,7 +38,8 @@ alone does not add it to local search. Search needs an import; an export is opti
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
-Files over 50 MB are skipped before download. Files skipped by an older version only for their type
+Files over 50 MB are skipped before download, and so is text of 2 000 000 characters or more
+(lower it with the [`maxTextChars` setting](configuration.md#saved-settings)). Files skipped by an older version only for their type
 are read on the next sync.
 A different filename does not convert a binary document into text. Native Docs search includes
 body text, tables and footnotes; headers, footers, comments, images and suggested edits are

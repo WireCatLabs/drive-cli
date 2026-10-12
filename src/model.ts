@@ -46,7 +46,7 @@ export interface GoogleSource {
   children(id: string): Promise<FileMetadata[]>
   startToken(): Promise<string>
   changes(token: string): Promise<{ items: Change[]; cursor: string }>
-  content(id: string): Promise<DocumentContent>
+  content(id: string, maxChars?: number): Promise<DocumentContent>
 }
 export interface IndexedDocument {
   metadata: FileMetadata
@@ -59,6 +59,12 @@ export interface WorkItem {
   kind: "save" | "remove"
   file?: FileMetadata
 }
+export interface Skip {
+  id: string
+  reason: string
+  file?: FileMetadata
+  textLimit?: number
+}
 export interface SyncState {
   version: 1
   principal: string
@@ -66,13 +72,13 @@ export interface SyncState {
   cursor?: string
   folders: Record<string, FileMetadata>
   documents: Record<string, IndexedDocument>
-  skipped: { id: string; reason: string; file?: FileMetadata }[]
+  skipped: Skip[]
   pending?: {
     cursor: string
     scope: string
     folders: Record<string, FileMetadata>
     jobs: WorkItem[]
-    skipped: { id: string; reason: string; file?: FileMetadata }[]
+    skipped: Skip[]
   }
   lastSync?: string
 }

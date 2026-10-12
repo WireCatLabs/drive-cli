@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
 import { CliError } from "@wirecat/cli-base"
-import { activeProfile } from "./config.js"
+import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
 import {
@@ -8,6 +8,7 @@ import {
   type FileMetadata,
   FOLDER,
   type GoogleSource,
+  type Skip,
   type SyncState,
   type WorkItem,
 } from "./model.js"
@@ -20,8 +21,13 @@ const scopeHash = (roots: string[]) =>
     .digest("hex")
 const skipReason = (file: FileMetadata) =>
   !file.canDownload ? "downloads restricted" : supported(file) ? undefined : `unsupported type: ${file.mime}`
-// Skips decided by type alone are retried once a newer version can read that type.
-const typeSkip = (reason: string) => reason === "downloads restricted" || reason.startsWith("unsupported type: ")
+// Skips decided by type are retried once a newer version reads the type; length skips once the limit is raised.
+const retryable = (skip: Skip, limit: number) =>
+  skip.reason === "downloads restricted" ||
+  skip.reason.startsWith("unsupported type: ") ||
+  (skip.textLimit !== undefined && skip.textLimit < limit) ||
+  // 0.2.0 and earlier skipped text over 200 000 characters with this reason and no recorded limit.
+  (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000)
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
 export const within = (
   file: FileMetadata,
@@ -43,6 +49,7 @@ const plan = async (
   source: GoogleSource | undefined,
   state: SyncState,
   roots: string[],
+  limit: number,
   abandoned: string[] = [],
 ): Promise<NonNullable<SyncState["pending"]>> => {
   const scope = scopeHash(roots)
@@ -134,7 +141,7 @@ const plan = async (
     if (!within(file, roots, folders)) continue
     const previousSkip = state.skipped.find((item) => item.id === id)
     const reason = skipReason(file)
-    const retry = previousSkip && typeSkip(previousSkip.reason) && !reason
+    const retry = previousSkip && !reason && retryable(previousSkip, limit)
     if (previousSkip && !changed.has(id) && !initial && !retry) {
       skipped.push({ ...previousSkip, file })
       continue
@@ -203,13 +210,14 @@ export const sync = async (
     if (profile.roots.length && (!source || (await source.identity()) !== profile.principal))
       throw new CliError("authentication_error", "signed-in Google account does not match this profile")
     const state = readState(env, name, profile.principal)
+    const limit = textLimit(env, name)
     const currentScope = scopeHash(profile.roots)
     const abandoned =
       state.pending && (state.pending.scope !== currentScope || rescan) ? state.pending.jobs.map((job) => job.id) : []
     if (state.pending?.scope !== currentScope || rescan) delete state.pending
     if (rescan) delete state.cursor
     if (!state.pending) {
-      state.pending = await plan(source, state, profile.roots, abandoned)
+      state.pending = await plan(source, state, profile.roots, limit, abandoned)
       state.skipped = state.pending.skipped
       saveState(env, name, state)
     }
@@ -237,7 +245,7 @@ export const sync = async (
           result.skipped.push(skipped)
         } else {
           if (!source) throw new CliError("configuration_error", "a pending save requires Google sign-in")
-          const content = await source.content(job.id)
+          const content = await source.content(job.id, limit)
           if (!within(content.metadata, profile.roots, pending.folders)) {
             await index.remove(profile.principal, job.id)
             removeSnapshot(env, name, job.id)
@@ -262,7 +270,12 @@ export const sync = async (
           await index.remove(profile.principal, job.id)
           removeSnapshot(env, name, job.id)
           delete state.documents[job.id]
-          const skipped = { id: job.id, reason: safe.message, ...(job.file ? { file: job.file } : {}) }
+          const skipped: Skip = {
+            id: job.id,
+            reason: safe.message,
+            ...(job.file ? { file: job.file } : {}),
+            ...(safe.details.textLimit ? { textLimit: limit } : {}),
+          }
           state.skipped = state.skipped.filter((item) => item.id !== job.id)
           state.skipped.push(skipped)
           result.skipped.push({ id: skipped.id, reason: skipped.reason })

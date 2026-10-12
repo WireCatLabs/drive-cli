@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
 import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-messaging/cli"
+import { MAX_TEXT_CHARS } from "@wirecat/cli-messaging/documents"
 import { LEVELS } from "@wirecat/cli-messaging/sends"
 import * as v from "valibot"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
@@ -10,6 +11,7 @@ const Common = {
   ...AI_ENTRIES,
   readOnly: v.optional(v.boolean()),
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
+  maxTextChars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
 }
 const Profile = v.strictObject({
   principal: v.string(),
@@ -58,6 +60,18 @@ export interface OAuthApplication {
   clientId: string
   clientSecret?: string
 }
+export const checkTextLimit = (value: unknown): number => {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
+    throw new CliError("validation_error", "maxTextChars must be a positive whole number of characters")
+  if (value > MAX_TEXT_CHARS)
+    throw new CliError(
+      "validation_error",
+      `maxTextChars can be at most ${MAX_TEXT_CHARS}: the document readers return at most that many characters`,
+    )
+  return value
+}
+export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
+  activeProfile(env, name).maxTextChars ?? readConfig(env).defaults?.maxTextChars ?? MAX_TEXT_CHARS
 export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication => {
   if (!file) {
     if (!env.DRIVE_GOOGLE_CLIENT_ID) {
