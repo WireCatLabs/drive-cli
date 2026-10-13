@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- **Offline file and folder catalog.** Sync stores metadata and parent relationships in the shared database for every selected file/folder, including unreadable formats and pending content. `catalog import` backfills the saved checkpoint without Google; `catalog list`, `show`, `search` and `tree` browse it offline. Filter names, MIME types, observed owners/editors and local tags. Folder tags, notes and relationships reuse existing knowledge APIs; metadata refresh preserves indexed text and stable references.
+- **Command discovery follows cli-base 0.26.** `commands --json` uses contract 1 and snake_case fields (`global_options`, `inherited_options`, `exit_codes`, `operation_id`, `takes_value`). MCP uses the same metadata and write guards.
+
 - **One error handler, cli-base's.** A failure prints one error object on stderr,
   `{"error": {"code", "reason", "message", "param"?, "details"?}}`, or a `✗ message` line at a terminal. A crash
   that is not a known failure is `internal_error` with reason `command.crashed` and exit code 1, in place of

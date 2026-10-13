@@ -129,3 +129,10 @@ legacy config/environment defaults are ignored and repeated/conflicting selector
 Help/version and account-independent discovery remain configuration-free. MAX's inspected shared
 parser still permits an implicit default; Drive intentionally enforces the owner's stricter
 cross-CLI account-selection requirement. No account records are renamed or migrated.
+
+Catalog lists use cli-base's validated query registry and the shared store's SQL compiler,
+with `kind`, `mime`, `name`, `parent`, observed `person`, `tag` and metadata `text` fields.
+They use `--limit`/`--page`; filter flags are not introduced. Catalog/tree/depth vocabulary is
+registered in cli-base. The cli-base adoption records 56 pre-existing handwritten option-role
+violations in the baseline; catalog commands add none. This baseline records inherited naming
+work and does not certify complete command-standard conformance.

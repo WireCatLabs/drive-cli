@@ -188,7 +188,7 @@ drive <profile> documents context <document>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 ### `drive documents get`
 
@@ -270,6 +270,128 @@ drive <profile> search <query> [options]
 | `--offset <n>` | how many results to skip. Default: `0`. |
 | `--exact` | match the words exactly: no word forms, no meaning. |
 
+## `drive catalog`
+
+browse stored Drive files and folders offline
+
+### `drive catalog import`
+
+put cached file and folder metadata into the shared database
+
+This command changes local state.
+
+```sh
+drive <profile> catalog import
+```
+
+### `drive catalog show`
+
+show stored metadata and the stable file or folder reference
+
+```sh
+drive <profile> catalog show <file>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | Google file or folder id, or its Drive URL. |
+
+### `drive catalog list`
+
+list cached files and folders using metadata queries
+
+```sh
+drive <profile> catalog list [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | metadata query: kind, mime, name, parent, person, tag; AND, OR, NOT. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many entries to return (at most 1000). Default: `50`. |
+| `--page <n>` | which page to return. Default: `1`. |
+
+### `drive catalog search`
+
+search cached names, descriptions, types and observed people
+
+```sh
+drive <profile> catalog search <query> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | required | metadata query: kind, mime, name, parent, person, tag; AND, OR, NOT. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many entries to return (at most 1000). Default: `50`. |
+| `--page <n>` | which page to return. Default: `1`. |
+
+### `drive catalog tree`
+
+show the cached hierarchy below a folder or all selected roots
+
+```sh
+drive <profile> catalog tree [folder] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `folder` | optional | Google folder id or URL; defaults to the explicitly selected profile's roots. |
+
+| Option | What it does |
+|---|---|
+| `--depth <n>` | maximum descendant depth, from 0 to 50. Default: `5`. |
+
+### `drive catalog tags`
+
+add owner tags to cached files or folders
+
+#### `drive catalog tags list`
+
+list local tags on a cached file or folder
+
+```sh
+drive <profile> catalog tags list <file>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | Google file or folder id, or its Drive URL. |
+
+#### `drive catalog tags add`
+
+add local tags on a cached file or folder
+
+This command changes local state.
+
+```sh
+drive <profile> catalog tags add <file> <tags>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | Google file or folder id, or its Drive URL. |
+| `tags` | required | local tag names. |
+
+#### `drive catalog tags remove`
+
+remove local tags on a cached file or folder
+
+This command changes local state.
+
+```sh
+drive <profile> catalog tags remove <file> <tags>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | Google file or folder id, or its Drive URL. |
+| `tags` | required | local tag names. |
+
 ## `drive tags`
 
 label imported documents; labels survive a sync
@@ -284,7 +406,7 @@ drive <profile> tags list <document>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 ### `drive tags add`
 
@@ -298,7 +420,7 @@ drive <profile> tags add <document> <tags>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `tags` | required | one or more tags. |
 
 ### `drive tags remove`
@@ -313,7 +435,7 @@ drive <profile> tags remove <document> <tags>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `tags` | required | one or more tags. |
 
 ## `drive relationships`
@@ -330,7 +452,7 @@ drive <profile> relationships list <document>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 ### `drive relationships add`
 
@@ -344,7 +466,7 @@ drive <profile> relationships add <document> <reference> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `reference` | required | what it connects to, such as person:<uid>, project:<id> or note:<id>. |
 
 | Option | What it does |
@@ -365,7 +487,7 @@ drive <profile> relationships remove <document> <relationship-id>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `relationship-id` | required | id, as relationships list prints it. |
 
 ## `drive notes`
@@ -384,7 +506,7 @@ drive <profile> notes add <document> <text> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `text` | required | the note's text. |
 
 | Option | What it does |
@@ -401,7 +523,7 @@ drive <profile> notes list <document> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 | Option | What it does |
 |---|---|
@@ -419,7 +541,7 @@ drive <profile> notes show <document> <note>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `note` | required | note:<id> reference, as notes list prints it. |
 
 ### `drive notes edit`
@@ -434,7 +556,7 @@ drive <profile> notes edit <document> <note> <text> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `note` | required | note:<id> reference, as notes list prints it. |
 | `text` | required | the note's new text. |
 
@@ -454,7 +576,7 @@ drive <profile> notes remove <document> <note>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `note` | required | note:<id> reference, as notes list prints it. |
 
 ## `drive memories`
@@ -473,7 +595,7 @@ drive <profile> memories add <document> <text> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `text` | required | what to remember. |
 
 | Option | What it does |
@@ -492,7 +614,7 @@ drive <profile> memories list <document> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 | Option | What it does |
 |---|---|
@@ -510,7 +632,7 @@ drive <profile> memories show <document> <memory>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `memory` | required | memory:<id> reference, as memories list prints it. |
 
 ### `drive memories confirm`
@@ -525,7 +647,7 @@ drive <profile> memories confirm <document> <memory>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `memory` | required | memory:<id> reference, as memories list prints it. |
 
 ### `drive memories stale`
@@ -540,7 +662,7 @@ drive <profile> memories stale <document> <memory>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `memory` | required | memory:<id> reference, as memories list prints it. |
 
 ### `drive memories search`
@@ -553,7 +675,7 @@ drive <profile> memories search <document> <query> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `query` | required | words to look for. |
 
 | Option | What it does |
@@ -572,7 +694,7 @@ drive <profile> memories extract <document> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 | Option | What it does |
 |---|---|
@@ -596,7 +718,7 @@ drive <profile> facts add <document> <statement> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `statement` | required | the fact, in one sentence. |
 
 | Option | What it does |
@@ -614,7 +736,7 @@ drive <profile> facts list <document> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 | Option | What it does |
 |---|---|
@@ -632,7 +754,7 @@ drive <profile> facts show <document> <fact>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `fact` | required | fact:<id> reference, as facts list prints it. |
 
 ### `drive facts confirm`
@@ -647,7 +769,7 @@ drive <profile> facts confirm <document> <fact>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `fact` | required | fact:<id> reference, as facts list prints it. |
 
 ## `drive identities`
@@ -664,7 +786,7 @@ drive <profile> identities list <document>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 
 ### `drive identities link`
 
@@ -678,7 +800,7 @@ drive <profile> identities link <document> <google-id> <person>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | Google file or folder id or URL in the local catalog. |
 | `google-id` | required | Google account id, as identities list prints it. |
 | `person` | required | person:<uid> reference of someone already known. |
 

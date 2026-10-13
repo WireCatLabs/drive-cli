@@ -28,7 +28,7 @@ alone does not add it to local search. Search needs an import; an export is opti
 | --- | --- | --- |
 | Native Google Doc | Fetches Docs content and Google's Markdown export | Search includes text from all tabs; export uses Google's Markdown |
 | Uploaded Markdown or TXT | Downloads text into the managed local cache | Text can be searched and exported |
-| Google folder | Traverses descendants and remembers IDs/parents in sync state | Folder itself is not a searchable document |
+| Google folder | Stores metadata and parents in the database; traverses descendants | Browse with `catalog tree`, search metadata, attach local tags and notes |
 | Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
 | Scanned PDF without a text layer | Saved by name with the reason | No OCR; found by its name |
@@ -77,9 +77,10 @@ count means the batch is unfinished: run `drive personal sync` again. This resum
 The initial scan is recursive; `files list --parent` lists immediate children only. If Google
 returns a `nextPageToken`, pass it to `files list --cursor TOKEN` for the next page.
 
-`folders list` shows selected roots. Folder IDs and parents are saved in profile sync state;
-there is no navigable folder tree in the shared database yet. Documents are grouped by account.
-Duplicate names are safe: use IDs, rather than titles, to select a document.
+`folders list` shows selected roots. `catalog tree` shows their cached hierarchy, and
+`catalog list "parent:FOLDER_ID"` lists a folder's direct children without Google. Documents remain grouped
+by account in the content index; moving them in Google does not change their local reference.
+Duplicate names are safe: use IDs, rather than titles, to select a source.
 
 ## Read content and metadata offline
 
@@ -101,10 +102,67 @@ and memories. Read the saved content directly; opening its Google link is option
 Offline means the last saved version, not a fresh check of Google. `status` reports the last
 sync and pending/skipped work. Full permission lists, comments, revisions, activity events and
 arbitrary API responses are not automatically cached. Live `files get` and `documents get`
-are different from cached `documents show`; `--offline` refuses them. Imported content and
-selected metadata are saved, rather than every field available from every Google API.
-To retain a full available file-metadata response separately, use the
-[offline JSON metadata recipe](recipes.md#save-full-available-metadata-for-offline-use).
+are different from cached `documents show`; `--offline` refuses them.
+
+Sync requests all available file-metadata fields and saves the provider response under a catalog
+entry's `provider_metadata`. Google only exposes fields your account may read. Old cache entries retain
+their normalized subset; `sync --rescan` refreshes metadata from Google.
+
+## Browse and organize the local catalog
+
+A **catalog** is the saved list of files and Google folders, their metadata and parent relationships.
+It lets you locate sources even when their content was not downloaded or cannot be read. Sync
+fills it automatically after discovery, before processing the bounded content batch.
+
+For an existing import, backfill it from your cache without Google or extra downloads:
+
+```sh
+drive personal catalog import --offline
+drive personal catalog tree --offline
+drive personal catalog list 'parent:FOLDER_ID' --offline --json
+drive personal catalog show FILE_ID --offline --json
+drive personal catalog search 'budget AND kind:file' --offline --json
+drive personal catalog list 'person:Rin* AND mime:"application/pdf"' --offline --json
+```
+
+`catalog import` copies metadata already saved in the sync checkpoint; it does not discover new
+Google files or advance the sync cursor. It includes pending sources and excludes pending
+removals. For fresher or more complete metadata, use `sync --rescan` with network access.
+
+`tree` starts at selected roots, or accepts a folder ID. `--depth 3` bounds its descendants;
+`truncated: true` means a branch has more children. Tree nodes are compact; use `show` for
+metadata. Lists accept `--limit` and `--page` and report `has_more`. List filters use the shared query
+language: `kind:folder`, `parent:FOLDER_ID`, `tag:follow-up` or `mime:"application/pdf"`.
+Combine them with `AND`, `OR` and `NOT`. `person:Rin*` matches an observed owner's or last
+editor's name, email or Google ID by prefix; quote a full name for an exact value. Metadata
+search also accepts bare words matching names, descriptions or types. This is separate from
+indexed text/meaning search and from
+`documents list --person`, which filters an explicitly linked stored person reference.
+
+Catalog entries return a stable `document:<id>` reference. That reference also represents a
+Google folder; it does not mean the folder has document text. Inspect `kind` and `content`:
+`metadata` means no indexed body, `indexed` means text was saved, and `unreadable` means an
+attempt saved the name and its failure reason. These states do not promise complete extraction.
+
+You can tag a folder, save a memo beside it or link it to an existing project:
+
+```sh
+drive personal catalog tags add FOLDER_ID project follow-up --offline
+drive personal catalog list 'tag:follow-up' --offline --json
+drive personal notes add FOLDER_ID 'Ask Rin which files are final' --offline
+drive personal relationships add FOLDER_ID project:PROJECT_ID --kind related-to --offline
+drive personal documents context FOLDER_ID --offline --json
+```
+
+Use Google IDs or URLs in these commands and project references from the same local store.
+Tags, notes and relationships reuse the shared knowledge records. Folder tags do not propagate
+to children, and do not change Google labels or permissions. Renames and moves retain the
+reference. Sources outside the selected scope leave the active catalog; metadata reconciliation
+preserves their identity and annotations. Ordinary content-removal jobs still remove source
+text and its document tags using the existing index rules.
+
+Each account's catalog is isolated. A completed scope holds at most 10,000 entries, with bounded
+metadata and tree output; choose narrower roots if a scan exceeds the bound.
 
 ## Keep the index current
 

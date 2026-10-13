@@ -1,9 +1,9 @@
-import { CliError, EXIT_CODES, GENERIC_FAILURE } from "@wirecat/cli-base"
+import { CliError } from "@wirecat/cli-base"
 import {
   annotate,
   type CommandInfo,
   type CommandsDocument,
-  describeOptions,
+  commandsDocument as sharedCommandsDocument,
   describeProgram,
   type OptionInfo,
 } from "@wirecat/cli-base/commands"
@@ -48,13 +48,8 @@ export const commandsDocument = (program: Command, path: string[] = []): Command
     available = [...found.commands]
   }
   return {
-    cli: "drive",
-    version: VERSION,
-    contract: CONTRACT,
-    description: program.description(),
-    global_options: describeOptions(program),
+    ...sharedCommandsDocument(program, { cli: "drive", version: VERSION, contract: CONTRACT }),
     ...(found ? { scope: [...found.path], inherited_options: inherited } : {}),
     commands: found ? [found] : all,
-    exit_codes: { ok: 0, internal_error: GENERIC_FAILURE, ...EXIT_CODES },
   }
 }

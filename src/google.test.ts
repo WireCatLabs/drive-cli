@@ -31,7 +31,7 @@ const scripted = (respond: (request: Request) => unknown) => {
 describe("official Google SDK source", () => {
   it("hydrates owner/editor provenance and retains it in validated checkpoints", async () => {
     const f = scripted((request) => {
-      expect(String(request.params?.fields)).toContain("lastModifyingUser")
+      expect(request.params?.fields).toBe("*")
       return {
         ...metadata(),
         createdTime: "2026-10-01T00:00:00Z",
@@ -42,6 +42,7 @@ describe("official Google SDK source", () => {
       }
     })
     const file = await f.source.metadata("doc-a")
+    expect(file.providerMetadata).toMatchObject({ driveId: "drive-one", mimeType: DOC })
     expect(file).toMatchObject({
       owners: [{ id: "owner-user", name: "Owner Sample" }],
       lastModifiedBy: { id: "editor-user" },
@@ -55,6 +56,9 @@ describe("official Google SDK source", () => {
     expect(readState(local.env, "default", "synthetic-principal").documents["doc-a"]?.metadata.lastModifiedBy?.id).toBe(
       "editor-user",
     )
+    expect(
+      readState(local.env, "default", "synthetic-principal").documents["doc-a"]?.metadata.providerMetadata,
+    ).toMatchObject({ description: "Synthetic", driveId: "drive-one" })
   })
   it("requests all tabs and preserves native Markdown independently of searchable tab text", async () => {
     const f = scripted((request) => {
@@ -111,7 +115,7 @@ describe("official Google SDK source", () => {
   })
   it("preserves the final change cursor and requests parent IDs", async () => {
     const f = scripted((request) => {
-      expect(String(request.params?.fields)).toContain("parents")
+      expect(String(request.params?.fields)).toContain("file(*)")
       return request.params?.pageToken === "start"
         ? { changes: [{ fileId: "doc-a", file: metadata() }], nextPageToken: "second" }
         : { changes: [{ fileId: "doc-b", removed: true }], newStartPageToken: "future" }

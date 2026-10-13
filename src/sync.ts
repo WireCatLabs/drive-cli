@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
 import { CliError, isCliError } from "@wirecat/cli-base"
+import { catalogFiles } from "./catalog.js"
 import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
@@ -14,6 +15,7 @@ import {
   type WorkItem,
 } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
+import { within } from "./scope.js"
 import { readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
 import { VERSION } from "./version.js"
 
@@ -39,21 +41,8 @@ const changedSince = (previous: FileMetadata, file: FileMetadata) =>
   previous.canDownload !== file.canDownload ||
   JSON.stringify(previous.parents) !== JSON.stringify(file.parents)
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
-export const within = (
-  file: FileMetadata,
-  roots: string[],
-  folders: Record<string, FileMetadata>,
-  seen = new Set<string>(),
-): boolean => {
-  if (file.trashed) return false
-  if (roots.includes(file.id)) return true
-  if (seen.has(file.id)) throw new CliError("invalid_response", "folder ancestry contains a cycle")
-  const next = new Set([...seen, file.id])
-  return file.parents.some((id) => {
-    const folder = folders[id]
-    return folder ? within(folder, roots, folders, next) : roots.includes(id)
-  })
-}
+
+export { within } from "./scope.js"
 
 const plan = async (
   source: GoogleSource | undefined,
@@ -232,6 +221,7 @@ export const sync = async (
     }
     const pending = state.pending
     if (!pending) throw new CliError("invalid_response", "could not prepare a sync batch")
+    if (index.catalog) await index.catalog.import(profile.principal, catalogFiles(state, profile.roots))
     result.skipped = state.skipped.map(({ id, reason }) => ({ id, reason }))
     const saveNamesOnly = async (file: FileMetadata, reason: string) => {
       const doc: DocumentContent = { metadata: file, markdown: "", text: "", tabs: [], notRead: reason }
