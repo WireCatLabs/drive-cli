@@ -141,6 +141,11 @@ describe("shared CLI policy and execution", () => {
       return streams.stdout.join("")
     }
     await run("config", "set", "permissions", '{"api":"readonly"}', "--defaults")
+    await run("config", "set", "maxTextChars", "500000")
+    expect(readConfig(f.env).profiles.default?.maxTextChars).toBe(500000)
+    await expect(run("config", "set", "maxTextChars", "3000000")).rejects.toThrow("document readers return at most")
+    await expect(run("config", "set", "maxTextChars", "0")).rejects.toThrow("positive whole number")
+    await expect(run("config", "set", "maxTextChars", "1.5")).rejects.toThrow("positive whole number")
     expect(readConfig(f.env).defaults?.permissions?.api).toBe("readonly")
     expect(await run("complete", "--", "fil")).toContain("files")
     await expect(run("--offline", "files", "get", "doc-a")).rejects.toThrow("offline")

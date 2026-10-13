@@ -4,8 +4,8 @@ import { CliError } from "@wirecat/cli-base"
 import lockfile from "proper-lockfile"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
-import { FOLDER } from "./model.js"
-import { profileDir, readState, snapshotPath } from "./state.js"
+import { FOLDER, SHEET } from "./model.js"
+import { profileDir, readState, saveState, snapshotPath } from "./state.js"
 import { sync } from "./sync.js"
 import { content, file, fixture } from "./testing.js"
 
@@ -27,7 +27,7 @@ describe("durable source sync", () => {
   })
   it("retains explicit skipped coverage across polls without new changes", async () => {
     const f = fixture()
-    vi.mocked(f.source.children).mockResolvedValue([file("unsupported", ["root"], "application/pdf")])
+    vi.mocked(f.source.children).mockResolvedValue([file("unsupported", ["root"], "image/png")])
     await sync(f.source, f.index, f.env, "default", 200)
     await sync(f.source, f.index, f.env, "default", 200)
     expect(readState(f.env, "default", "synthetic-principal").skipped[0]?.id).toBe("unsupported")
@@ -177,10 +177,89 @@ describe("durable source sync", () => {
   })
   it("reports unsupported content without downloading it", async () => {
     const f = fixture()
-    vi.mocked(f.source.children).mockResolvedValue([file("binary", ["root"], "application/pdf")])
+    vi.mocked(f.source.children).mockResolvedValue([file("binary", ["root"], "image/png")])
     const result = await sync(f.source, f.index, f.env, "default", 200)
     expect(result.skipped).toHaveLength(1)
     expect(f.source.content).not.toHaveBeenCalled()
+  })
+  it("reads a file skipped by an older version once its type becomes readable", async () => {
+    const f = fixture()
+    const sheet = file("sheet-a", ["root"], SHEET)
+    vi.mocked(f.source.children).mockResolvedValue([sheet])
+    vi.mocked(f.source.content).mockResolvedValue(content(sheet))
+    await sync(f.source, f.index, f.env, "default", 200)
+    const state = readState(f.env, "default", "synthetic-principal")
+    delete state.documents["sheet-a"]
+    state.skipped = [{ id: "sheet-a", reason: `unsupported type: ${SHEET}`, file: sheet }]
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("retries a file skipped for its length once the limit is raised, without a rescan", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    const profile = config.profiles.default as NonNullable<typeof config.profiles.default>
+    profile.maxTextChars = 1_000
+    writeConfig(f.env, config)
+    const sheet = file("sheet-a", ["root"], SHEET)
+    vi.mocked(f.source.children).mockResolvedValue([sheet])
+    vi.mocked(f.source.content).mockRejectedValue(new CliError("validation_error", "too long", { textLimit: 1_000 }))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).skipped).toEqual([
+      { id: "sheet-a", reason: "too long" },
+    ])
+    expect(vi.mocked(f.source.content).mock.calls[0]?.[1]).toBe(1_000)
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.source.content).toHaveBeenCalledTimes(1)
+    delete profile.maxTextChars
+    config.defaults = { maxTextChars: 2_000_000 }
+    writeConfig(f.env, config)
+    vi.mocked(f.source.content).mockResolvedValue(content(sheet))
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("retries a file the local store refused once drive is upgraded", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([file("doc-a")])
+    vi.mocked(f.index.save).mockRejectedValueOnce(
+      new CliError("validation_error", "a note's text takes 0–200000 characters"),
+    )
+    const first = await sync(f.source, f.index, f.env, "default", 200)
+    expect(first.skipped[0]?.reason).toContain("local store refused")
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.source.content).toHaveBeenCalledTimes(1)
+    const state = readState(f.env, "default", "synthetic-principal")
+    state.skipped = state.skipped.map((item) => ({ ...item, storeRefusedIn: "0.0.1" }))
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("retries a file that 0.2.0 skipped for passing 200 000 characters", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const state = readState(f.env, "default", "synthetic-principal")
+    delete state.documents["doc-a"]
+    state.skipped = [
+      {
+        id: "doc-a",
+        reason: "document exceeds the ingestion bound; it was not silently truncated",
+        file: file("doc-a"),
+      },
+    ]
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
+  it("skips a scanned PDF with its reason and keeps the batch moving", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([file("scan", ["root"], "application/pdf"), file("doc-a")])
+    vi.mocked(f.source.content).mockImplementation(async (id) => {
+      if (id === "scan")
+        throw new CliError("validation_error", "PDF has no text layer (a scan or images); OCR is not supported")
+      return content(file(id))
+    })
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(vi.mocked(f.source.content).mock.calls[0]?.[1]).toBe(2_000_000)
+    expect(result).toMatchObject({
+      saved: 1,
+      pending: 0,
+      skipped: [{ id: "scan", reason: expect.stringContaining("no text layer") }],
+    })
   })
   it("prevents concurrent profile sync", async () => {
     const f = fixture()

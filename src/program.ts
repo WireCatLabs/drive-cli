@@ -14,7 +14,7 @@ import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { operationOf, validateRequest } from "./api-contract.js"
-import { activeProfile, application, fileId, profileName, readConfig, writeConfig } from "./config.js"
+import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
 import { googleSource } from "./google.js"
@@ -429,17 +429,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (!args.defaults) value.profiles[selected()] = target as (typeof value.profiles)[string]
       const [head, ...parts] = key.split(".")
       if (
-        !["readOnly", "permissions", "models"].includes(head ?? "") ||
+        !["readOnly", "permissions", "models", "maxTextChars"].includes(head ?? "") ||
         parts.some((part) => ["__proto__", "prototype", "constructor"].includes(part))
       )
-        throw new CliError("validation_error", "config set accepts readOnly, permissions or models")
+        throw new CliError("validation_error", "config set accepts readOnly, permissions, models or maxTextChars")
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {
         throw new CliError("validation_error", "setting value must be JSON")
       }
-      if (!parts.length) Object.assign(target, { [key]: parsed })
+      if (head === "maxTextChars" && !parts.length) target.maxTextChars = checkTextLimit(parsed)
+      else if (!parts.length) Object.assign(target, { [key]: parsed })
       else if (head === "permissions") {
         target.permissions ??= {}
         Object.assign(target.permissions, { [parts.join(".")]: parsed })

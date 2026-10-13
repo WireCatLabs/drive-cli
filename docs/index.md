@@ -79,8 +79,9 @@ Replace `FOLDER_ID` and the profile name. Continue sync while pending work remai
 
 ## Supported content and connections
 
-Local indexing supports native Google Docs and uploaded Markdown/plain text. PDF, Office files,
-Sheets, Slides, images, audio and shortcuts are skipped. Native Docs indexing includes body text,
+Local indexing supports native Google Docs and Sheets, and uploaded Markdown/plain text, PDF with a
+text layer, Word `.docx`, Excel `.xlsx` and CSV. Scanned PDFs, Slides, images, audio and shortcuts are
+skipped with their reason. Native Docs indexing includes body text,
 tables and footnotes across tabs; images, headers, footers, comments and suggested edits are not
 indexed. Live API access to a file's metadata is distinct from importing its content.
 

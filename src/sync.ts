@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto"
-import { CliError } from "@wirecat/cli-base"
-import { activeProfile } from "./config.js"
+import { CliError, isCliError } from "@wirecat/cli-base"
+import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
 import {
@@ -8,16 +8,29 @@ import {
   type FileMetadata,
   FOLDER,
   type GoogleSource,
+  type Skip,
   type SyncState,
   type WorkItem,
 } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
+import { VERSION } from "./version.js"
 
 const scopeHash = (roots: string[]) =>
   createHash("sha256")
     .update(JSON.stringify([...roots].sort()))
     .digest("hex")
+const skipReason = (file: FileMetadata) =>
+  !file.canDownload ? "downloads restricted" : supported(file) ? undefined : `unsupported type: ${file.mime}`
+// Skips decided by type are retried once a newer version reads the type; length skips once the limit is raised.
+const retryable = (skip: Skip, limit: number) =>
+  skip.reason === "downloads restricted" ||
+  skip.reason.startsWith("unsupported type: ") ||
+  (skip.textLimit !== undefined && skip.textLimit < limit) ||
+  // The store's own bounds change only with the shared package drive pins.
+  (skip.storeRefusedIn !== undefined && skip.storeRefusedIn !== VERSION) ||
+  // 0.2.0 and earlier skipped text over 200 000 characters with this reason and no recorded limit.
+  (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000)
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
 export const within = (
   file: FileMetadata,
@@ -39,6 +52,7 @@ const plan = async (
   source: GoogleSource | undefined,
   state: SyncState,
   roots: string[],
+  limit: number,
   abandoned: string[] = [],
 ): Promise<NonNullable<SyncState["pending"]>> => {
   const scope = scopeHash(roots)
@@ -129,15 +143,17 @@ const plan = async (
   for (const [id, file] of files) {
     if (!within(file, roots, folders)) continue
     const previousSkip = state.skipped.find((item) => item.id === id)
-    if (previousSkip && !changed.has(id) && !initial) {
+    const reason = skipReason(file)
+    const retry = previousSkip && !reason && retryable(previousSkip, limit)
+    if (previousSkip && !changed.has(id) && !initial && !retry) {
       skipped.push({ ...previousSkip, file })
       continue
     }
-    if (!supported(file) || !file.canDownload) {
-      skipped.push({ id, reason: !file.canDownload ? "downloads restricted" : `unsupported type: ${file.mime}`, file })
+    if (reason) {
+      skipped.push({ id, reason, file })
       continue
     }
-    if (changed.has(id)) {
+    if (changed.has(id) || retry) {
       const previous = state.documents[id]?.metadata
       if (
         !previous ||
@@ -197,13 +213,14 @@ export const sync = async (
     if (profile.roots.length && (!source || (await source.identity()) !== profile.principal))
       throw new CliError("authentication_error", "signed-in Google account does not match this profile")
     const state = readState(env, name, profile.principal)
+    const limit = textLimit(env, name)
     const currentScope = scopeHash(profile.roots)
     const abandoned =
       state.pending && (state.pending.scope !== currentScope || rescan) ? state.pending.jobs.map((job) => job.id) : []
     if (state.pending?.scope !== currentScope || rescan) delete state.pending
     if (rescan) delete state.cursor
     if (!state.pending) {
-      state.pending = await plan(source, state, profile.roots, abandoned)
+      state.pending = await plan(source, state, profile.roots, limit, abandoned)
       state.skipped = state.pending.skipped
       saveState(env, name, state)
     }
@@ -220,11 +237,8 @@ export const sync = async (
           removeSnapshot(env, name, job.id)
           delete state.documents[job.id]
           result.removed++
-        } else if (job.file && (!supported(job.file) || !job.file.canDownload)) {
-          const skipped = {
-            id: job.id,
-            reason: !job.file.canDownload ? "downloads restricted" : `unsupported type: ${job.file.mime}`,
-          }
+        } else if (job.file && skipReason(job.file)) {
+          const skipped = { id: job.id, reason: skipReason(job.file) as string }
           if (state.documents[job.id]) {
             await index.remove(profile.principal, job.id)
             removeSnapshot(env, name, job.id)
@@ -234,7 +248,7 @@ export const sync = async (
           result.skipped.push(skipped)
         } else {
           if (!source) throw new CliError("configuration_error", "a pending save requires Google sign-in")
-          const content = await source.content(job.id)
+          const content = await source.content(job.id, limit)
           if (!within(content.metadata, profile.roots, pending.folders)) {
             await index.remove(profile.principal, job.id)
             removeSnapshot(env, name, job.id)
@@ -243,7 +257,12 @@ export const sync = async (
           } else {
             const hash = hashText(content.text)
             const previous = state.documents[job.id]
-            const reference = await index.save(profile.principal, content, hash)
+            const reference = await index.save(profile.principal, content, hash).catch((error: unknown) => {
+              if (!isCliError(error) || error.code !== "validation_error") throw error
+              throw new CliError("validation_error", `the local store refused this text: ${error.message}`, {
+                storeRefusedIn: VERSION,
+              })
+            })
             saveSnapshot(env, name, content)
             state.documents[job.id] = { metadata: content.metadata, hash, reference, tabs: content.tabs.length }
             if (previous?.hash === hash) result.unchanged++
@@ -259,7 +278,13 @@ export const sync = async (
           await index.remove(profile.principal, job.id)
           removeSnapshot(env, name, job.id)
           delete state.documents[job.id]
-          const skipped = { id: job.id, reason: safe.message, ...(job.file ? { file: job.file } : {}) }
+          const skipped: Skip = {
+            id: job.id,
+            reason: safe.message,
+            ...(job.file ? { file: job.file } : {}),
+            ...(safe.details.textLimit ? { textLimit: limit } : {}),
+            ...(safe.details.storeRefusedIn ? { storeRefusedIn: VERSION } : {}),
+          }
           state.skipped = state.skipped.filter((item) => item.id !== job.id)
           state.skipped.push(skipped)
           result.skipped.push({ id: skipped.id, reason: skipped.reason })

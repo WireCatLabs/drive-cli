@@ -24,7 +24,7 @@ export const googleError = (error: unknown): CliError => {
       ...(status ? { status } : {}),
     })
   if (reason === "exportSizeLimitExceeded")
-    return new CliError("validation_error", "Google's native export size limit was exceeded")
+    return new CliError("validation_error", "Google exports at most 10 MB of a native file; this one is larger")
   if (status === 401)
     return new CliError("authentication_error", "Google sign-in expired — run drive session start again")
   if (status === 403)

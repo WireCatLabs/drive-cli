@@ -29,12 +29,18 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Native Google Doc | Fetches Docs content and Google's Markdown export | Search includes text from all tabs; export uses Google's Markdown |
 | Uploaded Markdown or TXT | Downloads text into the managed local cache | Text can be searched and exported |
 | Google folder | Traverses descendants and remembers IDs/parents in sync state | Folder itself is not a searchable document |
-| PDF, Word, Excel, presentations, images or audio | Skipped | No automatic extraction, OCR or transcription |
-| Native Google Sheets or Slides | Skipped | No spreadsheet/slide indexing |
+| Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; cells read as `A1: value` |
+| Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
+| Scanned PDF without a text layer | Skipped with the reason | No OCR |
+| Native Google Slides, presentations, `.xlsm`, images, audio, video, JSON or code | Skipped | No extraction, OCR or transcription |
 | Drive shortcut | Skipped | Target is not followed through the shortcut |
 | Download restricted by Google | Skipped | Metadata access does not guarantee content access |
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
+Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
+Files over 50 MB are skipped before download, and so is text of 2 000 000 characters or more
+(lower it with the [`maxTextChars` setting](configuration.md#saved-settings)). Files skipped by an older version only for their type
+are read on the next sync.
 A different filename does not convert a binary document into text. Native Docs search includes
 body text, tables and footnotes; headers, footers, comments, images and suggested edits are
 excluded. Search text and Google's Markdown export are separate representations, so inspect the

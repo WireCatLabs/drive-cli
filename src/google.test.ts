@@ -1,7 +1,8 @@
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { googleSource } from "./google.js"
-import { DOC, FOLDER } from "./model.js"
+import { DOC, FOLDER, SHEET } from "./model.js"
+import { pdf, wordDocument, workbook } from "./testing.js"
 
 interface Request {
   url: string | URL
@@ -141,6 +142,71 @@ describe("official Google SDK source", () => {
     )
     expect((await f.source.content("uploaded")).text).toBe("uploaded text")
     expect(f.request.mock.calls.some(([request]) => String(request.url).endsWith("/export"))).toBe(false)
+  })
+  it("exports a native Sheet as xlsx and keeps every tab as a heading", async () => {
+    const f = scripted((request) => {
+      if (String(request.url).endsWith("/export")) {
+        expect(request.params?.mimeType).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        return workbook({ Budget: "rentneedle", Redirects: "/old-page" })
+      }
+      return metadata("sheet-a", SHEET)
+    })
+    const result = await f.source.content("sheet-a")
+    expect(result.tabs.map((tab) => tab.title)).toEqual(["Budget", "Redirects"])
+    expect(result.text).toMatch(/^# Budget\n\nA1: rentneedle\n\n# Redirects\n\nA1: \/old-page$/)
+    expect(result.markdown).toBe(result.text)
+  })
+  it.each([
+    ["application/pdf", () => pdf("pdfneedle"), "pdfneedle"],
+    [
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      () => wordDocument("wordneedle"),
+      "wordneedle",
+    ],
+    [
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      () => workbook({ Core: "cellneedle" }),
+      "# Core",
+    ],
+    ["text/csv", () => Buffer.from("query,volume\nаренда кровати,40\n"), "аренда кровати"],
+  ])("downloads an uploaded %s and reads its text", async (mime, bytes, needle) => {
+    const f = scripted((request) => (request.params?.alt === "media" ? bytes() : metadata("upload", mime)))
+    expect((await f.source.content("upload")).text).toContain(needle)
+  })
+  it("refuses text that reaches the per-file limit and names the setting to raise it", async () => {
+    const f = scripted((request) => (request.params?.alt === "media" ? "0123456789" : metadata("long", "text/plain")))
+    await expect(f.source.content("long", 10)).rejects.toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("config set maxTextChars"),
+      details: { textLimit: 10 },
+    })
+    expect((await f.source.content("long", 11)).text).toBe("0123456789")
+  })
+  it("refuses a PDF without a text layer instead of guessing", async () => {
+    const f = scripted((request) => (request.params?.alt === "media" ? pdf() : metadata("scan", "application/pdf")))
+    await expect(f.source.content("scan")).rejects.toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("no text layer"),
+    })
+  })
+  it("names Google's export cap when a Sheet is too large to export", async () => {
+    const f = scripted((request) => {
+      if (String(request.url).endsWith("/export"))
+        throw {
+          status: 403,
+          response: { status: 403, data: { error: { errors: [{ reason: "exportSizeLimitExceeded" }] } } },
+        }
+      return metadata("big", SHEET)
+    })
+    await expect(f.source.content("big")).rejects.toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("10 MB"),
+    })
+  })
+  it("refuses a file over the size bound before downloading it", async () => {
+    const f = scripted(() => ({ ...metadata("huge", "application/pdf"), size: String(60 * 1024 * 1024) }))
+    await expect(f.source.content("huge")).rejects.toMatchObject({ code: "validation_error" })
+    expect(f.request.mock.calls.some(([request]) => request.params?.alt === "media")).toBe(false)
   })
   it("sanitizes provider errors instead of printing request credentials", async () => {
     const f = scripted(() => {

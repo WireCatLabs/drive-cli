@@ -17,11 +17,19 @@ const File = v.object({
   url: v.string(),
   trashed: v.boolean(),
   canDownload: v.boolean(),
+  size: v.optional(v.number()),
   createdAt: v.optional(v.string()),
   description: v.optional(v.string()),
   driveId: v.optional(v.string()),
   owners: v.optional(v.array(User)),
   lastModifiedBy: v.optional(User),
+})
+const Skip = v.object({
+  id: ID,
+  reason: v.string(),
+  file: v.optional(File),
+  textLimit: v.optional(v.number()),
+  storeRefusedIn: v.optional(v.string()),
 })
 const State = v.object({
   version: v.literal(1),
@@ -30,7 +38,7 @@ const State = v.object({
   cursor: v.optional(v.string()),
   folders: v.record(ID, File),
   documents: v.record(ID, v.object({ metadata: File, hash: v.string(), reference: v.string(), tabs: v.number() })),
-  skipped: v.array(v.object({ id: ID, reason: v.string(), file: v.optional(File) })),
+  skipped: v.array(Skip),
   lastSync: v.optional(v.string()),
   pending: v.optional(
     v.object({
@@ -38,7 +46,7 @@ const State = v.object({
       scope: v.string(),
       folders: v.record(ID, File),
       jobs: v.array(v.object({ id: ID, kind: v.picklist(["save", "remove"]), file: v.optional(File) })),
-      skipped: v.array(v.object({ id: ID, reason: v.string(), file: v.optional(File) })),
+      skipped: v.array(Skip),
     }),
   ),
 })

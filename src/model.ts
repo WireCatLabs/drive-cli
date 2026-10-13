@@ -1,5 +1,6 @@
 export const FOLDER = "application/vnd.google-apps.folder"
 export const DOC = "application/vnd.google-apps.document"
+export const SHEET = "application/vnd.google-apps.spreadsheet"
 export interface GoogleUser {
   id?: string
   email?: string
@@ -15,6 +16,7 @@ export interface FileMetadata {
   url: string
   trashed: boolean
   canDownload: boolean
+  size?: number
   createdAt?: string
   description?: string
   driveId?: string
@@ -44,7 +46,7 @@ export interface GoogleSource {
   children(id: string): Promise<FileMetadata[]>
   startToken(): Promise<string>
   changes(token: string): Promise<{ items: Change[]; cursor: string }>
-  content(id: string): Promise<DocumentContent>
+  content(id: string, maxChars?: number): Promise<DocumentContent>
 }
 export interface IndexedDocument {
   metadata: FileMetadata
@@ -57,6 +59,13 @@ export interface WorkItem {
   kind: "save" | "remove"
   file?: FileMetadata
 }
+export interface Skip {
+  id: string
+  reason: string
+  file?: FileMetadata
+  textLimit?: number
+  storeRefusedIn?: string
+}
 export interface SyncState {
   version: 1
   principal: string
@@ -64,13 +73,13 @@ export interface SyncState {
   cursor?: string
   folders: Record<string, FileMetadata>
   documents: Record<string, IndexedDocument>
-  skipped: { id: string; reason: string; file?: FileMetadata }[]
+  skipped: Skip[]
   pending?: {
     cursor: string
     scope: string
     folders: Record<string, FileMetadata>
     jobs: WorkItem[]
-    skipped: { id: string; reason: string; file?: FileMetadata }[]
+    skipped: Skip[]
   }
   lastSync?: string
 }

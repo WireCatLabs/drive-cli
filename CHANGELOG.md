@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- **Sheets, PDFs and Office files are searchable.** `drive sync` exports native Google Sheets as `.xlsx` and reads
+  every sheet, and reads uploaded PDF, Word `.docx`, Excel `.xlsx`, CSV and TSV files with the shared document
+  readers. `documents show` lists each sheet as a heading; a cell reads as `A1: value`. A scanned PDF without a
+  text layer, a Sheet over Google's 10 MB export cap and a file over 50 MB are skipped with that reason. Files
+  that an older version skipped only for their type are read on the next sync. Adds `unpdf` and `mammoth`.
+- **Longer files are imported, and the limit is a setting.** A file's text may now be up to 2 000 000
+  characters (was 200 000), the most the document readers return; text that reaches the limit is skipped, never
+  stored cut off. `drive <profile> config set maxTextChars <n>` lowers it for a profile or, with `--defaults`, for
+  all. A file skipped for its length, including by 0.2.0, is read again on the next sync once the limit allows it.
+- **Files the local store refused are retried after an upgrade.** When the shared store rejects a file's text, the
+  skip says so and the file is read again on the first sync after drive is upgraded, without `--rescan`.
+
 ## 0.2.0 — 2026-10-12
 
 - **Facts are their own thing, as in the shared store.** `drive facts add|list|show|accept` keep what happened —
