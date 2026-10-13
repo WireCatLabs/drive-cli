@@ -1,9 +1,9 @@
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
-import { CliError, captureStreams, isCliError } from "@wirecat/cli-base"
+import { CliError, captureStreams } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
-import { levelFor } from "@wirecat/cli-messaging/sends"
-import { CommanderError } from "commander"
+import { levelFor } from "@wirecat/cli-core/sends"
+import { mcpFailure } from "./failure.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
 import { createProgram, type ProgramOptions } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
@@ -26,7 +26,7 @@ export const mcpTools = (options: ProgramOptions, profile: string, flags: Policy
         command.path.join(" ") === "documents export"
       )
         return false
-      const keys = command.operationId ? methodPolicyKeys(command.operationId) : [command.path.join(".")]
+      const keys = command.operation_id ? methodPolicyKeys(command.operation_id) : [command.path.join(".")]
       return keys.every((key) => {
         const level = levelFor(settings.levels, key).level
         return level !== "deny" && !(command.mutates && (settings.readOnly || level === "readonly"))
@@ -45,7 +45,7 @@ export const mcpTools = (options: ProgramOptions, profile: string, flags: Policy
         const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
         if (!name || ["body-file", "allow-write", "allow-delete", "allow-dangerous"].includes(name)) continue
         properties[name] = {
-          type: option.takesValue ? "string" : "boolean",
+          type: option.takes_value ? "string" : "boolean",
           ...(option.choices ? { enum: option.choices } : {}),
         }
         if (option.mandatory) required.push(name)
@@ -62,7 +62,7 @@ export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) =
   for (const option of tool.command.options) {
     const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
     if (!name || input[name] === undefined) continue
-    if (option.takesValue) args.push(`--${name}`, String(input[name]))
+    if (option.takes_value) args.push(`--${name}`, String(input[name]))
     else if (input[name] === true) args.push(`--${name}`)
   }
   if (tool.command.arguments.length) args.push("--")
@@ -98,16 +98,7 @@ export const invokeTool = async (
     const value: unknown = JSON.parse(streams.stdout.join(""))
     return { content: [{ type: "text" as const, text: JSON.stringify(value) }], structuredContent: { result: value } }
   } catch (error) {
-    const safe =
-      error instanceof CommanderError
-        ? new CliError("validation_error", "invalid tool arguments")
-        : isCliError(error)
-          ? error
-          : new CliError("provider_error", "command failed; no provider or credential details were logged")
-    return {
-      isError: true,
-      content: [{ type: "text" as const, text: JSON.stringify({ error: { code: safe.code, message: safe.message } }) }],
-    }
+    return mcpFailure(error)
   }
 }
 export const buildMcpServer = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}) => {

@@ -2,11 +2,28 @@
 
 ## Unreleased
 
+- **One error handler, cli-base's.** A failure prints one error object on stderr,
+  `{"error": {"code", "reason", "message", "param"?, "details"?}}`, or a `✗ message` line at a terminal. A crash
+  that is not a known failure is `internal_error` with reason `command.crashed` and exit code 1, in place of
+  `provider_error`; its own text is never printed. The new `--debug` flag adds the whole record, with the cause and
+  the stack. Each failure drive raises names a registered `reason` (`policy.denied`, `sign-in.expired`,
+  `document.not-imported`, …), and `details` keeps only the keys registered for it: they are now under
+  `error.details`, not beside `code`. MCP tools return the same object as `structuredContent`.
+- **drive's own JSON keys are snake_case.** `session list` `selected_folders`; `session end` `signed_out`,
+  `cached_data`; `session start` `signed_in`; `status` `selected_folders`, `last_sync`, `remote_checked`;
+  `documents list` and `documents show` file fields `modified_at`, `can_download`, `created_at`, `drive_id`,
+  `last_modified_by`; `--dry-run` `dry_run` and `body_provided`; `api show` `request_schema`; `documents history`
+  `file_id`; `memories search` `candidate_limit_reached`; `identities list` `google_id`; `memories extract`
+  provenance `file_id`; `mcp --tools` `input_schema`; `commands --json` `global_options`, `inherited_options`,
+  `exit_codes`, `operation_id` and `takes_value`, with its `contract` raised to 1. Google's own answers (`api`,
+  `files`, `comments` and the rest) keep Google's names.
+- **drive runs on `@wirecat/cli-base` 0.26.0 and `@wirecat/cli-core` 0.262.0**, the renamed `@wirecat/cli-messaging`.
+
 - **Files drive cannot read are found by their name.** A scanned PDF, an image, a Slides deck, a file Google
   restricts for download or a file over the text limit is now saved with its name, type, size, owners and link, and
-  no text, instead of being left out of the index. `search` matches the words in its name; the hit has `notRead` with
-  the reason (`null` for a file drive read), so an agent opens `sourceUrl` instead of quoting text that is not there.
-  `drive sync` reports a `namesOnly` count beside `saved`, `documents show` shows `notRead`, and the `skipped` list
+  no text, instead of being left out of the index. `search` matches the words in its name; the hit has `not_read` with
+  the reason (`null` for a file drive read), so an agent opens `source_url` instead of quoting text that is not there.
+  `drive sync` reports a `names_only` count beside `saved`, `documents show` shows `not_read`, and the `skipped` list
   still says why. Trashed or removed files leave the index as before, and the next sync replaces an entry with the
   full text once drive can read the file. Files skipped by an older version are saved by name when they change or on
   `sync --rescan`.

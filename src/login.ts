@@ -22,7 +22,7 @@ export interface LoginOptions {
   activity?: boolean
   apps?: boolean
 }
-export const login = async (options: LoginOptions): Promise<{ profile: string; signedIn: true; storage: string }> => {
+export const login = async (options: LoginOptions): Promise<{ profile: string; signed_in: true; storage: string }> => {
   const name = profileName(options.profile)
   const state = randomBytes(32).toString("base64url")
   let accept: (code: string) => void = () => {}
@@ -57,7 +57,7 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     settled = true
     response.end("drive: sign-in received; you can close this tab")
     if (value) accept(value)
-    else reject(new CliError("authentication_error", "Google sign-in was declined"))
+    else reject(new CliError("authentication_error", "Google sign-in was declined", { reason: "sign-in.declined" }))
   })
   const cancelled = () => reject(new CliError("cancelled", "Google sign-in was cancelled"))
   options.signal?.addEventListener("abort", cancelled, { once: true })
@@ -103,17 +103,23 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     try {
       tokens = (await client.getToken({ code: authorizedCode, codeVerifier })).tokens
     } catch {
-      throw new CliError("authentication_error", "Google token exchange failed; credential details were not logged")
+      throw new CliError("authentication_error", "Google token exchange failed; credential details were not logged", {
+        reason: "sign-in.failed",
+      })
     }
     if (!tokens.refresh_token)
-      throw new CliError("authentication_error", "Google returned no offline refresh token; retry sign-in")
+      throw new CliError("authentication_error", "Google returned no offline refresh token; retry sign-in", {
+        reason: "sign-in.failed",
+      })
     client.setCredentials(tokens)
     if (options.signal?.aborted) throw new CliError("cancelled", "Google sign-in was cancelled")
     const principal = await (options.identity?.(client) ?? googleSource(client).identity())
     const config = readConfig(options.env)
     const previous = config.profiles[name]
     if (previous && previous.principal !== principal)
-      throw new CliError("authentication_error", "this profile belongs to another account; use a new profile")
+      throw new CliError("authentication_error", "this profile belongs to another account; use a new profile", {
+        reason: "profile.wrong-account",
+      })
     if (Object.entries(config.profiles).some(([other, profile]) => other !== name && profile.principal === principal))
       throw new CliError(
         "validation_error",
@@ -128,7 +134,7 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     )
     config.profiles[name] = { principal, roots: previous?.roots ?? [], storage: options.storage }
     writeConfig(options.env, config)
-    return { profile: name, signedIn: true, storage: options.storage }
+    return { profile: name, signed_in: true, storage: options.storage }
   } finally {
     clearTimeout(timer)
     options.signal?.removeEventListener("abort", cancelled)

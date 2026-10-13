@@ -49,7 +49,7 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "dryRun": true,
+        "dry_run": true,
         "method": "drive.files.get"
       }
     },

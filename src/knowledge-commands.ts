@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import { FACT_STATUSES, FACT_TYPES, MEMORY_KINDS, type Memory } from "@wirecat/cli-messaging/store"
+import { FACT_STATUSES, FACT_TYPES, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"
 import { extractMemories } from "./extraction.js"
@@ -180,10 +180,12 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       const result = await extractMemories(text, helpers.complete())
       const current = helpers.document(doc)
       if (current.hash !== source.hash)
-        throw new CliError("validation_error", "source changed during extraction; no memories were saved")
+        throw new CliError("validation_error", "source changed during extraction; no memories were saved", {
+          reason: "document.changed",
+        })
       const provenance = {
         document: source.ref,
-        fileId: source.id,
+        file_id: source.id,
         hash: source.hash,
         url: source.snapshot.metadata.url,
         tab: args.tab ?? null,
@@ -191,7 +193,9 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       const saved = args.save
         ? await run(doc, async (k, p, ref) => {
             if (helpers.document(doc).hash !== source.hash)
-              throw new CliError("validation_error", "source changed during extraction; no memories were saved")
+              throw new CliError("validation_error", "source changed during extraction; no memories were saved", {
+                reason: "document.changed",
+              })
             const items = []
             const by = { bot: "drive-memory", model: result.model }
             for (const item of result.items) {

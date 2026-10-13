@@ -10,23 +10,35 @@ export const googleError = (error: unknown): CliError => {
     response?: { status?: number; data?: { error?: string | { errors?: { reason?: string }[] } } }
   }
   if (value?.name === "AbortError" || value?.code === "ERR_CANCELED")
-    return new CliError("cancelled", "Google operation was cancelled")
+    return new CliError("cancelled", "Google operation was cancelled", { reason: "command.cancelled" })
   const status = value?.status ?? value?.response?.status
   const payload = value?.response?.data?.error
   const reason = typeof payload === "string" ? payload : payload?.errors?.[0]?.reason
   if (reason === "invalid_grant" || reason === "invalid_token")
-    return new CliError("authentication_error", "Google sign-in is no longer valid — run drive session start again")
+    return new CliError("authentication_error", "Google sign-in is no longer valid — run drive session start again", {
+      reason: "sign-in.expired",
+    })
   if (reason === "invalid_client")
-    return new CliError("configuration_error", "Google rejected the OAuth application; check its Desktop client setup")
+    return new CliError(
+      "configuration_error",
+      "Google rejected the OAuth application; check its Desktop client setup",
+      {
+        reason: "oauth-client.rejected",
+      },
+    )
   if (reason === "rateLimitExceeded" || reason === "userRateLimitExceeded")
     return new CliError("rate_limited", "Google rate limit reached; retry the command", {
       retryable: true,
       ...(status ? { status } : {}),
     })
   if (reason === "exportSizeLimitExceeded")
-    return new CliError("validation_error", "Google exports at most 10 MB of a native file; this one is larger")
+    return new CliError("validation_error", "Google exports at most 10 MB of a native file; this one is larger", {
+      reason: "export.too-large",
+    })
   if (status === 401)
-    return new CliError("authentication_error", "Google sign-in expired — run drive session start again")
+    return new CliError("authentication_error", "Google sign-in expired — run drive session start again", {
+      reason: "sign-in.expired",
+    })
   if (status === 403)
     return new CliError("permission_error", "Google denied this operation; check access and OAuth permissions", {
       status,

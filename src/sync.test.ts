@@ -189,10 +189,10 @@ describe("durable source sync", () => {
     const long = file("long")
     vi.mocked(f.source.children).mockResolvedValue([image, locked, long])
     vi.mocked(f.source.content).mockRejectedValue(
-      new CliError("validation_error", "too long", { textLimit: 2_000_000 }),
+      new CliError("validation_error", "too long", { text_limit: 2_000_000 }),
     )
     const first = await sync(f.source, f.index, f.env, "default", 200)
-    expect(first).toMatchObject({ namesOnly: 3, saved: 0, pending: 0 })
+    expect(first).toMatchObject({ names_only: 3, saved: 0, pending: 0 })
     expect(first.skipped.map(({ id }) => id).sort()).toEqual(["image", "locked", "long"])
     expect([...f.stored.values()].map((doc) => [doc.metadata.id, doc.text, doc.notRead])).toEqual([
       ["image", "", "unsupported type: image/png"],
@@ -210,7 +210,7 @@ describe("durable source sync", () => {
       cursor: "c2",
     })
     vi.mocked(f.source.content).mockImplementation(async (id) => content(id === "image" ? readable : file(id)))
-    expect(await sync(f.source, f.index, f.env, "default", 200)).toMatchObject({ saved: 1, namesOnly: 0 })
+    expect(await sync(f.source, f.index, f.env, "default", 200)).toMatchObject({ saved: 1, names_only: 0 })
     expect(f.stored.get("image")?.notRead).toBeUndefined()
     expect(readState(f.env, "default", "synthetic-principal").documents.image?.notRead).toBeUndefined()
 
@@ -242,7 +242,7 @@ describe("durable source sync", () => {
     writeConfig(f.env, config)
     const sheet = file("sheet-a", ["root"], SHEET)
     vi.mocked(f.source.children).mockResolvedValue([sheet])
-    vi.mocked(f.source.content).mockRejectedValue(new CliError("validation_error", "too long", { textLimit: 1_000 }))
+    vi.mocked(f.source.content).mockRejectedValue(new CliError("validation_error", "too long", { text_limit: 1_000 }))
     expect((await sync(f.source, f.index, f.env, "default", 200)).skipped).toEqual([
       { id: "sheet-a", reason: "too long" },
     ])

@@ -1,7 +1,7 @@
 import { docs } from "@googleapis/docs"
 import { drive, type drive_v3 } from "@googleapis/drive"
 import { CliError } from "@wirecat/cli-base"
-import { type Engine, extractText, MAX_TEXT_CHARS } from "@wirecat/cli-messaging/documents"
+import { type Engine, extractText, MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
@@ -56,6 +56,8 @@ const ENGINE_LABEL: Record<Engine, string> = {
   mammoth: "Word",
   "word-extractor": "Word (.doc)",
   "@napi-rs/canvas": "scanned PDF",
+  "defuddle/node": "web page",
+  linkedom: "HTML",
 }
 
 const sheetTabs = (text: string): TabText[] =>
@@ -132,7 +134,9 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
           files.push(...(data.files ?? []).map(metadataOf))
           if (files.length > 10000)
-            throw new CliError("provider_error", "folder listing exceeded 10000 entries; checkpoint preserved")
+            throw new CliError("provider_error", "folder listing exceeded 10000 entries; checkpoint preserved", {
+              reason: "listing.too-large",
+            })
           if (!data.nextPageToken) return files
           if (seen.has(data.nextPageToken))
             throw new CliError("invalid_response", "Google repeated a folder page token")
@@ -177,7 +181,9 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             })
           }
           if (items.length > 10000)
-            throw new CliError("provider_error", "change feed exceeded 10000 entries; retry with drive sync --rescan")
+            throw new CliError("provider_error", "change feed exceeded 10000 entries; retry with drive sync --rescan", {
+              reason: "listing.too-large",
+            })
           if (data.nextPageToken) {
             pageToken = data.nextPageToken
             continue
@@ -249,11 +255,14 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             maxChars >= MAX_TEXT_CHARS
               ? `text reaches ${MAX_TEXT_CHARS} characters, the most the document readers return; it was not imported`
               : `text reaches the ${maxChars}-character limit; raise it with drive <profile> config set maxTextChars <n>`,
-            { textLimit: maxChars },
+            { reason: "document.too-long", text_limit: maxChars },
           )
         const after = await metadata(id)
         if (after.version !== before.version || after.modifiedAt !== before.modifiedAt)
-          throw new CliError("provider_error", "document changed during export; retry sync", { retryable: true })
+          throw new CliError("provider_error", "document changed during export; retry sync", {
+            reason: "source.changed",
+            retryable: true,
+          })
         const result = { metadata: after, markdown, text: text.replace(/\r\n?/g, "\n"), tabs, ...(raw ? { raw } : {}) }
         if (Buffer.byteLength(JSON.stringify(result)) > MAX_BYTES)
           throw new CliError("validation_error", "document snapshot exceeds the ingestion bound")

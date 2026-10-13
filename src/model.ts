@@ -23,6 +23,28 @@ export interface FileMetadata {
   owners?: GoogleUser[]
   lastModifiedBy?: GoogleUser
 }
+/** What drive prints for a file: the stored metadata under snake_case keys. */
+export const metadataJson = ({
+  modifiedAt,
+  canDownload,
+  createdAt,
+  driveId,
+  lastModifiedBy,
+  ...rest
+}: FileMetadata) => ({
+  ...rest,
+  ...(modifiedAt === undefined ? {} : { modified_at: modifiedAt }),
+  can_download: canDownload,
+  ...(createdAt === undefined ? {} : { created_at: createdAt }),
+  ...(driveId === undefined ? {} : { drive_id: driveId }),
+  ...(lastModifiedBy === undefined ? {} : { last_modified_by: lastModifiedBy }),
+})
+export const skipJson = ({ file, textLimit, storeRefusedIn, ...rest }: Skip) => ({
+  ...rest,
+  ...(file ? { file: metadataJson(file) } : {}),
+  ...(textLimit === undefined ? {} : { text_limit: textLimit }),
+  ...(storeRefusedIn === undefined ? {} : { store_refused_in: storeRefusedIn }),
+})
 export interface TabText {
   id: string
   title: string

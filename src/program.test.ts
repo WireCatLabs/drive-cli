@@ -29,7 +29,7 @@ describe("standalone command workflow", () => {
         ["default", "documents", "export", "doc-a", "--out", target],
         { from: "user" },
       ),
-    ).rejects.toThrow()
+    ).rejects.toMatchObject({ code: "validation_error", details: { reason: "export.exists" } })
   })
   it("canonicalizes root aliases when selecting folders", async () => {
     const f = fixture([])
@@ -51,7 +51,7 @@ describe("standalone command workflow", () => {
     expect(contract.cli).toBe("drive")
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
-    expect(contract.globalOptions.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
+    expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
   })
   it("gives every handwritten command a short lower-case summary and examples that name real flags", () => {
     const program = createProgram({ env: {} })
@@ -108,6 +108,6 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["default", "status", "--json"], { from: "user" })
-    expect(JSON.parse(streams.stdout.join("")).remoteChecked).toBe(false)
+    expect(JSON.parse(streams.stdout.join("")).remote_checked).toBe(false)
   })
 })

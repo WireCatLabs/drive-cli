@@ -42,7 +42,10 @@ export const apiMethods = (): ApiMethod[] => {
 }
 export const apiMethod = (name: string): ApiMethod => {
   const found = apiMethods().find((method) => method.name === name)
-  if (!found) throw new CliError("validation_error", "unknown Google SDK method; run drive api list")
+  if (!found)
+    throw new CliError("validation_error", "unknown Google SDK method; run drive api list", {
+      reason: "api.unknown-method",
+    })
   return found
 }
 const forbidden = new Set([

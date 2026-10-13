@@ -12,7 +12,7 @@ The offline pipeline is:
 spec/google/*.json + provenance.json
   -> scripts/discovery-adapter.ts -> cli-base ApiModel
   -> shared types, Valibot schemas, manifest, definitions and coverage generators
-  -> cli-messaging generatedApiCommand
+  -> cli-core generatedApiCommand
   -> cli-base command registry and generated reference
 ```
 
@@ -63,7 +63,7 @@ workflow with several Google reads. OAuth scopes and Google file roles are addit
 explicit flags. `--yes` answers ordinary confirmation; `--allow-dangerous` answers permanent
 deletion. Neither changes deny/readonly. Legacy raw API `--allow-write` and `--allow-delete` remain
 supported. Normal non-destructive writes default to allow; an OAuth write grant is still required.
-Google writes use cli-messaging's guardedWrite/SendJournal and retain only operation metadata,
+Google writes use cli-core's guardedWrite/SendJournal and retain only operation metadata,
 never titles, document text, tokens or request bodies. An uncertain response is outcome_unknown;
 automatic write retry is disabled. No provider idempotency is invented.
 
@@ -105,7 +105,7 @@ pnpm smoke
 pnpm smoke:bun
 ```
 
-The reviewed community preset revision and cli-messaging 0.231.0 match the audited MAX checkout;
+The reviewed community preset revision and cli-core 0.231.0 match the audited MAX checkout;
 cli-base remains 0.19.4. Upgrade contracts use the real previous shared-store package 0.226.0 to
 seed an isolated database, then verify current search, document identity, tags, notes and memories.
 There is no previous published Drive release to pretend to test. The default database remains

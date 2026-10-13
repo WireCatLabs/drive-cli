@@ -6,7 +6,7 @@ import {
   generatedApiCommand,
   parseApiJson,
   readApiBody,
-} from "@wirecat/cli-messaging/cli"
+} from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { operationOf, operations, schemas, validateRequest } from "./api-contract.js"
 import { fileId } from "./config.js"
@@ -49,7 +49,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .description("show one method's request schema and contract, without calling Google")
       .argument("<method>", "Google method name, as api list prints it"),
     ["drive api show docs.documents.batchUpdate --json"],
-  ).action((method: string) => output({ operation: operationOf(method), requestSchema: requestSchema(method) }))
+  ).action((method: string) => output({ operation: operationOf(method), request_schema: requestSchema(method) }))
   examples(
     api
       .command("call")
@@ -68,9 +68,13 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       const method = apiMethod(name)
       validateApiParams(args.params)
       if (method.mutates && !args.allowWrite)
-        throw new CliError("permission_error", "this method changes Google data; pass --allow-write")
+        throw new CliError("permission_error", "this method changes Google data; pass --allow-write", {
+          reason: "write.not-allowed",
+        })
       if (method.destructive && !args.allowDelete)
-        throw new CliError("permission_error", "this method permanently deletes Google data; pass --allow-delete")
+        throw new CliError("permission_error", "this method permanently deletes Google data; pass --allow-delete", {
+          reason: "delete.not-allowed",
+        })
       validateRequest(name, args.params, args.body)
       output(await call(name, args.params, args.body))
     })
@@ -251,7 +255,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
               "nextPageToken,revisions(id,mimeType,modifiedTime,lastModifyingUser(permissionId,displayName,emailAddress),size)",
           })
       output({
-        fileId: file,
+        file_id: file,
         source: args.activity ? "activity" : "revisions",
         data,
         coverage: "Google-visible events/revisions; may be incomplete, not a character-level edit history",

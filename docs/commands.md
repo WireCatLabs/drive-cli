@@ -16,6 +16,7 @@ These options apply to the selected profile and current invocation.
 | `--jsonl` | print machine-readable JSON lines. |
 | `--agent-json` | show control and direction characters visibly in machine output. |
 | `--quiet` | suppress optional diagnostics. |
+| `--debug` | on failure, show the full error record: cause and stack. |
 | `--timeout <duration>` | whole-command deadline, e.g. 30s. |
 | `--max-output-bytes <n>` | largest result to print, in bytes; 0 for no limit. Default: `4194304`. |
 | `--read-only` | refuse local and remote mutations. |

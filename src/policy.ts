@@ -10,7 +10,7 @@ import {
   RecipientList,
   SendJournal,
   sendGuard,
-} from "@wirecat/cli-messaging/sends"
+} from "@wirecat/cli-core/sends"
 import { operations } from "./api-contract.js"
 import { paths, readConfig } from "./config.js"
 import { VERSION } from "./version.js"
@@ -61,7 +61,10 @@ export const checkPolicy = async (
   const { levels, readOnly } = policySettings(env, profile, flags)
   const { level } = levelFor(levels, key, defaults)
   if (level === "deny" || (mutates && (readOnly || level === "readonly")))
-    throw new CliError("permission_error", "profile policy refuses this operation", { permission: key })
+    throw new CliError("permission_error", "profile policy refuses this operation", {
+      reason: "policy.denied",
+      permission: key,
+    })
   if (mutates && level === "ask" && !flags.dryRun) {
     const destructive = defaults[key] === "ask"
     if (destructive ? flags.allowDangerous : flags.yes) return
@@ -71,7 +74,7 @@ export const checkPolicy = async (
       destructive
         ? "this deletion requires --allow-dangerous or an explicit permission"
         : "profile policy requires --yes or confirmation",
-      { permission: key },
+      { reason: "policy.confirm", permission: key },
     )
   }
 }

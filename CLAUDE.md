@@ -2,7 +2,7 @@
 
 Read architecture and testing before changes. Google-specific sign-in, read-only sources and
 ingestion coordination live here. Reuse cli-base for credentials, paths, output, errors and
-command discovery; reuse cli-messaging's public store/services for indexing, search and embeddings.
+command discovery; reuse cli-core's public store/services for indexing, search and embeddings.
 No SQL, replacement embedding engine or gog subprocess belongs here.
 
 Public code, fixtures and docs contain synthetic data only. Plans and journals live in cli-private.
@@ -21,7 +21,7 @@ document operations default to reads. Remote writes require an explicitly reques
 grant; generic mutating methods also require --allow-write, and permanent deletion requires
 --allow-delete. Account setup and local ingestion are explicit. No live remote writes in tests.
 
-Shared notes, tags, relationships, identity links and memories stay in cli-messaging's public
+Shared notes, tags, relationships, identity links and memories stay in cli-core's public
 store APIs. AI extraction uses its public model gateway and settings schema, validates exact
 source quotes and saves agent-authored proposed memories. Source changes/removals stale those
 memories. Never automatically merge people by display name or claim complete Google edit history.
