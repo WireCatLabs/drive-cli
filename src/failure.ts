@@ -71,6 +71,10 @@ const optionsOf = (args: readonly string[]) => {
   return end < 0 ? args : args.slice(0, end)
 }
 
+/** A person at a terminal who did not ask for machine output. */
+export const interactiveOf = (args: readonly string[], tty: boolean) =>
+  tty && !optionsOf(args).some((flag) => MACHINE_FLAGS.has(flag))
+
 const commandOf = (program: Command | undefined, args: readonly string[]) => {
   const path: string[] = []
   if (!program) return "drive"
@@ -101,7 +105,7 @@ export const reportFailure = (error: unknown, { args, program, streams, tty }: R
   const record = flags.includes("--debug")
     ? errorRecordOf(failure, object, { command: commandOf(program, flags), service: "drive", version: VERSION })
     : undefined
-  const interactive = tty && !flags.some((flag) => MACHINE_FLAGS.has(flag))
+  const interactive = interactiveOf(args, tty)
   streams.diagnostic(renderError(object, { cli: "drive", interactive, ...(record ? { record } : {}) }))
   return exitCodeOfError(object)
 }

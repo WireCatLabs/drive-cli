@@ -2,12 +2,12 @@
 import { execFile } from "node:child_process"
 import { CliError, catchCrashes, processStreams } from "@wirecat/cli-base"
 import { type Command, CommanderError } from "commander"
-import { REASONS, reportFailure } from "../failure.js"
+import { interactiveOf, REASONS, reportFailure } from "../failure.js"
 import { createProgram } from "../program.js"
 
 const args = process.argv.slice(2)
 const tty = process.stdout.isTTY === true
-const release = catchCrashes({ cli: "drive", interactive: tty, reasons: REASONS })
+const release = catchCrashes({ cli: "drive", interactive: interactiveOf(args, tty), reasons: REASONS })
 const controller = new AbortController()
 const cancelled = () => controller.abort()
 process.once("SIGINT", cancelled)
