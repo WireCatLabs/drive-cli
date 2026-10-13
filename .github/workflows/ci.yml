@@ -28,3 +28,4 @@ jobs:
         pnpm security:no-leak
         pnpm docs:check
         pnpm smoke
+        pnpm lint:commands

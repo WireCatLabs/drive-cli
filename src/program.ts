@@ -24,7 +24,7 @@ import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
-import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
+import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram } from "./registry.js"
 import { installRemoteCommands } from "./remote-commands.js"
 import { requestSchema } from "./schema.js"
 import { readSnapshot, readState } from "./state.js"
@@ -520,15 +520,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .command("commands")
     .argument("[path...]")
     .description("Discover the command tree and options as shared registry data")
-    .action((path: string[]) => {
-      const commands = describeDriveProgram(program)
-      const found = path.length ? flatten(commands).filter((item) => item.path.join(" ") === path.join(" ")) : commands
-      if (path.length && !found.length) throw new CliError("not_found", "command path was not found")
-      output({
-        items: found,
-        ...(path.length ? {} : { cli: "drive", commands, globalOptions: describeOptions(program) }),
-      })
-    })
+    .action((path: string[]) => output(commandsDocument(program, path)))
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command

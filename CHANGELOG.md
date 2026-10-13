@@ -11,6 +11,9 @@
   characters (was 200 000), the most the document readers return; text that reaches the limit is skipped, never
   stored cut off. `drive <profile> config set maxTextChars <n>` lowers it for a profile or, with `--defaults`, for
   all. A file skipped for its length, including by 0.2.0, is read again on the next sync once the limit allows it.
+- **`drive commands --json` prints the shared document shape.** The answer is `{ cli, version, contract,
+  description, globalOptions, commands, exitCodes }`, the same as tg and max; `commands <path>` adds `scope` and
+  `inheritedOptions` and puts the one command under `commands`. The old `items` field is gone.
 - **Files the local store refused are retried after an upgrade.** When the shared store rejects a file's text, the
   skip says so and the file is read again on the first sync after drive is upgraded, without `--rescan`.
 
