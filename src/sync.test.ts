@@ -182,6 +182,46 @@ describe("durable source sync", () => {
     expect(result.skipped).toHaveLength(1)
     expect(f.source.content).not.toHaveBeenCalled()
   })
+  it("keeps files it cannot read findable by name, replaces them when readable and drops them when trashed", async () => {
+    const f = fixture()
+    const image = file("image", ["root"], "image/png")
+    const locked = { ...file("locked"), canDownload: false }
+    const long = file("long")
+    vi.mocked(f.source.children).mockResolvedValue([image, locked, long])
+    vi.mocked(f.source.content).mockRejectedValue(
+      new CliError("validation_error", "too long", { textLimit: 2_000_000 }),
+    )
+    const first = await sync(f.source, f.index, f.env, "default", 200)
+    expect(first).toMatchObject({ namesOnly: 3, saved: 0, pending: 0 })
+    expect(first.skipped.map(({ id }) => id).sort()).toEqual(["image", "locked", "long"])
+    expect([...f.stored.values()].map((doc) => [doc.metadata.id, doc.text, doc.notRead])).toEqual([
+      ["image", "", "unsupported type: image/png"],
+      ["locked", "", "downloads restricted"],
+      ["long", "", "too long"],
+    ])
+    expect(readState(f.env, "default", "synthetic-principal").documents.image?.notRead).toBe(
+      "unsupported type: image/png",
+    )
+    expect(readFileSync(snapshotPath(f.env, "default", "image"), "utf8")).toContain("unsupported type")
+
+    const readable = { ...image, mime: "text/plain", version: "2" }
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "image", removed: false, file: readable }],
+      cursor: "c2",
+    })
+    vi.mocked(f.source.content).mockImplementation(async (id) => content(id === "image" ? readable : file(id)))
+    expect(await sync(f.source, f.index, f.env, "default", 200)).toMatchObject({ saved: 1, namesOnly: 0 })
+    expect(f.stored.get("image")?.notRead).toBeUndefined()
+    expect(readState(f.env, "default", "synthetic-principal").documents.image?.notRead).toBeUndefined()
+
+    vi.mocked(f.source.changes).mockResolvedValue({
+      items: [{ id: "locked", removed: false, file: { ...locked, trashed: true } }],
+      cursor: "c3",
+    })
+    expect((await sync(f.source, f.index, f.env, "default", 200)).removed).toBe(1)
+    expect(f.stored.has("locked")).toBe(false)
+    expect(() => readFileSync(snapshotPath(f.env, "default", "locked"))).toThrow()
+  })
   it("reads a file skipped by an older version once its type becomes readable", async () => {
     const f = fixture()
     const sheet = file("sheet-a", ["root"], SHEET)

@@ -341,7 +341,12 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ["drive personal documents show DOC_ID"],
   ).action((input: string) => {
     const { snapshot } = imported(input)
-    output({ metadata: snapshot.metadata, text: snapshot.text, tabs: snapshot.tabs })
+    output({
+      metadata: snapshot.metadata,
+      text: snapshot.text,
+      tabs: snapshot.tabs,
+      ...(snapshot.notRead ? { notRead: snapshot.notRead } : {}),
+    })
   })
   examples(
     documents

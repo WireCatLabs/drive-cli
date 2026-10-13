@@ -31,10 +31,10 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Google folder | Traverses descendants and remembers IDs/parents in sync state | Folder itself is not a searchable document |
 | Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
-| Scanned PDF without a text layer | Skipped with the reason | No OCR |
-| Native Google Slides, presentations, `.xlsm`, images, audio, video, JSON or code | Skipped | No extraction, OCR or transcription |
+| Scanned PDF without a text layer | Saved by name with the reason | No OCR; found by its name |
+| Native Google Slides, presentations, `.xlsm`, images, audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
 | Drive shortcut | Skipped | Target is not followed through the shortcut |
-| Download restricted by Google | Skipped | Metadata access does not guarantee content access |
+| Download restricted by Google | Saved by name with the reason | Metadata access does not guarantee content access; found by its name |
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
@@ -45,6 +45,12 @@ A different filename does not convert a binary document into text. Native Docs s
 body text, tables and footnotes; headers, footers, comments, images and suggested edits are
 excluded. Search text and Google's Markdown export are separate representations, so inspect the
 export when layout or tab coverage matters. Check the sync report for each skipped source.
+
+A file drive cannot read is still saved by its name, type, size, owners and link, with no text. `drive sync` counts
+these as `namesOnly` and lists each reason under `skipped`. `search` finds them by the words in their name, and
+the hit carries `notRead` with the reason, so open `sourceUrl` instead of quoting text that is not there.
+Meaning search ignores them. They leave the index like any other file: trashed, moved out of the folders or deleted.
+When a later version reads the type, or the text limit allows the file, the next sync replaces the entry with its text.
 
 <a id="import-a-folder"></a>
 

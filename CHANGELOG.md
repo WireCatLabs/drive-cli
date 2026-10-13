@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+- **Files drive cannot read are found by their name.** A scanned PDF, an image, a Slides deck, a file Google
+  restricts for download or a file over the text limit is now saved with its name, type, size, owners and link, and
+  no text, instead of being left out of the index. `search` matches the words in its name; the hit has `notRead` with
+  the reason (`null` for a file drive read), so an agent opens `sourceUrl` instead of quoting text that is not there.
+  `drive sync` reports a `namesOnly` count beside `saved`, `documents show` shows `notRead`, and the `skipped` list
+  still says why. Trashed or removed files leave the index as before, and the next sync replaces an entry with the
+  full text once drive can read the file. Files skipped by an older version are saved by name when they change or on
+  `sync --rescan`.
+
 ## 0.3.0 — 2026-10-13
 
 - **The local search models live in the WireCat folder.** drive now runs on `@wirecat/cli-messaging` 0.258.0 and

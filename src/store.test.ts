@@ -47,6 +47,33 @@ describe("released shared store and search", () => {
       await index.close()
     }
   })
+  it("finds a name-only document by its title, says it was not read and leaves it out of the text", async () => {
+    const f = fixture()
+    const index = await openIndex(f.env)
+    try {
+      const scan = { ...file("scan", ["root"], "image/png"), name: "Passport scan", size: 1234 }
+      const ref = await index.save(
+        "synthetic-principal",
+        { metadata: scan, markdown: "", text: "", tabs: [], notRead: "unsupported type: image/png" },
+        "hash",
+      )
+      await index.save("synthetic-principal", content(file("doc-a")), "hash-two")
+      const found = (await index.search("synthetic-principal", "passport", { limit: 10, offset: 0, exact: true })) as {
+        hits: { ref: string; sourceUrl: string; notRead: string | null }[]
+      }
+      expect(found.hits).toMatchObject([{ ref, sourceUrl: scan.url, notRead: "unsupported type: image/png" }])
+      const body = (await index.search("synthetic-principal", "budget", {
+        limit: 10,
+        offset: 0,
+        exact: true,
+      })) as {
+        hits: { ref: string; notRead: string | null }[]
+      }
+      expect(body.hits.map((hit) => hit.notRead)).toEqual([null])
+    } finally {
+      await index.close()
+    }
+  })
   it("does not search another principal when this account has no indexed folder", async () => {
     const f = fixture()
     const index = await openIndex(f.env)

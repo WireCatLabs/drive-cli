@@ -33,6 +33,7 @@ export interface DocumentContent {
   markdown: string
   text: string
   tabs: TabText[]
+  notRead?: string
   raw?: unknown
 }
 export interface Change {
@@ -53,6 +54,7 @@ export interface IndexedDocument {
   hash: string
   reference: string
   tabs: number
+  notRead?: string
 }
 export interface WorkItem {
   id: string

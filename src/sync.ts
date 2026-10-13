@@ -4,6 +4,7 @@ import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { supported } from "./google.js"
 import {
+  type DocumentContent,
   type DocumentIndex,
   type FileMetadata,
   FOLDER,
@@ -31,6 +32,12 @@ const retryable = (skip: Skip, limit: number) =>
   (skip.storeRefusedIn !== undefined && skip.storeRefusedIn !== VERSION) ||
   // 0.2.0 and earlier skipped text over 200 000 characters with this reason and no recorded limit.
   (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000)
+const changedSince = (previous: FileMetadata, file: FileMetadata) =>
+  previous.version !== file.version ||
+  previous.modifiedAt !== file.modifiedAt ||
+  previous.name !== file.name ||
+  previous.canDownload !== file.canDownload ||
+  JSON.stringify(previous.parents) !== JSON.stringify(file.parents)
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
 export const within = (
   file: FileMetadata,
@@ -145,32 +152,25 @@ const plan = async (
     const previousSkip = state.skipped.find((item) => item.id === id)
     const reason = skipReason(file)
     const retry = previousSkip && !reason && retryable(previousSkip, limit)
-    if (previousSkip && !changed.has(id) && !initial && !retry) {
+    if (previousSkip && !changed.has(id) && !initial && !retry && !(reason && !state.documents[id])) {
       skipped.push({ ...previousSkip, file })
       continue
     }
+    const known = state.documents[id]
     if (reason) {
       skipped.push({ id, reason, file })
+      if (initial || !known || known.notRead !== reason || changedSince(known.metadata, file))
+        jobs.push({ id, kind: "save", file })
       continue
     }
-    if (changed.has(id) || retry) {
-      const previous = state.documents[id]?.metadata
-      if (
-        !previous ||
-        previous.version !== file.version ||
-        previous.modifiedAt !== file.modifiedAt ||
-        previous.name !== file.name ||
-        previous.canDownload !== file.canDownload ||
-        JSON.stringify(previous.parents) !== JSON.stringify(file.parents) ||
-        initial
-      )
+    if (changed.has(id) || retry || known?.notRead) {
+      if (!known || known.notRead || changedSince(known.metadata, file) || initial)
         jobs.push({ id, kind: "save", file })
     }
   }
   for (const id of new Set([...Object.keys(state.documents), ...abandoned])) {
     const file = files.get(id)
-    if (!file || !within(file, roots, folders) || !supported(file) || !file.canDownload)
-      jobs.push({ id, kind: "remove" })
+    if (!file || !within(file, roots, folders)) jobs.push({ id, kind: "remove" })
   }
   // Only retain metadata for selected ancestry; the account-wide feed includes unrelated folders.
   const scopedFolders = Object.fromEntries(
@@ -181,6 +181,7 @@ const plan = async (
 
 export interface SyncResult {
   saved: number
+  namesOnly: number
   removed: number
   unchanged: number
   pending: number
@@ -202,6 +203,7 @@ export const sync = async (
   const lock = await lockProfile(env, name)
   const result: SyncResult = {
     saved: 0,
+    namesOnly: 0,
     removed: 0,
     unchanged: 0,
     pending: 0,
@@ -227,6 +229,16 @@ export const sync = async (
     const pending = state.pending
     if (!pending) throw new CliError("invalid_response", "could not prepare a sync batch")
     result.skipped = state.skipped.map(({ id, reason }) => ({ id, reason }))
+    const saveNamesOnly = async (file: FileMetadata, reason: string) => {
+      const doc: DocumentContent = { metadata: file, markdown: "", text: "", tabs: [], notRead: reason }
+      const hash = hashText("")
+      const previous = state.documents[file.id]
+      const reference = await index.save(profile.principal, doc, hash)
+      saveSnapshot(env, name, doc)
+      state.documents[file.id] = { metadata: file, hash, reference, tabs: 0, notRead: reason }
+      if (previous?.notRead === reason && !changedSince(previous.metadata, file)) result.unchanged++
+      else result.namesOnly++
+    }
     const jobs = [...pending.jobs].slice(0, max)
     for (const job of jobs) {
       if (signal?.aborted) throw new CliError("cancelled", "sync was cancelled; pending operations are retained")
@@ -238,14 +250,7 @@ export const sync = async (
           delete state.documents[job.id]
           result.removed++
         } else if (job.file && skipReason(job.file)) {
-          const skipped = { id: job.id, reason: skipReason(job.file) as string }
-          if (state.documents[job.id]) {
-            await index.remove(profile.principal, job.id)
-            removeSnapshot(env, name, job.id)
-            delete state.documents[job.id]
-          }
-          state.skipped.push(skipped)
-          result.skipped.push(skipped)
+          await saveNamesOnly(job.file, skipReason(job.file) as string)
         } else {
           if (!source) throw new CliError("configuration_error", "a pending save requires Google sign-in")
           const content = await source.content(job.id, limit)
@@ -275,15 +280,18 @@ export const sync = async (
         const safe = googleError(error)
         if (safe.code === "cancelled") throw safe
         if (job.kind === "save" && (safe.code === "not_found" || safe.code === "validation_error")) {
-          await index.remove(profile.principal, job.id)
-          removeSnapshot(env, name, job.id)
-          delete state.documents[job.id]
           const skipped: Skip = {
             id: job.id,
             reason: safe.message,
             ...(job.file ? { file: job.file } : {}),
             ...(safe.details.textLimit ? { textLimit: limit } : {}),
             ...(safe.details.storeRefusedIn ? { storeRefusedIn: VERSION } : {}),
+          }
+          if (job.file && safe.code === "validation_error") await saveNamesOnly(job.file, skipped.reason)
+          else {
+            await index.remove(profile.principal, job.id)
+            removeSnapshot(env, name, job.id)
+            delete state.documents[job.id]
           }
           state.skipped = state.skipped.filter((item) => item.id !== job.id)
           state.skipped.push(skipped)
