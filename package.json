@@ -1,6 +1,6 @@
 {
   "name": "@wirecat/drive-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Google Drive and Docs sync, Markdown snapshots and local search",
   "license": "Apache-2.0",
   "type": "module",
@@ -48,7 +48,7 @@
     "smoke": "node --experimental-strip-types scripts/smoke.ts",
     "docs:spell": "cspell lint --config cspell.json --no-progress README.md",
     "prepare": "lefthook install || true",
-    "lint:commands": "pnpm build && node node_modules/@wirecat/cli-base-lint/dist/dev/bin.js lint --cli dist/bin/drive.js"
+    "lint:commands": "pnpm build && cli-dev lint --cli dist/bin/drive.js"
   },
   "dependencies": {
     "@bomb.sh/tab": "0.0.22",
@@ -56,8 +56,8 @@
     "@googleapis/drive": "26.0.2",
     "@googleapis/driveactivity": "11.0.1",
     "@modelcontextprotocol/server": "2.1.0",
-    "@wirecat/cli-base": "0.21.0",
-    "@wirecat/cli-messaging": "0.256.0",
+    "@wirecat/cli-base": "0.24.0",
+    "@wirecat/cli-messaging": "0.258.0",
     "commander": "15.0.0",
     "google-auth-library": "11.2.0",
     "mammoth": "1.13.0",
@@ -73,7 +73,6 @@
     "@types/node": "^22.20.5",
     "@types/proper-lockfile": "4.1.4",
     "@vitest/coverage-v8": "^5.0.3",
-    "@wirecat/cli-base-lint": "npm:@wirecat/cli-base@0.22.0",
     "@wirecat/cli-testing": "0.4.0",
     "cspell": "10.3.6",
     "lefthook": "2.1.16",

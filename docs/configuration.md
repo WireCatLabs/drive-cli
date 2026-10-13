@@ -85,14 +85,14 @@ These values apply to the process that runs Drive; they are not saved by `config
 | `DRIVE_STATE_DIR` | Move snapshots, checkpoints and the default database directory |
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
 | `DRIVE_STORE` | Select an explicit database file instead of the default `drive.db` |
-| `CLI_COMMON_CACHE_DIR` | Select the shared local search-model cache |
+| `WIRECAT_STATE_DIR` | Move the WireCat folder that holds the shared local search models (default `~/.local/share/WireCat/`) |
 | `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Use your own Desktop OAuth application instead of WireCat's included app; set the ID before supplying its secret |
 | `DRIVE_MODELS_MEMORIES_PROVIDER`, `DRIVE_MODELS_MEMORIES_MODEL`, `DRIVE_MODELS_MEMORIES_BASE_URL` | Override optional AI extraction choices for this process |
 | `DRIVE_OPENAI_API_KEY`, `DRIVE_ANTHROPIC_API_KEY` | Supply the selected provider's credential; the corresponding unprefixed API-key variable is also accepted |
 
 Use the same directory overrides during sign-in and later commands: changing paths can also
 change which keyring entry the CLI sees. Model preparation and embedding must use the same
-`CLI_COMMON_CACHE_DIR` when it is overridden.
+`WIRECAT_STATE_DIR` when it is overridden.
 
 ## Options for one command
 

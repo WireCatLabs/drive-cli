@@ -54,6 +54,6 @@ export const commandsDocument = (program: Command, path: string[] = []) => {
     globalOptions: describeOptions(program),
     ...(found ? { scope: found.path, inheritedOptions } : {}),
     commands: found ? [found] : all,
-    exitCodes: { ok: 0, generic_failure: GENERIC_FAILURE, ...EXIT_CODES },
+    exitCodes: { ok: 0, internal_error: GENERIC_FAILURE, ...EXIT_CODES },
   }
 }
