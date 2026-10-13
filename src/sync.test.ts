@@ -55,6 +55,13 @@ describe("durable source sync", () => {
       code: "cancelled",
     })
   })
+  it("says to choose smaller folders when the chosen ones hold more entries than one sync reads", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue(
+      Array.from({ length: 10_001 }, (_, at) => file(`doc-${at}`, ["root"], "image/png")),
+    )
+    await expect(sync(f.source, f.index, f.env, "default", 200)).rejects.toThrow(/folders remove/)
+  })
   it("handles overlapping selected roots without mistaking them for a cycle", async () => {
     const f = fixture(["nested", "root"])
     vi.mocked(f.source.metadata).mockImplementation(async (id) => file(id, id === "nested" ? ["root"] : [], FOLDER))

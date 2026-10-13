@@ -18,7 +18,7 @@ import { installCatalogCommands } from "./catalog-commands.js"
 import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
-import { googleSource } from "./google.js"
+import { googleSource, MAX_ENTRIES } from "./google.js"
 import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
@@ -264,7 +264,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     output({ id, removed: true, next: `run drive ${name} sync to reconcile cached sources` })
   })
   examples(
-    program.command("sync").description("import what changed in the chosen folders, and finish an unfinished sync"),
+    program
+      .command("sync")
+      .summary("import what changed in the chosen folders, and finish an unfinished sync")
+      .description(
+        "import what changed in the chosen folders, and finish an unfinished sync; " +
+          `one sync reads at most ${MAX_ENTRIES} entries under the chosen folders, and as many changes`,
+      ),
     ["drive personal sync", "drive personal sync --rescan --limit 500"],
   )
     .option("--limit <n>", "how many documents to read from Google in this run", positive, 200)

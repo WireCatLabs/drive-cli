@@ -3,7 +3,7 @@ import { CliError, isCliError } from "@wirecat/cli-base"
 import { catalogFiles } from "./catalog.js"
 import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
-import { supported } from "./google.js"
+import { MAX_ENTRIES, supported, tooManyEntries } from "./google.js"
 import {
   type DocumentContent,
   type DocumentIndex,
@@ -77,10 +77,7 @@ const plan = async (
     visited.add(folder.id)
     folders[folder.id] = folder
     for (const file of await source.children(folder.id)) {
-      if (++discovered > 10000)
-        throw new CliError("provider_error", "folder scan exceeded 10000 entries; checkpoint preserved", {
-          reason: "listing.too-large",
-        })
+      if (++discovered > MAX_ENTRIES) throw tooManyEntries()
       if (file.mime === FOLDER) await crawl(file, new Set([...ancestry, folder.id]))
       else {
         files.set(file.id, file)

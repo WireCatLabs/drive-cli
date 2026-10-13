@@ -14,7 +14,17 @@ export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
   ...(user.displayName ? { name: user.displayName } : {}),
 })
 const MAX_PAGES = 1000
+/** Every entry of a scan or a change list is held in memory, and in one checkpoint, until the sync ends. */
+export const MAX_ENTRIES = 10_000
 const MAX_BYTES = 50 * 1024 * 1024
+
+export const tooManyEntries = () =>
+  new CliError(
+    "provider_error",
+    `the chosen folders hold more than ${MAX_ENTRIES} entries, the most one sync reads; ` +
+      "choose fewer or smaller folders with `folders remove` and `folders add`",
+    { reason: "listing.too-large" },
+  )
 const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 const READABLE = new Set([
   "application/pdf",
@@ -133,10 +143,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           if (data.incompleteSearch)
             throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
           files.push(...(data.files ?? []).map(metadataOf))
-          if (files.length > 10000)
-            throw new CliError("provider_error", "folder listing exceeded 10000 entries; checkpoint preserved", {
-              reason: "listing.too-large",
-            })
+          if (files.length > MAX_ENTRIES) throw tooManyEntries()
           if (!data.nextPageToken) return files
           if (seen.has(data.nextPageToken))
             throw new CliError("invalid_response", "Google repeated a folder page token")
@@ -180,10 +187,13 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
               ...(change.file ? { file: metadataOf(change.file) } : {}),
             })
           }
-          if (items.length > 10000)
-            throw new CliError("provider_error", "change feed exceeded 10000 entries; retry with drive sync --rescan", {
-              reason: "listing.too-large",
-            })
+          if (items.length > MAX_ENTRIES)
+            throw new CliError(
+              "provider_error",
+              `Google lists more than ${MAX_ENTRIES} changes since the last sync, the most one sync reads; ` +
+                `\`sync --rescan\` reads the chosen folders instead, which works while they hold at most ${MAX_ENTRIES} entries`,
+              { reason: "listing.too-large" },
+            )
           if (data.nextPageToken) {
             pageToken = data.nextPageToken
             continue

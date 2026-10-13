@@ -109,7 +109,7 @@ drive <profile> folders remove <folder>
 
 ## `drive sync`
 
-import what changed in the chosen folders, and finish an unfinished sync
+import what changed in the chosen folders, and finish an unfinished sync; one sync reads at most 10000 entries under the chosen folders, and as many changes
 
 This command changes local state.
 
