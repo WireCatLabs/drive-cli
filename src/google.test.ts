@@ -153,7 +153,7 @@ describe("official Google SDK source", () => {
     })
     const result = await f.source.content("sheet-a")
     expect(result.tabs.map((tab) => tab.title)).toEqual(["Budget", "Redirects"])
-    expect(result.text).toMatch(/^# Budget\n\nA1: rentneedle\n\n# Redirects\n\nA1: \/old-page$/)
+    expect(result.text).toBe("# Budget\nRow 1: A: rentneedle\n\n# Redirects\nRow 1: A: /old-page")
     expect(result.markdown).toBe(result.text)
   })
   it.each([

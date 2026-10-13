@@ -29,7 +29,7 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Native Google Doc | Fetches Docs content and Google's Markdown export | Search includes text from all tabs; export uses Google's Markdown |
 | Uploaded Markdown or TXT | Downloads text into the managed local cache | Text can be searched and exported |
 | Google folder | Traverses descendants and remembers IDs/parents in sync state | Folder itself is not a searchable document |
-| Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; cells read as `A1: value` |
+| Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
 | Scanned PDF without a text layer | Skipped with the reason | No OCR |
 | Native Google Slides, presentations, `.xlsm`, images, audio, video, JSON or code | Skipped | No extraction, OCR or transcription |
