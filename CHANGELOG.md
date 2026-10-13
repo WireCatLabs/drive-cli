@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **`drive sync` states its 10,000-entry cap, and its errors say what works.** The help, README and usage guide now
+  say one sync reads at most 10,000 entries under the chosen folders and 10,000 changes. Past the change-feed cap the
+  error no longer just says "retry with --rescan": it says a rescan works only while the folders hold at most 10,000
+  entries. Past the folder cap it says to choose fewer or smaller folders.
+
 ## 0.4.0 — 2026-10-14
 
 - **Offline file and folder catalog.** Sync stores metadata and parent relationships in the shared database for every selected file/folder, including unreadable formats and pending content. `catalog import` backfills the saved checkpoint without Google; `catalog list`, `show`, `search` and `tree` browse it offline. Filter names, MIME types, observed owners/editors and local tags. Folder tags, notes and relationships reuse existing knowledge APIs; metadata refresh preserves indexed text and stable references.
