@@ -53,7 +53,7 @@ export interface CatalogTree {
 }
 export const catalogTree = (entries: CatalogEntry[], roots: string[], depth: number): CatalogTree[] => {
   if (!Number.isSafeInteger(depth) || depth < 0 || depth > 50)
-    throw new CliError("validation_error", "tree depth must be between 0 and 50")
+    throw new CliError("validation_error", "tree depth must be between 0 and 50", { reason: "catalog.depth-invalid" })
   const byId = new Map(entries.map((entry) => [entry.externalId, entry]))
   const children = new Map<string, CatalogEntry[]>()
   for (const entry of entries)
@@ -64,9 +64,12 @@ export const catalogTree = (entries: CatalogEntry[], roots: string[], depth: num
     }
   let count = 0
   const node = (item: CatalogEntry, level: number, ancestors: Set<string>): CatalogTree => {
-    if (ancestors.has(item.externalId)) throw new CliError("invalid_response", "local folder ancestry contains a cycle")
+    if (ancestors.has(item.externalId))
+      throw new CliError("invalid_response", "local folder ancestry contains a cycle", { reason: "catalog.cycle" })
     if (++count > 10000)
-      throw new CliError("validation_error", "tree output exceeds 10000 nodes; choose a smaller folder")
+      throw new CliError("validation_error", "tree output exceeds 10000 nodes; choose a smaller folder", {
+        reason: "catalog.tree-limit",
+      })
     const found = children.get(item.externalId) ?? []
     const next = new Set([...ancestors, item.externalId])
     return {
@@ -85,7 +88,9 @@ export const catalogTree = (entries: CatalogEntry[], roots: string[], depth: num
   return roots.map((id) => {
     const entry = byId.get(id)
     if (entry?.kind !== "folder")
-      throw new CliError("not_found", "folder is not in the active local catalog; run catalog import or sync")
+      throw new CliError("not_found", "folder is not in the active local catalog; run catalog import or sync", {
+        reason: "catalog.not-found",
+      })
     return node(entry, 0, new Set())
   })
 }

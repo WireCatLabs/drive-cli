@@ -52,8 +52,6 @@ export const supported = (file: FileMetadata): boolean => {
 }
 
 const ENGINE_LABEL: Record<Engine, string> = {
-  "defuddle/node": "HTML",
-  linkedom: "HTML",
   unpdf: "PDF",
   mammoth: "Word",
   "word-extractor": "Word (.doc)",

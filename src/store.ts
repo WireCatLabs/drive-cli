@@ -50,7 +50,10 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
   return {
     catalog: {
       import: async (principal, files) => {
-        if (files.length > 10000) throw new CliError("validation_error", "catalog scope exceeds 10000 entries")
+        if (files.length > 10000)
+          throw new CliError("validation_error", "catalog scope exceeds 10000 entries", {
+            reason: "catalog.scope-limit",
+          })
         const selected = await folder(principal, true)
         if (!selected) throw new CliError("configuration_error", "catalog collection could not be registered")
         for (let start = 0; start < files.length; start += 200) {
@@ -123,7 +126,9 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
         const notes = await cached(principal)
         const path = `${id}.md`
         const note = notes.get(path)
-        if (note) await stale(note.ref)
+        const retired = note ? undefined : await store.catalog.get(selected.id, path, true)
+        const ref = note?.ref ?? retired?.ref
+        if (ref) await stale(ref)
         await store.notes.deleteFileNotes(selected.id, [path])
         notes.delete(path)
       }

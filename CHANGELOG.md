@@ -3,7 +3,6 @@
 ## Unreleased
 
 - **Offline file and folder catalog.** Sync stores metadata and parent relationships in the shared database for every selected file/folder, including unreadable formats and pending content. `catalog import` backfills the saved checkpoint without Google; `catalog list`, `show`, `search` and `tree` browse it offline. Filter names, MIME types, observed owners/editors and local tags. Folder tags, notes and relationships reuse existing knowledge APIs; metadata refresh preserves indexed text and stable references.
-- **Command discovery follows cli-base 0.26.** `commands --json` uses contract 1 and snake_case fields (`global_options`, `inherited_options`, `exit_codes`, `operation_id`, `takes_value`). MCP uses the same metadata and write guards.
 
 - **One error handler, cli-base's.** A failure prints one error object on stderr,
   `{"error": {"code", "reason", "message", "param"?, "details"?}}`, or a `✗ message` line at a terminal. A crash
@@ -20,7 +19,7 @@
   provenance `file_id`; `mcp --tools` `input_schema`; `commands --json` `global_options`, `inherited_options`,
   `exit_codes`, `operation_id` and `takes_value`, with its `contract` raised to 1. Google's own answers (`api`,
   `files`, `comments` and the rest) keep Google's names.
-- **drive runs on `@wirecat/cli-base` 0.26.0 and `@wirecat/cli-core` 0.262.0**, the renamed `@wirecat/cli-messaging`.
+- **drive runs on `@wirecat/cli-base` 0.27.0 and the fixed `@wirecat/cli-core` release**, the renamed `@wirecat/cli-messaging`.
 
 - **Files drive cannot read are found by their name.** A scanned PDF, an image, a Slides deck, a file Google
   restricts for download or a file over the text limit is now saved with its name, type, size, owners and link, and

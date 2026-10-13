@@ -31,9 +31,11 @@ export const metadataJson = ({
   createdAt,
   driveId,
   lastModifiedBy,
+  providerMetadata,
   ...rest
 }: FileMetadata) => ({
   ...rest,
+  ...(providerMetadata === undefined ? {} : { provider_metadata: providerMetadata }),
   ...(modifiedAt === undefined ? {} : { modified_at: modifiedAt }),
   can_download: canDownload,
   ...(createdAt === undefined ? {} : { created_at: createdAt }),

@@ -1,5 +1,5 @@
 import { captureStreams } from "@wirecat/cli-base"
-import type { CatalogEntry } from "@wirecat/cli-core/store"
+import { type CatalogEntry, openStore } from "@wirecat/cli-core/store"
 import { expect, it, vi } from "vitest"
 import { catalogFiles, catalogTree } from "./catalog.js"
 import { writeConfig } from "./config.js"
@@ -128,7 +128,7 @@ it("previews catalog writes before opening the database and publishes local muta
   await createProgram({ env: f.env, index: open, streams }).parseAsync(["default", "catalog", "import", "--dry-run"], {
     from: "user",
   })
-  expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ dryRun: true, local: true, mutates: true })
+  expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ dry_run: true, local: true, mutates: true })
   expect(open).not.toHaveBeenCalled()
 })
 it("uses the pending hierarchy and excludes scheduled removals when backfilling a checkpoint", () => {
@@ -195,9 +195,21 @@ it("clears active catalog scope when the owner removes all selected roots", asyn
   const index = await openIndex(f.env)
   try {
     await sync(f.source, index, f.env, "default", 10)
+    const source = await index.catalog?.get("synthetic-principal", "doc-a")
+    const memory = await index.knowledge?.addMemory("synthetic-principal", source?.ref ?? "", {
+      kind: "summary",
+      body: "Synthetic source summary",
+      scope: "work",
+    })
     writeConfig(f.env, { profiles: { default: { principal: "synthetic-principal", roots: [], storage: "keyring" } } })
     await sync(undefined, index, f.env, "default", 10)
     expect((await index.catalog?.list("synthetic-principal"))?.items).toEqual([])
+    const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env })
+    try {
+      expect((await store.memories.get(memory?.ref ?? "")).status).toBe("stale")
+    } finally {
+      await store.close()
+    }
   } finally {
     await index.close()
   }
@@ -212,10 +224,10 @@ it("labels metadata-only search hits so an agent cannot mistake a name match for
       { ...file("pending"), name: "Budget pending" },
     ])
     const result = (await index.search("synthetic-principal", "budget", { limit: 10, offset: 0, exact: true })) as {
-      hits: { content: string; kind: string; notRead: string }[]
+      hits: { content: string; kind: string; not_read: string }[]
     }
     expect(result.hits).toHaveLength(2)
-    expect(result.hits.every((hit) => hit.content === "metadata" && typeof hit.notRead === "string")).toBe(true)
+    expect(result.hits.every((hit) => hit.content === "metadata" && typeof hit.not_read === "string")).toBe(true)
     expect(result.hits.map((hit) => hit.kind).sort()).toEqual(["file", "folder"])
   } finally {
     await index.close()

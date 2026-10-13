@@ -127,7 +127,8 @@ drive personal catalog list 'person:Rin* AND mime:"application/pdf"' --offline -
 
 `catalog import` copies metadata already saved in the sync checkpoint; it does not discover new
 Google files or advance the sync cursor. It includes pending sources and excludes pending
-removals. For fresher or more complete metadata, use `sync --rescan` with network access.
+removals. If `entries` is zero and you have not synced the folder, run the first import above.
+For fresher or more complete metadata, use `sync --rescan` with network access.
 
 `tree` starts at selected roots, or accepts a folder ID. `--depth 3` bounds its descendants;
 `truncated: true` means a branch has more children. Tree nodes are compact; use `show` for

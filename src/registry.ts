@@ -3,9 +3,9 @@ import {
   annotate,
   type CommandInfo,
   type CommandsDocument,
-  commandsDocument as sharedCommandsDocument,
   describeProgram,
   type OptionInfo,
+  commandsDocument as sharedCommandsDocument,
 } from "@wirecat/cli-base/commands"
 import type { Command } from "commander"
 import { VERSION } from "./version.js"
