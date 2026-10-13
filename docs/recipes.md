@@ -125,9 +125,9 @@ Do not merge people merely because their names match.
 ```
 
 ```sh
-drive personal people list DOC_ID --json
-drive personal links add DOC_ID project:PROJECT_ID --kind related-to
-drive personal links add DOC_ID person:PERSON_ID --kind about
+drive personal identities list DOC_ID --json
+drive personal relationships add DOC_ID project:PROJECT_ID --kind related-to
+drive personal relationships add DOC_ID person:PERSON_ID --kind about
 drive personal documents context DOC_ID --json
 ```
 
@@ -152,7 +152,7 @@ drive personal memories extract DOC_ID --scope work --save
 drive personal memories list DOC_ID --scope work --json
 drive personal facts list DOC_ID --status proposed --json
 drive personal memories confirm DOC_ID memory:MEMORY_ID
-drive personal facts accept DOC_ID fact:FACT_ID
+drive personal facts confirm DOC_ID fact:FACT_ID
 ```
 
 Extraction previews by default; `--save` creates proposals. Replace `MEMORY_ID` with a returned
@@ -175,7 +175,7 @@ drive personal session start --client-file /path/to/desktop-client.json --activi
 drive personal documents history DOC_ID --activity --json
 ```
 
-Pass returned page tokens to the same command's `--page-token` option to continue. Google's
+Pass returned page tokens to the same command's `--cursor` option to continue. Google's
 visible revisions/events can be incomplete; they are not a character-by-character edit history.
 Comments are inspectable here but are not included in document search.
 
@@ -199,12 +199,12 @@ drive personal session start --client-file /path/to/desktop-client.json --write
 drive personal documents create --title 'Project review'
 drive personal documents update NEW_DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"Review notes\n"}}]}'
 drive personal files get NEW_DOC_ID --json
-drive personal files move NEW_DOC_ID --to FOLDER_ID --from OLD_PARENT_ID
+drive personal files move NEW_DOC_ID --parent FOLDER_ID --old-parent OLD_PARENT_ID
 drive personal sync --json
 ```
 
 Replace `NEW_DOC_ID` with the create response's `documentId`. Docs creates it in My Drive's root.
-Read its `parents` from `files get` and replace `OLD_PARENT_ID` with that parent ID; `--from` removes
+Read its `parents` from `files get` and replace `OLD_PARENT_ID` with that parent ID; `--old-parent` removes
 the old parent while adding the selected one. Google files have one parent; see the
 [official folder-move guide](https://developers.google.com/workspace/drive/api/guides/folder#move-files-between-folders).
 Confirm the selected folder contains

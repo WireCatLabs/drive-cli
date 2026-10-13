@@ -1302,7 +1302,26 @@
       "required": [],
       "type": "object"
     },
-    "name": "drive_api_methods"
+    "name": "drive_api_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["method"],
+      "type": "object"
+    },
+    "name": "drive_api_show"
   },
   {
     "annotations": {
@@ -1336,16 +1355,16 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "file": {
+        "comment-id": {
           "maxLength": 100000,
           "type": "string"
         },
-        "id": {
+        "file": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["file", "id"],
+      "required": ["file", "comment-id"],
       "type": "object"
     },
     "name": "drive_comments_get"
@@ -1359,14 +1378,14 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "cursor": {
+          "type": "string"
+        },
         "file": {
           "maxLength": 100000,
           "type": "string"
         },
         "limit": {
-          "type": "string"
-        },
-        "page-token": {
           "type": "string"
         }
       },
@@ -1425,14 +1444,14 @@
         "activity": {
           "type": "boolean"
         },
+        "cursor": {
+          "type": "string"
+        },
         "document": {
           "maxLength": 100000,
           "type": "string"
         },
         "limit": {
-          "type": "string"
-        },
-        "page-token": {
           "type": "string"
         }
       },
@@ -1471,12 +1490,12 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "url-or-id": {
+        "document": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["url-or-id"],
+      "required": ["document"],
       "type": "object"
     },
     "name": "drive_documents_show"
@@ -1524,12 +1543,12 @@
           "maxLength": 100000,
           "type": "string"
         },
-        "fact-reference": {
+        "fact": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["document", "fact-reference"],
+      "required": ["document", "fact"],
       "type": "object"
     },
     "name": "drive_facts_show"
@@ -1562,10 +1581,10 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "limit": {
+        "cursor": {
           "type": "string"
         },
-        "page-token": {
+        "limit": {
           "type": "string"
         },
         "parent": {
@@ -1611,7 +1630,7 @@
       "required": ["document"],
       "type": "object"
     },
-    "name": "drive_links_list"
+    "name": "drive_identities_list"
   },
   {
     "annotations": {
@@ -1683,12 +1702,12 @@
           "maxLength": 100000,
           "type": "string"
         },
-        "memory-reference": {
+        "memory": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["document", "memory-reference"],
+      "required": ["document", "memory"],
       "type": "object"
     },
     "name": "drive_memories_show"
@@ -1734,15 +1753,63 @@
           "maxLength": 100000,
           "type": "string"
         },
-        "note-reference": {
+        "note": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["document", "note-reference"],
+      "required": ["document", "note"],
       "type": "object"
     },
     "name": "drive_notes_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "permission-id": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file", "permission-id"],
+      "type": "object"
+    },
+    "name": "drive_permissions_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "cursor": {
+          "type": "string"
+        },
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "limit": {
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_permissions_list"
   },
   {
     "annotations": {
@@ -1761,7 +1828,7 @@
       "required": ["document"],
       "type": "object"
     },
-    "name": "drive_people_list"
+    "name": "drive_relationships_list"
   },
   {
     "annotations": {
@@ -1776,60 +1843,12 @@
           "maxLength": 100000,
           "type": "string"
         },
-        "id": {
+        "revision-id": {
           "maxLength": 100000,
           "type": "string"
         }
       },
-      "required": ["file", "id"],
-      "type": "object"
-    },
-    "name": "drive_permissions_get"
-  },
-  {
-    "annotations": {
-      "destructiveHint": false,
-      "openWorldHint": true,
-      "readOnlyHint": true
-    },
-    "inputSchema": {
-      "additionalProperties": false,
-      "properties": {
-        "file": {
-          "maxLength": 100000,
-          "type": "string"
-        },
-        "limit": {
-          "type": "string"
-        },
-        "page-token": {
-          "type": "string"
-        }
-      },
-      "required": ["file"],
-      "type": "object"
-    },
-    "name": "drive_permissions_list"
-  },
-  {
-    "annotations": {
-      "destructiveHint": false,
-      "openWorldHint": true,
-      "readOnlyHint": true
-    },
-    "inputSchema": {
-      "additionalProperties": false,
-      "properties": {
-        "file": {
-          "maxLength": 100000,
-          "type": "string"
-        },
-        "id": {
-          "maxLength": 100000,
-          "type": "string"
-        }
-      },
-      "required": ["file", "id"],
+      "required": ["file", "revision-id"],
       "type": "object"
     },
     "name": "drive_revisions_get"
@@ -1843,14 +1862,14 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "cursor": {
+          "type": "string"
+        },
         "file": {
           "maxLength": 100000,
           "type": "string"
         },
         "limit": {
-          "type": "string"
-        },
-        "page-token": {
           "type": "string"
         }
       },
@@ -1858,25 +1877,6 @@
       "type": "object"
     },
     "name": "drive_revisions_list"
-  },
-  {
-    "annotations": {
-      "destructiveHint": false,
-      "openWorldHint": true,
-      "readOnlyHint": true
-    },
-    "inputSchema": {
-      "additionalProperties": false,
-      "properties": {
-        "method": {
-          "maxLength": 100000,
-          "type": "string"
-        }
-      },
-      "required": ["method"],
-      "type": "object"
-    },
-    "name": "drive_schema"
   },
   {
     "annotations": {
@@ -1915,10 +1915,10 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "limit": {
+        "cursor": {
           "type": "string"
         },
-        "page-token": {
+        "limit": {
           "type": "string"
         }
       },

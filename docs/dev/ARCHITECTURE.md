@@ -16,7 +16,7 @@ or separate embedding engine exists here.
 | google-api.ts, remote-commands.ts | generated operation contracts, SDK requests and remote actions |
 | api-contract.ts, generated/, schema.ts | shared generated validators, metadata and agent-visible schemas |
 | policy.ts, mcp.ts | shared permission/write guards and the registry-derived agent adapter |
-| knowledge.ts, knowledge-commands.ts | shared tags, memos, links, identity associations and source-backed memories |
+| knowledge.ts, knowledge-commands.ts | shared tags, notes, relationships, identity links and source-backed memories |
 | extraction.ts | shared model gateway, structured proposals and exact source quote validation |
 | profile-lock.ts | shared heartbeat lock for sync and document knowledge operations |
 | bin/drive.ts | process, browser, cancellation and sanitized errors |

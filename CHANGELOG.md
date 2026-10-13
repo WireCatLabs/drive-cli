@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Command names follow the shared WireCat standard; the old names are gone.** `links` is `relationships`,
+  `people` is `identities`, `facts accept` is `facts confirm`, `models configure` is `models set`, `api methods` is
+  `api list` and `schema` is `api show`; the `memos` alias of `notes` is removed. Paging flags are `--cursor`
+  (was `--page-token`), `sync --limit` (was `--max`), and `files move --parent` / `--old-parent` (were `--to` /
+  `--from`). Arguments have one name per thing: `<document>`, `<folder>`, `<note>`, `<memory>`, `<fact>`,
+  `<person>`, `<comment-id>`. MCP tool names follow (`drive_relationships_list`, `drive_api_show`, …). Every
+  command, argument and option has help text, and every command lists examples in `--help` and `commands --json`.
 - **Sheets, PDFs and Office files are searchable.** `drive sync` exports native Google Sheets as `.xlsx` and reads
   every sheet, and reads uploaded PDF, Word `.docx`, Excel `.xlsx`, CSV and TSV files with the shared document
   readers. `documents show` lists each sheet as a heading; a cell reads as `A1: value`. A scanned PDF without a

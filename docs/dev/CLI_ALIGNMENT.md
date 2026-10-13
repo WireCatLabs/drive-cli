@@ -20,7 +20,7 @@ spec/google/*.json + provenance.json
 pnpm generate
 pnpm generate:check
 bin/drive personal api drive-files-get --help
-bin/drive schema docs.documents.batchUpdate --json
+bin/drive api show docs.documents.batchUpdate --json
 ```
 
 Generated methods have explicit parameter flags, for example `--file-id`, and support JSON bodies
@@ -33,7 +33,7 @@ Google Discovery does not express every backend rule. Some enumerations and requ
 appear in prose; they remain Google's responsibility. Date/time, byte and field-mask formats use
 their declared wire types rather than newly invented semantic validators. Media transport is
 listed as an omission, not counted as an implemented upload workflow. The request schemas exposed
-by `schema` declare JSON Schema 2020-12. Recursive references and exact string-valued int64 data
+by `api show` declare JSON Schema 2020-12. Recursive references and exact string-valued int64 data
 are preserved. Validators and operation effects are generated from committed inputs.
 
 ## Profiles and policies

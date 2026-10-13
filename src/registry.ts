@@ -1,10 +1,23 @@
 import { CliError, EXIT_CODES, GENERIC_FAILURE } from "@wirecat/cli-base"
-import { type CommandInfo, describeOptions, describeProgram, type OptionInfo } from "@wirecat/cli-base/commands"
+import {
+  annotate,
+  type CommandInfo,
+  describeOptions,
+  describeProgram,
+  type OptionInfo,
+} from "@wirecat/cli-base/commands"
 import type { Command } from "commander"
 import { VERSION } from "./version.js"
 
 /** These commands do not select an account or load account configuration. */
-export const ACCOUNT_FREE_COMMANDS = new Set(["commands", "complete", "schema", "api methods"])
+export const ACCOUNT_FREE_COMMANDS = new Set(["commands", "complete", "api show", "api list"])
+
+/** Examples go into `commands --json` for agents and under the options in `--help` for people. */
+export const examples = (command: Command, lines: string[]): Command =>
+  annotate(command, { examples: lines }).addHelpText(
+    "after",
+    `Examples:\n${lines.map((line) => `  ${line}`).join("\n")}\n`,
+  )
 
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
 export const CONTRACT = 0

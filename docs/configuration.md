@@ -107,7 +107,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 | `--timeout DURATION`, `--max-output-bytes N` | Bound the command deadline and buffered output |
 
 These flags are not file settings. Command-specific options such as `search --limit` and
-`sync --max` are described with their commands. Permission overrides take priority over profile
+`sync --limit` are described with their commands. Permission overrides take priority over profile
 permissions, then shared defaults. A saved `readOnly true` remains a restriction even when a
 permission says `allow`. AI environment overrides take priority over profile/default model choices.
 

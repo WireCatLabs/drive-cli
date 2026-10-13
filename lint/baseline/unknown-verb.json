@@ -1,16 +1,12 @@
 [
   "api call",
-  "api methods",
   "comments get",
   "documents get",
-  "facts accept",
   "files get",
   "files mkdir",
   "files trash",
   "memories stale",
-  "models configure",
   "permissions get",
   "revisions get",
-  "schema",
   "shared-drives"
 ]

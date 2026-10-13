@@ -13,7 +13,7 @@ import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/co
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
-import { operationOf, validateRequest } from "./api-contract.js"
+import { validateRequest } from "./api-contract.js"
 import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
@@ -24,9 +24,8 @@ import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
-import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram } from "./registry.js"
+import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram, examples } from "./registry.js"
 import { installRemoteCommands } from "./remote-commands.js"
-import { requestSchema } from "./schema.js"
 import { readSnapshot, readState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
@@ -60,7 +59,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const env = options.env ?? process.env
   const streams = options.streams ?? processStreams
   const program = new Command("drive")
-    .description("Manage Google Drive and Docs, local Markdown, shared knowledge and search")
+    .description("manage Google Drive and Docs, local Markdown, shared knowledge and search")
     .version(VERSION)
     .usage("<profile> [options] <command>")
     .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
@@ -71,7 +70,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
       parseDuration(raw, "--timeout"),
     )
-    .option("--max-output-bytes <n>", "bound buffered result output", offset, 4 * 1024 * 1024)
+    .option("--max-output-bytes <n>", "largest result to print, in bytes; 0 for no limit", offset, 4 * 1024 * 1024)
     .option("--read-only", "refuse local and remote mutations")
     .option("--offline", "answer only operations that use local cached data")
     .option("--dry-run", "validate command/policy and preview without acting")
@@ -156,16 +155,21 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       await index.close()
     }
   }
-  const session = program.command("session").description("Google browser sign-in and local account profiles")
-  session
-    .command("start")
-    .description("Approve Google access in your browser; read-only unless --write is requested")
-    .option("--client-file <file>", "use your own Desktop OAuth application JSON instead of WireCat's app")
-    .option("--credential-storage <storage>", "keyring or explicit private-file storage", "keyring")
-    .option("--no-browser", "print the sign-in URL without opening a browser")
-    .option("--write", "request remote Drive/Docs mutation permissions")
-    .option("--activity", "also request Drive Activity history permissions")
-    .option("--apps", "also request the installed Drive applications permission")
+  const session = program.command("session").description("sign in to Google and manage local profiles")
+  examples(
+    session.command("start").description("sign in to Google in the browser; read-only unless you pass --write"),
+    ["drive personal session start", "drive work session start --write --activity"],
+  )
+    .option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's")
+    .option(
+      "--credential-storage <storage>",
+      "where the sign-in is kept: keyring, or file for a private file",
+      "keyring",
+    )
+    .option("--no-browser", "print the sign-in URL instead of opening a browser")
+    .option("--write", "also ask for permission to change Drive files and Docs")
+    .option("--activity", "also ask for permission to read Drive Activity history")
+    .option("--apps", "also ask for permission to see installed Drive apps")
     .action(
       async (args: {
         clientFile?: string
@@ -194,77 +198,80 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         )
       },
     )
-  session
-    .command("list")
-    .description("Configured account profiles; no credentials are printed")
-    .action(() =>
-      output({
-        scope: "all-configured-profiles",
-        items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
-          profile: name,
-          selectedFolders: p.roots.length,
-          storage: p.storage,
-        })),
-      }),
-    )
-  session
-    .command("end")
-    .description("Remove this profile's local sign-in; cached data is retained")
-    .action(() => {
-      const name = selected()
-      const config = readConfig(env)
-      const profile = activeProfile(env, name)
-      credentials(env, profile.storage, options.keyring).remove(name)
-      // Preserve the principal and roots so reauthorization resumes the same source identities.
-      writeConfig(env, config)
-      output({ profile: name, signedOut: true, cachedData: "retained" })
-    })
-  const folders = program.command("folders").description("Select Google folders for local ingestion")
-  folders
-    .command("add")
-    .argument("<url-or-id>")
-    .description("Include a folder and its descendants")
-    .action(async (input: string) => {
-      const id = fileId(input)
-      const config = readConfig(env)
-      const name = selected()
-      const profile = activeProfile(env, name)
-      const metadata = await (await source()).metadata(id)
-      if (metadata.mime !== FOLDER || metadata.trashed)
-        throw new CliError("validation_error", "source is not an accessible Google folder")
-      if (!profile.roots.includes(metadata.id)) profile.roots.push(metadata.id)
-      config.profiles[name] = profile
-      writeConfig(env, config)
-      output({ id: metadata.id, name: metadata.name, added: true })
-    })
-  folders
-    .command("list")
-    .description("Selected folder IDs")
-    .action(() => output({ items: activeProfile(env, selected()).roots.map((id) => ({ id })) }))
-  folders
-    .command("remove")
-    .argument("<url-or-id>")
-    .description("Stop importing a folder; sync removes sources outside the remaining scope")
-    .action((input: string) => {
-      const id = fileId(input)
-      const config = readConfig(env)
-      const name = selected()
-      const profile = activeProfile(env, name)
-      profile.roots = profile.roots.filter((root) => root !== id)
-      config.profiles[name] = profile
-      writeConfig(env, config)
-      output({ id, removed: true, next: `run drive ${name} sync to reconcile cached sources` })
-    })
-  program
-    .command("sync")
-    .description("Fetch selected sources and resume a durable pending batch")
-    .option("--max <n>", "maximum source operations this run", positive, 200)
-    .option("--rescan", "reconcile selected folders from a fresh change token")
-    .option("--embed", "embed pending shared note chunks using an already-downloaded model")
-    .action(async (args: { max: number; embed?: boolean; rescan?: boolean }) => {
+  examples(session.command("list").description("list the configured profiles; credentials are never printed"), [
+    "drive personal session list",
+  ]).action(() =>
+    output({
+      scope: "all-configured-profiles",
+      items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
+        profile: name,
+        selectedFolders: p.roots.length,
+        storage: p.storage,
+      })),
+    }),
+  )
+  examples(session.command("end").description("sign this profile out; imported documents stay"), [
+    "drive personal session end",
+  ]).action(() => {
+    const name = selected()
+    const config = readConfig(env)
+    const profile = activeProfile(env, name)
+    credentials(env, profile.storage, options.keyring).remove(name)
+    // Preserve the principal and roots so reauthorization resumes the same source identities.
+    writeConfig(env, config)
+    output({ profile: name, signedOut: true, cachedData: "retained" })
+  })
+  const folders = program.command("folders").description("choose the Google Drive folders that sync imports")
+  const folderArgument = "folder id or Google Drive URL"
+  examples(
+    folders
+      .command("add")
+      .argument("<folder>", folderArgument)
+      .description("import a folder and everything under it on the next sync"),
+    ["drive personal folders add FOLDER_ID"],
+  ).action(async (input: string) => {
+    const id = fileId(input)
+    const config = readConfig(env)
+    const name = selected()
+    const profile = activeProfile(env, name)
+    const metadata = await (await source()).metadata(id)
+    if (metadata.mime !== FOLDER || metadata.trashed)
+      throw new CliError("validation_error", "source is not an accessible Google folder")
+    if (!profile.roots.includes(metadata.id)) profile.roots.push(metadata.id)
+    config.profiles[name] = profile
+    writeConfig(env, config)
+    output({ id: metadata.id, name: metadata.name, added: true })
+  })
+  examples(folders.command("list").description("list the folder ids sync imports"), [
+    "drive personal folders list",
+  ]).action(() => output({ items: activeProfile(env, selected()).roots.map((id) => ({ id })) }))
+  examples(
+    folders
+      .command("remove")
+      .argument("<folder>", folderArgument)
+      .description("stop importing a folder; the next sync drops its documents"),
+    ["drive personal folders remove FOLDER_ID"],
+  ).action((input: string) => {
+    const id = fileId(input)
+    const config = readConfig(env)
+    const name = selected()
+    const profile = activeProfile(env, name)
+    profile.roots = profile.roots.filter((root) => root !== id)
+    config.profiles[name] = profile
+    writeConfig(env, config)
+    output({ id, removed: true, next: `run drive ${name} sync to reconcile cached sources` })
+  })
+  examples(
+    program.command("sync").description("import what changed in the chosen folders, and finish an unfinished sync"),
+    ["drive personal sync", "drive personal sync --rescan --limit 500"],
+  )
+    .option("--limit <n>", "how many documents to read from Google in this run", positive, 200)
+    .option("--rescan", "read every chosen folder again instead of only what changed")
+    .option("--embed", "also index pending text for meaning search, with a model already downloaded")
+    .action(async (args: { limit: number; embed?: boolean; rescan?: boolean }) => {
       const remote = activeProfile(env, selected()).roots.length ? await source() : undefined
       const result = await withIndex(async (index) => ({
-        ...(await sync(remote, index, env, selected(), args.max, activeSignal, args.rescan)),
+        ...(await sync(remote, index, env, selected(), args.limit, activeSignal, args.rescan)),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),
       }))
       output(result)
@@ -273,30 +280,31 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (result.errors.length)
         throw new CliError("provider_error", "sync completed partially; failed operations remain pending")
     })
-  program
-    .command("status")
-    .description("Local sync checkpoint, cached sources and pending work")
-    .action(() => {
-      const name = selected()
-      const profile = activeProfile(env, name)
-      const state = readState(env, name, profile.principal)
-      output({
-        profile: name,
-        selectedFolders: profile.roots,
-        documents: Object.keys(state.documents).length,
-        pending: state.pending?.jobs.length ?? 0,
-        skipped: state.skipped,
-        lastSync: state.lastSync ?? null,
-        coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
-        remoteChecked: false,
-      })
+  examples(program.command("status").description("show the last sync, imported documents and pending work"), [
+    "drive personal status",
+  ]).action(() => {
+    const name = selected()
+    const profile = activeProfile(env, name)
+    const state = readState(env, name, profile.principal)
+    output({
+      profile: name,
+      selectedFolders: profile.roots,
+      documents: Object.keys(state.documents).length,
+      pending: state.pending?.jobs.length ?? 0,
+      skipped: state.skipped,
+      lastSync: state.lastSync ?? null,
+      coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
+      remoteChecked: false,
     })
-  const documents = program.command("documents").description("Locally imported sources and exports")
-  documents
-    .command("list")
-    .description("Imported sources with original Google URLs")
-    .option("--tag <tag>", "filter by a local shared tag")
-    .option("--person <reference>", "filter by a linked shared person reference")
+  })
+  const documents = program.command("documents").description("read imported documents and Google Docs")
+  const documentArgument = "document id or Google Docs URL"
+  examples(documents.command("list").description("list imported documents with their Google URLs"), [
+    "drive personal documents list",
+    "drive personal documents list --tag budget",
+  ])
+    .option("--tag <tag>", "only documents with this tag")
+    .option("--person <reference>", "only documents linked to this person:<uid> reference")
     .action(async (args: { tag?: string; person?: string }) => {
       const profile = activeProfile(env, selected())
       const state = readState(env, selected(), profile.principal)
@@ -325,31 +333,39 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const doc = state.documents[id]
     return { id, ref: doc.reference, hash: doc.hash, snapshot: readSnapshot(env, selected(), id) }
   }
-  documents
-    .command("show")
-    .argument("<url-or-id>")
-    .description("Imported text with tab and source metadata")
-    .action((input: string) => {
-      const { snapshot } = imported(input)
-      output({ metadata: snapshot.metadata, text: snapshot.text, tabs: snapshot.tabs })
-    })
-  documents
-    .command("export")
-    .argument("<url-or-id>")
-    .requiredOption("--out <file>", "destination Markdown file")
-    .description("Write the native Markdown snapshot; existing files are refused")
+  examples(
+    documents
+      .command("show")
+      .argument("<document>", documentArgument)
+      .description("show an imported document's text, tabs and metadata"),
+    ["drive personal documents show DOC_ID"],
+  ).action((input: string) => {
+    const { snapshot } = imported(input)
+    output({ metadata: snapshot.metadata, text: snapshot.text, tabs: snapshot.tabs })
+  })
+  examples(
+    documents
+      .command("export")
+      .argument("<document>", documentArgument)
+      .description("write an imported document to a new Markdown file"),
+    ["drive personal documents export DOC_ID --out notes.md"],
+  )
+    .requiredOption("--out <file>", "path of the Markdown file to write; an existing file is refused")
     .action((input: string, args: { out: string }) => {
       const { id, snapshot } = imported(input)
       writeFileSync(args.out, snapshot.markdown, { flag: "wx", mode: 0o600 })
       output({ id, path: args.out, format: "markdown" })
     })
-  program
-    .command("search")
-    .argument("<query>")
-    .description("Shared keyword and optional semantic search over imported Google sources")
-    .option("--limit <n>", "maximum results", positive, 20)
-    .option("--offset <n>", "results to skip", offset, 0)
-    .option("--exact", "keyword search only, without stemming or meaning")
+  examples(
+    program
+      .command("search")
+      .argument("<query>", "words to look for")
+      .description("search imported documents by words, and by meaning when indexed"),
+    ["drive personal search budget", `drive personal search "quarterly plan" --exact --limit 5`],
+  )
+    .option("--limit <n>", "how many results to return", positive, 20)
+    .option("--offset <n>", "how many results to skip", offset, 0)
+    .option("--exact", "match the words exactly: no word forms, no meaning")
     .action(async (query: string, args: { limit: number; offset: number; exact?: boolean }) =>
       output(
         await withIndex((index) =>
@@ -411,15 +427,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return descriptor.mutates ? guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce) : act()
     },
   })
-  const config = program
-    .command("config")
-    .description("Shared-style defaults/profile settings; credentials are separate")
-  config.command("show").action(() => output(readConfig(env)))
-  config
-    .command("set")
-    .argument("<key>")
-    .argument("<json-value>")
-    .option("--defaults", "change defaults rather than the selected profile")
+  const config = program.command("config").description("read and change settings; credentials are kept apart")
+  examples(config.command("show").description("show the defaults and every profile's settings"), [
+    "drive personal config show",
+  ]).action(() => output(readConfig(env)))
+  examples(config.command("set").description("set one setting of this profile, or of the defaults"), [
+    "drive personal config set readOnly true",
+    `drive personal config set permissions.files '"readonly"' --defaults`,
+  ])
+    .argument("<key>", "readOnly, maxTextChars, permissions.<key> or models.<purpose>.<field>")
+    .argument("<json-value>", "the new value, as JSON")
+    .option("--defaults", "change the defaults instead of this profile")
     .action((key: string, raw: string, args: { defaults?: boolean }) => {
       const value = readConfig(env)
       if (args.defaults) value.defaults ??= {}
@@ -452,10 +470,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       writeConfig(env, value)
       output({ key, updated: true, scope: args.defaults ? "defaults" : selected() })
     })
-  program
-    .command("complete")
-    .description("Shell completion from the shared command registry")
-    .argument("[words...]")
+  examples(program.command("complete").description("print a shell completion script, or complete words"), [
+    "drive complete zsh",
+  ])
+    .argument("[words...]", "a shell name, or after -- the words typed so far")
     .allowUnknownOption()
     .helpOption(false)
     .action(async (words: string[]) => {
@@ -471,25 +489,22 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           ),
         )
     })
-  program
-    .command("schema")
-    .argument("<method>")
-    .description("Generated request schema and operation contract without Google access")
-    .action((method: string) => {
-      const operation = operationOf(method)
-      output({
-        operation,
-        requestSchema: requestSchema(method),
-      })
-    })
-  program
-    .command("models")
-    .description("Configure the shared model gateway; keys stay outside config")
-    .command("configure")
-    .option("--purpose <purpose>", "shared model purpose", "memories")
-    .addOption(new Option("--provider <provider>").choices(["openai", "anthropic", "off"]).makeOptionMandatory())
-    .option("--model <model>", "model identifier for the selected provider")
-    .option("--base-url <url>", "optional HTTP/S model endpoint without URL credentials")
+  examples(
+    program
+      .command("models")
+      .description("choose the model that proposes memories; keys stay out of config")
+      .command("set")
+      .description("set the provider and model for one use"),
+    ["drive personal models set --provider openai --model MODEL_ID", "drive personal models set --provider off"],
+  )
+    .option("--purpose <purpose>", "what the model is used for", "memories")
+    .addOption(
+      new Option("--provider <provider>", "who runs the model, or off to use none")
+        .choices(["openai", "anthropic", "off"])
+        .makeOptionMandatory(),
+    )
+    .option("--model <model>", "model id at the provider")
+    .option("--base-url <url>", "HTTP or HTTPS address of the model API, without credentials in it")
     .action((args) => {
       const config = readConfig(env)
       config.defaults ??= {}
@@ -502,24 +517,34 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       writeConfig(env, config)
       output({ purpose: args.purpose, configured: true })
     })
-  const mcp = program.command("mcp").description("Expose guarded commands over MCP stdio")
-  mcp.option("--tools", "list offered tools without starting a server").action(async (args: { tools?: boolean }) => {
-    const { mcpTools, serveMcp } = await import("./mcp.js")
-    if (args.tools)
-      output({
-        items: mcpTools({ ...options, env }, selected(), policyFlags()).map(({ name, schema, command }) => ({
-          name,
-          inputSchema: schema,
-          mutates: command.mutates,
-        })),
-      })
-    else
-      await serveMcp({ ...options, env, ...(activeSignal ? { signal: activeSignal } : {}) }, selected(), policyFlags())
-  })
-  program
-    .command("commands")
-    .argument("[path...]")
-    .description("Discover the command tree and options as shared registry data")
+  const mcp = examples(program.command("mcp").description("serve drive's commands to an agent over MCP on stdio"), [
+    "drive personal mcp",
+    "drive personal mcp --tools",
+  ])
+  mcp
+    .option("--tools", "list the tools offered instead of starting the server")
+    .action(async (args: { tools?: boolean }) => {
+      const { mcpTools, serveMcp } = await import("./mcp.js")
+      if (args.tools)
+        output({
+          items: mcpTools({ ...options, env }, selected(), policyFlags()).map(({ name, schema, command }) => ({
+            name,
+            inputSchema: schema,
+            mutates: command.mutates,
+          })),
+        })
+      else
+        await serveMcp(
+          { ...options, env, ...(activeSignal ? { signal: activeSignal } : {}) },
+          selected(),
+          policyFlags(),
+        )
+    })
+  examples(program.command("commands").description("print the command tree and its options as data"), [
+    "drive commands --json",
+    "drive commands files copy --json",
+  ])
+    .argument("[path...]", "only this command or group, as words")
     .action((path: string[]) => output(commandsDocument(program, path)))
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
@@ -533,8 +558,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "documents export",
       "tags add",
       "tags remove",
-      "links add",
-      "links remove",
+      "relationships add",
+      "relationships remove",
       "notes add",
       "notes edit",
       "notes remove",
@@ -543,9 +568,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "memories stale",
       "memories extract",
       "facts add",
-      "facts accept",
-      "people link",
-      "models configure",
+      "facts confirm",
+      "identities link",
+      "models set",
       "config set",
     ]
     const remoteWrites = [
@@ -587,7 +612,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     // Discovery is account-independent and must not load config, credentials or the store.
     if (ACCOUNT_FREE_COMMANDS.has(words)) return
     selected()
-    if (["commands", "complete", "schema", "config show", "config set", "session list"].includes(words)) return
+    if (["commands", "complete", "config show", "config set", "session list"].includes(words)) return
     const flags = policyFlags()
     const metadata = metaOf(action)
     const rawMethod = words === "api call" ? action.args[0] : undefined

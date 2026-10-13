@@ -82,7 +82,7 @@ There is no replacement model downloader or implicit download here. Missing mode
 ## Keep it current
 
 ```sh
-drive personal sync --max 200 --json
+drive personal sync --limit 200 --json
 drive personal folders remove FOLDER_ID
 drive personal sync --json
 ```
@@ -140,18 +140,18 @@ See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
 drive personal tags add DOC_ID project-budget review
 drive personal documents list --tag review
 drive personal notes add DOC_ID 'Check the assumptions' --title Review
-drive personal people list DOC_ID
+drive personal identities list DOC_ID
 drive personal documents context DOC_ID
 drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope work
 drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
 drive personal memories extract DOC_ID --scope work
 drive personal documents history DOC_ID
-drive api methods --service docs
+drive api list --service docs
 ```
 
 AI extraction explicitly sends selected cached text to the configured model. It previews proposals
 unless `--save` is given; saved proposals include source quotes, snapshot hashes and model authorship.
-Use the shared model setup with `models configure --provider openai --model MODEL_ID`. Provider keys
+Use the shared model setup with `models set --provider openai --model MODEL_ID`. Provider keys
 come from the corresponding API-key environment variable and never enter regular configuration.
 Source content changes and scope removals mark source-backed memories stale. User notes stay local.
 
@@ -174,7 +174,7 @@ types, validators, the operation manifest, coverage and [command reference](docs
 
 ```sh
 drive personal api drive-files-get --help
-drive schema docs.documents.batchUpdate --json
+drive api show docs.documents.batchUpdate --json
 drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
 drive complete zsh
 drive personal --read-only mcp --tools --json

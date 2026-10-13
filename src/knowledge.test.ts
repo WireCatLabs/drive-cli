@@ -150,7 +150,7 @@ describe("shared document knowledge", () => {
       })
       expect(drawn).toMatchObject({ status: "proposed", model: "example-model", scope: "work" })
       expect((await f.k.facts(f.principal, f.ref, { status: "proposed" })).map((fact) => fact.ref)).toEqual([drawn.ref])
-      expect((await f.k.fact(f.principal, f.ref, drawn.ref, "accept")).status).toBe("accepted")
+      expect((await f.k.fact(f.principal, f.ref, drawn.ref, "confirm")).status).toBe("accepted")
       await expect(
         f.k.addMemory(f.principal, f.ref, { body: "A fact", kind: "fact" as never, scope: "work" }),
       ).rejects.toThrow("summary, digest, preference")

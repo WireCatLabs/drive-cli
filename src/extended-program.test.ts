@@ -36,14 +36,16 @@ describe("document knowledge commands", () => {
     expect((await call("documents", "list", "--tag", "Budget")).items).toHaveLength(1)
     expect((await call("documents", "list", "--tag", "missing")).items).toHaveLength(0)
     await call("tags", "remove", "doc-a", "budget")
-    const note = await call("memos", "add", "doc-a", "Review memo", "--title", "Review")
+    const note = await call("notes", "add", "doc-a", "Review memo", "--title", "Review")
     expect((await call("notes", "list", "doc-a", "--search", "memo")).items).toHaveLength(1)
     expect((await call("notes", "show", "doc-a", note.ref)).text).toBe("Review memo")
     const edited = await call("notes", "edit", "doc-a", note.ref, "Reviewed memo", "--revision", String(note.revision))
     expect(edited.text).toBe("Reviewed memo")
-    const link = await call("links", "add", "doc-a", note.ref, "--kind", "related-to", "--role", "review")
-    expect((await call("links", "list", "doc-a")).items.some((item: { id: string }) => item.id === link.id)).toBe(true)
-    await call("links", "remove", "doc-a", link.id)
+    const link = await call("relationships", "add", "doc-a", note.ref, "--kind", "related-to", "--role", "review")
+    expect(
+      (await call("relationships", "list", "doc-a")).items.some((item: { id: string }) => item.id === link.id),
+    ).toBe(true)
+    await call("relationships", "remove", "doc-a", link.id)
     const memory = await call("memories", "add", "doc-a", "Budget decision", "--scope", "work", "--kind", "summary")
     expect((await call("memories", "list", "doc-a", "--scope", "work")).items).toHaveLength(1)
     expect((await call("memories", "show", "doc-a", memory.ref)).status).toBe("proposed")
@@ -61,21 +63,21 @@ describe("document knowledge commands", () => {
     const decision = await call("facts", "add", "doc-a", "Budget approved", "--type", "decision", "--scope", "work")
     expect(decision).toMatchObject({ type: "decision", status: "accepted" })
     expect((await call("facts", "list", "doc-a", "--status", "proposed")).items).toHaveLength(1)
-    expect((await call("facts", "accept", "doc-a", saved.saved[0].ref)).status).toBe("accepted")
+    expect((await call("facts", "confirm", "doc-a", saved.saved[0].ref)).status).toBe("accepted")
     expect((await call("facts", "show", "doc-a", decision.ref)).statement).toBe("Budget approved")
-    const people = await call("people", "list", "doc-a")
+    const people = await call("identities", "list", "doc-a")
     expect(people.items[0].googleId).toBe("google-owner")
     expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)
     expect((await call("documents", "list", "--person", "person:missing")).items).toHaveLength(0)
-    expect((await call("people", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(
+    expect((await call("identities", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(
       people.items[0].person.uid,
     )
     await call("notes", "remove", "doc-a", note.ref)
     await expect(call("memories", "extract", "doc-a", "--scope", "work", "--tab", "missing")).rejects.toThrow("tab")
-    await call("models", "configure", "--provider", "openai", "--model", "fixture-model")
+    await call("models", "set", "--provider", "openai", "--model", "fixture-model")
     expect(readConfig(f.env).defaults?.models?.memories?.model).toBe("fixture-model")
     await expect(
-      call("models", "configure", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
+      call("models", "set", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
     ).rejects.toThrow("invalid")
   })
   it("refuses stale extraction results after the source changes while the model is running", async () => {
@@ -102,7 +104,7 @@ describe("remote action commands", () => {
   const cases: [string[], string, object, object?][] = [
     [["files", "get", "doc-a"], "drive.files.get", { fileId: "doc-a" }],
     [
-      ["files", "list", "--parent", "root", "--page-token", "next"],
+      ["files", "list", "--parent", "root", "--cursor", "next"],
       "drive.files.list",
       { pageToken: "next", q: "'root' in parents and (trashed = false)" },
     ],
@@ -113,7 +115,7 @@ describe("remote action commands", () => {
       { name: "Copy", parents: ["root"] },
     ],
     [
-      ["files", "move", "doc-a", "--to", "root", "--from", "old"],
+      ["files", "move", "doc-a", "--parent", "root", "--old-parent", "old"],
       "drive.files.update",
       { addParents: "root", removeParents: "old" },
       {},
@@ -136,12 +138,12 @@ describe("remote action commands", () => {
       { requests: [] },
     ],
     [
-      ["documents", "history", "doc-a", "--page-token", "next"],
+      ["documents", "history", "doc-a", "--cursor", "next"],
       "drive.revisions.list",
       { fileId: "doc-a", pageToken: "next" },
     ],
     [
-      ["documents", "history", "doc-a", "--activity", "--page-token", "next"],
+      ["documents", "history", "doc-a", "--activity", "--cursor", "next"],
       "driveactivity.activity.query",
       {},
       { itemName: "items/doc-a", pageToken: "next" },
@@ -152,7 +154,7 @@ describe("remote action commands", () => {
     [["permissions", "get", "doc-a", "permission-one"], "drive.permissions.get", { permissionId: "permission-one" }],
     [["revisions", "list", "doc-a"], "drive.revisions.list", { fileId: "doc-a" }],
     [["revisions", "get", "doc-a", "revision-one"], "drive.revisions.get", { revisionId: "revision-one" }],
-    [["shared-drives", "--page-token", "next"], "drive.drives.list", { pageToken: "next" }],
+    [["shared-drives", "--cursor", "next"], "drive.drives.list", { pageToken: "next" }],
   ]
   it.each(cases)("maps %j to a bounded official API request", async (args, method, params, body) => {
     const f = fixture()
@@ -177,7 +179,7 @@ describe("remote action commands", () => {
           from: "user",
         },
       )
-    await call("api", "methods", "--service", "docs")
+    await call("api", "list", "--service", "docs")
     await expect(call("api", "call", "drive.files.delete", "--params", '{"fileId":"doc-a"}')).rejects.toThrow(
       "allow-write",
     )
