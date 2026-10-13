@@ -64,11 +64,14 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
           source: "google-drive",
           sourceUrl: content.metadata.url,
           fileId: content.metadata.id,
+          mime: content.metadata.mime,
+          size: content.metadata.size ?? null,
           owners: content.metadata.owners ?? [],
           lastModifiedBy: content.metadata.lastModifiedBy ?? null,
           modifiedAt: content.metadata.modifiedAt ?? null,
           sourceVersion: content.metadata.version ?? null,
           tabs: content.tabs.map(({ id, title }) => ({ id, title })),
+          ...(content.notRead ? { notRead: content.notRead } : {}),
         },
       })
       await saveContributors(store, principal, content.metadata, note.id)
@@ -109,11 +112,12 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
         hits: await Promise.all(
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)
-            const metadata = note.frontMatter as { sourceUrl?: unknown; tabs?: unknown } | null
+            const metadata = note.frontMatter as { sourceUrl?: unknown; tabs?: unknown; notRead?: unknown } | null
             return {
               ...hit,
               sourceUrl: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
               tabs: Array.isArray(metadata?.tabs) ? metadata.tabs : [],
+              notRead: typeof metadata?.notRead === "string" ? metadata.notRead : null,
             }
           }),
         ),

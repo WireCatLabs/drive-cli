@@ -37,7 +37,16 @@ const State = v.object({
   scope: v.string(),
   cursor: v.optional(v.string()),
   folders: v.record(ID, File),
-  documents: v.record(ID, v.object({ metadata: File, hash: v.string(), reference: v.string(), tabs: v.number() })),
+  documents: v.record(
+    ID,
+    v.object({
+      metadata: File,
+      hash: v.string(),
+      reference: v.string(),
+      tabs: v.number(),
+      notRead: v.optional(v.string()),
+    }),
+  ),
   skipped: v.array(Skip),
   lastSync: v.optional(v.string()),
   pending: v.optional(

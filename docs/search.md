@@ -70,6 +70,8 @@ drive personal --offline documents show DOC_ID --json
 Read the saved passage and source metadata before interpreting it as a decision. You can inspect
 them offline; open the original link when you need to verify the current Google version. If you see `meaningSkipped`,
 inspect its explanation rather than assuming semantic search ran. Scanned PDFs, Slides, images
-and other unsupported content are left out of both exact and semantic search.
+and other unsupported content have no text, so they are left out of text and semantic search. Their names are
+indexed: a word from the file name finds them, and the hit has `notRead` set to the reason (it is `null` for a
+file drive read). Open the `sourceUrl` of such a hit; there is no passage to quote.
 See [file-type coverage](usage.md#which-document-types-are-searchable) and
 [task recipes](recipes.md#refresh-a-project-and-prepare-a-meeting-brief).
