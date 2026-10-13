@@ -51,11 +51,16 @@ export const supported = (file: FileMetadata): boolean => {
   return file.mime === "text/plain" || file.mime === "text/markdown" || /\.(md|markdown|txt)$/i.test(file.name)
 }
 
-const ENGINE_LABEL: Record<Engine, string> = { unpdf: "PDF", mammoth: "Word", "@napi-rs/canvas": "scanned PDF" }
+const ENGINE_LABEL: Record<Engine, string> = {
+  unpdf: "PDF",
+  mammoth: "Word",
+  "word-extractor": "Word (.doc)",
+  "@napi-rs/canvas": "scanned PDF",
+}
 
 const sheetTabs = (text: string): TabText[] =>
   text
-    .split(/^\[Sheet: (.*)\]$/m)
+    .split(/^# (.*)$/m)
     .slice(1)
     .flatMap((part, index, parts) =>
       index % 2 ? [] : [{ id: part, title: part, text: (parts[index + 1] ?? "").trim() }],
@@ -224,7 +229,6 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           text = await readFile(new Uint8Array(bytes), before, mime)
           if (mime === XLSX) {
             tabs = sheetTabs(text)
-            text = tabs.map((tab) => `# ${tab.title}\n\n${tab.text}`).join("\n\n")
           }
           markdown = text
         } else {

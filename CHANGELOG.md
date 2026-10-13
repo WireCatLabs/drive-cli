@@ -4,7 +4,7 @@
 
 - **Sheets, PDFs and Office files are searchable.** `drive sync` exports native Google Sheets as `.xlsx` and reads
   every sheet, and reads uploaded PDF, Word `.docx`, Excel `.xlsx`, CSV and TSV files with the shared document
-  readers. `documents show` lists each sheet as a heading; a cell reads as `A1: value`. A scanned PDF without a
+  readers. `documents show` lists each sheet as a heading; a row reads as `Row 2: Column: value`. A scanned PDF without a
   text layer, a Sheet over Google's 10 MB export cap and a file over 50 MB are skipped with that reason. Files
   that an older version skipped only for their type are read on the next sync. Adds `unpdf` and `mammoth`.
 - **Longer files are imported, and the limit is a setting.** A file's text may now be up to 2 000 000
