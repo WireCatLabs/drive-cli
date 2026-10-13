@@ -13,6 +13,7 @@ import {
 } from "@wirecat/cli-messaging/sends"
 import { operations } from "./api-contract.js"
 import { paths, readConfig } from "./config.js"
+import { VERSION } from "./version.js"
 
 export interface PolicyFlags {
   offline?: boolean
@@ -93,7 +94,10 @@ export const guardedGoogleWrite = async <T>(
     permissionDefaults: defaults,
     ask: async (permission) => checkPolicy(env, profile, permission, true, flags, ask),
     sendsPerHour: Number.MAX_SAFE_INTEGER,
-    journal: new SendJournal(join(paths(env).state, "sends", `${profile}.jsonl`)),
+    journal: new SendJournal(join(paths(env).state, "sends", `${profile}.jsonl`), {
+      service: "drive",
+      version: VERSION,
+    }),
     recipients: new RecipientList(join(paths(env).state, "recipients", `${profile}.json`), "drive"),
     warn: () => {},
   })

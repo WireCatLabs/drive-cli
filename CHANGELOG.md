@@ -1,7 +1,16 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-13
 
+- **The local search models live in the WireCat folder.** drive now runs on `@wirecat/cli-messaging` 0.258.0 and
+  `@wirecat/cli-base` 0.24.0, which keep the shared models in `~/.local/share/WireCat/models/` (Windows:
+  `%LOCALAPPDATA%\WireCat\Data\models\`). `WIRECAT_STATE_DIR` moves that folder and replaces
+  `CLI_COMMON_CACHE_DIR`, which is no longer read. drive does not move models from `~/.cache/cli-common/models`
+  itself; tg, max and memo do on their first start after their upgrade. drive's own database, `drive.db`, does not
+  move.
+- **`commands --json` names exit code 1 `internal_error`**, in place of `generic_failure`.
+- **The write journal (`sends/<profile>.jsonl`) writes cli-base's log record**, naming drive and its version.
+  Lines written before are still read.
 - **Command names follow the shared WireCat standard; the old names are gone.** `links` is `relationships`,
   `people` is `identities`, `facts accept` is `facts confirm`, `models configure` is `models set`, `api methods` is
   `api list` and `schema` is `api show`; the `memos` alias of `notes` is removed. Paging flags are `--cursor`

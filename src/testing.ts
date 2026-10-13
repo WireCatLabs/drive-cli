@@ -29,7 +29,7 @@ export const fixture = (roots = ["root"]) => {
     DRIVE_STATE_DIR: join(directory, "state"),
     DRIVE_CACHE_DIR: join(directory, "cache"),
     DRIVE_STORE: join(directory, "store.db"),
-    CLI_COMMON_CACHE_DIR: join(directory, "models"),
+    WIRECAT_STATE_DIR: join(directory, "wirecat"),
     MESSAGING_STORE: join(directory, "never-owner.db"),
   }
   writeConfig(env, { profiles: { default: { principal: "synthetic-principal", roots, storage: "keyring" } } })
