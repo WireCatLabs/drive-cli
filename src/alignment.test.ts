@@ -53,7 +53,7 @@ describe("schema-generated Google contracts", () => {
         from: "user",
       },
     )
-    expect(JSON.parse(registry.stdout.join("")).items[0]).toMatchObject({
+    expect(JSON.parse(registry.stdout.join("")).commands[0]).toMatchObject({
       origin: "generated",
       operationId: "drive.files.get",
       mutates: false,

@@ -10,7 +10,8 @@
       "!package-lock.json",
       "!**/.worktrees",
       "!config/wirecat",
-      "!spec/google"
+      "!spec/google",
+      "!lint/baseline"
     ]
   }
 }

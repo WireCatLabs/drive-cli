@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
+import { parseCommandsDocument } from "@wirecat/cli-base-lint/commands"
 import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
 import { readState } from "./state.js"
@@ -42,15 +43,24 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", "sync", "--json"], { from: "user" })
-    expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ name: "sync", mutates: true, local: true })
+    expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ name: "sync", mutates: true, local: true })
     const root = captureStreams()
     await createProgram({ env: f.env, streams: root }).parseAsync(["default", "commands", "--json"], { from: "user" })
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
-    expect(contract.commands).toEqual(contract.items)
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.globalOptions.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
+  })
+  it("prints commands --json in the cli-base document shape, whole and scoped", async () => {
+    const f = fixture()
+    for (const path of [[], ["files", "copy"]]) {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams }).parseAsync(["commands", ...path, "--json"], { from: "user" })
+      const parsed = parseCommandsDocument(JSON.parse(streams.stdout.join("")))
+      expect(parsed.problems).toBeUndefined()
+      expect(parsed.document?.scope).toEqual(path.length ? path : undefined)
+    }
   })
   it("syncs, lists and searches using injected shared ports and closes the index", async () => {
     const f = fixture()

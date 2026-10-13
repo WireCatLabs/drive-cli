@@ -208,7 +208,7 @@ describe("remote action commands", () => {
       await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", ...path, "--json"], {
         from: "user",
       })
-      expect(JSON.parse(streams.stdout.join("")).items[0]).toMatchObject({ mutates: true, local })
+      expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ mutates: true, local })
     }
   })
 })
