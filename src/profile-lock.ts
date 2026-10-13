@@ -16,13 +16,17 @@ export const lockProfile = async (env: NodeJS.ProcessEnv, name: string) => {
     return {
       release,
       assertHeld: () => {
-        if (compromised) throw new CliError("provider_unavailable", "profile lock was lost; retry the operation")
+        if (compromised)
+          throw new CliError("provider_unavailable", "profile lock was lost; retry the operation", {
+            reason: "profile.locked",
+          })
       },
     }
   } catch {
     throw new CliError(
       "provider_unavailable",
       "another sync or knowledge operation holds this profile's lock; retry later",
+      { reason: "profile.locked" },
     )
   }
 }

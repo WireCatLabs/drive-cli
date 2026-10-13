@@ -89,7 +89,9 @@ const plan = async (
     folders[folder.id] = folder
     for (const file of await source.children(folder.id)) {
       if (++discovered > 10000)
-        throw new CliError("provider_error", "folder scan exceeded 10000 entries; checkpoint preserved")
+        throw new CliError("provider_error", "folder scan exceeded 10000 entries; checkpoint preserved", {
+          reason: "listing.too-large",
+        })
       if (file.mime === FOLDER) await crawl(file, new Set([...ancestry, folder.id]))
       else {
         files.set(file.id, file)
@@ -181,7 +183,7 @@ const plan = async (
 
 export interface SyncResult {
   saved: number
-  namesOnly: number
+  names_only: number
   removed: number
   unchanged: number
   pending: number
@@ -203,7 +205,7 @@ export const sync = async (
   const lock = await lockProfile(env, name)
   const result: SyncResult = {
     saved: 0,
-    namesOnly: 0,
+    names_only: 0,
     removed: 0,
     unchanged: 0,
     pending: 0,
@@ -213,7 +215,9 @@ export const sync = async (
   }
   try {
     if (profile.roots.length && (!source || (await source.identity()) !== profile.principal))
-      throw new CliError("authentication_error", "signed-in Google account does not match this profile")
+      throw new CliError("authentication_error", "signed-in Google account does not match this profile", {
+        reason: "profile.wrong-account",
+      })
     const state = readState(env, name, profile.principal)
     const limit = textLimit(env, name)
     const currentScope = scopeHash(profile.roots)
@@ -237,7 +241,7 @@ export const sync = async (
       saveSnapshot(env, name, doc)
       state.documents[file.id] = { metadata: file, hash, reference, tabs: 0, notRead: reason }
       if (previous?.notRead === reason && !changedSince(previous.metadata, file)) result.unchanged++
-      else result.namesOnly++
+      else result.names_only++
     }
     const jobs = [...pending.jobs].slice(0, max)
     for (const job of jobs) {
@@ -265,7 +269,8 @@ export const sync = async (
             const reference = await index.save(profile.principal, content, hash).catch((error: unknown) => {
               if (!isCliError(error) || error.code !== "validation_error") throw error
               throw new CliError("validation_error", `the local store refused this text: ${error.message}`, {
-                storeRefusedIn: VERSION,
+                reason: "store.refused",
+                store_refused_in: VERSION,
               })
             })
             saveSnapshot(env, name, content)
@@ -284,8 +289,8 @@ export const sync = async (
             id: job.id,
             reason: safe.message,
             ...(job.file ? { file: job.file } : {}),
-            ...(safe.details.textLimit ? { textLimit: limit } : {}),
-            ...(safe.details.storeRefusedIn ? { storeRefusedIn: VERSION } : {}),
+            ...(safe.details.text_limit ? { textLimit: limit } : {}),
+            ...(safe.details.store_refused_in ? { storeRefusedIn: VERSION } : {}),
           }
           if (job.file && safe.code === "validation_error") await saveNamesOnly(job.file, skipped.reason)
           else {

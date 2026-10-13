@@ -1,4 +1,4 @@
-import { openStore } from "@wirecat/cli-messaging/store"
+import { openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it } from "vitest"
 import { openIndex } from "./store.js"
 import { content, file, fixture } from "./testing.js"
@@ -99,9 +99,9 @@ describe("shared document knowledge", () => {
       if (!person) throw new Error("missing fixture person")
       const otherRef = await f.index.save("second-google-account", content({ ...f.metadata, id: "doc-b" }), "hash")
       const observed = (await f.k.people(f.principal, f.ref)) as {
-        items: { googleId: string; person: { uid: string } }[]
+        items: { google_id: string; person: { uid: string } }[]
       }
-      const editor = observed.items.find((item) => item.googleId === "email:editor@example.invalid")
+      const editor = observed.items.find((item) => item.google_id === "email:editor@example.invalid")
       expect(editor?.person.uid).not.toBe(person.uid)
       expect(
         (await f.k.linkPerson(f.principal, f.ref, "email:editor@example.invalid", `person:${person.uid}`)).uid,

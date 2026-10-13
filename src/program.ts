@@ -11,7 +11,7 @@ import {
 } from "@wirecat/cli-base"
 import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
-import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-messaging/cli"
+import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-core/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
@@ -21,7 +21,7 @@ import { googleSource } from "./google.js"
 import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
-import { type DocumentIndex, FOLDER, type GoogleSource } from "./model.js"
+import { type DocumentIndex, FOLDER, type GoogleSource, metadataJson, skipJson } from "./model.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram, examples } from "./registry.js"
@@ -67,6 +67,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--jsonl", "print machine-readable JSON lines")
     .option("--agent-json", "show control and direction characters visibly in machine output")
     .option("--quiet", "suppress optional diagnostics")
+    .option("--debug", "on failure, show the full error record: cause and stack")
     .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
       parseDuration(raw, "--timeout"),
     )
@@ -98,7 +99,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           (choices.length
             ? `configured profiles: ${choices.join(", ")}`
             : "no profiles configured; connect with drive personal session start"),
-        { profiles: choices },
+        { reason: "profile.required", profiles: choices },
       )
     }
     return profileName(name)
@@ -205,7 +206,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       scope: "all-configured-profiles",
       items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
         profile: name,
-        selectedFolders: p.roots.length,
+        selected_folders: p.roots.length,
         storage: p.storage,
       })),
     }),
@@ -219,7 +220,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     credentials(env, profile.storage, options.keyring).remove(name)
     // Preserve the principal and roots so reauthorization resumes the same source identities.
     writeConfig(env, config)
-    output({ profile: name, signedOut: true, cachedData: "retained" })
+    output({ profile: name, signed_out: true, cached_data: "retained" })
   })
   const folders = program.command("folders").description("choose the Google Drive folders that sync imports")
   const folderArgument = "folder id or Google Drive URL"
@@ -278,7 +279,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (result.errors.length || result.pending)
         streams.diagnostic(`${result.pending} source operations remain; run drive ${selected()} sync again\n`)
       if (result.errors.length)
-        throw new CliError("provider_error", "sync completed partially; failed operations remain pending")
+        throw new CliError("provider_error", "sync completed partially; failed operations remain pending", {
+          reason: "sync.partial",
+        })
     })
   examples(program.command("status").description("show the last sync, imported documents and pending work"), [
     "drive personal status",
@@ -288,13 +291,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const state = readState(env, name, profile.principal)
     output({
       profile: name,
-      selectedFolders: profile.roots,
+      selected_folders: profile.roots,
       documents: Object.keys(state.documents).length,
       pending: state.pending?.jobs.length ?? 0,
-      skipped: state.skipped,
-      lastSync: state.lastSync ?? null,
+      skipped: state.skipped.map(skipJson),
+      last_sync: state.lastSync ?? null,
       coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
-      remoteChecked: false,
+      remote_checked: false,
     })
   })
   const documents = program.command("documents").description("read imported documents and Google Docs")
@@ -319,7 +322,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         })
       output({
         items: docs.map((doc) => ({
-          ...doc.metadata,
+          ...metadataJson(doc.metadata),
           reference: doc.reference,
           tabs: doc.tabs,
         })),
@@ -329,7 +332,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const id = fileId(input)
     const profile = activeProfile(env, selected())
     const state = readState(env, selected(), profile.principal)
-    if (!state.documents[id]) throw new CliError("not_found", "this source is not imported in the selected profile")
+    if (!state.documents[id])
+      throw new CliError("not_found", "this source is not imported in the selected profile", {
+        reason: "document.not-imported",
+      })
     const doc = state.documents[id]
     return { id, ref: doc.reference, hash: doc.hash, snapshot: readSnapshot(env, selected(), id) }
   }
@@ -342,10 +348,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   ).action((input: string) => {
     const { snapshot } = imported(input)
     output({
-      metadata: snapshot.metadata,
+      metadata: metadataJson(snapshot.metadata),
       text: snapshot.text,
       tabs: snapshot.tabs,
-      ...(snapshot.notRead ? { notRead: snapshot.notRead } : {}),
+      ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
     })
   })
   examples(
@@ -358,7 +364,16 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .requiredOption("--out <file>", "path of the Markdown file to write; an existing file is refused")
     .action((input: string, args: { out: string }) => {
       const { id, snapshot } = imported(input)
-      writeFileSync(args.out, snapshot.markdown, { flag: "wx", mode: 0o600 })
+      try {
+        writeFileSync(args.out, snapshot.markdown, { flag: "wx", mode: 0o600 })
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === "EEXIST")
+          throw new CliError("validation_error", "the output file already exists; choose another --out", {
+            reason: "export.exists",
+            param: "--out",
+          })
+        throw error
+      }
       output({ id, path: args.out, format: "markdown" })
     })
   examples(
@@ -403,21 +418,35 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installRemoteCommands(program, {
     output,
     positive,
-    readBody: options.readBody ?? ((path) => readFileSync(path, "utf8")),
+    readBody:
+      options.readBody ??
+      ((path) => {
+        try {
+          return readFileSync(path, "utf8")
+        } catch {
+          throw new CliError("validation_error", "the request body file could not be read", {
+            reason: "body.unreadable",
+            param: "--body-file",
+          })
+        }
+      }),
     call: async (method, params, body) => {
       const descriptor = apiMethod(method)
       validateRequest(method, params, body)
       const flags = policyFlags()
       for (const key of methodPolicyKeys(method))
         await checkPolicy(env, selected(), key, descriptor.mutates, flags, askOnce)
-      if (flags.offline) throw new CliError("permission_error", "this operation needs Google; --offline was requested")
+      if (flags.offline)
+        throw new CliError("permission_error", "this operation needs Google; --offline was requested", {
+          reason: "offline.refused",
+        })
       if (flags.dryRun)
         return {
-          dryRun: true,
+          dry_run: true,
           method,
           mutates: descriptor.mutates,
           parameters: params,
-          bodyProvided: body !== undefined,
+          body_provided: body !== undefined,
         }
       const act = async () => {
         try {
@@ -534,7 +563,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         output({
           items: mcpTools({ ...options, env }, selected(), policyFlags()).map(({ name, schema, command }) => ({
             name,
-            inputSchema: schema,
+            input_schema: schema,
             mutates: command.mutates,
           })),
         })
@@ -621,15 +650,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const flags = policyFlags()
     const metadata = metaOf(action)
     const rawMethod = words === "api call" ? action.args[0] : undefined
-    const method = metadata.operationId ?? rawMethod
+    const method = metadata.operation_id ?? rawMethod
     if (rawMethod) {
       const descriptor = apiMethod(rawMethod)
       if (descriptor.mutates && !action.opts().allowWrite)
-        throw new CliError("permission_error", "this method changes Google data; pass --allow-write")
+        throw new CliError("permission_error", "this method changes Google data; pass --allow-write", {
+          reason: "write.not-allowed",
+        })
       if (descriptor.destructive && !action.opts().allowDelete && !flags.allowDangerous)
         throw new CliError(
           "permission_error",
           "this method deletes Google data; pass --allow-delete or --allow-dangerous",
+          { reason: "delete.not-allowed" },
         )
       if (flags.allowDangerous) action.setOptionValue("allowDelete", true)
     }
@@ -652,14 +684,16 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           "sync",
         ].includes(words))
     )
-      throw new CliError("permission_error", "this command may require network access; --offline was requested")
+      throw new CliError("permission_error", "this command may require network access; --offline was requested", {
+        reason: "offline.refused",
+      })
     if (
       flags.dryRun &&
       path[0] !== "api" &&
       !["files", "comments", "permissions", "revisions", "shared-drives"].includes(path[0] ?? "") &&
       !["documents get", "documents create", "documents update", "documents history"].includes(words)
     ) {
-      output({ dryRun: true, command: words, mutates, local: metadata.local === true })
+      output({ dry_run: true, command: words, mutates, local: metadata.local === true })
       throw new Preview()
     }
     if (words === "session start") refuseCommandName(selected(), commandWords(program), "drive")

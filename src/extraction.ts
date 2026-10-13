@@ -1,6 +1,6 @@
 import { CliError } from "@wirecat/cli-base"
-import { resolveAISettings } from "@wirecat/cli-messaging/cli"
-import { type ModelAnswer, type ModelRequest, modelGateway, modelTarget } from "@wirecat/cli-messaging/models"
+import { resolveAISettings } from "@wirecat/cli-core/cli"
+import { type ModelAnswer, type ModelRequest, modelGateway, modelTarget } from "@wirecat/cli-core/models"
 import * as v from "valibot"
 import { readConfig } from "./config.js"
 
@@ -31,7 +31,9 @@ export const memoryModel = (env: NodeJS.ProcessEnv, profile: string, signal?: Ab
 }
 export const extractMemories = async (text: string, complete: Complete) => {
   if (!text.trim() || text.length > 50000)
-    throw new CliError("validation_error", "AI extraction needs 1–50000 characters; select a smaller document tab")
+    throw new CliError("validation_error", "AI extraction needs 1–50000 characters; select a smaller document tab", {
+      reason: "extraction.text-too-long",
+    })
   const answer = await complete({
     purpose: "memories",
     system:
@@ -45,9 +47,15 @@ export const extractMemories = async (text: string, complete: Complete) => {
     if (answer.text.length > 400000) throw new Error("oversized")
     proposals = v.parse(Proposals, JSON.parse(answer.text))
   } catch {
-    throw new CliError("invalid_response", "memory model returned invalid structured proposals; no memories were saved")
+    throw new CliError(
+      "invalid_response",
+      "memory model returned invalid structured proposals; no memories were saved",
+      { reason: "extraction.invalid-proposals" },
+    )
   }
   if (proposals.items.some((item) => !text.includes(item.quote)))
-    throw new CliError("invalid_response", "memory proposal has no exact source quote; no memories were saved")
+    throw new CliError("invalid_response", "memory proposal has no exact source quote; no memories were saved", {
+      reason: "extraction.invalid-proposals",
+    })
   return { ...proposals, provider: answer.provider, model: answer.model, tokens: answer.tokens }
 }

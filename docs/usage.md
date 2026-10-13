@@ -47,8 +47,8 @@ excluded. Search text and Google's Markdown export are separate representations,
 export when layout or tab coverage matters. Check the sync report for each skipped source.
 
 A file drive cannot read is still saved by its name, type, size, owners and link, with no text. `drive sync` counts
-these as `namesOnly` and lists each reason under `skipped`. `search` finds them by the words in their name, and
-the hit carries `notRead` with the reason, so open `sourceUrl` instead of quoting text that is not there.
+these as `names_only` and lists each reason under `skipped`. `search` finds them by the words in their name, and
+the hit carries `not_read` with the reason, so open `source_url` instead of quoting text that is not there.
 Meaning search ignores them. They leave the index like any other file: trashed, moved out of the folders or deleted.
 When a later version reads the type, or the text limit allows the file, the next sync replaces the entry with its text.
 

@@ -178,7 +178,7 @@ describe("official Google SDK source", () => {
     await expect(f.source.content("long", 10)).rejects.toMatchObject({
       code: "validation_error",
       message: expect.stringContaining("config set maxTextChars"),
-      details: { textLimit: 10 },
+      details: { reason: "document.too-long", text_limit: 10 },
     })
     expect((await f.source.content("long", 11)).text).toBe("0123456789")
   })

@@ -70,11 +70,15 @@ export const readState = (env: NodeJS.ProcessEnv, name: string, principal: strin
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT")
       return { version: 1, principal, scope: "", folders: {}, documents: {}, skipped: [] }
-    throw new CliError("configuration_error", "sync state is unreadable; refusing to reset its checkpoint")
+    throw new CliError("configuration_error", "sync state is unreadable; refusing to reset its checkpoint", {
+      reason: "state.invalid",
+    })
   }
   const parsed = v.safeParse(State, value)
   if (!parsed.success || parsed.output.principal !== principal)
-    throw new CliError("configuration_error", "sync state is invalid or belongs to another Google account")
+    throw new CliError("configuration_error", "sync state is invalid or belongs to another Google account", {
+      reason: "state.invalid",
+    })
   return parsed.output
 }
 export const saveState = (env: NodeJS.ProcessEnv, name: string, state: SyncState): void => {
@@ -104,6 +108,8 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
   try {
     return JSON.parse(readFileSync(snapshotPath(env, name, id), "utf8")) as DocumentContent
   } catch {
-    throw new CliError("not_found", "source snapshot is unavailable — run drive sync")
+    throw new CliError("not_found", "source snapshot is unavailable — run drive sync", {
+      reason: "state.snapshot-missing",
+    })
   }
 }

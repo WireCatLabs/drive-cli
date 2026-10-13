@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import { normalizeTag } from "@wirecat/cli-messaging"
+import { normalizeTag } from "@wirecat/cli-core"
 import type {
   Author,
   Fact,
@@ -10,7 +10,7 @@ import type {
   MessageStore,
   Note,
   PersonRecord,
-} from "@wirecat/cli-messaging/store"
+} from "@wirecat/cli-core/store"
 import type { FileMetadata, GoogleUser } from "./model.js"
 
 export interface DocumentKnowledge {
@@ -66,7 +66,9 @@ export const documentKnowledge = (
     const note = await store.notes.resolveNote(ref)
     const folderId = await folder(principal)
     if (!folderId || !note || note.source !== "file" || note.folderId !== folderId || note.deletedAt)
-      throw new CliError("not_found", "document is not imported in this Google account")
+      throw new CliError("not_found", "document is not imported in this Google account", {
+        reason: "document.not-imported",
+      })
     return note
   }
   const noteFor = async (principal: string, ref: string, noteRef: string) => {
@@ -180,7 +182,7 @@ export const documentKnowledge = (
       const candidates = await store.memories.search(query, { scope, limit: 200 })
       return {
         items: candidates.filter((memory) => memory.subject === ref),
-        candidateLimitReached: candidates.length === 200,
+        candidate_limit_reached: candidates.length === 200,
       }
     },
     addFact: async (principal, ref, { statement, type, scope, by }) => {
@@ -214,7 +216,11 @@ export const documentKnowledge = (
           contributors.map(async (user) => {
             const id = googleUserId(user)
             const person = id ? await store.personOf({ provider: "google-drive", id }) : undefined
-            return { ...user, googleId: id ?? null, person: person ? { ref: `person:${person.uid}`, ...person } : null }
+            return {
+              ...user,
+              google_id: id ?? null,
+              person: person ? { ref: `person:${person.uid}`, ...person } : null,
+            }
           }),
         ),
         coverage: "owners and last editor supplied by Google; not a complete list of historical editors",

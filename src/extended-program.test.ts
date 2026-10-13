@@ -66,7 +66,7 @@ describe("document knowledge commands", () => {
     expect((await call("facts", "confirm", "doc-a", saved.saved[0].ref)).status).toBe("accepted")
     expect((await call("facts", "show", "doc-a", decision.ref)).statement).toBe("Budget approved")
     const people = await call("identities", "list", "doc-a")
-    expect(people.items[0].googleId).toBe("google-owner")
+    expect(people.items[0].google_id).toBe("google-owner")
     expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)
     expect((await call("documents", "list", "--person", "person:missing")).items).toHaveLength(0)
     expect((await call("identities", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(

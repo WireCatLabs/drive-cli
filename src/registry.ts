@@ -2,6 +2,7 @@ import { CliError, EXIT_CODES, GENERIC_FAILURE } from "@wirecat/cli-base"
 import {
   annotate,
   type CommandInfo,
+  type CommandsDocument,
   describeOptions,
   describeProgram,
   type OptionInfo,
@@ -20,7 +21,7 @@ export const examples = (command: Command, lines: string[]): Command =>
   )
 
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
-export const CONTRACT = 0
+export const CONTRACT = 1
 
 /** Preserve shared registry paths/anchors while making executable usage show the account boundary. */
 export const describeDriveProgram = (program: Command): CommandInfo[] => {
@@ -34,26 +35,26 @@ export const describeDriveProgram = (program: Command): CommandInfo[] => {
   return describeProgram(program).map(scoped)
 }
 
-/** cli-base's `commands --json` document, built here until drive runs on a cli-base that exports it. */
-export const commandsDocument = (program: Command, path: string[] = []) => {
+/** cli-base's `commands --json` document, with drive's `<profile>` usage and a `commands <path>` scope. */
+export const commandsDocument = (program: Command, path: string[] = []): CommandsDocument => {
   const all = describeDriveProgram(program)
-  const inheritedOptions: { path: readonly string[]; options: readonly OptionInfo[] }[] = []
-  let available: readonly CommandInfo[] = all
+  const inherited: { path: string[]; options: OptionInfo[] }[] = []
+  let available: CommandInfo[] = all
   let found: CommandInfo | undefined
   for (const word of path) {
-    if (found?.options.length) inheritedOptions.push({ path: found.path, options: found.options })
+    if (found?.options.length) inherited.push({ path: [...found.path], options: [...found.options] })
     found = available.find((command) => command.name === word)
     if (!found) throw new CliError("not_found", "command path was not found")
-    available = found.commands
+    available = [...found.commands]
   }
   return {
     cli: "drive",
     version: VERSION,
     contract: CONTRACT,
     description: program.description(),
-    globalOptions: describeOptions(program),
-    ...(found ? { scope: found.path, inheritedOptions } : {}),
+    global_options: describeOptions(program),
+    ...(found ? { scope: [...found.path], inherited_options: inherited } : {}),
     commands: found ? [found] : all,
-    exitCodes: { ok: 0, internal_error: GENERIC_FAILURE, ...EXIT_CODES },
+    exit_codes: { ok: 0, internal_error: GENERIC_FAILURE, ...EXIT_CODES },
   }
 }

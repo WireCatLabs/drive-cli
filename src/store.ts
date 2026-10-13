@@ -1,14 +1,14 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
-import type { MessageStore, Note } from "@wirecat/cli-messaging/store"
+import type { MessageStore, Note } from "@wirecat/cli-core/store"
 import { paths } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
 
 export const openIndex = async (env: NodeJS.ProcessEnv): Promise<DocumentIndex> => {
-  const { ensureSqlite } = await import("@wirecat/cli-messaging/sqlite-runtime")
+  const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
   await ensureSqlite()
-  const { openStore } = await import("@wirecat/cli-messaging/store")
+  const { openStore } = await import("@wirecat/cli-core/store")
   const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "drive" })
   return indexOver(store, env)
 }
@@ -100,7 +100,7 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
           hasMore: false,
           meaningSkipped: "this Google account has no imported sources",
         }
-      const { searchNotes } = await import("@wirecat/cli-messaging/services")
+      const { searchNotes } = await import("@wirecat/cli-core/services")
       const result = await searchNotes(store, query, {
         ...options,
         folderIds: selected ? [selected.id] : [],
@@ -115,16 +115,16 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
             const metadata = note.frontMatter as { sourceUrl?: unknown; tabs?: unknown; notRead?: unknown } | null
             return {
               ...hit,
-              sourceUrl: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
+              source_url: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
               tabs: Array.isArray(metadata?.tabs) ? metadata.tabs : [],
-              notRead: typeof metadata?.notRead === "string" ? metadata.notRead : null,
+              not_read: typeof metadata?.notRead === "string" ? metadata.notRead : null,
             }
           }),
         ),
       }
     },
     embed: async (max) => {
-      const { embedNotes } = await import("@wirecat/cli-messaging/services")
+      const { embedNotes } = await import("@wirecat/cli-core/services")
       return embedNotes(store, { maxChunks: max, env, command: "tg" })
     },
     close: () => store.close(),

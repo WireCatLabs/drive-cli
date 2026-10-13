@@ -43,6 +43,7 @@ export const saveSession = (
     throw new CliError(
       "configuration_error",
       "could not save Google sign-in; use an available keyring or explicitly choose --credential-storage file",
+      { reason: "sign-in.not-saved" },
     )
   }
 }
@@ -59,10 +60,14 @@ export const authorizedClient = (
     if (!secret) throw new Error("missing login")
     parsed = v.safeParse(Session, JSON.parse(secret))
   } catch {
-    throw new CliError("authentication_error", "could not load Google sign-in — run drive session start again")
+    throw new CliError("authentication_error", "could not load Google sign-in — run drive session start again", {
+      reason: "sign-in.expired",
+    })
   }
   if (!parsed.success || parsed.output.principal !== profile.principal)
-    throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account")
+    throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account", {
+      reason: "sign-in.expired",
+    })
   const session = parsed.output
   const client = new OAuth2Client({
     clientId: session.clientId,
@@ -90,6 +95,7 @@ export const checkAuthorization = async (client: OAuth2Client, required = READ_S
       throw new CliError(
         "permission_error",
         "sign-in lacks the required permission; run drive <profile> session start with --write, --activity or --apps when needed",
+        { reason: "sign-in.scope-missing" },
       )
   } catch (error) {
     throw googleError(error)

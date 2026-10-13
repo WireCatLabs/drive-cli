@@ -55,7 +55,7 @@ describe("schema-generated Google contracts", () => {
     )
     expect(JSON.parse(registry.stdout.join("")).commands[0]).toMatchObject({
       origin: "generated",
-      operationId: "drive.files.get",
+      operation_id: "drive.files.get",
       mutates: false,
     })
     await expect(
@@ -150,10 +150,10 @@ describe("shared CLI policy and execution", () => {
     expect(await run("complete", "--", "fil")).toContain("files")
     await expect(run("--offline", "files", "get", "doc-a")).rejects.toThrow("offline")
     expect(JSON.parse(await run("--dry-run", "api", "drive-files-get", "--file-id", "doc-a"))).toMatchObject({
-      dryRun: true,
+      dry_run: true,
     })
     expect(JSON.parse(await run("--dry-run", "tags", "add", "doc-a", "tag"))).toMatchObject({
-      dryRun: true,
+      dry_run: true,
       local: true,
     })
     expect(request).not.toHaveBeenCalled()

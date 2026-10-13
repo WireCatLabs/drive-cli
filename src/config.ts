@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
-import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-messaging/cli"
-import { MAX_TEXT_CHARS } from "@wirecat/cli-messaging/documents"
-import { LEVELS } from "@wirecat/cli-messaging/sends"
+import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-core/cli"
+import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
+import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
@@ -53,7 +53,9 @@ export const fileId = (input: string): string => {
 export const activeProfile = (env: NodeJS.ProcessEnv, name: string) => {
   const profile = readConfig(env).profiles[profileName(name)]
   if (!profile)
-    throw new CliError("authentication_error", `profile ${name} is not signed in — drive ${name} session start`)
+    throw new CliError("authentication_error", `profile ${name} is not signed in — drive ${name} session start`, {
+      reason: "profile.not-signed-in",
+    })
   return profile
 }
 export interface OAuthApplication {

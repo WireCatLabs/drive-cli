@@ -53,7 +53,7 @@ describe("browser OAuth", () => {
   })
   it("requests read-only access, exchanges PKCE and stores refresh credentials securely", async () => {
     const f = setup()
-    expect(await login(f.options)).toEqual({ profile: "default", signedIn: true, storage: "keyring" })
+    expect(await login(f.options)).toEqual({ profile: "default", signed_in: true, storage: "keyring" })
     const url = new URL(vi.mocked(f.options.showUrl).mock.calls[0]?.[0] ?? "")
     expect(url.searchParams.get("scope")).toBe("https://www.googleapis.com/auth/drive.readonly")
     expect(url.searchParams.get("code_challenge_method")).toBe("S256")
@@ -70,7 +70,7 @@ describe("browser OAuth", () => {
       expect((await fetch(`${f.redirect()}?state=wrong&code=fixture-code`)).status).toBe(400)
       await fetch(`${f.redirect()}?state=${new URL(url).searchParams.get("state")}&code=fixture-code`)
     }
-    expect((await login(f.options)).signedIn).toBe(true)
+    expect((await login(f.options)).signed_in).toBe(true)
   })
   it("closes its listener when consent is declined", async () => {
     const f = setup()
