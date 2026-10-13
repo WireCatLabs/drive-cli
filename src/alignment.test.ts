@@ -217,7 +217,7 @@ describe("MCP derived from the same guarded command tree", () => {
     const tools = mcpTools(options, "default")
     const show = tools.find((tool) => tool.name === "drive_documents_show")
     if (!show) throw new Error("missing local tool")
-    expect(toolArgv(show, { "url-or-id": "--permission", permission: "api=allow" })).toEqual([
+    expect(toolArgv(show, { document: "--permission", permission: "api=allow" })).toEqual([
       "documents",
       "show",
       "--",

@@ -1,9 +1,11 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
+import { flatten } from "@wirecat/cli-base/commands"
 import { parseCommandsDocument } from "@wirecat/cli-base-lint/commands"
 import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
+import { describeDriveProgram } from "./registry.js"
 import { readState } from "./state.js"
 import { fixture } from "./testing.js"
 
@@ -51,6 +53,30 @@ describe("standalone command workflow", () => {
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.globalOptions.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
+  })
+  it("gives every handwritten command a short lower-case summary and examples that name real flags", () => {
+    const program = createProgram({ env: {} })
+    const global = program.options.flatMap((option) => [option.long, option.short])
+    const words = (line: string) => line.match(/'[^']*'|"[^"]*"|\S+/g) ?? []
+    for (const command of flatten(describeDriveProgram(program)).filter((one) => one.origin === "handwritten")) {
+      const where = command.path.join(" ")
+      const summary = command.summary ?? command.description
+      expect(summary, where).toMatch(/^[a-z][^\n]*[^.]$/)
+      expect(summary.length, where).toBeLessThanOrEqual(80)
+      if (command.commands.length) continue
+      const examples = (command as { examples?: string[] }).examples ?? []
+      expect(examples.length, where).toBeGreaterThanOrEqual(1)
+      expect(examples.length, where).toBeLessThanOrEqual(3)
+      for (const example of examples) {
+        const [cli, ...rest] = words(example)
+        expect(cli, example).toBe("drive")
+        const args = rest[0] === command.path[0] ? rest : rest.slice(1)
+        expect(args.slice(0, command.path.length), example).toEqual(command.path)
+        const flags = command.options.flatMap((option) => option.flags.match(/--?[a-z][a-z-]*/g) ?? [])
+        for (const flag of args.filter((arg) => arg.startsWith("-") && arg !== "--"))
+          expect([...flags, ...global], example).toContain(flag)
+      }
+    }
   })
   it("prints commands --json in the cli-base document shape, whole and scoped", async () => {
     const f = fixture()

@@ -1,11 +1,11 @@
 # Document knowledge and Google API commands
 
 Google ingestion and local knowledge use the same released WireCat document schema. Source
-documents have `document:...` references; memos use `note:...`; memories use `memory:...`.
+documents have `document:...` references; notes use `note:...`; memories use `memory:...`.
 People use the shared `person:...` identity. Commands below accept a Google document ID or URL
 as their source argument and resolve its shared reference in the selected profile.
 
-## Tags, links and notes
+## Tags, relationships and notes
 
 ```sh
 drive personal tags add DOC_ID budget review
@@ -16,14 +16,14 @@ drive personal notes add DOC_ID 'Check the assumptions' --title Review
 drive personal notes list DOC_ID --search assumptions
 drive personal notes show DOC_ID note:NOTE_ID
 drive personal notes edit DOC_ID note:NOTE_ID 'Assumptions reviewed' --revision 1
-drive personal links add DOC_ID project:PROJECT_ID --kind about
-drive personal links list DOC_ID
-drive personal links remove DOC_ID LINK_ID
+drive personal relationships add DOC_ID project:PROJECT_ID --kind about
+drive personal relationships list DOC_ID
+drive personal relationships remove DOC_ID LINK_ID
 drive personal documents context DOC_ID
 ```
 
 Use the actual references returned by your store. Note edits require their latest revision to
-protect against stale edits. Local tags, memos and owner links survive document renames and
+protect against stale edits. Local tags, notes and owner relationships survive document renames and
 resync. Removing a source from ingestion retains owner-created notes; its source-backed memories
 become stale. These commands do not write Google comments or Google Drive labels.
 
@@ -35,8 +35,8 @@ with memo or messenger tools requires an explicit compatible store path and alig
 ## Editors and history
 
 ```sh
-drive personal people list DOC_ID
-drive personal people link DOC_ID GOOGLE_ID person:PERSON_UID
+drive personal identities list DOC_ID
+drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID
 drive personal documents list --person person:PERSON_UID
 drive personal documents history DOC_ID --limit 100
 drive personal session start --client-file /path/to/client.json --activity
@@ -45,8 +45,8 @@ drive personal documents history DOC_ID --activity
 
 Sync saves the owners and last modifying user that Google exposes. Their permission IDs identify
 Google identities; an available email is the fallback. Matching names does not merge people.
-Use `people link` to explicitly connect an observed Google identity to a person already known
-through another provider. The `GOOGLE_ID` comes from `people list`.
+Use `identities link` to explicitly connect an observed Google identity to a person already known
+through another provider. The `GOOGLE_ID` comes from `identities list`.
 Identity decisions are shared across the store. Linking refreshes Google-derived document
 relationships across imported Google folders; it preserves owner-added links and names.
 
@@ -57,14 +57,14 @@ scope and API; enable **Drive Activity API** in the application project. These e
 a complete character-level diff or necessarily reveal every actor's name. See Google's
 [revision guide](https://developers.google.com/workspace/drive/api/guides/manage-revisions) and
 [Activity query reference](https://developers.google.com/workspace/drive/activity/v2/reference/rest/v2/activity/query).
-Pass a returned `nextPageToken` as `--page-token` to read another page.
+Pass a returned `nextPageToken` as `--cursor` to read another page.
 
 ## Memories, facts and AI extraction
 
 ```sh
 drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope work
 drive personal facts list DOC_ID --status proposed
-drive personal facts accept DOC_ID fact:FACT_ID
+drive personal facts confirm DOC_ID fact:FACT_ID
 drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
 drive personal memories list DOC_ID --scope work
 drive personal memories show DOC_ID memory:MEMORY_ID
@@ -72,7 +72,7 @@ drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal memories add DOC_ID 'Corrected budget summary' --scope work --supersedes memory:MEMORY_ID
 drive personal memories search DOC_ID budget --scope work
 drive personal memories stale DOC_ID memory:MEMORY_ID
-drive personal models configure --provider openai --model YOUR_MODEL
+drive personal models set --provider openai --model YOUR_MODEL
 drive personal memories extract DOC_ID --scope work
 drive personal memories extract DOC_ID --scope work --tab TAB_ID --save
 ```
@@ -112,8 +112,8 @@ not implemented as product workflows. JSON methods support normal query/path par
 structured request bodies; binary media upload and arbitrary transport settings are excluded.
 
 ```sh
-drive api methods
-drive api methods --service docs
+drive api list
+drive api list --service docs
 drive personal files list --parent FOLDER_ID
 drive personal files get FILE_ID
 drive personal comments list FILE_ID
@@ -123,7 +123,7 @@ drive shared-drives
 drive personal session start --client-file /path/to/client.json --write
 drive personal files mkdir 'Research' --parent FOLDER_ID
 drive personal files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
-drive personal files move FILE_ID --to NEW_FOLDER_ID --from OLD_FOLDER_ID
+drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID
 drive personal files update FILE_ID --body '{"name":"Renamed"}'
 drive personal files trash FILE_ID
 drive personal files restore FILE_ID

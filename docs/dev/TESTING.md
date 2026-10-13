@@ -3,7 +3,7 @@
 Synthetic tests cover identity, folder scope, duplicate names, SDK pagination, all tabs, durable
 jobs, unavailable content, locking, OAuth state/PKCE, listener cleanup and shared-store retrieval.
 SDK responses are scripted at the request seam. These tests do not certify live Google exports.
-Extended workflows cover real temporary-store tags, memos, links, editor association, memory
+Extended workflows cover real temporary-store tags, notes, relationships, editor association, memory
 scope/staleness, guarded note edits, AI quote validation, extraction races, all common remote
 command mappings, generated schema validation and explicit write/delete/scope boundaries.
 Alignment tests cover local/remote policy denial, generated flags, operation aliases, atomic

@@ -7,7 +7,7 @@ import { schemas } from "./generated/schemas.js"
 export { operations, schemas }
 export const operationOf = (name: string): ManifestOperation => {
   const operation = operations.find((item) => item.id === name)
-  if (!operation) throw new CliError("validation_error", "unknown Google method; run drive api methods")
+  if (!operation) throw new CliError("validation_error", "unknown Google method; run drive api list")
   return operation
 }
 export const validateRequest = (name: string, params: Record<string, unknown>, body?: Record<string, unknown>) => {

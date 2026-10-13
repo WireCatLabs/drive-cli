@@ -75,8 +75,8 @@ describe("explicit account selection", () => {
     writeFileSync(join(f.env.DRIVE_CONFIG_DIR as string, "config.json"), "invalid JSON")
     for (const args of [
       ["commands", "--json"],
-      ["schema", "drive.files.get"],
-      ["api", "methods"],
+      ["api", "show", "drive.files.get"],
+      ["api", "list"],
     ])
       await createProgram({ env: f.env, streams: captureStreams() }).parseAsync(args, { from: "user" })
     const help = captureStreams()

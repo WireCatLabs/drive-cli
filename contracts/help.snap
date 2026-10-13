@@ -1,6 +1,6 @@
 Usage: drive <profile> [options] <command>
 
-Manage Google Drive and Docs, local Markdown, shared knowledge and search
+manage Google Drive and Docs, local Markdown, shared knowledge and search
 
 Options:
   -V, --version             output the version number
@@ -12,7 +12,8 @@ Options:
                             machine output
   --quiet                   suppress optional diagnostics
   --timeout <duration>      whole-command deadline, e.g. 30s
-  --max-output-bytes <n>    bound buffered result output (default: 4194304)
+  --max-output-bytes <n>    largest result to print, in bytes; 0 for no limit
+                            (default: 4194304)
   --read-only               refuse local and remote mutations
   --offline                 answer only operations that use local cached data
   --dry-run                 validate command/policy and preview without acting
@@ -23,45 +24,38 @@ Options:
   -h, --help                display help for command
 
 Commands:
-  session                   Google browser sign-in and local account profiles
-  folders                   Select Google folders for local ingestion
-  sync [options]            Fetch selected sources and resume a durable pending
-                            batch
-  status                    Local sync checkpoint, cached sources and pending
+  session                   sign in to Google and manage local profiles
+  folders                   choose the Google Drive folders that sync imports
+  sync [options]            import what changed in the chosen folders, and
+                            finish an unfinished sync
+  status                    show the last sync, imported documents and pending
                             work
-  documents                 Locally imported sources and exports
-  search [options] <query>  Shared keyword and optional semantic search over
-                            imported Google sources
-  tags                      Local tags on shared documents; preserved through
-                            resync
-  links                     Connect documents to shared people, projects, notes
-                            and other references
-  notes|memos               Local shared memos about a source document
-  memories                  Evidence-backed shared memories; AI output remains
-                            proposed
-  facts                     What happened, as a document shows it; yours are
-                            accepted, an extraction's stay proposed
-  people                    Google-observed identities and explicit links to
-                            shared people
-  api                       Discover and call the official Drive, Docs and
-                            Activity SDK methods
-  files                     Remote Google Drive files; results are not
-                            automatically imported
-  comments                  Remote file comments; pagination tokens are returned
-  permissions               Remote file permissions; pagination tokens are
-                            returned
-  revisions                 Remote file revisions; pagination tokens are
-                            returned
-  shared-drives [options]   List accessible Google Shared Drives
-  config                    Shared-style defaults/profile settings; credentials
-                            are separate
-  complete [words...]       Shell completion from the shared command registry
-  schema <method>           Generated request schema and operation contract
-                            without Google access
-  models                    Configure the shared model gateway; keys stay
-                            outside config
-  mcp [options]             Expose guarded commands over MCP stdio
-  commands [path...]        Discover the command tree and options as shared
-                            registry data
+  documents                 read imported documents and Google Docs
+  search [options] <query>  search imported documents by words, and by meaning
+                            when indexed
+  tags                      label imported documents; labels survive a sync
+  relationships             connect a document to people, projects, notes and
+                            other references
+  notes                     write notes about an imported document
+  memories                  keep what was learned from a document, with
+                            evidence; an agent's stay proposed
+  facts                     what happened, as a document shows it; an agent's
+                            stay proposed until confirmed
+  identities                the Google accounts seen on a document, and the
+                            people they belong to
+  api                       discover and call the official Drive, Docs and
+                            Activity API methods
+  files                     read and change files in Google Drive; nothing is
+                            imported
+  comments                  read the comments of a file in Google Drive
+  permissions               read the permissions of a file in Google Drive
+  revisions                 read the revisions of a file in Google Drive
+  shared-drives [options]   list the shared drives this account can open
+  config                    read and change settings; credentials are kept apart
+  complete [words...]       print a shell completion script, or complete words
+  models                    choose the model that proposes memories; keys stay
+                            out of config
+  mcp [options]             serve drive's commands to an agent over MCP on stdio
+  commands [path...]        print the command tree and its options as data
   help [command]            display help for command
 

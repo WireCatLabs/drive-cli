@@ -61,7 +61,7 @@ For manual use, replace `FOLDER_ID` with your folder ID or full Google folder UR
 ```sh
 drive personal files list --parent FOLDER_ID --json
 drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
-drive personal sync --max 200 --json
+drive personal sync --limit 200 --json
 drive personal status --json
 drive personal documents list --json
 ```
@@ -69,7 +69,7 @@ drive personal documents list --json
 A successful import lists documents with stable Google IDs and original links. A nonzero pending
 count means the batch is unfinished: run `drive personal sync` again. This resumes saved work.
 The initial scan is recursive; `files list --parent` lists immediate children only. If Google
-returns a `nextPageToken`, pass it to `files list --page-token TOKEN` for the next page.
+returns a `nextPageToken`, pass it to `files list --cursor TOKEN` for the next page.
 
 `folders list` shows selected roots. Folder IDs and parents are saved in profile sync state;
 there is no navigable folder tree in the shared database yet. Documents are grouped by account.
@@ -83,7 +83,7 @@ After import, these commands use the local copy and do not contact Google:
 drive personal --offline documents list --json
 drive personal --offline documents show DOC_ID --json
 drive personal --offline documents context DOC_ID --json
-drive personal --offline people list DOC_ID --json
+drive personal --offline identities list DOC_ID --json
 drive personal --offline search 'budget' --exact --json
 ```
 
@@ -108,7 +108,7 @@ drive personal status --json
 ```
 
 Sync polls Google's change feed. Repeat it after edits or before a time-sensitive answer; there
-is no background watcher. `--max` bounds source operations for that invocation, not the eventual
+is no background watcher. `--limit` bounds the documents read for that invocation, not the eventual
 size of the folder. `--rescan` reconciles the selected folders from a fresh change token when you
 need a full check. Unchanged text reuses its content identity and existing embeddings.
 Renames keep document IDs; files moved outside selected roots or removed remotely leave local

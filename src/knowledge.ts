@@ -51,7 +51,7 @@ export interface DocumentKnowledge {
     ref: string,
     options?: { type?: Fact["type"]; status?: Fact["status"]; limit?: number },
   ): Promise<Fact[]>
-  fact(principal: string, ref: string, factRef: string, action?: "show" | "accept"): Promise<Fact>
+  fact(principal: string, ref: string, factRef: string, action?: "show" | "confirm"): Promise<Fact>
   people(principal: string, ref: string): Promise<unknown>
   linkPerson(principal: string, ref: string, googleId: string, personRef: string): Promise<PersonRecord>
 }
@@ -200,7 +200,7 @@ export const documentKnowledge = (
     },
     fact: async (principal, ref, factRef, action = "show") => {
       const fact = await factFor(principal, ref, factRef)
-      return action === "accept" ? store.facts.accept(fact.ref) : fact
+      return action === "confirm" ? store.facts.accept(fact.ref) : fact
     },
     people: async (principal, ref) => {
       const note = await document(principal, ref)
