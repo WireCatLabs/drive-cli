@@ -58,7 +58,7 @@ a Google sign-in first, run `drive personal session end` for each connected prof
 
 ## Choose how to connect
 
-- **Use WireCat's Google application:** follow [Connect your account](#connect-your-account)
+- **Connect through WireCat's Google application:** follow [Connect your account](#connect-your-account)
   below. The CLI already includes the application identity; you only choose your account and
   approve access in your browser. No Google Cloud project or JSON file is needed.
 - **Use your own Google application:** follow [Prepare Google sign-in](#prepare-google-sign-in)
@@ -67,7 +67,7 @@ a Google sign-in first, run `drive personal session end` for each connected prof
 
 ## Connect your account
 
-These steps use WireCat's application by default. Each user grants access to their own Google
+WireCat's application is selected by default. Each user grants access to their own Google
 account; publishing an application or installing the CLI does not sign in for you.
 
 1. Open a terminal on the computer where you installed the CLI. Choose a profile name for this
