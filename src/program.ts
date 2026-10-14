@@ -361,7 +361,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         pending: state.pending?.jobs.length ?? 0,
         skipped: state.skipped.map(skipJson),
         last_sync: state.lastSync ?? null,
-        coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
+        coverage:
+          "Google Docs/Sheets, PDF/DOCX/XLSX and Markdown/TXT/CSV/TSV; native export layout, tab fidelity and assets are not verified",
         remote_checked: false,
       }),
     )

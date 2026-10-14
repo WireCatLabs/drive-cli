@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `status` names the supported Google Sheets and uploaded PDF, Word, Excel, CSV and TSV readers,
+  alongside Docs and Markdown/TXT, while retaining the native-export fidelity limitation.
+
 - The MCP contract snapshot reflects the positional `notes list` query, so full validation checks
   the current tool arguments instead of the removed `--search` option.
 
