@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 — 2026-10-14
 
 - **An interrupted first folder walk resumes.** `sync` saves the walk as it goes (`walk.json` beside the sync
   state); the next run lists only the folders it had not reached, with the change token taken before the walk.
