@@ -44,6 +44,7 @@ export const answerOf = (
   const meta: Meta = {
     run_id: context.runId ?? randomUUID(),
     duration_ms: Math.max(0, Math.round(Date.now() - context.startedAt)),
+    complete: true,
   }
   // Rich results (search/context/config) stay together in an item, rather than losing their metadata.
   const list = Array.isArray(data)
@@ -61,10 +62,11 @@ export const answerOf = (
   return {
     items,
     page: {
+      mode: "cursor",
       limit: context.limit ?? Math.max(1, items.length),
       has_more: hasMore,
       ...("next_offset" in list && list.next_offset !== null && list.next_offset !== undefined
-        ? { cursor: String(list.next_offset) }
+        ? { next_cursor: String(list.next_offset) }
         : {}),
     },
     meta,

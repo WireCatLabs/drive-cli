@@ -128,7 +128,10 @@ it("previews catalog writes before opening the database and publishes local muta
   await createProgram({ env: f.env, index: open, streams }).parseAsync(["default", "catalog", "import", "--dry-run"], {
     from: "user",
   })
-  expect(commandResult(streams.stdout.join(""))).toMatchObject({ dry_run: true, local: true, mutates: true })
+  expect(commandResult(streams.stdout.join(""))).toMatchObject({
+    dry_run: true,
+    effects: { remote: "none", local: "write" },
+  })
   expect(open).not.toHaveBeenCalled()
 })
 it("uses the pending hierarchy and excludes scheduled removals when backfilling a checkpoint", () => {

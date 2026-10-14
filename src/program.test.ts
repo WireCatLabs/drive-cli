@@ -44,12 +44,15 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", "sync", "--json"], { from: "user" })
-    expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ name: "sync", mutates: true, local: true })
+    expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({
+      name: "sync",
+      effects: { remote: "read", local: "write" },
+    })
     const root = captureStreams()
     await createProgram({ env: f.env, streams: root }).parseAsync(["default", "commands", "--json"], { from: "user" })
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
-    expect(contract.contract).toBe(2)
+    expect(contract.contract).toBe(3)
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)

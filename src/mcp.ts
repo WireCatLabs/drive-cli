@@ -2,6 +2,7 @@ import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
+import { writes } from "@wirecat/cli-base/standards"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { openStore } from "@wirecat/cli-core/store"
 import { paths } from "./config.js"
@@ -58,10 +59,10 @@ export const mcpTools = (options: ProgramOptions, profile: string, flags: Policy
         command.path.join(" ") === "documents export"
       )
         return false
-      const keys = command.operation_id ? methodPolicyKeys(command.operation_id) : [command.path.join(".")]
+      const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
       return keys.every((key) => {
         const level = levelFor(settings.levels, key).level
-        return level !== "deny" && !(command.mutates && (settings.readOnly || level === "readonly"))
+        return level !== "deny" && !(writes(command.effects) && (settings.readOnly || level === "readonly"))
       })
     })
     .map((command) => {
@@ -158,7 +159,11 @@ export const invokeTool = async (
       await audit.agentActions.record({
         actor: { bot: "drive-mcp" },
         tool: tool.name,
-        tier: tool.command.mutates ? (tool.command.local ? "write-private" : "write-public") : "read",
+        tier: writes(tool.command.effects)
+          ? tool.command.effects?.remote === "write"
+            ? "write-public"
+            : "write-private"
+          : "read",
         status: "isError" in result && result.isError ? "failed" : "ok",
         ...(failure?.error?.code ? { error: failure.error.code } : {}),
         startedAt,
@@ -196,9 +201,9 @@ export const buildMcpServer = (options: ProgramOptions, profile: string, flags: 
         description: tool.command.description,
         inputSchema: advertised(tool),
         annotations: {
-          readOnlyHint: !tool.command.mutates,
-          destructiveHint: tool.command.mutates === true,
-          openWorldHint: tool.command.local !== true,
+          readOnlyHint: !writes(tool.command.effects),
+          destructiveHint: writes(tool.command.effects),
+          openWorldHint: tool.command.effects?.remote !== "none",
         },
       },
       async (input) => invokeTool(tool, input, options, profile, flags),

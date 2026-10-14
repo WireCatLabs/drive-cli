@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Commands say what they touch (breaking).** `commands --json` (contract 3) replaces `mutates`, `local` and
+  `operation_id` with `effects: {remote, local}` (`none`, `read` or `write`) and `api_operation`. `--dry-run` previews
+  and `mcp --tools` show `effects` too. MCP tools that read only local data no longer claim to reach the network.
+- **Answers say whether they are complete.** `meta.complete` is on every answer; a list's `page` names its `mode`
+  (`cursor`) and continues with `next_cursor`. Errors carry `retry: {safe}`.
+- Adopt cli-core 0.272.0 and cli-base 0.28.1.
+
 ## 0.5.0 — 2026-10-14
 
 - **JSON contract 2 (breaking).** Command answers use `item` or `items`/`page` plus `meta`, with snake_case keys. Search passages are under `item.hits`; sync/status results are under `item`. Discovery retains the shared `commands --json` format and advertises contract 2. Provider metadata, JSON Schemas and user dictionary keys retain their vocabulary. MCP returns the same envelope without an extra `result` wrapper.

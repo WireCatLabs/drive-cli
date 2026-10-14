@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
+import { writes } from "@wirecat/cli-base/standards"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { operations, validateRequest } from "./api-contract.js"
@@ -55,8 +56,8 @@ describe("schema-generated Google contracts", () => {
     )
     expect(JSON.parse(registry.stdout.join("")).commands[0]).toMatchObject({
       origin: "generated",
-      operation_id: "drive.files.get",
-      mutates: false,
+      api_operation: "drive.files.get",
+      effects: { remote: "read", local: "none" },
     })
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
@@ -154,7 +155,7 @@ describe("shared CLI policy and execution", () => {
     })
     expect(commandResult(await run("--dry-run", "tags", "add", "doc-a", "tag"))).toMatchObject({
       dry_run: true,
-      local: true,
+      effects: { remote: "none", local: "write" },
     })
     expect(request).not.toHaveBeenCalled()
   })
@@ -203,7 +204,7 @@ describe("MCP derived from the same guarded command tree", () => {
     const request = vi.fn(async () => ({ id: "doc-a" }))
     const options = { env: f.env, api: { call: request } }
     const readonly = mcpTools(options, "default", { readOnly: true })
-    expect(readonly.every((tool) => !tool.command.mutates)).toBe(true)
+    expect(readonly.every((tool) => !writes(tool.command.effects))).toBe(true)
     const get = readonly.find((tool) => tool.name === "drive_api_drive_files_get")
     if (!get) throw new Error("missing generated tool")
     expect(await invokeTool(get, { "file-id": "doc-a" }, options, "default")).toMatchObject({

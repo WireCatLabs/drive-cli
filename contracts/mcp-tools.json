@@ -1289,7 +1289,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1307,7 +1307,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1444,7 +1444,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1515,7 +1515,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1581,7 +1581,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1602,7 +1602,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1621,7 +1621,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1651,7 +1651,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1720,7 +1720,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1734,7 +1734,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1753,7 +1753,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1783,7 +1783,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1810,7 +1810,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1833,7 +1833,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1861,7 +1861,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1932,7 +1932,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -1999,7 +1999,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -2048,7 +2048,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {
@@ -2062,7 +2062,7 @@
   {
     "annotations": {
       "destructiveHint": false,
-      "openWorldHint": true,
+      "openWorldHint": false,
       "readOnlyHint": true
     },
     "inputSchema": {

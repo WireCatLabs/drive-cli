@@ -18,7 +18,12 @@ describe("failure handler", () => {
     const { exit, text } = report(new Error("token=secret-value"), ["default", "status", "--json"])
     expect(exit).toBe(1)
     expect(JSON.parse(text)).toEqual({
-      error: { code: "internal_error", reason: "command.crashed", message: "the command failed; this is a bug" },
+      error: {
+        code: "internal_error",
+        reason: "command.crashed",
+        message: "the command failed; this is a bug",
+        retry: { safe: false },
+      },
     })
     expect(text).not.toContain("secret-value")
   })
