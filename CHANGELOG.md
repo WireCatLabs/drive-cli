@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **An interrupted first folder walk resumes.** `sync` saves the walk as it goes (`walk.json` beside the sync
+  state); the next run lists only the folders it had not reached, with the change token taken before the walk.
+  `sync --rescan` starts the walk over.
+- **Sync state is saved every 25 files or 2 seconds**, not after every file, so a large profile no longer rewrites
+  its whole state per file. A cancelled or failed sync still saves what it finished; a killed one redoes at most
+  one batch. The 10,000-entry limit stays: the plan still holds every entry in memory and in one state file.
 - **Commands say what they touch (breaking).** `commands --json` (contract 3) replaces `mutates`, `local` and
   `operation_id` with `effects: {remote, local}` (`none`, `read` or `write`) and `api_operation`. `--dry-run` previews
   and `mcp --tools` show `effects` too. MCP tools that read only local data no longer claim to reach the network.

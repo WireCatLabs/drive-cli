@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
+import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import lockfile from "proper-lockfile"
 import { describe, expect, it, vi } from "vitest"
@@ -96,6 +97,42 @@ describe("durable source sync", () => {
     expect(second.pending).toBe(0)
     expect(f.source.children).toHaveBeenCalledTimes(1)
     expect([...f.stored.keys()]).toHaveLength(2)
+  })
+  it("resumes an interrupted first walk without listing the finished folders again", async () => {
+    const f = fixture()
+    let failSub = true
+    vi.mocked(f.source.children).mockImplementation(async (id) => {
+      if (id === "root") return [file("doc-a"), file("sub", ["root"], FOLDER)]
+      if (failSub) {
+        failSub = false
+        throw new CliError("provider_error", "listing interrupted")
+      }
+      return [file("doc-b", ["sub"])]
+    })
+    vi.mocked(f.source.content).mockImplementation(async (id) => content(file(id, [id === "doc-b" ? "sub" : "root"])))
+    await expect(sync(f.source, f.index, f.env, "default", 200)).rejects.toThrow("listing interrupted")
+    const result = await sync(f.source, f.index, f.env, "default", 200)
+    expect(result.saved).toBe(2)
+    expect(vi.mocked(f.source.children).mock.calls.map(([id]) => id)).toEqual(["root", "sub", "sub"])
+    expect(f.source.startToken).toHaveBeenCalledTimes(1)
+    expect(readState(f.env, "default", "synthetic-principal").cursor).toBe("before-crawl")
+    expect(existsSync(join(profileDir(f.env, "default"), "walk.json"))).toBe(false)
+  })
+  it("keeps the files finished before a cancellation, though state is saved in batches", async () => {
+    const f = fixture()
+    const controller = new AbortController()
+    vi.mocked(f.source.children).mockResolvedValue(Array.from({ length: 5 }, (_, at) => file(`doc-${at}`)))
+    vi.mocked(f.index.save).mockImplementation(async (_principal, doc) => {
+      f.stored.set(doc.metadata.id, doc)
+      if (f.stored.size === 3) controller.abort()
+      return `document:${doc.metadata.id}`
+    })
+    await expect(sync(f.source, f.index, f.env, "default", 200, controller.signal)).rejects.toMatchObject({
+      code: "cancelled",
+    })
+    const state = readState(f.env, "default", "synthetic-principal")
+    expect(Object.keys(state.documents)).toEqual(["doc-0", "doc-1", "doc-2"])
+    expect(state.pending?.jobs.map(({ id }) => id)).toEqual(["doc-3", "doc-4"])
   })
   it("retains a failed export for replay while saving other successful sources", async () => {
     const f = fixture()
