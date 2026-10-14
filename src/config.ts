@@ -17,6 +17,7 @@ const Profile = v.strictObject({
   principal: v.string(),
   roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
   storage: v.picklist(["keyring", "file"]),
+  pictureSearch: v.optional(v.boolean()),
   ...Common,
 })
 export const ConfigSchema = v.strictObject({
@@ -74,6 +75,8 @@ export const checkTextLimit = (value: unknown): number => {
 }
 export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
   activeProfile(env, name).maxTextChars ?? readConfig(env).defaults?.maxTextChars ?? MAX_TEXT_CHARS
+export const pictureSearch = (env: NodeJS.ProcessEnv, name: string): boolean =>
+  activeProfile(env, name).pictureSearch ?? false
 export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication => {
   if (!file) {
     if (!env.DRIVE_GOOGLE_CLIENT_ID) {

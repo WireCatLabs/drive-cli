@@ -10,6 +10,8 @@ import {
   type FileMetadata,
   FOLDER,
   type GoogleSource,
+  type IndexedDocument,
+  type PictureWriter,
   type Skip,
   type SyncState,
   type WorkItem,
@@ -40,6 +42,8 @@ const changedSince = (previous: FileMetadata, file: FileMetadata) =>
   previous.name !== file.name ||
   previous.canDownload !== file.canDownload ||
   JSON.stringify(previous.parents) !== JSON.stringify(file.parents)
+const MAX_PICTURE_BYTES = 25 * 1024 * 1024
+const isPicture = (file: FileMetadata) => file.mime.startsWith("image/") && file.canDownload
 const hashText = (text: string) => createHash("sha256").update(text).digest("hex")
 
 export { within } from "./scope.js"
@@ -49,6 +53,7 @@ const plan = async (
   state: SyncState,
   roots: string[],
   limit: number,
+  pictures: boolean,
   abandoned: string[] = [],
 ): Promise<NonNullable<SyncState["pending"]>> => {
   const scope = scopeHash(roots)
@@ -140,14 +145,15 @@ const plan = async (
     const previousSkip = state.skipped.find((item) => item.id === id)
     const reason = skipReason(file)
     const retry = previousSkip && !reason && retryable(previousSkip, limit)
-    if (previousSkip && !changed.has(id) && !initial && !retry && !(reason && !state.documents[id])) {
+    const known = state.documents[id]
+    const pictureDue = pictures && isPicture(file) && known !== undefined && !known.picture
+    if (previousSkip && !changed.has(id) && !initial && !retry && !pictureDue && !(reason && !state.documents[id])) {
       skipped.push({ ...previousSkip, file })
       continue
     }
-    const known = state.documents[id]
     if (reason) {
       skipped.push({ id, reason, file })
-      if (initial || !known || known.notRead !== reason || changedSince(known.metadata, file))
+      if (initial || !known || known.notRead !== reason || changedSince(known.metadata, file) || pictureDue)
         jobs.push({ id, kind: "save", file })
       continue
     }
@@ -172,6 +178,9 @@ export interface SyncResult {
   names_only: number
   removed: number
   unchanged: number
+  pictures?: number
+  pictures_too_large?: number
+  pictures_skipped?: string
   pending: number
   skipped: { id: string; reason: string }[]
   errors: { id: string; code: string; message: string }[]
@@ -198,7 +207,9 @@ export const sync = async (
     skipped: [],
     errors: [],
     coverage: "selected folders only; unsupported files are reported",
+    ...(profile.pictureSearch ? { pictures: 0 } : {}),
   }
+  let writer: PictureWriter | undefined
   try {
     if (profile.roots.length && (!source || (await source.identity()) !== profile.principal))
       throw new CliError("authentication_error", "signed-in Google account does not match this profile", {
@@ -212,7 +223,7 @@ export const sync = async (
     if (state.pending?.scope !== currentScope || rescan) delete state.pending
     if (rescan) delete state.cursor
     if (!state.pending) {
-      state.pending = await plan(source, state, profile.roots, limit, abandoned)
+      state.pending = await plan(source, state, profile.roots, limit, profile.pictureSearch ?? false, abandoned)
       state.skipped = state.pending.skipped
       saveState(env, name, state)
     }
@@ -230,6 +241,35 @@ export const sync = async (
       if (previous?.notRead === reason && !changedSince(previous.metadata, file)) result.unchanged++
       else result.names_only++
     }
+    let modelMissing = false
+    const savePictureOf = async (file: FileMetadata) => {
+      const entry = state.documents[file.id] as IndexedDocument
+      if (!profile.pictureSearch || !isPicture(file) || modelMissing) return
+      if ((file.size ?? 0) > MAX_PICTURE_BYTES) {
+        entry.picture = "too-large"
+        result.pictures_too_large = (result.pictures_too_large ?? 0) + 1
+        return
+      }
+      if (!source) throw new CliError("configuration_error", "a pending picture requires Google sign-in")
+      if (!writer) {
+        try {
+          writer = await index.openPictures()
+        } catch (error) {
+          if (!isCliError(error) || error.code !== "not_found") throw error
+          modelMissing = true
+          result.pictures_skipped = error.message
+          return
+        }
+      }
+      const bytes = await source.bytes(file.id)
+      if (bytes.length > MAX_PICTURE_BYTES) {
+        entry.picture = "too-large"
+        result.pictures_too_large = (result.pictures_too_large ?? 0) + 1
+        return
+      }
+      if ((await writer.save(entry.reference, bytes)) === "saved") result.pictures = (result.pictures ?? 0) + 1
+      entry.picture = "saved"
+    }
     const jobs = [...pending.jobs].slice(0, max)
     for (const job of jobs) {
       if (signal?.aborted) throw new CliError("cancelled", "sync was cancelled; pending operations are retained")
@@ -242,6 +282,7 @@ export const sync = async (
           result.removed++
         } else if (job.file && skipReason(job.file)) {
           await saveNamesOnly(job.file, skipReason(job.file) as string)
+          await savePictureOf(job.file)
         } else {
           if (!source) throw new CliError("configuration_error", "a pending save requires Google sign-in")
           const content = await source.content(job.id, limit)
@@ -306,6 +347,7 @@ export const sync = async (
     }
     return result
   } finally {
+    await writer?.close()
     await lock.release()
   }
 }

@@ -75,3 +75,13 @@ indexed: a word from the file name finds them, and the hit has `not_read` set to
 file drive read). Open the `source_url` of such a hit; there is no passage to quote.
 See [file-type coverage](usage.md#which-document-types-are-searchable) and
 [task recipes](recipes.md#refresh-a-project-and-prepare-a-meeting-brief).
+
+## Search images by what they show
+
+When the profile has `pictureSearch` on, `drive personal search "cat on a sofa"` also returns `pictures`: the
+images whose content is nearest to the words, best first, each with `ref`, `score`, `title` and `source_url`.
+They are a separate list, never mixed into `hits`. With the setting off, `pictures` is absent.
+
+Write picture queries in English. The picture model reads English only, so an agent that gets a question in
+another language translates it first. If the picture model is not downloaded, the output has `pictures_skipped`
+with the command that fetches it, and `hits` are unaffected.

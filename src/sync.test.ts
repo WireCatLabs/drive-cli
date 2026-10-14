@@ -318,4 +318,98 @@ describe("durable source sync", () => {
       await release()
     }
   })
+
+  describe("picture search", () => {
+    const withPictures = (roots = ["root"]) => {
+      const f = fixture(roots)
+      const config = readConfig(f.env)
+      const profile = config.profiles.default
+      if (!profile) throw new Error("fixture profile missing")
+      profile.pictureSearch = true
+      writeConfig(f.env, config)
+      vi.mocked(f.source.children).mockResolvedValue([file("photo", ["root"], "image/png")])
+      return f
+    }
+    it("downloads nothing while the profile has pictureSearch off", async () => {
+      const f = fixture()
+      vi.mocked(f.source.children).mockResolvedValue([file("photo", ["root"], "image/png")])
+      const result = await sync(f.source, f.index, f.env, "default", 200)
+      expect(f.source.bytes).not.toHaveBeenCalled()
+      expect(f.index.openPictures).not.toHaveBeenCalled()
+      expect(result.pictures).toBeUndefined()
+      expect(result.names_only).toBe(1)
+    })
+    it("downloads an image once, saves its picture and finds it unchanged on the next sync", async () => {
+      const f = withPictures()
+      const first = await sync(f.source, f.index, f.env, "default", 200)
+      expect(first).toMatchObject({ pictures: 1, names_only: 1 })
+      expect(f.source.bytes).toHaveBeenCalledTimes(1)
+      expect(f.pictures.get("document:photo")).toBeDefined()
+      const writer = await vi.mocked(f.index.openPictures).mock.results[0]?.value
+      expect(writer.close).toHaveBeenCalledTimes(1)
+      const second = await sync(f.source, f.index, f.env, "default", 200, undefined, true)
+      expect(second.pictures).toBe(0)
+      expect(f.source.bytes).toHaveBeenCalledTimes(2)
+    })
+    it("does not open the picture model for a sync with no images", async () => {
+      const f = withPictures()
+      vi.mocked(f.source.children).mockResolvedValue([file("doc-a")])
+      await sync(f.source, f.index, f.env, "default", 200)
+      expect(f.index.openPictures).not.toHaveBeenCalled()
+    })
+    it("picks up images already imported by name when the setting is turned on later", async () => {
+      const f = fixture()
+      vi.mocked(f.source.children).mockResolvedValue([file("photo", ["root"], "image/png")])
+      await sync(f.source, f.index, f.env, "default", 200)
+      const config = readConfig(f.env)
+      const profile = config.profiles.default
+      if (!profile) throw new Error("fixture profile missing")
+      profile.pictureSearch = true
+      writeConfig(f.env, config)
+      expect((await sync(f.source, f.index, f.env, "default", 200)).pictures).toBe(1)
+    })
+    it("skips an image over 25 MB without downloading it, and does not retry it", async () => {
+      const f = withPictures()
+      vi.mocked(f.source.children).mockResolvedValue([
+        { ...file("big", ["root"], "image/png"), size: 26 * 1024 * 1024 },
+      ])
+      expect(await sync(f.source, f.index, f.env, "default", 200)).toMatchObject({ pictures: 0, pictures_too_large: 1 })
+      await sync(f.source, f.index, f.env, "default", 200)
+      expect(f.source.bytes).not.toHaveBeenCalled()
+    })
+    it("skips images whose downloads are restricted", async () => {
+      const f = withPictures()
+      vi.mocked(f.source.children).mockResolvedValue([{ ...file("locked", ["root"], "image/png"), canDownload: false }])
+      await sync(f.source, f.index, f.env, "default", 200)
+      expect(f.source.bytes).not.toHaveBeenCalled()
+    })
+    it("reports a missing picture model once and still finishes the sync", async () => {
+      const f = withPictures()
+      vi.mocked(f.source.children).mockResolvedValue([
+        file("one", ["root"], "image/png"),
+        file("two", ["root"], "image/jpeg"),
+      ])
+      vi.mocked(f.index.openPictures).mockRejectedValue(
+        new CliError("not_found", "the picture model is not downloaded"),
+      )
+      const result = await sync(f.source, f.index, f.env, "default", 200)
+      expect(result).toMatchObject({
+        names_only: 2,
+        pictures: 0,
+        pictures_skipped: "the picture model is not downloaded",
+        errors: [],
+        pending: 0,
+      })
+      expect(f.index.openPictures).toHaveBeenCalledTimes(1)
+      expect(f.source.bytes).not.toHaveBeenCalled()
+    })
+    it("closes the picture model when a download fails", async () => {
+      const f = withPictures()
+      vi.mocked(f.source.bytes).mockRejectedValue(new CliError("provider_error", "boom"))
+      const result = await sync(f.source, f.index, f.env, "default", 200)
+      expect(result.errors).toHaveLength(1)
+      const writer = await vi.mocked(f.index.openPictures).mock.results[0]?.value
+      expect(writer.close).toHaveBeenCalledTimes(1)
+    })
+  })
 })

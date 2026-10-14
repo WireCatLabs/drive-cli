@@ -2,7 +2,7 @@ import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
 import { googleSource } from "./google.js"
 import { SHEET } from "./model.js"
-import { openIndex } from "./store.js"
+import { indexOver, openIndex } from "./store.js"
 import { content, file, fixture, workbook } from "./testing.js"
 
 describe("released shared store and search", () => {
@@ -108,5 +108,63 @@ describe("released shared store and search", () => {
     } finally {
       await index.close()
     }
+  })
+
+  describe("picture search", () => {
+    const axis = (i: number) => Float32Array.from({ length: 512 }, (_, n) => (n === i ? 1 : 0))
+    const embedder = {
+      model: {},
+      embedImage: async (bytes: Uint8Array) => axis(bytes[0] as number),
+      embedQuery: async (text: string) => axis(text === "cat" ? 1 : 9),
+      close: async () => {},
+    } as unknown as Parameters<typeof indexOver>[2]
+    const open = async () => {
+      const f = fixture()
+      const { openStore } = await import("@wirecat/cli-core/store")
+      const store = await openStore({ path: f.env.DRIVE_STORE as string, env: f.env, command: "drive" })
+      return { store, index: indexOver(store, f.env, embedder) }
+    }
+    const image = (id: string) => ({
+      ...content({ ...file(id, ["root"], "image/png"), name: `${id}.png` }, ""),
+      text: "",
+    })
+    it("returns pictures with the document's title and link when asked, and none when not", async () => {
+      const { store, index } = await open()
+      try {
+        const reference = await index.save("synthetic-principal", image("cat"), "h")
+        const writer = await index.openPictures()
+        await writer.save(reference, Uint8Array.of(1))
+        await writer.close()
+        const on = (await index.search("synthetic-principal", "cat", {
+          limit: 5,
+          offset: 0,
+          exact: false,
+          pictures: true,
+        })) as { pictures: { ref: string; title: string; source_url: string }[] }
+        expect(on.pictures).toMatchObject([{ ref: reference, title: "cat.png", source_url: file("cat").url }])
+        const off = (await index.search("synthetic-principal", "cat", { limit: 5, offset: 0, exact: false })) as object
+        expect(off).not.toHaveProperty("pictures")
+      } finally {
+        await store.close()
+      }
+    })
+    it("drops the picture when the document is removed", async () => {
+      const { store, index } = await open()
+      try {
+        const reference = await index.save("synthetic-principal", image("cat"), "h")
+        const writer = await index.openPictures()
+        await writer.save(reference, Uint8Array.of(1))
+        await index.remove("synthetic-principal", "cat")
+        const found = (await index.search("synthetic-principal", "cat", {
+          limit: 5,
+          offset: 0,
+          exact: false,
+          pictures: true,
+        })) as { pictures?: unknown[] }
+        expect(found.pictures ?? []).toEqual([])
+      } finally {
+        await store.close()
+      }
+    })
   })
 })

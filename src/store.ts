@@ -11,10 +11,15 @@ export const openIndex = async (env: NodeJS.ProcessEnv): Promise<DocumentIndex> 
   const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
   await ensureSqlite()
   const { openStore } = await import("@wirecat/cli-core/store")
-  const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "drive" })
+  const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "tg" })
   return indexOver(store, env)
 }
-export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): DocumentIndex => {
+type PictureEmbedder = Awaited<ReturnType<typeof import("@wirecat/cli-core/services")["openPictureEmbedderFor"]>>
+export const indexOver = (
+  store: MessageStore,
+  env: NodeJS.ProcessEnv,
+  pictureEmbedder?: PictureEmbedder,
+): DocumentIndex => {
   const folder = async (principal: string, create: boolean) => {
     const name = `google-drive:${principal}`
     const found = (await store.notes.folders()).find((item) => item.name === name)
@@ -133,6 +138,14 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
         notes.delete(path)
       }
     },
+    openPictures: async () => {
+      const { openPictureEmbedderFor, savePicture } = await import("@wirecat/cli-core/services")
+      const embedder = pictureEmbedder ?? (await openPictureEmbedderFor({ env, command: "tg" }))
+      return {
+        save: (reference, bytes) => savePicture(store, { ref: reference }, bytes, { embedder }),
+        close: () => (pictureEmbedder ? Promise.resolve() : embedder.close()),
+      }
+    },
     search: async (principal, query, options) => {
       const selected = await folder(principal, false)
       if (!selected)
@@ -150,9 +163,24 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
         folderIds: selected ? [selected.id] : [],
         env,
         command: "tg",
+        ...(pictureEmbedder ? { pictureEmbedder } : {}),
       })
+      const pictures = await Promise.all(
+        (result.pictures ?? []).map(async (picture) => {
+          const note = await store.notes.note(picture.ref)
+          const metadata = note.frontMatter as { sourceUrl?: unknown } | null
+          return {
+            ...picture,
+            title: note.title,
+            source_url: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
+          }
+        }),
+      )
+      const { pictures: _, picturesSkipped, ...rest } = result
       return {
-        ...result,
+        ...rest,
+        ...(result.pictures ? { pictures } : {}),
+        ...(picturesSkipped ? { pictures_skipped: picturesSkipped } : {}),
         hits: await Promise.all(
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)

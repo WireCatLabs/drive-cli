@@ -31,6 +31,7 @@ before moving or deleting them.
 | `readOnly` | Refuses local and remote mutations, including sync and adding notes | A profile or `defaults` |
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
 | `maxTextChars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
+| `pictureSearch` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
 | `models.memories.baseUrl` | Optional endpoint for the configured provider | A profile or `defaults` |
@@ -69,6 +70,8 @@ drive work config set readOnly false
 drive personal config show --json
 ```
 
+`drive personal config set pictureSearch true` turns picture search on for `personal` only; it needs the local
+picture model, which `tg models image download clip-b32` fetches, and queries in English.
 The first line changes the shared default; the second overrides it for `work`.
 `drive personal config set maxTextChars 500000` makes sync skip longer files with that reason; a
 file skipped for its length is read again on the next sync after the limit is raised. The final command
