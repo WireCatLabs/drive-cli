@@ -40,11 +40,11 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@googleapis/*", "google-auth-library"],
+                    "group": ["@googleapis/**", "google-auth-library"],
                     "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
                   },
                   {
-                    "group": ["@modelcontextprotocol/*"],
+                    "group": ["@modelcontextprotocol/**"],
                     "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
                   },
                   {
@@ -79,7 +79,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@modelcontextprotocol/*"],
+                    "group": ["@modelcontextprotocol/**"],
                     "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
                   },
                   {
@@ -107,7 +107,7 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@googleapis/*", "google-auth-library"],
+                    "group": ["@googleapis/**", "google-auth-library"],
                     "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
                   },
                   {
@@ -135,11 +135,11 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["@googleapis/*", "google-auth-library"],
+                    "group": ["@googleapis/**", "google-auth-library"],
                     "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
                   },
                   {
-                    "group": ["@modelcontextprotocol/*"],
+                    "group": ["@modelcontextprotocol/**"],
                     "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
                   },
                   {
