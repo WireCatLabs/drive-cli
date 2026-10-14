@@ -7,8 +7,10 @@
   Google's `nextPageToken`, and a `page.next` step; before, the whole Google response came back as one item and the
   token was never reported. An unfinished Google search is named in `missing`.
 - Every command builds its answer with cli-core's `itemOf`/`listOf` instead of drive guessing the shape, and prints
-  through `renderAnswer`. `memories search` is a list (hitting its 200-candidate cap sets `meta.truncated`); `--dry-run` on a
-  Google command answers one preview item.
+  through `renderAnswer`. `memories search` is a list (hitting its 200-candidate cap sets `meta.truncated`).
+  `documents history` drops its `file_id`, `source` and `coverage` wrapper. `catalog list`, `catalog search` and
+  `notes list` add a `page.next` step when more remain. In a terminal, a command prints its item or items, not the
+  whole envelope, and a next-page hint goes to stderr.
 
 ## 0.7.0 — 2026-10-14
 

@@ -114,7 +114,7 @@ database remains isolated; adopting an existing messenger store is an explicit o
 
 Discovery contract 3 uses `effects: {remote, local}` and `api_operation` instead of `mutates`,
 `local` and `operation_id`. Effects also inform error retry safety. Standard output envelopes
-include `meta.complete`; lists use page metadata with `next_page`. JSONL emits item records and
+include `meta.complete`; local lists page by `next_page`, Google lists by `next_cursor`. JSONL emits item records and
 one end record. Search and note lists use `--page`; the old `--offset` and `--agent-json` flags
 are refused. MCP inputs are checked in Drive's handler and failures are recorded through the
 shared audit API without argument values. Configuration uses the shared snake_case migration
