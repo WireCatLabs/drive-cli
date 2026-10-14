@@ -21,7 +21,7 @@ export const examples = (command: Command, lines: string[]): Command =>
   )
 
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
-export const CONTRACT = 2
+export const CONTRACT = 3
 
 /** Preserve shared registry paths/anchors while making executable usage show the account boundary. */
 export const describeDriveProgram = (program: Command): CommandInfo[] => {

@@ -38,12 +38,13 @@ export const snakeKeys = (value: unknown, record = false): unknown => {
 /** One invocation's standard envelope, shared by CLI output and the MCP executor. */
 export const answerOf = (
   value: unknown,
-  context: { startedAt: number; runId?: string; limit?: number },
+  context: { startedAt: number; runId?: string; limit?: number; page?: number },
 ): ItemEnvelope<unknown> | ListEnvelope<unknown> => {
   const data = snakeKeys(value)
   const meta: Meta = {
     run_id: context.runId ?? randomUUID(),
     duration_ms: Math.max(0, Math.round(Date.now() - context.startedAt)),
+    complete: true,
   }
   // Rich results (search/context/config) stay together in an item, rather than losing their metadata.
   const list = Array.isArray(data)
@@ -61,11 +62,10 @@ export const answerOf = (
   return {
     items,
     page: {
+      mode: "page",
       limit: context.limit ?? Math.max(1, items.length),
       has_more: hasMore,
-      ...("next_offset" in list && list.next_offset !== null && list.next_offset !== undefined
-        ? { cursor: String(list.next_offset) }
-        : {}),
+      ...(hasMore ? { next_page: (context.page ?? 1) + 1 } : {}),
     },
     meta,
   }

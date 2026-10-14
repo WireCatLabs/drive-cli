@@ -18,9 +18,21 @@ describe("failure handler", () => {
     const { exit, text } = report(new Error("token=secret-value"), ["default", "status", "--json"])
     expect(exit).toBe(1)
     expect(JSON.parse(text)).toEqual({
-      error: { code: "internal_error", reason: "command.crashed", message: "the command failed; this is a bug" },
+      error: {
+        code: "internal_error",
+        reason: "command.crashed",
+        message: "the command failed; this is a bug",
+        retry: { safe: false },
+      },
     })
     expect(text).not.toContain("secret-value")
+  })
+
+  it("calls a transient failure safe to retry only for a command that writes nothing", () => {
+    const unavailable = new CliError("provider_unavailable", "Google did not answer")
+    const retryOf = (args: string[]) => JSON.parse(report(unavailable, args).text).error.retry
+    expect(retryOf(["default", "documents", "get", "DOC", "--json"])).toEqual({ safe: true })
+    expect(retryOf(["default", "files", "copy", "DOC", "--json"])).toEqual({ safe: false })
   })
 
   it("prints the whole record after the object under --debug", () => {

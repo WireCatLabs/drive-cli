@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- **Commands say what they touch (breaking).** `commands --json` (contract 3) replaces `mutates`, `local` and
+  `operation_id` with `effects: {remote, local}` (`none`, `read` or `write`) and `api_operation`. `--dry-run` previews
+  and `mcp --tools` show `effects` too. MCP tools that read only local data no longer claim to reach the network.
+- **Errors say whether a retry is safe.** `retry: {safe}` is judged from the failed command's effects: a transient
+  failure of `documents get` is safe to retry, the same failure of `files copy` is not.
+- **`search` and `notes list` page with `--page` (breaking).** `--offset` is gone; a list's `page` says
+  `mode: "page"` and gives `next_page` when there is more. Every answer carries `meta.complete`. `--jsonl` prints one
+  `{"type":"item","data":…}` line per item, then a `{"type":"end",…}` line.
+- **`--agent-json` is gone (breaking).** MCP answers always show control and direction characters visibly; `--json`
+  keeps text as it is.
+- `folders remove` no longer returns a `next` sentence; its help says the next sync drops the folder's documents.
+- Adopt cli-core 0.272.0 and cli-base 0.28.1.
+
 ## 0.5.0 — 2026-10-14
 
 - **JSON contract 2 (breaking).** Command answers use `item` or `items`/`page` plus `meta`, with snake_case keys. Search passages are under `item.hits`; sync/status results are under `item`. Discovery retains the shared `commands --json` format and advertises contract 2. Provider metadata, JSON Schemas and user dictionary keys retain their vocabulary. MCP returns the same envelope without an extra `result` wrapper.

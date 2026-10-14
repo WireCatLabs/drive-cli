@@ -3,7 +3,7 @@ import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 import { answerOf } from "./output.js"
 
-describe("contract 2 output", () => {
+describe("contract 3 output", () => {
   it("preserves rich results in an item with snake_case keys and verbatim provider data", () => {
     const result = answerOf(
       {

@@ -12,11 +12,10 @@ export interface KnowledgeCommands {
   run<T>(input: string, fn: (knowledge: DocumentKnowledge, principal: string, ref: string) => Promise<T>): Promise<T>
   output(value: unknown): void
   positive(input: string): number
-  offset(input: string): number
   complete(): Complete
 }
 export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCommands) => {
-  const { run, output, positive, offset } = helpers
+  const { run, output, positive } = helpers
   const documentArgument = "Google file or folder id or URL in the local catalog"
   const scopes = ["personal", "work"]
   const documents = program.commands.find((command) => command.name() === "documents") as Command
@@ -91,8 +90,10 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<document>", documentArgument)
     .option("--search <text>", "only notes that contain this text")
     .option("--limit <n>", "how many notes to return", positive, 50)
-    .option("--offset <n>", "how many notes to skip", offset, 0)
-    .action(async (doc: string, args) => output(await run(doc, (k, p, ref) => k.notes(p, ref, args))))
+    .option("--page <n>", "which page to return", positive, 1)
+    .action(async (doc: string, { page, ...args }: { search?: string; limit: number; page: number }) =>
+      output(await run(doc, (k, p, ref) => k.notes(p, ref, { ...args, offset: (page - 1) * args.limit }))),
+    )
   examples(notes.command("show").description("show one note"), ["drive personal notes show DOC_ID note:NOTE_ID"])
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)

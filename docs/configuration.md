@@ -121,7 +121,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 | `--read-only` | Refuse both local and remote mutations |
 | `--permission KEY=LEVEL` | Override a command permission temporarily |
 | `--dry-run` | Validate and preview a supported operation without acting |
-| `--json`, `--jsonl`, `--agent-json` | Select structured output; agent JSON displays control characters visibly |
+| `--json`, `--jsonl` | Select structured output; MCP answers show control characters visibly |
 | `--timeout DURATION`, `--max-output-bytes N` | Bound the command deadline and buffered output |
 
 These flags are not file settings. Command-specific options such as `search --limit` and

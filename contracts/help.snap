@@ -8,8 +8,6 @@ Options:
                             first word)
   --json                    print machine-readable JSON
   --jsonl                   print machine-readable JSON lines
-  --agent-json              show control and direction characters visibly in
-                            machine output
   --quiet                   suppress optional diagnostics
   --debug                   on failure, show the full error record: cause and
                             stack

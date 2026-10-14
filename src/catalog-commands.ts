@@ -51,7 +51,7 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
     return found
   }
   const local = (command: Command, mutates = false) => {
-    annotate(command, { local: true, mutates })
+    annotate(command, { effects: { remote: "none", local: mutates ? "write" : "read" } })
     return command
   }
   examples(

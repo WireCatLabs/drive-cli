@@ -69,7 +69,7 @@ automatic write retry is disabled. No provider idempotency is invented.
 
 `--timeout 30s` supplies a whole-command deadline; transports retain their own request bounds.
 `--max-output-bytes` uses cli-base's atomic output buffer (4 MiB default, zero disables the cap).
-An oversized result fails before partial stdout. `--jsonl`, `--agent-json`, `--quiet` and `--offline`
+An oversized result fails before partial stdout. `--jsonl`, `--quiet` and `--offline`
 are available. Agent mode displays control/direction characters visibly. Offline refuses sync,
 Google actions and AI extraction; cached-document and knowledge reads remain available.
 

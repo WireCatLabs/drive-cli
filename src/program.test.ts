@@ -9,6 +9,13 @@ import { readState } from "./state.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
+  it("streams a list as item lines and an end line under --jsonl", async () => {
+    const streams = captureStreams()
+    await createProgram({ env: fixture().env, streams }).parseAsync(["api", "list", "--jsonl"], { from: "user" })
+    const lines = streams.stdout.map((line) => JSON.parse(line))
+    expect(lines[0]).toMatchObject({ type: "item", data: { name: expect.any(String) } })
+    expect(lines.at(-1)).toMatchObject({ type: "end", complete: true, page: { mode: "page", has_more: false } })
+  })
   it("lists and exports imported snapshots without overwriting existing files", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source, index: async () => f.index }
@@ -44,12 +51,15 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", "sync", "--json"], { from: "user" })
-    expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ name: "sync", mutates: true, local: true })
+    expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({
+      name: "sync",
+      effects: { remote: "read", local: "write" },
+    })
     const root = captureStreams()
     await createProgram({ env: f.env, streams: root }).parseAsync(["default", "commands", "--json"], { from: "user" })
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
-    expect(contract.contract).toBe(2)
+    expect(contract.contract).toBe(3)
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)

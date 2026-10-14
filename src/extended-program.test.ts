@@ -201,16 +201,16 @@ describe("remote action commands", () => {
   })
   it("exposes local and remote write metadata accurately", async () => {
     const f = fixture()
-    for (const [path, local] of [
-      [["tags", "add"], true],
-      [["documents", "update"], false],
-      [["memories", "extract"], false],
+    for (const [path, effects] of [
+      [["tags", "add"], { remote: "none", local: "write" }],
+      [["documents", "update"], { remote: "write", local: "none" }],
+      [["memories", "extract"], { remote: "write", local: "write" }],
     ] as const) {
       const streams = captureStreams()
       await createProgram({ env: f.env, streams }).parseAsync(["default", "commands", ...path, "--json"], {
         from: "user",
       })
-      expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ mutates: true, local })
+      expect(JSON.parse(streams.stdout.join("")).commands[0]).toMatchObject({ effects })
     }
   })
 })
