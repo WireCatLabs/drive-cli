@@ -15,7 +15,16 @@ import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wi
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./catalog-commands.js"
-import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
+import {
+  activeProfile,
+  application,
+  checkTextLimit,
+  fileId,
+  pictureSearch,
+  profileName,
+  readConfig,
+  writeConfig,
+} from "./config.js"
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
 import { googleSource, MAX_ENTRIES } from "./google.js"
@@ -396,7 +405,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .action(async (query: string, args: { limit: number; offset: number; exact?: boolean }) =>
       output(
         await withIndex((index) =>
-          index.search(activeProfile(env, selected()).principal, query, { ...args, exact: args.exact ?? false }),
+          index.search(activeProfile(env, selected()).principal, query, {
+            ...args,
+            exact: args.exact ?? false,
+            ...(pictureSearch(env, selected()) ? { pictures: true } : {}),
+          }),
         ),
       ),
     )
@@ -479,7 +492,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     "drive personal config set readOnly true",
     `drive personal config set permissions.files '"readonly"' --defaults`,
   ])
-    .argument("<key>", "readOnly, maxTextChars, permissions.<key> or models.<purpose>.<field>")
+    .argument("<key>", "readOnly, maxTextChars, pictureSearch, permissions.<key> or models.<purpose>.<field>")
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
     .action((key: string, raw: string, args: { defaults?: boolean }) => {
@@ -491,17 +504,24 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (!args.defaults) value.profiles[selected()] = target as (typeof value.profiles)[string]
       const [head, ...parts] = key.split(".")
       if (
-        !["readOnly", "permissions", "models", "maxTextChars"].includes(head ?? "") ||
+        !["readOnly", "permissions", "models", "maxTextChars", "pictureSearch"].includes(head ?? "") ||
         parts.some((part) => ["__proto__", "prototype", "constructor"].includes(part))
       )
-        throw new CliError("validation_error", "config set accepts readOnly, permissions, models or maxTextChars")
+        throw new CliError(
+          "validation_error",
+          "config set accepts readOnly, permissions, models, maxTextChars or pictureSearch",
+        )
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {
         throw new CliError("validation_error", "setting value must be JSON")
       }
-      if (head === "maxTextChars" && !parts.length) target.maxTextChars = checkTextLimit(parsed)
+      if (head === "pictureSearch") {
+        if (args.defaults || parts.length || typeof parsed !== "boolean")
+          throw new CliError("validation_error", "pictureSearch is true or false, set per profile")
+        ;(target as { pictureSearch?: boolean }).pictureSearch = parsed
+      } else if (head === "maxTextChars" && !parts.length) target.maxTextChars = checkTextLimit(parsed)
       else if (!parts.length) Object.assign(target, { [key]: parsed })
       else if (head === "permissions") {
         target.permissions ??= {}

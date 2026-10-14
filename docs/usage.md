@@ -32,9 +32,16 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
 | Scanned PDF without a text layer | Saved by name with the reason | No OCR; found by its name |
-| Native Google Slides, presentations, `.xlsm`, images, audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
+| Images, with `pictureSearch` on | Saved by name, then downloaded (up to 25 MB, only where Google allows downloads) and given a picture vector; the file is not kept | Found by what it shows, in `pictures`; see [picture search](search.md#search-images-by-what-they-show) |
+| Native Google Slides, presentations, `.xlsm`, images (with `pictureSearch` off), audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
 | Drive shortcut | Skipped | Target is not followed through the shortcut |
 | Download restricted by Google | Saved by name with the reason | Metadata access does not guarantee content access; found by its name |
+
+`drive personal config set pictureSearch true` turns picture search on for one profile (see
+[configuration](configuration.md)). The next `drive personal sync` then downloads each image once, and the sync
+output counts them in `pictures`. `pictures_too_large` counts images over 25 MB, which stay name-only.
+`pictures_skipped` says the picture model is not downloaded; the rest of the sync still finishes, and the
+images are picked up by a later sync once the model is there.
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.

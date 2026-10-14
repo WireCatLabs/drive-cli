@@ -204,6 +204,16 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         }
         throw new CliError("provider_error", "change-feed pagination exceeded its bound; sync state was preserved")
       }),
+    bytes: (id) =>
+      safe(async () => {
+        const data = (
+          await api.files.get(
+            { fileId: id, alt: "media", supportsAllDrives: true },
+            { responseType: "arraybuffer", timeout: 120000 },
+          )
+        ).data as unknown as ArrayBuffer
+        return new Uint8Array(data)
+      }),
     content: (id, maxChars = MAX_TEXT_CHARS) =>
       safe(async () => {
         const before = await metadata(id)

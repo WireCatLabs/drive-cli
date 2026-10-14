@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Drive images found by what they show.** With `drive <profile> config set pictureSearch true`, sync downloads each
+  image file (up to 25 MB, only where Google allows downloads), gives it a picture vector with the local model and
+  keeps no copy of the file. Sync counts them in `pictures`. `search` adds a `pictures` list (`ref`, `score`, `title`,
+  `source_url`) next to `hits`; queries must be in English. A missing model is reported once as `pictures_skipped` and
+  does not fail the sync. Off by default. Runs on cli-core 0.265.0 and cli-base 0.27.1.
+
 - **`drive sync` states its 10,000-entry cap, and its errors say what works.** The help, README and usage guide now
   say one sync reads at most 10,000 entries under the chosen folders and 10,000 changes. Past the change-feed cap the
   error no longer just says "retry with --rescan": it says a rescan works only while the folders hold at most 10,000

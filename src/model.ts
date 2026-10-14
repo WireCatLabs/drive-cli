@@ -73,6 +73,7 @@ export interface GoogleSource {
   startToken(): Promise<string>
   changes(token: string): Promise<{ items: Change[]; cursor: string }>
   content(id: string, maxChars?: number): Promise<DocumentContent>
+  bytes(id: string): Promise<Uint8Array>
 }
 export interface IndexedDocument {
   metadata: FileMetadata
@@ -80,6 +81,7 @@ export interface IndexedDocument {
   reference: string
   tabs: number
   notRead?: string
+  picture?: "saved" | "too-large"
 }
 export interface WorkItem {
   id: string
@@ -110,12 +112,21 @@ export interface SyncState {
   }
   lastSync?: string
 }
+export interface PictureWriter {
+  save(reference: string, bytes: Uint8Array): Promise<"saved" | "unchanged">
+  close(): Promise<void>
+}
 export interface DocumentIndex {
   catalog?: import("./catalog.js").SourceCatalog
   knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
   remove(principal: string, id: string): Promise<void>
-  search(principal: string, query: string, options: { limit: number; offset: number; exact: boolean }): Promise<unknown>
+  openPictures(): Promise<PictureWriter>
+  search(
+    principal: string,
+    query: string,
+    options: { limit: number; offset: number; exact: boolean; pictures?: boolean },
+  ): Promise<unknown>
   embed(max: number): Promise<unknown>
   close(): Promise<void>
 }

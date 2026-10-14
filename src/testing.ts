@@ -34,6 +34,7 @@ export const fixture = (roots = ["root"]) => {
   }
   writeConfig(env, { profiles: { default: { principal: "synthetic-principal", roots, storage: "keyring" } } })
   const stored = new Map<string, DocumentContent>()
+  const pictures = new Map<string, string>()
   const index: DocumentIndex = {
     save: vi.fn(async (_principal, doc) => {
       stored.set(doc.metadata.id, doc)
@@ -42,6 +43,15 @@ export const fixture = (roots = ["root"]) => {
     remove: vi.fn(async (_principal, id) => {
       stored.delete(id)
     }),
+    openPictures: vi.fn(async () => ({
+      save: vi.fn(async (reference: string, bytes: Uint8Array) => {
+        const hash = Buffer.from(bytes).toString("base64")
+        if (pictures.get(reference) === hash) return "unchanged" as const
+        pictures.set(reference, hash)
+        return "saved" as const
+      }),
+      close: vi.fn(async () => {}),
+    })),
     search: vi.fn(async () => ({ hits: [] })),
     embed: vi.fn(async () => ({ embedded: 0 })),
     close: vi.fn(async () => {}),
@@ -53,8 +63,9 @@ export const fixture = (roots = ["root"]) => {
     startToken: vi.fn(async () => "before-crawl"),
     changes: vi.fn(async () => ({ items: [], cursor: "after-changes" })),
     content: vi.fn(async (id) => content(file(id))),
+    bytes: vi.fn(async () => Uint8Array.of(1)),
   }
-  return { directory, env, index, source, stored }
+  return { directory, env, index, source, stored, pictures }
 }
 
 export const zip = (entries: Record<string, string>): Buffer => {
