@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Command effects distinguish Google-only reads from cached reads. Handwritten Google reads now
+  agree with generated methods (`remote: read`, `local: none`); account-free discovery/completion
+  declares no data access. Sync, cached reads and local writes retain their effects and guards.
 - **`--json=id,title` keeps only those fields** of the answer's item or items, in JSON and JSONL, as tg and max do.
   A field the answer does not have is refused with the fields it has. Adopts cli-core 0.277.0.
 - Clarify contract-3 output, page/JSONL metadata and interrupted-sync recovery in the import

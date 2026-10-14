@@ -687,7 +687,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       origin: metaOf(command).origin ?? "handwritten",
       effects: metaOf(command).effects ?? {
         remote,
-        local: localWrites.includes(name) ? "write" : remoteWrites.includes(name) ? "none" : "read",
+        local: localWrites.includes(name)
+          ? "write"
+          : remote !== "none" || ACCOUNT_FREE_COMMANDS.has(name)
+            ? "none"
+            : "read",
       },
       state: "beta",
     })
