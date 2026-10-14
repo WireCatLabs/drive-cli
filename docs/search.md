@@ -84,4 +84,5 @@ They are a separate list, never mixed into `hits`. With the setting off, `pictur
 
 Write picture queries in English. The picture model reads English only, so an agent that gets a question in
 another language translates it first. If the picture model is not downloaded, the output has `pictures_skipped`
-with the command that fetches it, and `hits` are unaffected.
+and `hits` are unaffected. Follow [shared model setup](configuration.md#change-and-check-a-value)
+before enabling picture search.
