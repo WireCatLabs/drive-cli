@@ -1849,8 +1849,13 @@
         "page": {
           "type": "string"
         },
-        "search": {
-          "type": "string"
+        "query": {
+          "items": {
+            "maxLength": 100000,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
         }
       },
       "required": ["document"],

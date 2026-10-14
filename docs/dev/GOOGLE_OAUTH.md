@@ -1,10 +1,12 @@
 # Browser sign-in and live validation
 
-Register one Google Cloud application for all CLI users. The CLI opens Google consent in each
-user's browser and receives the result on a temporary local callback port. Every user grants
-their own access; each installation stores its own refresh token. Users do not need their own
-Cloud project or client JSON once our registered client identity is included in the release.
+The released CLI includes WireCat's registered Desktop client identity. Users run
+`drive <profile> session start`, choose their own Google account in the browser and grant access;
+each installation stores its own refresh token. They do not need a Cloud project or client JSON.
 An API key or service-account key does not supply this user sign-in flow.
+
+This maintainer guide covers our application configuration, optional user-owned clients and
+controlled live validation. Ordinary users should follow [Connect your account](../installation.md#connect-your-account).
 
 For a click-by-click console walkthrough, use [installation](../installation.md#prepare-google-sign-in).
 
@@ -62,8 +64,9 @@ After the isolated validation passes, prepare the shared application for public 
    through Google Search Console using an account with Owner or Editor access to the project.
 3. Include the registered Desktop client identity in our release configuration. Google's Desktop
    client identity is distributed with the application; it is not a server-side credential. User
-   access/refresh tokens remain private. The current development build still needs `--client-file`
-   or environment settings until we add the registered identity. Send its file path after creation.
+   access/refresh tokens remain private. The released CLI already includes WireCat's Desktop
+   identity; `--client-file` or explicit environment settings override it for a user-owned app.
+   Distributing the identity does not establish Google approval or outside-test-user access.
 4. Record a demonstration showing browser consent, folder selection, sync and search. Explain
    why recursive folder sync and discovering newly added documents require this scope. Google's
    narrower `drive.file` permission grants individual file access; it is not a drop-in substitute
@@ -104,62 +107,30 @@ account, grants consent and selects folders.
 
 ## Use a separate validation environment
 
-Run the following in the drive-cli checkout. These variables apply to the current shell. A fresh
-directory keeps this run's configuration, checkpoints and database separate from existing data.
+Use the [controlled Google acceptance guide](https://github.com/WireCatLabs/cli-testing/blob/main/performance/documents/offline-catalog/live-checklist.md)
+in cli-testing. It owns fixture preparation, exact installed-package checks, private manifests,
+workspace setup and the mutation matrix, so those instructions do not drift between repositories.
+The checker needs no source build and does not choose a Google account or start login automatically.
 
-```sh
-drive_validation_dir=$(mktemp -d /tmp/drive-cli-validation.XXXXXX)
-chmod 700 "$drive_validation_dir"
-export DRIVE_CONFIG_DIR="$drive_validation_dir/config"
-export DRIVE_STATE_DIR="$drive_validation_dir/state"
-export DRIVE_CACHE_DIR="$drive_validation_dir/cache"
-export DRIVE_STORE="$drive_validation_dir/drive.db"
-pnpm build
-bin/drive --profile validation session start --client-file /path/to/desktop-client.json
-```
+The owner selects a dedicated test account and explicit profile. Keep HOME, config, state,
+database, cache and model paths separate from the owner's existing data. Do not reuse a personal
+profile. Synthetic guard and installed-package checks run without credentials; real Google checks
+require owner-started sign-in. Local fixture state and reports remain available until cleanup is requested.
 
-Complete consent in the browser. The default credential backend is the OS keyring. If the
-environment cannot use it, explicitly opt into private-file storage with
-`--credential-storage file` on `session start`. The CLI does not make that choice automatically.
-Retain the same shell and directory for follow-up commands. Retain the directory until cleanup
-is requested; it contains the documents selected for this run.
+<a id="validate-a-small-selected-folder"></a>
 
-## Validate a small selected folder
+The checker covers the selected root, folder ancestry, cached text/tabs, exact search, Markdown
+markers, retired sources and stable references. Optional local annotations check tag/note retention;
+explicit refresh checks sync idempotency. It never changes Google files. Make synthetic fixture
+edits, moves and trash actions in Google's UI, then record the new expected manifest and compare
+with a prior private report. Interrupted sync, identity links and memory staleness remain separate
+manual cases in that guide.
 
-Choose a disposable folder containing synthetic documents. Include a Google Doc with two tabs,
-a nested tab, a heading, a table and a footnote; give each tab a distinct searchable phrase.
-Include a nested folder and two documents with the same title. Prepare and edit these fixtures
-in Google Drive itself; this validation connects with a read-only grant.
-
-```sh
-bin/drive --profile validation folders add https://drive.google.com/drive/folders/FOLDER_ID
-bin/drive --profile validation sync --json
-bin/drive --profile validation status --json
-bin/drive --profile validation documents list --json
-bin/drive --profile validation documents show DOC_ID --json
-bin/drive --profile validation documents export DOC_ID --out "$drive_validation_dir/export.md"
-bin/drive --profile validation search 'unique tab phrase' --exact --json
-```
-
-The commands above run without downloading an embedding model. Inspect the native Markdown
-separately from the tab text: Google's export formatting and the CLI's all-tab search extraction
-have different acceptance criteria.
-
-| Check | Expected result |
-| --- | --- |
-| Initial import | Selected folder and its nested documents appear; duplicate titles keep distinct IDs. |
-| Tab coverage | Every tab phrase appears in document text and exact search. |
-| Markdown | Headings, lists and tables remain useful; record any formatting or tab omissions. |
-| Repeat sync | No duplicate search documents or changed source identities. |
-| Edit and rename in Drive, then sync | Updated content and title keep the same document ID. |
-| Move out of the folder, then sync | Document leaves local search and snapshots. |
-| Move back into the folder, then sync | Document returns to the selected scope. |
-| Interrupt a sync, then run it again | Pending work resumes without losing the change checkpoint. |
-| Remove the selected folder locally, then sync | Its documents leave the local cache; remote files remain. |
-
-Record counts, document IDs and pass/fail outcomes in cli-private. Keep document bodies and
-credential values out of logs, public fixtures and Git commits. Automated tests continue to use
-synthetic sources and temporary stores; this manual check supplies the live Google evidence.
+Check shared-app sign-in and an optional user-owned Desktop client in separate new workspaces.
+Record outside-test-user consent, token refresh/revocation and app verification independently;
+a passing fixture or an existing owner's login establishes none of those outcomes. Never log
+credential values, Google error objects or document bodies. Keep source IDs, markers and per-file
+results private, publishing only versions, totals and behavior outcomes.
 
 ## Validate embeddings after exact search
 
