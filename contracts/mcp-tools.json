@@ -1326,6 +1326,124 @@
   {
     "annotations": {
       "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string"
+        },
+        "query": {
+          "items": {
+            "maxLength": 100000,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_catalog_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "type": "string"
+        },
+        "page": {
+          "type": "string"
+        },
+        "query": {
+          "items": {
+            "maxLength": 100000,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
+        }
+      },
+      "required": ["query"],
+      "type": "object"
+    },
+    "name": "drive_catalog_search"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_catalog_show"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "file": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["file"],
+      "type": "object"
+    },
+    "name": "drive_catalog_tags_list"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "type": "string"
+        },
+        "folder": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": [],
+      "type": "object"
+    },
+    "name": "drive_catalog_tree"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
       "openWorldHint": true,
       "readOnlyHint": true
     },
