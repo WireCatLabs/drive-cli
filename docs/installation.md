@@ -1,27 +1,54 @@
 # Install and connect
 
-Install the Drive command-line tool, connect a Google account and import a small folder to check
-search. A **profile** is a name you choose for that account, such as `personal` or `work`; every
-account command must name it. Google opens a browser for your consent, so you never paste access
-tokens into the terminal or an agent conversation.
+Set up Drive on the computer where you or your AI agent will use it. By the end, your Google
+account is connected and a small folder is saved locally so you can search its documents.
+Drive is a command-line tool: you can run it in a terminal or let an agent run it for you.
+
+Follow three steps: [install Drive](#install-the-tool), [connect Google](#connect-your-account),
+then [import and search a folder](#check-your-first-result). Already installed? Start at step 2.
+Already signed in? Start at step 3.
+
+You need a Google account with access to the folder and a Windows, macOS or Linux computer.
+Use the same computer for installation, browser sign-in and your agent's commands. An agent
+helping with setup needs terminal access there.
 
 <a id="install-the-tool"></a>
+<a id="install-yourself-or-ask-an-agent"></a>
 
-## Install yourself or ask an agent
+## 1. Install Drive
 
-If an agent handles installation, ask:
+**Choose one of the two options below.** Both install the same tool; once it works, continue to
+step 2. Installing the package does not sign in to Google or download files.
+
+### Option A: ask your agent
+
+Copy this request to your terminal agent:
 
 ```text prompt
-Use drive CLI. Install @wirecat/drive-cli from npm and check drive --help.
-Ask me for the profile name and Google folder. Follow the Google connection guide; I will approve sign-in in my browser.
-Do not request tokens or credential contents in chat.
+Use drive CLI. Install @wirecat/drive-cli from npm on this computer.
+Check Node.js and npm first and help me install a supported Node.js version if needed.
+Check that drive --version and drive --help work, then tell me installation is complete.
 ```
 
-See the [official Drive repository installation instructions](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
-for installation, updates and Google connection.
+When the agent confirms that the command works, **skip Option B and go to
+[step 2](#connect-your-account)**. Your agent can run the commands in steps 2 and 3 for you;
+you choose the Google account and approve access in the browser yourself.
 
-You need [Node.js](https://nodejs.org/en/download) 22.16+ on the 22.x line or Node.js 24+.
-Open a terminal on the computer where your agent runs:
+### Option B: install by hand
+
+Open Terminal on macOS/Linux or PowerShell on Windows. If PowerShell blocks `npm.ps1`, use
+`npm.cmd` instead of `npm` in the commands below. Check that Node.js and npm are installed:
+
+```sh
+node --version
+npm --version
+```
+
+You need **Node.js 22.16+ within 22.x, or Node.js 24+**. If either command is missing or Node.js
+is older, [install Node.js](https://nodejs.org/en/download), reopen the terminal and check again.
+Node.js runs Drive; npm downloads and installs its package.
+
+Install the package and check it:
 
 ```sh
 npm install -g @wirecat/drive-cli
@@ -29,100 +56,126 @@ drive --version
 drive --help
 ```
 
-The package contains compiled JavaScript. Users do not need Git, pnpm or a source build.
-`drive --help` should display the commands. Installation does not sign in or import documents.
-On Windows, use `npm.cmd` if PowerShell blocks `npm.ps1`. Reopen the terminal or agent if it
-cannot find `drive` after installation.
+The version should print and help should show the available commands. The npm package is ready
+to run; no source build is required. If `drive` is not found, reopen the terminal or agent and
+try again; see
+[installation troubleshooting](troubleshooting.md) if it still fails.
 
-If you already use pnpm or Bun, choose one of these alternatives:
+Once those checks work, continue to [step 2](#connect-your-account).
 
-```sh
-pnpm add -g @wirecat/drive-cli
-bun add -g @wirecat/drive-cli
-```
+<a id="choose-how-to-connect"></a>
+<a id="connect-your-account"></a>
 
-To try the command without a global installation:
+## 2. Connect your account
 
-```sh
-npx @wirecat/drive-cli --help
-```
+**WireCat's Google application is ready to use.** For this path, you do not create a Google Cloud
+project or download a credentials file. Each user authorizes their own account in the browser.
 
-To update, repeat `npm install -g @wirecat/drive-cli`. To remove the command:
+If you prefer your own Google application, follow the [optional app setup](#prepare-google-sign-in)
+first. Its final command starts sign-in with your client file, then returns you to browser approval
+below. If you already have that file, go straight to the setup's [last step](#sign-in-with-your-own-client).
 
-```sh
-npm uninstall -g @wirecat/drive-cli
-```
+### Start sign-in with WireCat's app
 
-Removal leaves your local configuration, credentials and indexed documents in place. To forget
-a Google sign-in first, run `drive personal session end` for each connected profile.
+Choose a **profile**, a local name for this account. The examples use `personal`; replace it
+throughout if you prefer another name, such as `work`. Every account command names a profile.
 
-## Choose how to connect
-
-- **Connect through WireCat's Google application:** follow [Connect your account](#connect-your-account)
-  below. The CLI already includes the application identity; you only choose your account and
-  approve access in your browser. No Google Cloud project or JSON file is needed.
-- **Use your own Google application:** follow [Prepare Google sign-in](#prepare-google-sign-in)
-  to create a Desktop client and download its JSON. The last step starts sign-in with that file
-  and brings you back to the browser approval steps below.
-
-## Connect your account
-
-WireCat's application is selected by default. Each user grants access to their own Google
-account; publishing an application or installing the CLI does not sign in for you.
-
-1. Open a terminal on the computer where you installed the CLI. Choose a profile name for this
-   account; the examples use `personal`. Start sign-in:
+Run this command, or ask your agent to run it. Keep its terminal process open while you approve:
 
 ```sh
 drive personal session start
 ```
 
-2. In the browser that opens, choose the Google account you want to connect. Review the requested
-   permissions and approve access. The default connection requests read-only access to Drive.
-   Wait for the callback page to confirm that sign-in was received and the terminal to report
-   profile `personal` as signed in.
-3. Back in the terminal, check your connection:
+### Approve access in your browser
+
+1. In the browser that opens, choose the Google account you want to connect.
+2. Review the requested permissions and approve access. The default connection requests
+   read-only access to Drive; it does not grant permission to edit Google files.
+3. Wait for the browser to confirm receipt of sign-in, then return to the terminal. Login is
+   complete when the command reports `signed_in: true` for `personal` and returns to the prompt.
+   Browser approval alone is not the final check.
+
+### Check the saved profile
 
 ```sh
 drive personal session list --json
 ```
 
-The list shows your connected profile without printing tokens. Continue with
-[Check your first result](#check-your-first-result) to import a selected folder and try search.
-Sign-in alone does not download your files.
+Find `personal` in the returned profiles. This lists local configuration without printing tokens;
+it does not contact Google or verify that an older sign-in is still valid. The import in step 3
+checks access to your selected folder. Continue to [step 3](#check-your-first-result).
 
-If Google blocks access, its verification status or your Workspace administrator's policy may
-restrict the application. For your own application in Testing, add the account under Audience
-as described in [Prepare Google sign-in](#prepare-google-sign-in), then retry.
+If the browser does not open, repeat sign-in with `--no-browser` and open the printed link on the
+same computer. If the command reports no keyring, see [connection repairs](#connection-repairs)
+below. Do not paste access tokens or credential contents into an agent conversation.
 
-Tokens use the operating-system keyring. If your environment cannot use it, explicitly add
-`--credential-storage file` for private-file storage. `--no-browser` prints a sign-in link you
-can open yourself on the same computer. Use `drive work session start ...` to connect another
-account. Neither an environment default nor a saved default selects an account automatically.
+<a id="check-your-first-result"></a>
 
-## Check your first result
+## 3. Import and search a folder
 
-Pick a small folder containing a Google Doc or Markdown/TXT file. Copy the folder URL from your
-browser and replace `FOLDER_ID`:
+Choose a small Google Drive folder with a Google Doc or Markdown/TXT file whose text you know.
+This makes it easy to check that import and search work before adding more files. Sign-in alone
+does not import your whole Drive.
 
-```sh
-drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
-drive personal sync --json
-drive personal status --json
-drive personal documents list --json
-drive personal search 'a word from your document' --exact --json
-```
+1. **Choose the folder.** Open it in Google Drive and copy its URL from the address bar. Replace
+   the example URL below with yours, then run:
 
-Check that the document list contains the sources you expected, the pending count is zero and
-search returns a passage with its original link. Repeat sync if work remains. Signing in alone
-does not import your whole Drive. Continue with [file types and local storage](usage.md) or
-[task recipes](recipes.md).
+   ```sh
+   drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
+   ```
 
-## Prepare Google sign-in
+2. **Import the selected folder and its subfolders.** Run these commands in order:
 
-This section is for the application owner or someone choosing their own OAuth client. Ordinary
-users of a configured shared application do not repeat it. A Google API key or service-account
-key cannot replace the Desktop OAuth client used by this sign-in flow.
+   ```sh
+   drive personal sync --json
+   drive personal status --json
+   drive personal documents list --json
+   ```
+
+   The document list should include the file you expected, and status should show `pending: 0`.
+   If work remains, run sync again. The import saves source content, metadata and folder structure
+   locally; it does not edit your Google files. See [file types and storage](usage.md) for what
+   each format contributes.
+
+3. **Find a known word.** Replace `budget` with a word from the imported document:
+
+   ```sh
+   drive personal search 'budget' --exact --json
+   ```
+
+   Search should return a passage and its original source link. This first search uses the text
+   saved on this computer. If it returns nothing, check the document list and pending work
+   before choosing a different word; see [missing search results](troubleshooting.md).
+
+You now have a working connection and a searchable local folder. Continue with
+[recipes for your agent](recipes.md) or [reading and organizing saved documents](usage.md).
+The sections below are optional setup and maintenance, not more steps in this first import.
+
+## Connection repairs
+
+Credentials normally use your operating system's keyring, its private password store. If it is
+unavailable, add `--credential-storage file` to the sign-in command to choose private-file storage.
+For a second account, repeat step 2 with another profile name, such as `work`.
+
+If Google blocks sign-in, check its displayed error and your Workspace administrator's policy.
+For your own app in Testing, ensure that account is a test user. Use
+[connection troubleshooting](troubleshooting.md) for the symptom; the default app does not require
+you to edit a Google Cloud project.
+
+<a id="prepare-google-sign-in"></a>
+
+## Optional: your own Google app
+
+Use this only if you want the CLI to sign in through an application you control. A Google app
+is the registration that asks permission; it is separate from your Google account. Its Desktop
+client JSON identifies the app, while your browser approval grants account access. An API key or
+service-account key cannot replace this file.
+
+Open the steps below, or go to [sign in with your own client](#sign-in-with-your-own-client)
+if you already downloaded the Desktop client JSON.
+
+<details id="custom-google-app">
+<summary>Show Google Cloud setup steps</summary>
 
 ### 1. Select the project and enable APIs
 
@@ -149,14 +202,13 @@ Open **☰ → Google Auth platform → Branding**, or use
 what people see when Google asks them to approve your application.
 
 If the platform is unconfigured, choose **Get Started**. Fill the setup screens: an application
-name (for example, WireCat Drive), a support email, an **External** audience for accounts outside
+name (for example, Personal Drive), a support email, an **External** audience for accounts outside
 your Workspace organization, and a contact email. Complete Google's policy step and create the
 configuration. If it is already configured, edit the relevant fields under Branding instead.
-For WireCat's app, use `https://wirecat.dev/en/docs/drive` as the homepage,
-`https://wirecat.dev/en/privacy` as the privacy policy and `https://wirecat.dev/en/terms` as the
-terms of service. Add `wirecat.dev` under Authorized domains without a scheme or page path,
-and verify ownership in Google Search Console using a Cloud project owner/editor account.
-Those launch details belong to the owner, not each connecting user.
+Use a name and contact details for your own app. Public distribution and Google's verification
+requirements are separate from this personal setup; follow the official guide when publishing
+for other users. You do not need to configure WireCat's domains or branding to connect through
+its existing app.
 
 Google's [official consent-screen walkthrough](https://developers.google.com/workspace/guides/configure-oauth-consent)
 explains Branding, Audience and Data Access.
@@ -208,13 +260,56 @@ client or add a web redirect URL for this flow. See Google's
 The downloaded JSON contains an `installed` application section. It is not your access token.
 Give your agent only its path, not its contents.
 
-Now connect using your downloaded client. Replace the path with the JSON file's full path and
-choose your profile name:
+### Sign in with your own client
+
+Replace the path with the full path to your downloaded JSON file. Choose your profile name as
+in step 2, then run:
 
 ```sh
 drive personal session start --client-file /absolute/path/to/desktop-client.json
 ```
 
-Then return to [Connect your account](#connect-your-account), starting at step 2: approve access
-in the browser and check the session. This uses your application and stores tokens locally,
-just like the WireCat application connection.
+Return to [Connect your account](#connect-your-account) at
+[Approve access in your browser](#approve-access-in-your-browser), then check the saved profile
+and follow step 3. You have now used your own app instead of WireCat's app.
+
+</details>
+
+## Other installation options
+
+These are alternatives to the npm install in Option B, not additional steps. If you already use
+pnpm, install with:
+
+```sh
+pnpm add -g @wirecat/drive-cli
+```
+
+If you already use Bun as your package manager, install with:
+
+```sh
+bun add -g @wirecat/drive-cli
+```
+
+Then check `drive --version` and `drive --help` and continue to step 2. To inspect help without a
+global installation, use `npx @wirecat/drive-cli --help`; the steps above assume a global installation.
+
+The [official repository installation guide](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
+is the source for these instructions.
+
+## Update or remove
+
+These commands are for an existing installation. To update:
+
+```sh
+npm install -g @wirecat/drive-cli
+drive --version
+```
+
+To sign out of a profile, run `drive personal session end`. To remove the command:
+
+```sh
+npm uninstall -g @wirecat/drive-cli
+```
+
+Signing out or uninstalling leaves your local configuration and imported data in place. See
+[where files live](configuration.md#where-the-files-live) before moving or deleting them.
