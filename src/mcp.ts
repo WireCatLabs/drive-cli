@@ -5,10 +5,11 @@ import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { openStore } from "@wirecat/cli-core/store"
+import type { Command } from "commander"
 import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
-import { createProgram, type ProgramOptions } from "./program.js"
+import type { ProgramOptions } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
 import { VERSION } from "./version.js"
 
@@ -48,9 +49,17 @@ const checkedInput = async (tool: ToolDefinition, input: unknown): Promise<Recor
   }
   return checked.value
 }
-export const mcpTools = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}): ToolDefinition[] => {
+/** `program.ts` passes its own `createProgram`: importing it here would close a loop with the `mcp` command. */
+export type BuildProgram = (options: ProgramOptions) => Command
+
+export const mcpTools = (
+  build: BuildProgram,
+  options: ProgramOptions,
+  profile: string,
+  flags: PolicyFlags = {},
+): ToolDefinition[] => {
   const settings = policySettings(options.env ?? process.env, profile, flags)
-  return flatten(describeDriveProgram(createProgram(options)))
+  return flatten(describeDriveProgram(build(options)))
     .filter((command) => {
       if (
         command.commands.length ||
@@ -120,6 +129,7 @@ const visible = (value: unknown): unknown => {
   return value
 }
 export const invokeTool = async (
+  build: BuildProgram,
   tool: ToolDefinition,
   input: Record<string, unknown>,
   options: ProgramOptions,
@@ -149,7 +159,7 @@ export const invokeTool = async (
         }
     try {
       const checked = await checkedInput(tool, input)
-      await createProgram({
+      await build({
         ...options,
         streams,
         ask: async () => false,
@@ -193,8 +203,13 @@ export const invokeTool = async (
     await audit.close()
   }
 }
-export const buildMcpServer = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}) => {
-  const tools = mcpTools(options, profile, flags)
+export const buildMcpServer = (
+  build: BuildProgram,
+  options: ProgramOptions,
+  profile: string,
+  flags: PolicyFlags = {},
+) => {
+  const tools = mcpTools(build, options, profile, flags)
   const server = new McpServer(
     { name: "drive-cli", version: VERSION },
     {
@@ -214,12 +229,17 @@ export const buildMcpServer = (options: ProgramOptions, profile: string, flags: 
           openWorldHint: tool.command.effects?.remote !== "none",
         },
       },
-      async (input) => invokeTool(tool, input, options, profile, flags),
+      async (input) => invokeTool(build, tool, input, options, profile, flags),
     )
   return { server, tools }
 }
-export const serveMcp = async (options: ProgramOptions, profile: string, flags: PolicyFlags = {}) => {
-  const { server } = buildMcpServer(options, profile, flags)
+export const serveMcp = async (
+  build: BuildProgram,
+  options: ProgramOptions,
+  profile: string,
+  flags: PolicyFlags = {},
+) => {
+  const { server } = buildMcpServer(build, options, profile, flags)
   let stop = () => {}
   try {
     await new Promise<void>((resolve, reject) => {

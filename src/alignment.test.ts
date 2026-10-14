@@ -71,11 +71,17 @@ describe("shared CLI policy and execution", () => {
   it("buffers output atomically, sanitizes agent text and supports dotted shared settings", async () => {
     const f = fixture()
     const request = vi.fn(async () => ({ text: "budget\u202eunsafe" }))
-    const tool = mcpTools({ env: f.env, api: { call: request } }, "default").find(
+    const tool = mcpTools(createProgram, { env: f.env, api: { call: request } }, "default").find(
       (candidate) => candidate.name === "drive_files_get",
     )
     if (!tool) throw new Error("drive_files_get is not offered")
-    const answer = await invokeTool(tool, { file: "doc-a" }, { env: f.env, api: { call: request } }, "default")
+    const answer = await invokeTool(
+      createProgram,
+      tool,
+      { file: "doc-a" },
+      { env: f.env, api: { call: request } },
+      "default",
+    )
     expect(JSON.stringify(answer.structuredContent)).not.toContain("\u202e")
     await expect(
       createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["default", "--agent-json", "status"], {
@@ -208,19 +214,21 @@ describe("MCP derived from the same guarded command tree", () => {
     const f = fixture()
     const request = vi.fn(async () => ({ id: "doc-a" }))
     const options = { env: f.env, api: { call: request } }
-    const readonly = mcpTools(options, "default", { readOnly: true })
+    const readonly = mcpTools(createProgram, options, "default", { readOnly: true })
     expect(readonly.every((tool) => !writes(tool.command.effects))).toBe(true)
     const get = readonly.find((tool) => tool.name === "drive_api_drive_files_get")
     if (!get) throw new Error("missing generated tool")
-    expect(await invokeTool(get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
+    expect(await invokeTool(createProgram, get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
       structuredContent: { item: { id: "doc-a" } },
     })
     const config = readConfig(f.env)
     config.defaults = { permissions: { files: "deny" } }
     writeConfig(f.env, config)
-    expect(mcpTools(options, "default").some((tool) => tool.name === get.name)).toBe(false)
-    expect(await invokeTool(get, { "file-id": "doc-a" }, options, "default")).toMatchObject({ isError: true })
-    const tools = mcpTools(options, "default")
+    expect(mcpTools(createProgram, options, "default").some((tool) => tool.name === get.name)).toBe(false)
+    expect(await invokeTool(createProgram, get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
+      isError: true,
+    })
+    const tools = mcpTools(createProgram, options, "default")
     const show = tools.find((tool) => tool.name === "drive_documents_show")
     if (!show) throw new Error("missing local tool")
     expect(() => toolArgv(show, { document: "--permission", permission: "api=allow" })).toThrow("permission")
