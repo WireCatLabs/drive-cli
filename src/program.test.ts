@@ -9,6 +9,19 @@ import { readState } from "./state.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
+  it("keeps only the fields --json names, and refuses one the answer does not have", async () => {
+    const streams = captureStreams()
+    await createProgram({ env: fixture().env, streams }).parseAsync(["api", "list", "--json=name"], { from: "user" })
+    const { items } = JSON.parse(streams.stdout.join(""))
+    expect(Object.keys(items[0])).toEqual(["name"])
+    await expect(
+      createProgram({ env: fixture().env, streams: captureStreams() }).parseAsync(
+        ["default", "catalog", "list", "--json=no_such_field", "--offline"],
+        { from: "user" },
+      ),
+    ).rejects.toThrow(/no field no_such_field here/)
+  })
+
   it("streams a list as item lines and an end line under --jsonl", async () => {
     const streams = captureStreams()
     await createProgram({ env: fixture().env, streams }).parseAsync(["api", "list", "--jsonl"], { from: "user" })

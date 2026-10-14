@@ -4,14 +4,24 @@ import {
   createDeadline,
   createOutputBuffer,
   createRenderer,
+  fieldsOf,
   type KeyringStore,
   processStreams,
+  projectFields,
   type Streams,
 } from "@wirecat/cli-base"
 import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { writes } from "@wirecat/cli-base/standards"
-import { commandWords, jsonlRecords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-core/cli"
+import {
+  checkJson,
+  commandWords,
+  jsonlRecords,
+  liftJson,
+  liftProfile,
+  parseDuration,
+  refuseCommandName,
+} from "@wirecat/cli-core/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./catalog-commands.js"
@@ -70,6 +80,19 @@ const offset = (input: string) => {
   if (!Number.isSafeInteger(n) || n < 0) throw new InvalidArgumentError("use a nonnegative integer")
   return n
 }
+const keepFields = (answer: ReturnType<typeof answerOf>, paths: string[]): ReturnType<typeof answerOf> =>
+  "items" in answer
+    ? { ...answer, items: answer.items.map((item) => projectFields(item, paths)) }
+    : { ...answer, item: projectFields(answer.item, paths) }
+const commandIn = (root: Command, words: readonly string[]) => {
+  let at: Command | undefined = root
+  for (const word of words) {
+    if (word.startsWith("-")) continue
+    const child: Command | undefined = at?.commands.find((command) => command.name() === word)
+    if (child) at = child
+  }
+  return at === root ? undefined : at
+}
 export const createProgram = (options: ProgramOptions = {}): Command => {
   const startedAt = Date.now()
   const env = options.env ?? process.env
@@ -79,7 +102,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .version(VERSION)
     .usage("<profile> [options] <command>")
     .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
-    .option("--json", "print machine-readable JSON")
+    .option("--json", "print machine-readable JSON; --json=id,title keeps only those fields")
     .option("--jsonl", "print machine-readable JSON lines")
     .option("--quiet", "suppress optional diagnostics")
     .option("--debug", "on failure, show the full error record: cause and stack")
@@ -120,6 +143,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     return profileName(name)
   }
   let currentAction: Command | undefined
+  let fields: string | undefined
   let activeSignal = options.signal
   let deadline: ReturnType<typeof createDeadline> | undefined
   const confirmations = new Set<string>()
@@ -134,10 +158,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
   })
   const output = (value: unknown) => {
-    const answer =
+    const whole =
       currentAction?.name() === "commands"
         ? undefined
         : answerOf(value, { startedAt, limit: currentAction?.opts().limit, page: currentAction?.opts().page })
+    const answer = whole && fields ? keepFields(whole, fieldsOf(fields)) : whole
     const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
     const renderer = createRenderer({
       format: program.opts().jsonl ? "jsonl" : program.opts().json || !process.stdout.isTTY ? "json" : "pretty",
@@ -675,6 +700,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   program.hook("preAction", async (_root, action) => {
     currentAction = action
+    checkJson(action, { json: program.opts().json === true, ...(fields ? { fields } : {}) }, process.stdout.isTTY)
     if (program.opts().timeout !== undefined && !deadline) {
       deadline = createDeadline({
         timeoutMs: program.opts().timeout,
@@ -729,7 +755,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   program.parseAsync = async (argv = process.argv, settings) => {
     const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
     const args = settings?.from === "user" ? argv : argv.slice(2)
-    const lifted = liftProfile([...args], commandWords(program))
+    const profiled = liftProfile([...args], commandWords(program))
+    const requested = liftJson(profiled.rest, (words) => commandIn(program, words))
+    fields = requested.fields
+    const lifted = { ...profiled, rest: requested.argv }
     // Refuse conflicting/repeated selectors rather than letting Commander pick the last one.
     const flags = lifted.rest.slice(0, lifted.rest.indexOf("--") < 0 ? lifted.rest.length : lifted.rest.indexOf("--"))
     const selectors = flags.filter((arg) => arg === "--profile" || arg.startsWith("--profile="))
