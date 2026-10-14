@@ -591,14 +591,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const { mcpTools, serveMcp } = await import("./mcp.js")
       if (args.tools)
         output({
-          items: mcpTools({ ...options, env }, selected(), policyFlags()).map(({ name, schema, command }) => ({
-            name,
-            input_schema: schema,
-            effects: command.effects,
-          })),
+          items: mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(
+            ({ name, schema, command }) => ({
+              name,
+              input_schema: schema,
+              effects: command.effects,
+            }),
+          ),
         })
       else
         await serveMcp(
+          createProgram,
           { ...options, env, ...(activeSignal ? { signal: activeSignal } : {}) },
           selected(),
           policyFlags(),

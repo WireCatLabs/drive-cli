@@ -13,5 +13,155 @@
       "!spec/google",
       "!lint/baseline"
     ]
-  }
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noImportCycles": "error"
+      },
+      "style": {
+        "noExcessiveLinesPerFile": {
+          "level": "error",
+          "options": {
+            "maxLines": 1000
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["src/**", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@googleapis/*", "google-auth-library"],
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                  },
+                  {
+                    "group": ["@modelcontextprotocol/*"],
+                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                  },
+                  {
+                    "group": ["proper-lockfile"],
+                    "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
+                  },
+                  {
+                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
+                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "src/google.ts",
+        "src/google-api.ts",
+        "src/documents.ts",
+        "src/login.ts",
+        "src/tokens.ts",
+        "!**/*.test.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@modelcontextprotocol/*"],
+                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                  },
+                  {
+                    "group": ["proper-lockfile"],
+                    "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
+                  },
+                  {
+                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
+                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/mcp.ts", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@googleapis/*", "google-auth-library"],
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                  },
+                  {
+                    "group": ["proper-lockfile"],
+                    "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
+                  },
+                  {
+                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
+                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/profile-lock.ts", "!**/*.test.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@googleapis/*", "google-auth-library"],
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                  },
+                  {
+                    "group": ["@modelcontextprotocol/*"],
+                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                  },
+                  {
+                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
+                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.test.ts", "test/**", "**/generated/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noExcessiveLinesPerFile": "off"
+          }
+        }
+      }
+    }
+  ]
 }

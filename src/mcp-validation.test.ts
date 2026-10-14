@@ -2,13 +2,14 @@ import { Client, InMemoryTransport } from "@modelcontextprotocol/client"
 import { openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it, vi } from "vitest"
 import { buildMcpServer } from "./mcp.js"
+import { createProgram } from "./program.js"
 import { fixture } from "./testing.js"
 
 describe("MCP validation through the SDK", () => {
   it("returns our field-specific error and audits bad types and unknown arguments before providers", async () => {
     const f = fixture()
     const call = vi.fn(async () => ({ id: "fixture-file" }))
-    const { server } = buildMcpServer({ env: f.env, api: { call } }, "default")
+    const { server } = buildMcpServer(createProgram, { env: f.env, api: { call } }, "default")
     const client = new Client({ name: "fixture-client", version: "1" })
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
     await server.connect(serverTransport)
