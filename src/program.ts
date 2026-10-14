@@ -14,7 +14,6 @@ import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/co
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { writes } from "@wirecat/cli-base/standards"
 import {
-  checkJson,
   commandWords,
   jsonlRecords,
   liftJson,
@@ -47,6 +46,7 @@ import { type DocumentIndex, FOLDER, type GoogleSource, metadataJson, skipJson }
 import { answerOf } from "./output.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
+import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram, examples } from "./registry.js"
 import { installRemoteCommands } from "./remote-commands.js"
 import { readSnapshot, readState } from "./state.js"
@@ -162,6 +162,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       currentAction?.name() === "commands"
         ? undefined
         : answerOf(value, { startedAt, limit: currentAction?.opts().limit, page: currentAction?.opts().page })
+    if (whole && fields && currentAction) checkResultFields(currentAction, whole, fields)
     const answer = whole && fields ? keepFields(whole, fieldsOf(fields)) : whole
     const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
     const renderer = createRenderer({
@@ -704,7 +705,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   program.hook("preAction", async (_root, action) => {
     currentAction = action
-    checkJson(action, { json: program.opts().json === true, ...(fields ? { fields } : {}) }, process.stdout.isTTY)
+    checkProviderJson(
+      action,
+      { json: program.opts().json === true, ...(fields ? { fields } : {}) },
+      process.stdout.isTTY,
+    )
     if (program.opts().timeout !== undefined && !deadline) {
       deadline = createDeadline({
         timeoutMs: program.opts().timeout,
@@ -760,7 +765,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
     const args = settings?.from === "user" ? argv : argv.slice(2)
     const profiled = liftProfile([...args], commandWords(program))
-    const requested = liftJson(profiled.rest, (words) => commandIn(program, words))
+    const requested = liftJson(profiled.rest, (words) => commandIn(program, words), providerJsonFields)
     fields = requested.fields
     const lifted = { ...profiled, rest: requested.argv }
     // Refuse conflicting/repeated selectors rather than letting Commander pick the last one.

@@ -113,3 +113,23 @@ export const catalogOutput = (entry: CatalogEntry) => ({
   active: entry.active,
   content: entry.content,
 })
+
+// Keep field selection tied to the provider view, including future additions to that view.
+export const CATALOG_FIELDS = Object.keys({
+  id: true,
+  ref: true,
+  kind: true,
+  name: true,
+  parents: true,
+  url: true,
+  mime: true,
+  size: true,
+  created_at: true,
+  modified_at: true,
+  observed_at: true,
+  description: true,
+  actors: true,
+  provider_metadata: true,
+  active: true,
+  content: true,
+} satisfies Record<keyof ReturnType<typeof catalogOutput>, true>)
