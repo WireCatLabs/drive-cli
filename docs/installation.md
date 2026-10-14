@@ -58,14 +58,65 @@ a Google sign-in first, run `drive personal session end` for each connected prof
 
 ## Choose how to connect
 
-Using **WireCat's shared Google application** means users approve their own accounts in the
-browser; only the application owner sets up Google Cloud. WireCat's Desktop client identity is
-included in the CLI. Skip Google Cloud setup and go to [connect your account](#connect-your-account).
-Google's verification status and your organization's policy may affect access to the shared app.
+- **Use WireCat's Google application:** follow [Connect your account](#connect-your-account)
+  below. The CLI already includes the application identity; you only choose your account and
+  approve access in your browser. No Google Cloud project or JSON file is needed.
+- **Use your own Google application:** follow [Prepare Google sign-in](#prepare-google-sign-in)
+  to create a Desktop client and download its JSON. The last step starts sign-in with that file
+  and brings you back to the browser approval steps below.
 
-Prefer your own application? Create a Desktop client below and pass its JSON with `--client-file`.
-The JSON identifies the application; it is not a file granting access to your account.
-Your browser consent creates that access separately.
+## Connect your account
+
+These steps use WireCat's application by default. Each user grants access to their own Google
+account; publishing an application or installing the CLI does not sign in for you.
+
+1. Open a terminal on the computer where you installed the CLI. Choose a profile name for this
+   account; the examples use `personal`. Start sign-in:
+
+```sh
+drive personal session start
+```
+
+2. In the browser that opens, choose the Google account you want to connect. Review the requested
+   permissions and approve access. The default connection requests read-only access to Drive.
+   Wait for the callback page to confirm that sign-in was received and the terminal to report
+   profile `personal` as signed in.
+3. Back in the terminal, check your connection:
+
+```sh
+drive personal session list --json
+```
+
+The list shows your connected profile without printing tokens. Continue with
+[Check your first result](#check-your-first-result) to import a selected folder and try search.
+Sign-in alone does not download your files.
+
+If Google blocks access, its verification status or your Workspace administrator's policy may
+restrict the application. For your own application in Testing, add the account under Audience
+as described in [Prepare Google sign-in](#prepare-google-sign-in), then retry.
+
+Tokens use the operating-system keyring. If your environment cannot use it, explicitly add
+`--credential-storage file` for private-file storage. `--no-browser` prints a sign-in link you
+can open yourself on the same computer. Use `drive work session start ...` to connect another
+account. Neither an environment default nor a saved default selects an account automatically.
+
+## Check your first result
+
+Pick a small folder containing a Google Doc or Markdown/TXT file. Copy the folder URL from your
+browser and replace `FOLDER_ID`:
+
+```sh
+drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
+drive personal sync --json
+drive personal status --json
+drive personal documents list --json
+drive personal search 'a word from your document' --exact --json
+```
+
+Check that the document list contains the sources you expected, the pending count is zero and
+search returns a passage with its original link. Repeat sync if work remains. Signing in alone
+does not import your whole Drive. Continue with [file types and local storage](usage.md) or
+[task recipes](recipes.md).
 
 ## Prepare Google sign-in
 
@@ -157,51 +208,13 @@ client or add a web redirect URL for this flow. See Google's
 The downloaded JSON contains an `installed` application section. It is not your access token.
 Give your agent only its path, not its contents.
 
-## Connect your account
-
-Publishing the Google application does not connect this computer to your account. Each user
-still opens the consent screen and approves their own account. The included WireCat Desktop
-client identifies the shared application; a custom client identifies your own application.
-Both use the same command and keep tokens in that user's local credential store.
-
-Choose your profile name and sign in with WireCat's shared application:
-
-```sh
-drive personal session start
-drive personal session list --json
-```
-
-For your own application, replace the file path and run:
+Now connect using your downloaded client. Replace the path with the JSON file's full path and
+choose your profile name:
 
 ```sh
 drive personal session start --client-file /absolute/path/to/desktop-client.json
 ```
 
-In the opened browser, choose the account you intended and review Google's requested permissions.
-After approval, the callback page says the sign-in was received; the terminal reports profile
-`personal` as signed in. The session list shows all configured profiles without printing tokens.
-If Google says access is blocked because you are not a test user, add that exact account in
-Audience and retry. A Workspace administrator can also restrict access to the application.
-
-Tokens use the operating-system keyring. If your environment cannot use it, explicitly add
-`--credential-storage file` for private-file storage. `--no-browser` prints a sign-in link you
-can open yourself on the same computer. Use `drive work session start ...` to connect another
-account. Neither an environment default nor a saved default selects an account automatically.
-
-## Check your first result
-
-Pick a small folder containing a Google Doc or Markdown/TXT file. Copy the folder URL from your
-browser and replace `FOLDER_ID`:
-
-```sh
-drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
-drive personal sync --json
-drive personal status --json
-drive personal documents list --json
-drive personal search 'a word from your document' --exact --json
-```
-
-Check that the document list contains the sources you expected, the pending count is zero and
-search returns a passage with its original link. Repeat sync if work remains. Signing in alone
-does not import your whole Drive. Continue with [file types and local storage](usage.md) or
-[task recipes](recipes.md).
+Then return to [Connect your account](#connect-your-account), starting at step 2: approve access
+in the browser and check the session. This uses your application and stores tokens locally,
+just like the WireCat application connection.
