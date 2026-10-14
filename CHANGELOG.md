@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **`--json=id,title` keeps only those fields** of the answer's item or items, in JSON and JSONL, as tg and max do.
+  A field the answer does not have is refused with the fields it has. Adopts cli-core 0.277.0.
 - Clarify contract-3 output, page/JSONL metadata and interrupted-sync recovery in the import
   guide; refresh developer alignment and testing notes to distinguish current pins, previous-store
   fixtures and published-package acceptance.
