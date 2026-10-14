@@ -1,16 +1,18 @@
 import { CliError } from "@wirecat/cli-base"
+import { type Body, itemOf, listOf } from "@wirecat/cli-core/cli"
 import { FACT_STATUSES, FACT_TYPES, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"
 import { extractMemories } from "./extraction.js"
 import type { DocumentKnowledge } from "./knowledge.js"
 import type { DocumentContent } from "./model.js"
+import { allOf } from "./output.js"
 import { examples } from "./registry.js"
 
 export interface KnowledgeCommands {
   document(input: string): { id: string; ref: string; hash: string; snapshot: DocumentContent }
   run<T>(input: string, fn: (knowledge: DocumentKnowledge, principal: string, ref: string) => Promise<T>): Promise<T>
-  output(value: unknown): void
+  output(body: Body): void
   positive(input: string): number
   complete(): Complete
 }
@@ -25,7 +27,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       .argument("<document>", documentArgument)
       .description("show a document with its tags, relationships, notes, memories and editors"),
     ["drive personal documents context DOC_ID"],
-  ).action(async (doc: string) => output(await run(doc, (k, p, ref) => k.context(p, ref))))
+  ).action(async (doc: string) => output(itemOf(await run(doc, (k, p, ref) => k.context(p, ref)))))
   const tags = program.command("tags").description("label imported documents; labels survive a sync")
   for (const action of ["list", "add", "remove"] as const) {
     const command = examples(
@@ -39,7 +41,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     )
     if (action !== "list") command.argument("<tags...>", "one or more tags")
     command.action(async (doc: string, values: string[] = []) =>
-      output({ tags: await run(doc, (k, p, ref) => k.tags(p, ref, action, action === "list" ? [] : values)) }),
+      output(itemOf({ tags: await run(doc, (k, p, ref) => k.tags(p, ref, action, action === "list" ? [] : values)) })),
     )
   }
   const relationships = program
@@ -49,7 +51,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     "drive personal relationships list DOC_ID",
   ])
     .argument("<document>", documentArgument)
-    .action(async (doc: string) => output({ items: await run(doc, (k, p, ref) => k.links(p, ref)) }))
+    .action(async (doc: string) => output(allOf(await run(doc, (k, p, ref) => k.links(p, ref)))))
   examples(relationships.command("add").description("connect a document to another reference"), [
     "drive personal relationships add DOC_ID project:PROJECT_ID --kind about",
     "drive personal relationships add DOC_ID person:PERSON_UID --kind assigned-to --role reviewer",
@@ -64,14 +66,14 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .option("--role <role>", "the part the reference plays, in a word or two")
     .option("--evidence <text>", "why the two are connected")
     .action(async (doc: string, to: string, args) =>
-      output(await run(doc, (k, p, ref) => k.addLink(p, ref, { to, ...args }))),
+      output(itemOf(await run(doc, (k, p, ref) => k.addLink(p, ref, { to, ...args })))),
     )
   examples(relationships.command("remove").description("remove one of a document's relationships"), [
     "drive personal relationships remove DOC_ID LINK_ID",
   ])
     .argument("<document>", documentArgument)
     .argument("<relationship-id>", "id, as relationships list prints it")
-    .action(async (doc: string, id: string) => output(await run(doc, (k, p, ref) => k.removeLink(p, ref, id))))
+    .action(async (doc: string, id: string) => output(itemOf(await run(doc, (k, p, ref) => k.removeLink(p, ref, id)))))
   const notes = program.command("notes").description("write notes about an imported document")
   const noteArgument = "note:<id> reference, as notes list prints it"
   examples(notes.command("add").description("write a note about a document"), [
@@ -81,7 +83,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<text>", "the note's text")
     .option("--title <title>", "a title for the note")
     .action(async (doc: string, text: string, args) =>
-      output(await run(doc, (k, p, ref) => k.addNote(p, ref, text, args.title))),
+      output(itemOf(await run(doc, (k, p, ref) => k.addNote(p, ref, text, args.title)))),
     )
   examples(notes.command("list").description("list a document's notes"), [
     "drive personal notes list DOC_ID",
@@ -91,13 +93,24 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .option("--search <text>", "only notes that contain this text")
     .option("--limit <n>", "how many notes to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)
-    .action(async (doc: string, { page, ...args }: { search?: string; limit: number; page: number }) =>
-      output(await run(doc, (k, p, ref) => k.notes(p, ref, { ...args, offset: (page - 1) * args.limit }))),
-    )
+    .action(async (doc: string, { page, ...args }: { search?: string; limit: number; page: number }) => {
+      const found = await run(doc, (k, p, ref) => k.notes(p, ref, { ...args, offset: (page - 1) * args.limit }))
+      output(
+        listOf("notes list", {
+          items: found.items,
+          limit: args.limit,
+          has_more: found.hasMore,
+          page,
+          args: { document: doc, search: args.search },
+        }),
+      )
+    })
   examples(notes.command("show").description("show one note"), ["drive personal notes show DOC_ID note:NOTE_ID"])
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
-    .action(async (doc: string, noteRef: string) => output(await run(doc, (k, p, ref) => k.note(p, ref, noteRef))))
+    .action(async (doc: string, noteRef: string) =>
+      output(itemOf(await run(doc, (k, p, ref) => k.note(p, ref, noteRef)))),
+    )
   examples(notes.command("edit").description("replace a note's text"), [
     `drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2`,
   ])
@@ -106,13 +119,13 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<text>", "the note's new text")
     .requiredOption("--revision <n>", "revision from notes show; a newer note is not overwritten", positive)
     .action(async (doc: string, noteRef: string, text: string, args) =>
-      output(await run(doc, (k, p, ref) => k.editNote(p, ref, noteRef, text, args.revision))),
+      output(itemOf(await run(doc, (k, p, ref) => k.editNote(p, ref, noteRef, text, args.revision)))),
     )
   examples(notes.command("remove").description("delete one note"), ["drive personal notes remove DOC_ID note:NOTE_ID"])
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
     .action(async (doc: string, noteRef: string) =>
-      output(await run(doc, (k, p, ref) => k.removeNote(p, ref, noteRef))),
+      output(itemOf(await run(doc, (k, p, ref) => k.removeNote(p, ref, noteRef)))),
     )
   const memories = program
     .command("memories")
@@ -128,7 +141,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(new Option("--kind <kind>", "what kind of memory it is").choices(MEMORY_KINDS).default("summary"))
     .option("--supersedes <memory>", "a memory:<id> about the same document that this one replaces")
     .action(async (doc: string, body: string, args) =>
-      output(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" }))),
+      output(itemOf(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" })))),
     )
   examples(memories.command("list").description("list a document's memories"), [
     "drive personal memories list DOC_ID --scope work",
@@ -137,7 +150,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(scope("only personal or only work memories"))
     .addOption(new Option("--kind <kind>", "only memories of this kind").choices(MEMORY_KINDS))
     .option("--limit <n>", "how many memories to return", positive, 50)
-    .action(async (doc: string, args) => output({ items: await run(doc, (k, p, ref) => k.memories(p, ref, args)) }))
+    .action(async (doc: string, args) => output(allOf(await run(doc, (k, p, ref) => k.memories(p, ref, args)))))
   const memoryActions = {
     show: "show one memory",
     confirm: "confirm a proposed memory as true",
@@ -150,7 +163,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       .argument("<document>", documentArgument)
       .argument("<memory>", memoryArgument)
       .action(async (doc: string, memoryRef: string) =>
-        output(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action))),
+        output(itemOf(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action)))),
       )
   examples(memories.command("search").description("search a document's memories by words"), [
     "drive personal memories search DOC_ID reviews --scope work",
@@ -158,9 +171,10 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<document>", documentArgument)
     .argument("<query>", "words to look for")
     .addOption(scope("search personal or work memories").makeOptionMandatory())
-    .action(async (doc: string, query: string, args) =>
-      output(await run(doc, (k, p, ref) => k.searchMemories(p, ref, query, args.scope))),
-    )
+    .action(async (doc: string, query: string, args) => {
+      const found = await run(doc, (k, p, ref) => k.searchMemories(p, ref, query, args.scope))
+      output({ ...allOf(found.items), ...(found.candidate_limit_reached ? { meta: { truncated: true } } : {}) })
+    })
   examples(
     memories
       .command("extract")
@@ -216,7 +230,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
             return items
           })
         : []
-      output({ ...result, provenance, saved })
+      output(itemOf({ ...result, provenance, saved }))
     })
   const facts = program
     .command("facts")
@@ -231,7 +245,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(scope("whose fact it is: personal or work"))
     .action(
       async (doc: string, statement: string, args: { type: (typeof FACT_TYPES)[number]; scope?: Memory["scope"] }) =>
-        output(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args }))),
+        output(itemOf(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args })))),
     )
   examples(facts.command("list").description("list a document's facts"), [
     "drive personal facts list DOC_ID --status proposed",
@@ -240,14 +254,14 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(new Option("--type <type>", "only facts of this kind").choices(FACT_TYPES))
     .addOption(new Option("--status <status>", "only facts in this state").choices(FACT_STATUSES))
     .option("--limit <n>", "how many facts to return", positive, 50)
-    .action(async (doc: string, args) => output({ items: await run(doc, (k, p, ref) => k.facts(p, ref, args)) }))
+    .action(async (doc: string, args) => output(allOf(await run(doc, (k, p, ref) => k.facts(p, ref, args)))))
   const factActions = { show: "show one fact", confirm: "confirm a proposed fact as true" } as const
   for (const [action, description] of Object.entries(factActions) as [keyof typeof factActions, string][])
     examples(facts.command(action).description(description), [`drive personal facts ${action} DOC_ID fact:FACT_ID`])
       .argument("<document>", documentArgument)
       .argument("<fact>", factArgument)
       .action(async (doc: string, factRef: string) =>
-        output(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action))),
+        output(itemOf(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action)))),
       )
   const identities = program
     .command("identities")
@@ -256,7 +270,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     "drive personal identities list DOC_ID",
   ])
     .argument("<document>", documentArgument)
-    .action(async (doc: string) => output(await run(doc, (k, p, ref) => k.people(p, ref))))
+    .action(async (doc: string) => output(itemOf(await run(doc, (k, p, ref) => k.people(p, ref)))))
   examples(identities.command("link").description("record that a Google account belongs to a known person"), [
     "drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID",
   ])
@@ -264,6 +278,6 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<google-id>", "Google account id, as identities list prints it")
     .argument("<person>", "person:<uid> reference of someone already known")
     .action(async (doc: string, googleId: string, personRef: string) =>
-      output(await run(doc, (k, p, ref) => k.linkPerson(p, ref, googleId, personRef))),
+      output(itemOf(await run(doc, (k, p, ref) => k.linkPerson(p, ref, googleId, personRef)))),
     )
 }

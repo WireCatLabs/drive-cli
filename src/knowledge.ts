@@ -24,7 +24,7 @@ export interface DocumentKnowledge {
     principal: string,
     ref: string,
     options?: { search?: string; limit?: number; offset?: number },
-  ): Promise<unknown>
+  ): Promise<{ items: Note[]; hasMore: boolean }>
   addNote(principal: string, ref: string, text: string, title?: string): Promise<Note>
   note(principal: string, ref: string, noteRef: string): Promise<Note>
   editNote(principal: string, ref: string, noteRef: string, text: string, revision: number): Promise<Note>
@@ -40,7 +40,12 @@ export interface DocumentKnowledge {
     options?: { scope?: Memory["scope"]; kind?: Memory["kind"]; limit?: number },
   ): Promise<Memory[]>
   memory(principal: string, ref: string, memoryRef: string, action?: "show" | "confirm" | "stale"): Promise<Memory>
-  searchMemories(principal: string, ref: string, query: string, scope: Memory["scope"]): Promise<unknown>
+  searchMemories(
+    principal: string,
+    ref: string,
+    query: string,
+    scope: Memory["scope"],
+  ): Promise<{ items: Memory[]; candidate_limit_reached: boolean }>
   addFact(
     principal: string,
     ref: string,

@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Cursor lists page.** `files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives` and
+  `documents history` answer a list of Google's rows with `page.mode: "cursor"`, `page.next_cursor` set from
+  Google's `nextPageToken`, and a `page.next` step; before, the whole Google response came back as one item and the
+  token was never reported. An unfinished Google search is named in `missing`.
+- Every command builds its answer with cli-core's `itemOf`/`listOf` instead of drive guessing the shape, and prints
+  through `renderAnswer`. `memories search` is a list (hitting its 200-candidate cap sets `meta.truncated`).
+  `documents history` drops its `file_id`, `source` and `coverage` wrapper. `catalog list`, `catalog search` and
+  `notes list` add a `page.next` step when more remain. In a terminal, a command prints its item or items, not the
+  whole envelope, and a next-page hint goes to stderr.
+
 ## 0.7.0 — 2026-10-14
 
 - Command effects distinguish Google-only reads from cached reads. Handwritten Google reads now

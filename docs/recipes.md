@@ -202,7 +202,7 @@ drive personal session start --client-file /path/to/desktop-client.json --activi
 drive personal documents history DOC_ID --activity --json
 ```
 
-Pass returned page tokens to the same command's `--cursor` option to continue. Google's
+Pass `page.next_cursor` to the same command's `--cursor` option to continue. Google's
 visible revisions/events can be incomplete; they are not a character-by-character edit history.
 Comments are inspectable here but are not included in document search.
 

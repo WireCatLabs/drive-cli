@@ -85,7 +85,7 @@ An interrupted first folder walk also resumes from its saved checkpoint. Use `sy
 to restart discovery. Completed file work is checkpointed in batches; an abruptly killed sync
 may repeat the last batch when resumed.
 The initial scan is recursive; `files list --parent` lists immediate children only. If Google
-returns a `nextPageToken`, pass it to `files list --cursor TOKEN` for the next page.
+has more, the answer's `page.next_cursor` holds the token; pass it to `files list --cursor TOKEN` for the next page.
 
 `folders list` shows selected roots. `catalog tree` shows their cached hierarchy, and
 `catalog list "parent:FOLDER_ID"` lists a folder's direct children without Google. Documents remain grouped
@@ -248,13 +248,14 @@ JSON and JSONL let another tool read results without parsing terminal text. You 
 its required fields while retaining pagination and completeness information.
 
 Machine-readable command answers use an envelope: `item` for a single or rich result, or `items`
-with `page` for a simple list; `meta` identifies the invocation, its duration and `complete` status. Drive-owned keys
+with `page` for a list; `meta` identifies the invocation, its duration and `complete` status. Drive-owned keys
 are snake_case. Provider metadata and user dictionaries keep their original keys. Search passages
 are under `item.hits`, and sync/status counters are under `item`. Help and shell completion remain
 text; `commands --json` uses the shared discovery document with contract `3`. Command `effects`
 describe remote and local reads/writes; `api_operation` identifies a generated Google method.
-Lists use `page.mode: "page"` and return `next_page` when more results remain. Search and note
-lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
+Local lists use `page.mode: "page"` and return `next_page` when more results remain; Google lists
+(`files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives`, `documents history`)
+use `page.mode: "cursor"` and return `next_cursor`. Search and note lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
 one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`;
 an uncertain remote write must be inspected before repeating it. MCP displays control characters
 visibly; `--agent-json` is no longer an option.

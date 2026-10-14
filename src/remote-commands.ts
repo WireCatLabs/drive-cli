@@ -1,9 +1,13 @@
 import { CliError } from "@wirecat/cli-base"
 import {
   apiPlainJson,
+  type Body,
   checkApiBody,
   checkApiParameter,
   generatedApiCommand,
+  itemOf,
+  type ListBody,
+  listOf,
   parseApiJson,
   readApiBody,
 } from "@wirecat/cli-core/cli"
@@ -11,6 +15,7 @@ import type { Command } from "commander"
 import { operationOf, operations, schemas, validateRequest } from "./api-contract.js"
 import { fileId } from "./config.js"
 import { apiMethod, apiMethods, validateApiParams } from "./google-api.js"
+import { allOf } from "./output.js"
 import { examples } from "./registry.js"
 import { requestSchema } from "./schema.js"
 
@@ -20,9 +25,31 @@ export const jsonObject = (value: string): Record<string, unknown> => {
     throw new CliError("validation_error", "use a JSON object")
   return parsed as Record<string, unknown>
 }
+/** One page of a Google list, which names its rows `key` and the next page `nextPageToken`. */
+const pageOf = (
+  command: string,
+  data: unknown,
+  key: string,
+  limit: number,
+  args: Record<string, unknown>,
+): ListBody<unknown> => {
+  const page = data as Record<string, unknown> & { nextPageToken?: string; incompleteSearch?: boolean }
+  const cursor = page.nextPageToken || undefined
+  return listOf(command, {
+    items: (page[key] as unknown[] | undefined) ?? [],
+    limit,
+    has_more: cursor !== undefined,
+    paging: "cursor",
+    ...(cursor ? { cursor } : {}),
+    args,
+    ...(page.incompleteSearch
+      ? { missing: [{ field: key, why: "Google searched only some of the drives; narrow the query to search all" }] }
+      : {}),
+  })
+}
 export interface RemoteCommands {
   call(method: string, params: Record<string, unknown>, body?: Record<string, unknown>): Promise<unknown>
-  output(value: unknown): void
+  output(body: Body): void
   positive(input: string): number
   readBody?: (path: string | number) => string
 }
@@ -31,7 +58,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   const page = (command: Command) =>
     command
       .option("--limit <n>", "how many items one page holds", positive, 100)
-      .option("--cursor <cursor>", "continue from the nextPageToken of the previous page")
+      .option("--cursor <cursor>", "continue from page.next_cursor of the previous answer")
   const fileArgument = "file id or Google Drive URL"
   const api = program.command("api").description("discover and call the official Drive, Docs and Activity API methods")
   examples(
@@ -41,7 +68,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .option("--service <name>", "only the methods of this service: drive, docs or driveactivity"),
     ["drive api list --service docs"],
   ).action((args: { service?: string }) =>
-    output({ items: apiMethods().filter((m) => !args.service || m.name.startsWith(`${args.service}.`)) }),
+    output(allOf(apiMethods().filter((m) => !args.service || m.name.startsWith(`${args.service}.`)))),
   )
   examples(
     api
@@ -49,7 +76,9 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .description("show one method's request schema and contract, without calling Google")
       .argument("<method>", "Google method name, as api list prints it"),
     ["drive api show docs.documents.batchUpdate --json"],
-  ).action((method: string) => output({ operation: operationOf(method), request_schema: requestSchema(method) }))
+  ).action((method: string) =>
+    output(itemOf({ operation: operationOf(method), request_schema: requestSchema(method) })),
+  )
   examples(
     api
       .command("call")
@@ -76,7 +105,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           reason: "delete.not-allowed",
         })
       validateRequest(name, args.params, args.body)
-      output(await call(name, args.params, args.body))
+      output(itemOf(await call(name, args.params, args.body)))
     })
   const generated = generatedApiCommand({
     operations,
@@ -85,10 +114,12 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     readBody: (_command, opts) => readApiBody(opts, helpers.readBody),
     execute: async (_command, operation, input) =>
       output(
-        await call(
-          operation.id,
-          { ...input.path, ...input.query },
-          input.body === undefined ? undefined : jsonObject(input.body),
+        itemOf(
+          await call(
+            operation.id,
+            { ...input.path, ...input.query },
+            input.body === undefined ? undefined : jsonObject(input.body),
+          ),
         ),
       ),
   })
@@ -104,20 +135,26 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--parent <folder>", "only the files directly inside this folder id")
     .action(async (args) =>
       output(
-        await call("drive.files.list", {
-          q: args.parent ? `'${fileId(args.parent)}' in parents and (${args.query})` : args.query,
-          pageSize: args.limit,
-          ...(args.cursor ? { pageToken: args.cursor } : {}),
-          supportsAllDrives: true,
-          includeItemsFromAllDrives: true,
-          fields: "nextPageToken,incompleteSearch,files(*)",
-        }),
+        pageOf(
+          "files list",
+          await call("drive.files.list", {
+            q: args.parent ? `'${fileId(args.parent)}' in parents and (${args.query})` : args.query,
+            pageSize: args.limit,
+            ...(args.cursor ? { pageToken: args.cursor } : {}),
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+            fields: "nextPageToken,incompleteSearch,files(*)",
+          }),
+          "files",
+          args.limit,
+          { query: args.query, parent: args.parent },
+        ),
       ),
     )
   examples(files.command("get").description("show one file's Google Drive metadata").argument("<file>", fileArgument), [
     "drive personal files get FILE_ID",
   ]).action(async (id: string) =>
-    output(await call("drive.files.get", { fileId: fileId(id), fields: "*", supportsAllDrives: true })),
+    output(itemOf(await call("drive.files.get", { fileId: fileId(id), fields: "*", supportsAllDrives: true }))),
   )
   examples(files.command("copy").description("copy a file in Google Drive").argument("<file>", fileArgument), [
     `drive personal files copy FILE_ID --name "Plan copy" --parent FOLDER_ID`,
@@ -126,13 +163,15 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--parent <folder>", "folder id to put the copy in")
     .action(async (id: string, args) =>
       output(
-        await call(
-          "drive.files.copy",
-          { fileId: fileId(id), supportsAllDrives: true },
-          {
-            ...(args.name ? { name: args.name } : {}),
-            ...(args.parent ? { parents: [fileId(args.parent)] } : {}),
-          },
+        itemOf(
+          await call(
+            "drive.files.copy",
+            { fileId: fileId(id), supportsAllDrives: true },
+            {
+              ...(args.name ? { name: args.name } : {}),
+              ...(args.parent ? { parents: [fileId(args.parent)] } : {}),
+            },
+          ),
         ),
       ),
     )
@@ -144,15 +183,17 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--old-parent <folder>", "folder id to take the file out of")
     .action(async (id: string, args) =>
       output(
-        await call(
-          "drive.files.update",
-          {
-            fileId: fileId(id),
-            addParents: fileId(args.parent),
-            ...(args.oldParent ? { removeParents: fileId(args.oldParent) } : {}),
-            supportsAllDrives: true,
-          },
-          {},
+        itemOf(
+          await call(
+            "drive.files.update",
+            {
+              fileId: fileId(id),
+              addParents: fileId(args.parent),
+              ...(args.oldParent ? { removeParents: fileId(args.oldParent) } : {}),
+              supportsAllDrives: true,
+            },
+            {},
+          ),
         ),
       ),
     )
@@ -162,7 +203,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   )
     .requiredOption("--body <json>", "the metadata fields to change, as a JSON object", jsonObject)
     .action(async (id: string, args) =>
-      output(await call("drive.files.update", { fileId: fileId(id), supportsAllDrives: true }, args.body)),
+      output(itemOf(await call("drive.files.update", { fileId: fileId(id), supportsAllDrives: true }, args.body))),
     )
   for (const name of ["trash", "restore"] as const)
     examples(
@@ -173,10 +214,12 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       [`drive personal files ${name} FILE_ID`],
     ).action(async (id: string) =>
       output(
-        await call(
-          "drive.files.update",
-          { fileId: fileId(id), supportsAllDrives: true },
-          { trashed: name === "trash" },
+        itemOf(
+          await call(
+            "drive.files.update",
+            { fileId: fileId(id), supportsAllDrives: true },
+            { trashed: name === "trash" },
+          ),
         ),
       ),
     )
@@ -187,14 +230,16 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--parent <folder>", "folder id to create it in; My Drive when omitted")
     .action(async (name: string, args) =>
       output(
-        await call(
-          "drive.files.create",
-          { supportsAllDrives: true },
-          {
-            name,
-            mimeType: "application/vnd.google-apps.folder",
-            ...(args.parent ? { parents: [fileId(args.parent)] } : {}),
-          },
+        itemOf(
+          await call(
+            "drive.files.create",
+            { supportsAllDrives: true },
+            {
+              name,
+              mimeType: "application/vnd.google-apps.folder",
+              ...(args.parent ? { parents: [fileId(args.parent)] } : {}),
+            },
+          ),
         ),
       ),
     )
@@ -207,13 +252,13 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .description("read a document live from Google Docs, as JSON with every tab"),
     ["drive personal documents get DOC_ID --json"],
   ).action(async (id: string) =>
-    output(await call("docs.documents.get", { documentId: fileId(id), includeTabsContent: true })),
+    output(itemOf(await call("docs.documents.get", { documentId: fileId(id), includeTabsContent: true }))),
   )
   examples(documents.command("create").description("create an empty Google Doc"), [
     `drive personal documents create --title "Meeting notes"`,
   ])
     .requiredOption("--title <title>", "title of the new document")
-    .action(async (args) => output(await call("docs.documents.create", {}, { title: args.title })))
+    .action(async (args) => output(itemOf(await call("docs.documents.create", {}, { title: args.title }))))
   examples(
     documents
       .command("update")
@@ -223,13 +268,13 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   )
     .requiredOption("--body <json>", "Docs batchUpdate body: requests and an optional writeControl", jsonObject)
     .action(async (id: string, args) =>
-      output(await call("docs.documents.batchUpdate", { documentId: fileId(id) }, args.body)),
+      output(itemOf(await call("docs.documents.batchUpdate", { documentId: fileId(id) }, args.body))),
     )
   page(
     examples(
       documents
         .command("history")
-        .description("list a document's revisions, or who did what with --activity")
+        .description("list the revisions Google kept, or who did what with --activity")
         .argument("<document>", documentArgument),
       ["drive personal documents history DOC_ID", "drive personal documents history DOC_ID --activity"],
     ),
@@ -254,12 +299,12 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
             fields:
               "nextPageToken,revisions(id,mimeType,modifiedTime,lastModifyingUser(permissionId,displayName,emailAddress),size)",
           })
-      output({
-        file_id: file,
-        source: args.activity ? "activity" : "revisions",
-        data,
-        coverage: "Google-visible events/revisions; may be incomplete, not a character-level edit history",
-      })
+      output(
+        pageOf("documents history", data, args.activity ? "activities" : "revisions", args.limit, {
+          document: id,
+          activity: args.activity,
+        }),
+      )
     })
   for (const resource of ["comments", "permissions", "revisions"] as const) {
     const one = resource.slice(0, -1)
@@ -270,13 +315,19 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ]),
     ).action(async (id: string, args) =>
       output(
-        await call(`drive.${resource}.list`, {
-          fileId: fileId(id),
-          pageSize: args.limit,
-          ...(args.cursor ? { pageToken: args.cursor } : {}),
-          fields: "*",
-          ...(resource === "permissions" ? { supportsAllDrives: true } : {}),
-        }),
+        pageOf(
+          `${resource} list`,
+          await call(`drive.${resource}.list`, {
+            fileId: fileId(id),
+            pageSize: args.limit,
+            ...(args.cursor ? { pageToken: args.cursor } : {}),
+            fields: "*",
+            ...(resource === "permissions" ? { supportsAllDrives: true } : {}),
+          }),
+          resource,
+          args.limit,
+          { file: id },
+        ),
       ),
     )
     examples(
@@ -288,12 +339,14 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       [`drive personal ${resource} get FILE_ID ${one.toUpperCase()}_ID`],
     ).action(async (file: string, id: string) =>
       output(
-        await call(`drive.${resource}.get`, {
-          fileId: fileId(file),
-          [`${one}Id`]: id,
-          fields: "*",
-          ...(resource === "permissions" ? { supportsAllDrives: true } : {}),
-        }),
+        itemOf(
+          await call(`drive.${resource}.get`, {
+            fileId: fileId(file),
+            [`${one}Id`]: id,
+            fields: "*",
+            ...(resource === "permissions" ? { supportsAllDrives: true } : {}),
+          }),
+        ),
       ),
     )
   }
@@ -303,11 +356,17 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     ]),
   ).action(async (args) =>
     output(
-      await call("drive.drives.list", {
-        pageSize: args.limit,
-        ...(args.cursor ? { pageToken: args.cursor } : {}),
-        fields: "*",
-      }),
+      pageOf(
+        "shared-drives",
+        await call("drive.drives.list", {
+          pageSize: args.limit,
+          ...(args.cursor ? { pageToken: args.cursor } : {}),
+          fields: "*",
+        }),
+        "drives",
+        args.limit,
+        {},
+      ),
     ),
   )
 }

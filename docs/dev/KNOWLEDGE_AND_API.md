@@ -57,7 +57,7 @@ scope and API; enable **Drive Activity API** in the application project. These e
 a complete character-level diff or necessarily reveal every actor's name. See Google's
 [revision guide](https://developers.google.com/workspace/drive/api/guides/manage-revisions) and
 [Activity query reference](https://developers.google.com/workspace/drive/activity/v2/reference/rest/v2/activity/query).
-Pass a returned `nextPageToken` as `--cursor` to read another page.
+Pass the answer's `page.next_cursor` as `--cursor` to read another page.
 
 ## Memories, facts and AI extraction
 
@@ -145,7 +145,7 @@ require `--allow-delete`. Convenient named commands already describe their actio
 roles, domain policy and API availability remain authoritative. The SDK forwards structured Docs
 batch requests for text, formatting, tables and tabs. Use `writeControl.requiredRevisionId` from
 a live Docs read when an update must reject concurrent changes. Run sync after remote mutations
-to update local snapshots and search. All pagination commands return Google's continuation token;
+to update local snapshots and search. All pagination commands return Google's continuation token as `page.next_cursor`;
 one page does not claim complete coverage.
 
 ## Public application rollout
