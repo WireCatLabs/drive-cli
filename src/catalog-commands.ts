@@ -1,11 +1,13 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { parseLucene, validateQuery } from "@wirecat/cli-base/query"
+import { type Body, itemOf, listOf } from "@wirecat/cli-core/cli"
 import { CATALOG_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { catalogFiles, catalogOutput, catalogTree, type SourceCatalog } from "./catalog.js"
 import { activeProfile, fileId } from "./config.js"
 import type { DocumentIndex } from "./model.js"
+import { allOf } from "./output.js"
 import { lockProfile } from "./profile-lock.js"
 import { examples } from "./registry.js"
 import { readState } from "./state.js"
@@ -13,7 +15,7 @@ import { readState } from "./state.js"
 interface Helpers {
   env: NodeJS.ProcessEnv
   selected(): string
-  output(value: unknown): void
+  output(body: Body): void
   positive(input: string): number
   offset(input: string): number
   withIndex<T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T>
@@ -59,10 +61,12 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
     ["drive personal catalog import --offline"],
   ).action(async () =>
     output(
-      await run(async (index, principal) => {
-        const state = readState(env, selected(), principal)
-        return index.catalog.import(principal, catalogFiles(state, activeProfile(env, selected()).roots))
-      }, true),
+      itemOf(
+        await run(async (index, principal) => {
+          const state = readState(env, selected(), principal)
+          return index.catalog.import(principal, catalogFiles(state, activeProfile(env, selected()).roots))
+        }, true),
+      ),
     ),
   )
   examples(local(catalog.command("show").description("show stored metadata and the stable file or folder reference")), [
@@ -70,20 +74,22 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
   ])
     .argument("<file>", "Google file or folder id, or its Drive URL")
     .action(async (id: string) =>
-      output(await run(async (index, principal) => catalogOutput(await entry(index, principal, id)))),
+      output(itemOf(await run(async (index, principal) => catalogOutput(await entry(index, principal, id))))),
     )
   const list = async (words: string[], args: { limit: number; page: number }, search: boolean) => {
     const ast = words.length
       ? validateQuery(parseLucene(words.join(" "), { defaultField: search ? "text" : "none" }), CATALOG_QUERY)
       : undefined
+    const result = await run((index, principal) =>
+      index.catalog.list(principal, { ast, limit: args.limit, offset: (args.page - 1) * args.limit }),
+    )
     output(
-      await run(async (index, principal) => {
-        const result = await index.catalog.list(principal, {
-          ast,
-          limit: args.limit,
-          offset: (args.page - 1) * args.limit,
-        })
-        return { items: result.items.map(catalogOutput), has_more: result.hasMore }
+      listOf(`catalog ${search ? "search" : "list"}`, {
+        items: result.items.map(catalogOutput),
+        limit: args.limit,
+        has_more: result.hasMore,
+        page: args.page,
+        args: { query: words.length ? words.join(" ") : undefined },
       }),
     )
   }
@@ -129,13 +135,13 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
             if (!page.hasMore) break
           }
           const roots = id ? [fileId(id)] : activeProfile(env, selected()).roots
-          return {
-            items: catalogTree(
+          return allOf(
+            catalogTree(
               items,
               roots.map((root) => `${root}.md`),
               args.depth,
             ),
-          }
+          )
         }),
       ),
     )
@@ -148,11 +154,13 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
     if (action !== "list") command.argument("<tags...>", "local tag names")
     command.action(async (id: string, values?: string[]) =>
       output(
-        await run(async (index, principal) => {
-          const found = await entry(index, principal, id)
-          if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
-          return index.knowledge.tags(principal, found.ref, action, action === "list" ? undefined : values)
-        }, action !== "list"),
+        allOf(
+          await run(async (index, principal) => {
+            const found = await entry(index, principal, id)
+            if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
+            return index.knowledge.tags(principal, found.ref, action, action === "list" ? undefined : values)
+          }, action !== "list"),
+        ),
       ),
     )
   }

@@ -1,7 +1,7 @@
-import { randomUUID } from "node:crypto"
-import type { ItemEnvelope, ListEnvelope, Meta } from "@wirecat/cli-base/standards"
+import { type ListBody, listOf } from "@wirecat/cli-core/cli"
 
-// Provider/user dictionaries retain their vocabulary; profile/model names are identifiers.
+// cli-core's snakeKeys has no keep-as-written option yet: provider dictionaries keep Google's spelling and
+// profile/model names are identifiers, so drive keeps its own until cli-core can be told which keys to leave.
 const VERBATIM = new Set([
   "frontMatter",
   "front_matter",
@@ -35,38 +35,6 @@ export const snakeKeys = (value: unknown, record = false): unknown => {
   )
 }
 
-/** One invocation's standard envelope, shared by CLI output and the MCP executor. */
-export const answerOf = (
-  value: unknown,
-  context: { startedAt: number; runId?: string; limit?: number; page?: number },
-): ItemEnvelope<unknown> | ListEnvelope<unknown> => {
-  const data = snakeKeys(value)
-  const meta: Meta = {
-    run_id: context.runId ?? randomUUID(),
-    duration_ms: Math.max(0, Math.round(Date.now() - context.startedAt)),
-    complete: true,
-  }
-  // Rich results (search/context/config) stay together in an item, rather than losing their metadata.
-  const list = Array.isArray(data)
-    ? { items: data, has_more: false }
-    : data &&
-        typeof data === "object" &&
-        "items" in data &&
-        Array.isArray(data.items) &&
-        Object.keys(data).every((key) => ["items", "has_more", "next_offset"].includes(key))
-      ? data
-      : undefined
-  if (!list) return { item: data, meta }
-  const items = list.items as unknown[]
-  const hasMore = "has_more" in list && list.has_more === true
-  return {
-    items,
-    page: {
-      mode: "page",
-      limit: context.limit ?? Math.max(1, items.length),
-      has_more: hasMore,
-      ...(hasMore ? { next_page: (context.page ?? 1) + 1 } : {}),
-    },
-    meta,
-  }
-}
+/** A list that is never paged: everything there is, in one answer. */
+export const allOf = <T>(items: T[]): ListBody<T> =>
+  listOf("", { items, limit: Math.max(1, items.length), has_more: false })

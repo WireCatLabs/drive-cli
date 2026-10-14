@@ -235,7 +235,7 @@ drive <profile> documents update <document> [options]
 
 ### `drive documents history`
 
-list a document's revisions, or who did what with --activity
+list the revisions Google kept, or who did what with --activity
 
 ```sh
 drive <profile> documents history <document> [options]
@@ -248,7 +248,7 @@ drive <profile> documents history <document> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 | `--activity` | list activity events instead of revisions; needs session start --activity. |
 
 ## `drive search`
@@ -2395,7 +2395,7 @@ drive <profile> files list [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 | `--query <q>` | only files that match this Google Drive query. Default: `trashed = false`. |
 | `--parent <folder>` | only the files directly inside this folder id. |
 
@@ -2532,7 +2532,7 @@ drive <profile> comments list <file> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 
 ### `drive comments get`
 
@@ -2566,7 +2566,7 @@ drive <profile> permissions list <file> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 
 ### `drive permissions get`
 
@@ -2600,7 +2600,7 @@ drive <profile> revisions list <file> [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 
 ### `drive revisions get`
 
@@ -2626,7 +2626,7 @@ drive <profile> shared-drives [options]
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from the nextPageToken of the previous page. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
 
 ## `drive config`
 

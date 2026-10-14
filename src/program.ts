@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto"
 import { readFileSync, writeFileSync } from "node:fs"
 import {
   CliError,
@@ -8,18 +9,22 @@ import {
   type KeyringStore,
   processStreams,
   projectFields,
+  type Renderer,
+  type RenderFormat,
   type Streams,
 } from "@wirecat/cli-base"
 import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { writes } from "@wirecat/cli-base/standards"
 import {
+  type Body,
   commandWords,
-  jsonlRecords,
+  itemOf,
   liftJson,
   liftProfile,
   parseDuration,
   refuseCommandName,
+  renderAnswer,
 } from "@wirecat/cli-core/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
@@ -43,7 +48,7 @@ import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource, metadataJson, skipJson } from "./model.js"
-import { answerOf } from "./output.js"
+import { allOf, snakeKeys } from "./output.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
@@ -80,10 +85,8 @@ const offset = (input: string) => {
   if (!Number.isSafeInteger(n) || n < 0) throw new InvalidArgumentError("use a nonnegative integer")
   return n
 }
-const keepFields = (answer: ReturnType<typeof answerOf>, paths: string[]): ReturnType<typeof answerOf> =>
-  "items" in answer
-    ? { ...answer, items: answer.items.map((item) => projectFields(item, paths)) }
-    : { ...answer, item: projectFields(answer.item, paths) }
+const eachItem = (body: Body, change: (item: unknown) => unknown): Body =>
+  "items" in body ? { ...body, items: body.items.map(change) } : { ...body, item: change(body.item) }
 const commandIn = (root: Command, words: readonly string[]) => {
   let at: Command | undefined = root
   for (const word of words) {
@@ -93,6 +96,7 @@ const commandIn = (root: Command, words: readonly string[]) => {
   }
   return at === root ? undefined : at
 }
+class Preview extends Error {}
 export const createProgram = (options: ProgramOptions = {}): Command => {
   const startedAt = Date.now()
   const env = options.env ?? process.env
@@ -157,24 +161,39 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ...program.opts(),
     allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
   })
-  const output = (value: unknown) => {
-    const whole =
-      currentAction?.name() === "commands"
-        ? undefined
-        : answerOf(value, { startedAt, limit: currentAction?.opts().limit, page: currentAction?.opts().page })
-    if (whole && fields && currentAction) checkResultFields(currentAction, whole, fields)
-    const answer = whole && fields ? keepFields(whole, fieldsOf(fields)) : whole
+  const runId = randomUUID()
+  const print = (render: (renderer: Renderer, format: RenderFormat, streams: Streams) => void) => {
+    const format: RenderFormat = program.opts().jsonl
+      ? "jsonl"
+      : program.opts().json || !process.stdout.isTTY
+        ? "json"
+        : "pretty"
     const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
-    const renderer = createRenderer({
-      format: program.opts().jsonl ? "jsonl" : program.opts().json || !process.stdout.isTTY ? "json" : "pretty",
-      color: false,
-      streams: { ...streams, data: (text) => buffer.data(text) },
-      quiet: program.opts().quiet === true,
-    })
-    if (!answer) renderer.result(value)
-    else if (program.opts().jsonl) for (const record of jsonlRecords(answer)) renderer.result(record)
-    else renderer.result(answer)
+    const buffered = { ...streams, data: (text: string) => buffer.data(text) }
+    render(
+      createRenderer({ format, color: false, streams: buffered, quiet: program.opts().quiet === true }),
+      format,
+      buffered,
+    )
     buffer.flush((text) => streams.data(text))
+  }
+  const output = (body: Body) => {
+    const snaked = eachItem(body, (item) => snakeKeys(item))
+    const whole = {
+      ...snaked,
+      meta: {
+        run_id: runId,
+        duration_ms: Math.max(0, Math.round(Date.now() - startedAt)),
+        complete: true,
+        ...body.meta,
+      },
+    }
+    if (fields && currentAction) checkResultFields(currentAction, whole, fields)
+    const paths = fields ? fieldsOf(fields) : undefined
+    const answer = paths ? eachItem(whole, (item) => projectFields(item, paths)) : whole
+    print((renderer, format, buffered) =>
+      renderAnswer(currentAction ?? program, { renderer, format, streams: buffered }, answer),
+    )
   }
   const source = async () => {
     const name = selected()
@@ -218,33 +237,37 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
           throw new CliError("validation_error", "credential storage is keyring or file")
         output(
-          await login({
-            env,
-            profile: selected(),
-            application: application(env, args.clientFile),
-            storage: args.credentialStorage,
-            ...(args.write ? { write: true } : {}),
-            ...(args.activity ? { activity: true } : {}),
-            ...(args.apps ? { apps: true } : {}),
-            ...(options.keyring ? { keyring: options.keyring } : {}),
-            ...(activeSignal ? { signal: activeSignal } : {}),
-            openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
-            showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
-          }),
+          itemOf(
+            await login({
+              env,
+              profile: selected(),
+              application: application(env, args.clientFile),
+              storage: args.credentialStorage,
+              ...(args.write ? { write: true } : {}),
+              ...(args.activity ? { activity: true } : {}),
+              ...(args.apps ? { apps: true } : {}),
+              ...(options.keyring ? { keyring: options.keyring } : {}),
+              ...(activeSignal ? { signal: activeSignal } : {}),
+              openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
+              showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
+            }),
+          ),
         )
       },
     )
   examples(session.command("list").description("list the configured profiles; credentials are never printed"), [
     "drive personal session list",
   ]).action(() =>
-    output({
-      scope: "all-configured-profiles",
-      items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
-        profile: name,
-        selected_folders: p.roots.length,
-        storage: p.storage,
-      })),
-    }),
+    output(
+      itemOf({
+        scope: "all-configured-profiles",
+        items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
+          profile: name,
+          selected_folders: p.roots.length,
+          storage: p.storage,
+        })),
+      }),
+    ),
   )
   examples(session.command("end").description("sign this profile out; imported documents stay"), [
     "drive personal session end",
@@ -255,7 +278,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     credentials(env, profile.storage, options.keyring).remove(name)
     // Preserve the principal and roots so reauthorization resumes the same source identities.
     writeConfig(env, config)
-    output({ profile: name, signed_out: true, cached_data: "retained" })
+    output(itemOf({ profile: name, signed_out: true, cached_data: "retained" }))
   })
   const folders = program.command("folders").description("choose the Google Drive folders that sync imports")
   const folderArgument = "folder id or Google Drive URL"
@@ -276,11 +299,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     if (!profile.roots.includes(metadata.id)) profile.roots.push(metadata.id)
     config.profiles[name] = profile
     writeConfig(env, config)
-    output({ id: metadata.id, name: metadata.name, added: true })
+    output(itemOf({ id: metadata.id, name: metadata.name, added: true }))
   })
   examples(folders.command("list").description("list the folder ids sync imports"), [
     "drive personal folders list",
-  ]).action(() => output({ items: activeProfile(env, selected()).roots.map((id) => ({ id })) }))
+  ]).action(() => output(allOf(activeProfile(env, selected()).roots.map((id) => ({ id })))))
   examples(
     folders
       .command("remove")
@@ -295,7 +318,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     profile.roots = profile.roots.filter((root) => root !== id)
     config.profiles[name] = profile
     writeConfig(env, config)
-    output({ id, removed: true })
+    output(itemOf({ id, removed: true }))
   })
   examples(
     program
@@ -316,7 +339,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ...(await sync(remote, index, env, selected(), args.limit, activeSignal, args.rescan)),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),
       }))
-      output(result)
+      output(itemOf(result))
       if (result.errors.length || result.pending)
         streams.diagnostic(`${result.pending} source operations remain; run drive ${selected()} sync again\n`)
       if (result.errors.length)
@@ -330,16 +353,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const name = selected()
     const profile = activeProfile(env, name)
     const state = readState(env, name, profile.principal)
-    output({
-      profile: name,
-      selected_folders: profile.roots,
-      documents: Object.keys(state.documents).length,
-      pending: state.pending?.jobs.length ?? 0,
-      skipped: state.skipped.map(skipJson),
-      last_sync: state.lastSync ?? null,
-      coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
-      remote_checked: false,
-    })
+    output(
+      itemOf({
+        profile: name,
+        selected_folders: profile.roots,
+        documents: Object.keys(state.documents).length,
+        pending: state.pending?.jobs.length ?? 0,
+        skipped: state.skipped.map(skipJson),
+        last_sync: state.lastSync ?? null,
+        coverage: "Google Docs and Markdown/TXT; native export tab fidelity and assets are not verified",
+        remote_checked: false,
+      }),
+    )
   })
   const documents = program.command("documents").description("read imported documents and Google Docs")
   const documentArgument = "document id or Google Docs URL"
@@ -361,13 +386,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
             if (await index.knowledge.matches(profile.principal, doc.reference, args)) filtered.push(doc)
           return filtered
         })
-      output({
-        items: docs.map((doc) => ({
-          ...metadataJson(doc.metadata),
-          reference: doc.reference,
-          tabs: doc.tabs,
-        })),
-      })
+      output(
+        allOf(
+          docs.map((doc) => ({
+            ...metadataJson(doc.metadata),
+            reference: doc.reference,
+            tabs: doc.tabs,
+          })),
+        ),
+      )
     })
   const imported = (input: string) => {
     const id = fileId(input)
@@ -388,12 +415,14 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ["drive personal documents show DOC_ID"],
   ).action((input: string) => {
     const { snapshot } = imported(input)
-    output({
-      metadata: metadataJson(snapshot.metadata),
-      text: snapshot.text,
-      tabs: snapshot.tabs,
-      ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
-    })
+    output(
+      itemOf({
+        metadata: metadataJson(snapshot.metadata),
+        text: snapshot.text,
+        tabs: snapshot.tabs,
+        ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
+      }),
+    )
   })
   examples(
     documents
@@ -415,7 +444,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           })
         throw error
       }
-      output({ id, path: args.out, format: "markdown" })
+      output(itemOf({ id, path: args.out, format: "markdown" }))
     })
   examples(
     program
@@ -429,13 +458,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--exact", "match the words exactly: no word forms, no meaning")
     .action(async (query: string, { page, ...args }: { limit: number; page: number; exact?: boolean }) =>
       output(
-        await withIndex((index) =>
-          index.search(activeProfile(env, selected()).principal, query, {
-            ...args,
-            offset: (page - 1) * args.limit,
-            exact: args.exact ?? false,
-            ...(pictureSearch(env, selected()) ? { pictures: true } : {}),
-          }),
+        itemOf(
+          await withIndex((index) =>
+            index.search(activeProfile(env, selected()).principal, query, {
+              ...args,
+              offset: (page - 1) * args.limit,
+              exact: args.exact ?? false,
+              ...(pictureSearch(env, selected()) ? { pictures: true } : {}),
+            }),
+          ),
         ),
       ),
     )
@@ -488,14 +519,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         throw new CliError("permission_error", "this operation needs Google; --offline was requested", {
           reason: "offline.refused",
         })
-      if (flags.dryRun)
-        return {
-          dry_run: true,
-          method,
-          mutates: descriptor.mutates,
-          parameters: params,
-          body_provided: body !== undefined,
-        }
+      if (flags.dryRun) {
+        output(
+          itemOf({
+            dry_run: true,
+            method,
+            mutates: descriptor.mutates,
+            parameters: params,
+            body_provided: body !== undefined,
+          }),
+        )
+        throw new Preview()
+      }
       const act = async () => {
         try {
           if (options.api) return await options.api.call(method, params, body)
@@ -512,7 +547,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   const config = program.command("config").description("read and change settings; credentials are kept apart")
   examples(config.command("show").description("show the defaults and every profile's settings"), [
     "drive personal config show",
-  ]).action(() => output(readConfig(env)))
+  ]).action(() => output(itemOf(readConfig(env))))
   examples(config.command("set").description("set one setting of this profile, or of the defaults"), [
     "drive personal config set read_only true",
     `drive personal config set permissions.files '"readonly"' --defaults`,
@@ -558,7 +593,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         Object.assign(target.models[parts[0]] as object, { [parts[1]]: parsed })
       } else throw new CliError("validation_error", "unknown setting path")
       writeConfig(env, value)
-      output({ key, updated: true, scope: args.defaults ? "defaults" : selected() })
+      output(itemOf({ key, updated: true, scope: args.defaults ? "defaults" : selected() }))
     })
   examples(program.command("complete").description("print a shell completion script, or complete words"), [
     "drive complete zsh",
@@ -605,7 +640,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ...(args.baseUrl ? { base_url: args.baseUrl } : {}),
       }
       writeConfig(env, config)
-      output({ purpose: args.purpose, configured: true })
+      output(itemOf({ purpose: args.purpose, configured: true }))
     })
   const mcp = examples(program.command("mcp").description("serve drive's commands to an agent over MCP on stdio"), [
     "drive personal mcp",
@@ -616,15 +651,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .action(async (args: { tools?: boolean }) => {
       const { mcpTools, serveMcp } = await import("./mcp.js")
       if (args.tools)
-        output({
-          items: mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(
-            ({ name, schema, command }) => ({
-              name,
-              input_schema: schema,
-              effects: command.effects,
-            }),
+        output(
+          allOf(
+            mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(
+              ({ name, schema, command }) => ({ name, input_schema: schema, effects: command.effects }),
+            ),
           ),
-        })
+        )
       else
         await serveMcp(
           createProgram,
@@ -638,7 +671,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     "drive commands files copy --json",
   ])
     .argument("[path...]", "only this command or group, as words")
-    .action((path: string[]) => output(commandsDocument(program, path)))
+    .action((path: string[]) => print((renderer) => renderer.result(commandsDocument(program, path))))
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
@@ -697,7 +730,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       state: "beta",
     })
   }
-  class Preview extends Error {}
   const pathOf = (command: Command) => {
     const path: string[] = []
     for (let at: Command | null = command; at?.parent; at = at.parent) path.unshift(at.name())
@@ -755,7 +787,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       !NETWORK_GROUPS.includes(path[0] ?? "") &&
       !["documents get", "documents create", "documents update", "documents history"].includes(words)
     ) {
-      output({ dry_run: true, command: words, effects: metadata.effects })
+      output(itemOf({ dry_run: true, command: words, effects: metadata.effects }))
       throw new Preview()
     }
     if (words === "session start") refuseCommandName(selected(), commandWords(program), "drive")
