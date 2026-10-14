@@ -7,12 +7,11 @@ import {
   type KeyringStore,
   processStreams,
   type Streams,
-  visibleControls,
 } from "@wirecat/cli-base"
 import { annotate, describeOptions, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { writes } from "@wirecat/cli-base/standards"
-import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-core/cli"
+import { commandWords, jsonlRecords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-core/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./catalog-commands.js"
@@ -82,7 +81,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
     .option("--json", "print machine-readable JSON")
     .option("--jsonl", "print machine-readable JSON lines")
-    .option("--agent-json", "show control and direction characters visibly in machine output")
     .option("--quiet", "suppress optional diagnostics")
     .option("--debug", "on failure, show the full error record: cause and stack")
     .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
@@ -135,29 +133,21 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ...program.opts(),
     allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
   })
-  const safeForAgent = (value: unknown): unknown => {
-    if (typeof value === "string") return visibleControls(value)
-    if (Array.isArray(value)) return value.map(safeForAgent)
-    if (value && typeof value === "object")
-      return Object.fromEntries(
-        Object.entries(value).map(([key, field]) => [visibleControls(key), safeForAgent(field)]),
-      )
-    return value
-  }
   const output = (value: unknown) => {
-    const result =
-      currentAction?.name() === "commands" ? value : answerOf(value, { startedAt, limit: currentAction?.opts().limit })
+    const answer =
+      currentAction?.name() === "commands"
+        ? undefined
+        : answerOf(value, { startedAt, limit: currentAction?.opts().limit, page: currentAction?.opts().page })
     const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
-    createRenderer({
-      format: program.opts().jsonl
-        ? "jsonl"
-        : program.opts().json || program.opts().agentJson || !process.stdout.isTTY
-          ? "json"
-          : "pretty",
+    const renderer = createRenderer({
+      format: program.opts().jsonl ? "jsonl" : program.opts().json || !process.stdout.isTTY ? "json" : "pretty",
       color: false,
       streams: { ...streams, data: (text) => buffer.data(text) },
       quiet: program.opts().quiet === true,
-    }).result(program.opts().agentJson ? safeForAgent(result) : result)
+    })
+    if (!answer) renderer.result(value)
+    else if (program.opts().jsonl) for (const record of jsonlRecords(answer)) renderer.result(record)
+    else renderer.result(answer)
     buffer.flush((text) => streams.data(text))
   }
   const source = async () => {
@@ -279,7 +269,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     profile.roots = profile.roots.filter((root) => root !== id)
     config.profiles[name] = profile
     writeConfig(env, config)
-    output({ id, removed: true, next: `run drive ${name} sync to reconcile cached sources` })
+    output({ id, removed: true })
   })
   examples(
     program
@@ -409,13 +399,14 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     ["drive personal search budget", `drive personal search "quarterly plan" --exact --limit 5`],
   )
     .option("--limit <n>", "how many results to return", positive, 20)
-    .option("--offset <n>", "how many results to skip", offset, 0)
+    .option("--page <n>", "which page to return", positive, 1)
     .option("--exact", "match the words exactly: no word forms, no meaning")
-    .action(async (query: string, args: { limit: number; offset: number; exact?: boolean }) =>
+    .action(async (query: string, { page, ...args }: { limit: number; page: number; exact?: boolean }) =>
       output(
         await withIndex((index) =>
           index.search(activeProfile(env, selected()).principal, query, {
             ...args,
+            offset: (page - 1) * args.limit,
             exact: args.exact ?? false,
             ...(pictureSearch(env, selected()) ? { pictures: true } : {}),
           }),
@@ -427,7 +418,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     document: imported,
     output,
     positive,
-    offset,
     complete: () => options.complete ?? memoryModel(env, selected(), activeSignal),
     run: async (input, fn) => {
       const lock = await lockProfile(env, selected())

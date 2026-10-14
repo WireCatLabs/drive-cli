@@ -1846,7 +1846,7 @@
         "limit": {
           "type": "string"
         },
-        "offset": {
+        "page": {
           "type": "string"
         },
         "search": {
@@ -2011,7 +2011,7 @@
         "limit": {
           "type": "string"
         },
-        "offset": {
+        "page": {
           "type": "string"
         },
         "query": {

@@ -28,6 +28,13 @@ describe("failure handler", () => {
     expect(text).not.toContain("secret-value")
   })
 
+  it("calls a transient failure safe to retry only for a command that writes nothing", () => {
+    const unavailable = new CliError("provider_unavailable", "Google did not answer")
+    const retryOf = (args: string[]) => JSON.parse(report(unavailable, args).text).error.retry
+    expect(retryOf(["default", "documents", "get", "DOC", "--json"])).toEqual({ safe: true })
+    expect(retryOf(["default", "files", "copy", "DOC", "--json"])).toEqual({ safe: false })
+  })
+
   it("prints the whole record after the object under --debug", () => {
     const { text } = report(new Error("boom"), ["default", "status", "--json", "--debug"])
     const [object, record] = text

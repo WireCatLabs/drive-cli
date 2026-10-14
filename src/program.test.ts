@@ -9,6 +9,13 @@ import { readState } from "./state.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
+  it("streams a list as item lines and an end line under --jsonl", async () => {
+    const streams = captureStreams()
+    await createProgram({ env: fixture().env, streams }).parseAsync(["api", "list", "--jsonl"], { from: "user" })
+    const lines = streams.stdout.map((line) => JSON.parse(line))
+    expect(lines[0]).toMatchObject({ type: "item", data: { name: expect.any(String) } })
+    expect(lines.at(-1)).toMatchObject({ type: "end", complete: true, page: { mode: "page", has_more: false } })
+  })
   it("lists and exports imported snapshots without overwriting existing files", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source, index: async () => f.index }

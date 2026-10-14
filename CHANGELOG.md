@@ -5,8 +5,14 @@
 - **Commands say what they touch (breaking).** `commands --json` (contract 3) replaces `mutates`, `local` and
   `operation_id` with `effects: {remote, local}` (`none`, `read` or `write`) and `api_operation`. `--dry-run` previews
   and `mcp --tools` show `effects` too. MCP tools that read only local data no longer claim to reach the network.
-- **Answers say whether they are complete.** `meta.complete` is on every answer; a list's `page` names its `mode`
-  (`cursor`) and continues with `next_cursor`. Errors carry `retry: {safe}`.
+- **Errors say whether a retry is safe.** `retry: {safe}` is judged from the failed command's effects: a transient
+  failure of `documents get` is safe to retry, the same failure of `files copy` is not.
+- **`search` and `notes list` page with `--page` (breaking).** `--offset` is gone; a list's `page` says
+  `mode: "page"` and gives `next_page` when there is more. Every answer carries `meta.complete`. `--jsonl` prints one
+  `{"type":"item","data":…}` line per item, then a `{"type":"end",…}` line.
+- **`--agent-json` is gone (breaking).** MCP answers always show control and direction characters visibly; `--json`
+  keeps text as it is.
+- `folders remove` no longer returns a `next` sentence; its help says the next sync drops the folder's documents.
 - Adopt cli-core 0.272.0 and cli-base 0.28.1.
 
 ## 0.5.0 — 2026-10-14

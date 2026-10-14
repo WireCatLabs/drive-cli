@@ -58,12 +58,12 @@ coverage, not that Google Drive has no such document. Check [sync troubleshootin
 
 ## Check what was searched
 
-`--limit` bounds returned hits and `--offset` skips that many results; neither expands imported
+`--limit` bounds returned hits and `--page` picks which page of them; neither expands imported
 coverage. Search does not fetch files from Google. For a recent answer, run `drive personal sync`
 and inspect `drive personal status --json` first. For a cached answer without network, use:
 
 ```sh
-drive personal --offline search 'budget' --exact --limit 10 --offset 0 --json
+drive personal --offline search 'budget' --exact --limit 10 --page 1 --json
 drive personal --offline documents show DOC_ID --json
 ```
 

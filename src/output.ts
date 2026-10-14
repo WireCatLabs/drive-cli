@@ -38,7 +38,7 @@ export const snakeKeys = (value: unknown, record = false): unknown => {
 /** One invocation's standard envelope, shared by CLI output and the MCP executor. */
 export const answerOf = (
   value: unknown,
-  context: { startedAt: number; runId?: string; limit?: number },
+  context: { startedAt: number; runId?: string; limit?: number; page?: number },
 ): ItemEnvelope<unknown> | ListEnvelope<unknown> => {
   const data = snakeKeys(value)
   const meta: Meta = {
@@ -62,12 +62,10 @@ export const answerOf = (
   return {
     items,
     page: {
-      mode: "cursor",
+      mode: "page",
       limit: context.limit ?? Math.max(1, items.length),
       has_more: hasMore,
-      ...("next_offset" in list && list.next_offset !== null && list.next_offset !== undefined
-        ? { next_cursor: String(list.next_offset) }
-        : {}),
+      ...(hasMore ? { next_page: (context.page ?? 1) + 1 } : {}),
     },
     meta,
   }

@@ -1,6 +1,6 @@
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
-import { CliError, captureStreams } from "@wirecat/cli-base"
+import { CliError, captureStreams, visibleControls } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
 import { levelFor } from "@wirecat/cli-core/sends"
@@ -111,6 +111,14 @@ export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) =
   }
   return args
 }
+// Retrieved text reaches an agent; hidden control and direction characters are shown, not obeyed.
+const visible = (value: unknown): unknown => {
+  if (typeof value === "string") return visibleControls(value)
+  if (Array.isArray(value)) return value.map(visible)
+  if (value && typeof value === "object")
+    return Object.fromEntries(Object.entries(value).map(([key, field]) => [visibleControls(key), visible(field)]))
+  return value
+}
 export const invokeTool = async (
   tool: ToolDefinition,
   input: Record<string, unknown>,
@@ -121,7 +129,7 @@ export const invokeTool = async (
   const startedAt = Date.now()
   const env = options.env ?? process.env
   const streams = captureStreams()
-  const startup: string[] = ["--profile", profile, "--json", "--agent-json"]
+  const startup: string[] = ["--profile", profile, "--json"]
   if (flags.readOnly) startup.push("--read-only")
   if (flags.offline) startup.push("--offline")
   if (flags.dryRun) startup.push("--dry-run")
@@ -149,10 +157,10 @@ export const invokeTool = async (
           throw new CliError("permission_error", "MCP does not read files or stdin; supply JSON body text")
         },
       }).parseAsync([...startup, ...toolArgv(tool, checked)], { from: "user" })
-      const value = JSON.parse(streams.stdout.join("")) as Record<string, unknown>
+      const value = visible(JSON.parse(streams.stdout.join(""))) as Record<string, unknown>
       result = { content: [{ type: "text", text: JSON.stringify(value) }], structuredContent: value }
     } catch (error) {
-      result = mcpFailure(error)
+      result = mcpFailure(error, tool.command.effects)
     }
     const failure = result.structuredContent as { error?: { code?: string }; missing?: unknown[] } | undefined
     try {

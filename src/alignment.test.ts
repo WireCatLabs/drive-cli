@@ -71,12 +71,17 @@ describe("shared CLI policy and execution", () => {
   it("buffers output atomically, sanitizes agent text and supports dotted shared settings", async () => {
     const f = fixture()
     const request = vi.fn(async () => ({ text: "budget\u202eunsafe" }))
-    const streams = captureStreams()
-    await createProgram({ env: f.env, api: { call: request }, streams }).parseAsync(
-      ["default", "--agent-json", "files", "get", "doc-a"],
-      { from: "user" },
+    const tool = mcpTools({ env: f.env, api: { call: request } }, "default").find(
+      (candidate) => candidate.name === "drive_files_get",
     )
-    expect(streams.stdout.join("")).not.toContain("\u202e")
+    if (!tool) throw new Error("drive_files_get is not offered")
+    const answer = await invokeTool(tool, { file: "doc-a" }, { env: f.env, api: { call: request } }, "default")
+    expect(JSON.stringify(answer.structuredContent)).not.toContain("\u202e")
+    await expect(
+      createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["default", "--agent-json", "status"], {
+        from: "user",
+      }),
+    ).rejects.toThrow()
     const bounded = captureStreams()
     await expect(
       createProgram({ env: f.env, api: { call: request }, streams: bounded }).parseAsync(

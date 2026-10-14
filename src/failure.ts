@@ -7,7 +7,8 @@ import {
   renderError,
   type Streams,
 } from "@wirecat/cli-base"
-import { defineReasons, type ErrorReason } from "@wirecat/cli-base/standards"
+import { metaOf } from "@wirecat/cli-base/commands"
+import { defineReasons, type Effects, type ErrorReason } from "@wirecat/cli-base/standards"
 import { failureContext } from "@wirecat/cli-core"
 import { type Command, CommanderError } from "commander"
 import { VERSION } from "./version.js"
@@ -66,12 +67,21 @@ export const REASONS: ErrorReason[] = defineReasons(
 const recognisable = (error: unknown, invalidArguments: string): unknown =>
   error instanceof CommanderError ? new CliError("validation_error", invalidArguments) : error
 
-export const errorObject = (error: unknown, invalidArguments = "invalid command arguments; use drive --help") =>
-  errorObjectOf(recognisable(error, invalidArguments), failureContext({ reasons: REASONS }))
+const contextOf = (effects: Effects | undefined) => ({
+  ...failureContext({ reasons: REASONS }),
+  ...(effects ? { effects } : {}),
+})
 
-export const mcpFailure = (error: unknown) => mcpErrorResult(errorObject(error, "invalid tool arguments"))
+export const errorObject = (
+  error: unknown,
+  invalidArguments = "invalid command arguments; use drive --help",
+  effects?: Effects,
+) => errorObjectOf(recognisable(error, invalidArguments), contextOf(effects))
 
-const MACHINE_FLAGS = new Set(["--json", "--jsonl", "--agent-json"])
+export const mcpFailure = (error: unknown, effects?: Effects) =>
+  mcpErrorResult(errorObject(error, "invalid tool arguments", effects))
+
+const MACHINE_FLAGS = new Set(["--json", "--jsonl"])
 
 const optionsOf = (args: readonly string[]) => {
   const end = args.indexOf("--")
@@ -84,7 +94,7 @@ export const interactiveOf = (args: readonly string[], tty: boolean) =>
 
 const commandOf = (program: Command | undefined, args: readonly string[]) => {
   const path: string[] = []
-  if (!program) return "drive"
+  if (!program) return { name: "drive", effects: undefined }
   let at: Command = program
   for (const arg of args) {
     const child: Command | undefined = at.commands.find((command) => command.name() === arg)
@@ -92,7 +102,7 @@ const commandOf = (program: Command | undefined, args: readonly string[]) => {
     path.push(child.name())
     at = child
   }
-  return path.join(" ") || "drive"
+  return { name: path.join(" ") || "drive", effects: path.length ? metaOf(at).effects : undefined }
 }
 
 export interface ReportOptions {
@@ -107,10 +117,11 @@ export interface ReportOptions {
 /** One error object on stderr, `✗ message` at a terminal; returns the exit code. */
 export const reportFailure = (error: unknown, { args, program, streams, tty }: ReportOptions): number => {
   const failure = recognisable(error, "invalid command arguments; use drive --help")
-  const object = errorObjectOf(failure, failureContext({ reasons: REASONS }))
   const flags = optionsOf(args)
+  const command = commandOf(program, flags)
+  const object = errorObjectOf(failure, contextOf(command.effects))
   const record = flags.includes("--debug")
-    ? errorRecordOf(failure, object, { command: commandOf(program, flags), service: "drive", version: VERSION })
+    ? errorRecordOf(failure, object, { command: command.name, service: "drive", version: VERSION })
     : undefined
   const interactive = interactiveOf(args, tty)
   streams.diagnostic(renderError(object, { cli: "drive", interactive, ...(record ? { record } : {}) }))
