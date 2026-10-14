@@ -50,6 +50,10 @@
   `notes list` add a `page.next` step when more remain. In a terminal, a command prints its item or items, not the
   whole envelope, and a next-page hint goes to stderr.
 
+### Fixed
+
+- **JSON selection uses the shared envelope projector.** Nested arrays follow the same selection and metadata-preservation rules as the other CLIs.
+
 ## 0.7.0 — 2026-10-14
 
 - Command effects distinguish Google-only reads from cached reads. Handwritten Google reads now
