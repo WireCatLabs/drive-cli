@@ -35,6 +35,7 @@ Commands:
   documents                 read imported documents and Google Docs
   search [options] <query>  search imported documents by words, and by meaning
                             when indexed
+  catalog                   browse stored Drive files and folders offline
   tags                      label imported documents; labels survive a sync
   relationships             connect a document to people, projects, notes and
                             other references

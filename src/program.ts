@@ -14,6 +14,7 @@ import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
 import { commandWords, liftProfile, parseDuration, refuseCommandName } from "@wirecat/cli-core/cli"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
+import { installCatalogCommands } from "./catalog-commands.js"
 import { activeProfile, application, checkTextLimit, fileId, profileName, readConfig, writeConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
@@ -393,6 +394,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ),
       ),
     )
+  installCatalogCommands(program, { env, selected, output, positive, offset, withIndex })
   installKnowledgeCommands(program, {
     document: imported,
     output,
@@ -402,11 +404,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     run: async (input, fn) => {
       const lock = await lockProfile(env, selected())
       try {
-        const { ref } = imported(input)
         return await withIndex(async (index) => {
           lock.assertHeld()
           if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
-          const result = await fn(index.knowledge, activeProfile(env, selected()).principal, ref)
+          const principal = activeProfile(env, selected()).principal
+          const found = await index.catalog?.get(principal, fileId(input))
+          const ref = found?.ref ?? imported(input).ref
+          const result = await fn(index.knowledge, principal, ref)
           lock.assertHeld()
           return result
         })
@@ -622,7 +626,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     annotate(command, {
       origin: metaOf(command).origin ?? "handwritten",
       mutates: metaOf(command).mutates ?? (localWrites.includes(name) || remoteWrites.includes(name)),
-      local: localWrites.includes(name) && name !== "session start" && name !== "memories extract",
+      local:
+        metaOf(command).local ??
+        (localWrites.includes(name) && name !== "session start" && name !== "memories extract"),
       state: "beta",
     })
   }

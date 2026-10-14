@@ -23,6 +23,7 @@ const File = v.object({
   driveId: v.optional(v.string()),
   owners: v.optional(v.array(User)),
   lastModifiedBy: v.optional(User),
+  providerMetadata: v.optional(v.unknown()),
 })
 const Skip = v.object({
   id: ID,

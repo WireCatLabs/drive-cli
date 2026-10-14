@@ -8,7 +8,7 @@ connect, what to keep offline and which task to try first.
 ## What you can do
 
 - Find a decision across imported documents and return its passage, title and original Google link.
-- Read cached text and source metadata without opening Drive or using the network.
+- Read cached text and file metadata, navigate folder trees and find unreadable files without opening Drive.
 - Keep selected folders current through repeatable sync, including documents in subfolders.
 - Add local tags, notes and source-backed memories that survive renames and ordinary updates.
 - Connect documents to observed Google editors and existing people, projects or other sources.
@@ -42,19 +42,19 @@ Managed JSON and Markdown snapshots retain the source material for cached readin
 | Google ID, title, type, original link, parents, timestamps and version when available | Identify the source and inspect the metadata from the last sync |
 | Owners and last editor exposed by Google | See observed contributors and their saved identity links |
 | Local tags, notes, person/project links and memories | Organize and recall context across repeated work |
-| Selected roots, discovered folder ancestry, checkpoints and pending work | Keep sync scoped and resume interrupted imports |
+| Google folders and parent relationships in the local database | Navigate a cached tree, list children, tag folders and attach notes |
+| Selected roots, checkpoints and pending work | Keep sync scoped and resume interrupted imports |
 
-This is a copy of the selected, supported sources at the last sync, rather than a complete
-backup of every Google API field. Comments, revision lists, permissions and activity history
-are live reads; they are not automatically included in the offline index. Metadata is available
-as structured output, while document search targets indexed text and local labels. You can also
-[save full available file metadata as JSON](recipes.md#save-full-available-metadata-for-offline-use)
-for another tool to read offline.
+The catalog retains files and folders in the selected scope, including formats whose contents
+cannot be read. `catalog search` finds names, descriptions, types and observed owners/editors;
+`search` finds indexed content and local labels. A result's `content` says whether it has only
+metadata, indexed text or an unreadable-content reason. Folder tags and notes stay local.
 
-Folder IDs and parent relationships are retained in sync state. The database currently groups
-imported documents by Google account; it does not expose a navigable Google folder tree.
-Live folder listings show immediate children, and imports traverse descendants. See
-[folder scope and storage](usage.md).
+Sync requests every file-metadata field Google makes available and retains that response in
+the database. Older cached sources keep their previously saved subset until refreshed. This
+remains a copy from the last sync: separate permission lists, comments, revision history and
+activity events are live reads and are not automatically cached.
+See [offline folder browsing](usage.md#browse-and-organize-the-local-catalog).
 
 ## Ask for your first result
 

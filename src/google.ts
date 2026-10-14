@@ -7,8 +7,7 @@ import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
 import { DOC, type FileMetadata, type GoogleSource, type GoogleUser, SHEET, type TabText } from "./model.js"
 
-const USER_FIELDS = "permissionId,displayName,emailAddress"
-const FIELDS = `id,name,mimeType,parents,version,modifiedTime,createdTime,description,driveId,trashed,webViewLink,size,capabilities(canDownload),owners(${USER_FIELDS}),lastModifyingUser(${USER_FIELDS})`
+const FIELDS = "*"
 export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
   ...(user.permissionId ? { id: user.permissionId } : {}),
   ...(user.emailAddress ? { email: user.emailAddress } : {}),
@@ -28,6 +27,7 @@ export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
   if (!file.id || !file.mimeType || file.name === undefined || file.name === null)
     throw new CliError("invalid_response", "Google returned incomplete file metadata")
   return {
+    providerMetadata: file,
     id: file.id,
     name: file.name,
     mime: file.mimeType,

@@ -14,6 +14,12 @@ import { VERSION } from "./version.js"
 type Entry = [reason: string, code: ErrorReason["code"], message: string, details?: string[]]
 
 const ENTRIES: Entry[] = [
+  ["catalog.unavailable", "configuration_error", "the index has no shared catalog adapter"],
+  ["catalog.not-found", "not_found", "the file or folder is not in the local catalog; run catalog import or sync"],
+  ["catalog.depth-invalid", "validation_error", "tree depth must be between 0 and 50"],
+  ["catalog.cycle", "invalid_response", "local folder ancestry contains a cycle"],
+  ["catalog.tree-limit", "validation_error", "tree output exceeds 10000 nodes; choose a smaller folder"],
+  ["catalog.scope-limit", "validation_error", "catalog scope exceeds 10000 entries; choose narrower roots"],
   ["api.unknown-method", "validation_error", "the Google method is not known; run drive api list"],
   ["body.unreadable", "validation_error", "the request body file could not be read"],
   ["delete.not-allowed", "permission_error", "this method permanently deletes Google data; pass --allow-delete"],

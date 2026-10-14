@@ -80,12 +80,12 @@ drive personal memories extract DOC_ID --scope work --tab TAB_ID --save
 Scopes are explicitly `personal` or `work`; memory kinds are summary, digest or preference. What happened —
 a fact, statement, question, decision or promise — is a fact: `facts add` records yours as accepted, and
 `memories extract --save` saves the facts it finds as proposed, next to the memories. Old memories of kind
-fact became facts when the shared store upgraded (cli-messaging 0.247.0).
+fact became facts when the shared store upgraded (cli-core 0.247.0).
 `--supersedes` replaces an earlier memory about this document; the earlier one becomes superseded.
 The shared store owns memory persistence, evidence references and search. Memory search filters
 the shared search result to this document and reports when its bounded candidate limit is reached.
 
-Extraction uses cli-messaging's public modelGateway, AI settings schema and provider adapters.
+Extraction uses cli-core's public modelGateway, AI settings schema and provider adapters.
 Configure a provider/model once or use the standard `DRIVE_MODELS_MEMORIES_PROVIDER`,
 `DRIVE_MODELS_MEMORIES_MODEL` and optional `DRIVE_MODELS_MEMORIES_BASE_URL` environment settings.
 Shared defaults (`defaults.models.default`) apply when purpose-specific settings are absent.

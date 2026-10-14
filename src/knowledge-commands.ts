@@ -17,7 +17,7 @@ export interface KnowledgeCommands {
 }
 export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCommands) => {
   const { run, output, positive, offset } = helpers
-  const documentArgument = "document id or Google Docs URL"
+  const documentArgument = "Google file or folder id or URL in the local catalog"
   const scopes = ["personal", "work"]
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   examples(

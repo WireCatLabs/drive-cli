@@ -1,6 +1,8 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
+import { walkQuery } from "@wirecat/cli-base/query"
 import type { MessageStore, Note } from "@wirecat/cli-core/store"
+import { catalogInput } from "./catalog.js"
 import { paths } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
@@ -46,6 +48,45 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
     }
   }
   return {
+    catalog: {
+      import: async (principal, files) => {
+        if (files.length > 10000)
+          throw new CliError("validation_error", "catalog scope exceeds 10000 entries", {
+            reason: "catalog.scope-limit",
+          })
+        const selected = await folder(principal, true)
+        if (!selected) throw new CliError("configuration_error", "catalog collection could not be registered")
+        for (let start = 0; start < files.length; start += 200) {
+          await store.catalog.upsert(selected.id, files.slice(start, start + 200).map(catalogInput))
+        }
+        for (const file of files) {
+          const entry = await store.catalog.get(selected.id, `${file.id}.md`)
+          if (entry) await saveContributors(store, principal, file, entry.ref.slice("document:".length))
+        }
+        const retired = await store.catalog.reconcile(
+          selected.id,
+          files.map((file) => `${file.id}.md`),
+        )
+        documents.delete(principal)
+        return { entries: files.length, retired }
+      },
+      get: async (principal, id) => {
+        const selected = await folder(principal, false)
+        return selected ? store.catalog.get(selected.id, `${id}.md`) : undefined
+      },
+      list: async (principal, query = {}) => {
+        const selected = await folder(principal, false)
+        const ast = query.ast ? structuredClone(query.ast) : undefined
+        if (ast) for (const node of walkQuery(ast.root)) if (node.field === "parent") node.value = `${node.value}.md`
+        return selected
+          ? store.catalog.list(selected.id, {
+              ...query,
+              ...(ast ? { ast } : {}),
+              ...(query.parent === undefined ? {} : { parent: `${query.parent}.md` }),
+            })
+          : { items: [], hasMore: false }
+      },
+    },
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),
     save: async (principal, content, hash) => {
       const selected = await folder(principal, true)
@@ -74,6 +115,7 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
           ...(content.notRead ? { notRead: content.notRead } : {}),
         },
       })
+      await store.catalog.upsert(selected.id, [catalogInput(content.metadata)])
       await saveContributors(store, principal, content.metadata, note.id)
       notes.set(path, note)
       return note.ref
@@ -84,7 +126,9 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
         const notes = await cached(principal)
         const path = `${id}.md`
         const note = notes.get(path)
-        if (note) await stale(note.ref)
+        const retired = note ? undefined : await store.catalog.get(selected.id, path, true)
+        const ref = note?.ref ?? retired?.ref
+        if (ref) await stale(ref)
         await store.notes.deleteFileNotes(selected.id, [path])
         notes.delete(path)
       }
@@ -113,11 +157,21 @@ export const indexOver = (store: MessageStore, env: NodeJS.ProcessEnv): Document
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)
             const metadata = note.frontMatter as { sourceUrl?: unknown; tabs?: unknown; notRead?: unknown } | null
+            const entry = note.path ? await store.catalog.get(selected.id, note.path) : undefined
             return {
               ...hit,
               source_url: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
               tabs: Array.isArray(metadata?.tabs) ? metadata.tabs : [],
-              not_read: typeof metadata?.notRead === "string" ? metadata.notRead : null,
+              kind: entry?.kind ?? "file",
+              content: entry?.content ?? "indexed",
+              not_read:
+                typeof metadata?.notRead === "string"
+                  ? metadata.notRead
+                  : entry?.content === "metadata"
+                    ? entry.kind === "folder"
+                      ? "folder metadata only"
+                      : "content is not indexed yet"
+                    : null,
             }
           }),
         ),

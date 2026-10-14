@@ -12,6 +12,7 @@ or separate embedding engine exists here.
 | config.ts, state.ts | selected folders, validated checkpoints and snapshots |
 | sync.ts | folder graph, durable jobs, retries and source removal |
 | store.ts | shared public store/services adapter and account-scoped search |
+| catalog.ts, catalog-commands.ts, scope.ts | metadata mapping, offline navigation and selected ancestry |
 | program.ts | commands, dependency injection and shared registry |
 | google-api.ts, remote-commands.ts | generated operation contracts, SDK requests and remote actions |
 | api-contract.ts, generated/, schema.ts | shared generated validators, metadata and agent-visible schemas |
@@ -70,3 +71,12 @@ and legacy raw calls. Local policy precedes credentials, provider requests and l
 OAuth remains an independent gate. MCP reconstructs an invocation of this CLI rather than
 implementing another provider executor. Generation/docs/schema snapshots and real prior-store
 upgrade contracts keep the shared seams reviewable. See [CLI alignment](CLI_ALIGNMENT.md).
+
+The offline catalog uses `store.catalog` and the same account collection and file external IDs as
+indexed documents. Google folders are document entities with parent keys, distinct from notes
+collections. Sync backfills catalog metadata before content jobs; `catalog import` does so from a
+validated checkpoint without Google. Normalization retains the raw SDK File data response and
+requests all fields; no OAuth response or request headers are stored. Old checkpoints retain their
+available summary. Shared metadata writes preserve content, hashes and revisions, and readers retain
+the catalog namespace. Folder tags/notes/relationships use the existing knowledge adapter; tree nodes
+are compact and bounded, while `catalog show` returns the stored metadata.

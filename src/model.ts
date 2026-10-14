@@ -21,6 +21,7 @@ export interface FileMetadata {
   description?: string
   driveId?: string
   owners?: GoogleUser[]
+  providerMetadata?: unknown
   lastModifiedBy?: GoogleUser
 }
 /** What drive prints for a file: the stored metadata under snake_case keys. */
@@ -30,9 +31,11 @@ export const metadataJson = ({
   createdAt,
   driveId,
   lastModifiedBy,
+  providerMetadata,
   ...rest
 }: FileMetadata) => ({
   ...rest,
+  ...(providerMetadata === undefined ? {} : { provider_metadata: providerMetadata }),
   ...(modifiedAt === undefined ? {} : { modified_at: modifiedAt }),
   can_download: canDownload,
   ...(createdAt === undefined ? {} : { created_at: createdAt }),
@@ -108,6 +111,7 @@ export interface SyncState {
   lastSync?: string
 }
 export interface DocumentIndex {
+  catalog?: import("./catalog.js").SourceCatalog
   knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
   remove(principal: string, id: string): Promise<void>

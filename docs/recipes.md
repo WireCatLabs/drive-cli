@@ -13,6 +13,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | --- | --- | --- | --- |
 | Import or refresh a project | Yes | Index and snapshots | No |
 | Prepare a brief from the saved copy | No | No | No |
+| Browse and organize the cached folder tree | No | Tags/notes, when requested | No |
 | Add follow-up tags, notes or links | No | Yes | No |
 | Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--save` or confirmation | No |
 | Inspect comments or history | Yes | No automatic import | No |
@@ -99,9 +100,35 @@ listing. Google roles and policy determine which fields it exposes.
 
 Your agent can read the saved JSON without Google. It is a separate, user-managed snapshot;
 it is not automatically imported into the database or made searchable by `drive search`.
-Normal sync keeps the selected metadata described in [offline reading](usage.md#read-content-and-metadata-offline).
-Permission listings, comments and history remain separate API operations. Refresh or remove
+Sync also stores the available file-metadata response in the searchable local catalog; use
+`catalog show FILE_ID --offline` without creating an extra JSON file. Older cached entries
+retain only the subset originally saved until a rescan. Permission listings, comments and history remain separate API operations. Refresh or remove
 these extra JSON files when you no longer need their saved version.
+
+## Browse and tag folders without Google
+
+```text prompt
+Use drive CLI with profile personal and only local data. Show the imported folder tree,
+find the PDFs last edited by Rin, and show their source links and content availability.
+Tag the folder I choose follow-up and save my memo beside it. Do not download or export files.
+```
+
+```sh
+drive personal catalog import --offline
+drive personal catalog tree --depth 3 --offline --json
+drive personal catalog list 'mime:"application/pdf" AND person:Rin*' --offline --json
+drive personal catalog tags add FOLDER_ID follow-up --offline
+drive personal notes add FOLDER_ID 'Check the final version with Rin' --offline
+drive personal catalog list 'tag:follow-up' --offline --json
+drive personal documents context FOLDER_ID --offline --json
+```
+
+Use `catalog import` to copy an existing cache into the database; regular sync populates it
+for new imports. Replace `FOLDER_ID` with the ID shown in the tree. Confirm the folder's context
+contains your tag and memo. Folder tags apply to that folder, rather than every descendant.
+Metadata-only files remain findable even before their content batch finishes. To read a passage,
+check that its content was indexed and use `documents show`; metadata alone is not evidence of
+what a file says. See [catalog navigation and filters](usage.md#browse-and-organize-the-local-catalog).
 
 ## Keep a follow-up list beside your sources
 
