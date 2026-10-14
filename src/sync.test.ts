@@ -245,7 +245,7 @@ describe("durable source sync", () => {
     const f = fixture()
     const config = readConfig(f.env)
     const profile = config.profiles.default as NonNullable<typeof config.profiles.default>
-    profile.maxTextChars = 1_000
+    profile.max_text_chars = 1_000
     writeConfig(f.env, config)
     const sheet = file("sheet-a", ["root"], SHEET)
     vi.mocked(f.source.children).mockResolvedValue([sheet])
@@ -256,8 +256,8 @@ describe("durable source sync", () => {
     expect(vi.mocked(f.source.content).mock.calls[0]?.[1]).toBe(1_000)
     await sync(f.source, f.index, f.env, "default", 200)
     expect(f.source.content).toHaveBeenCalledTimes(1)
-    delete profile.maxTextChars
-    config.defaults = { maxTextChars: 2_000_000 }
+    delete profile.max_text_chars
+    config.defaults = { max_text_chars: 2_000_000 }
     writeConfig(f.env, config)
     vi.mocked(f.source.content).mockResolvedValue(content(sheet))
     expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
@@ -325,7 +325,7 @@ describe("durable source sync", () => {
       const config = readConfig(f.env)
       const profile = config.profiles.default
       if (!profile) throw new Error("fixture profile missing")
-      profile.pictureSearch = true
+      profile.picture_search = true
       writeConfig(f.env, config)
       vi.mocked(f.source.children).mockResolvedValue([file("photo", ["root"], "image/png")])
       return f
@@ -364,7 +364,7 @@ describe("durable source sync", () => {
       const config = readConfig(f.env)
       const profile = config.profiles.default
       if (!profile) throw new Error("fixture profile missing")
-      profile.pictureSearch = true
+      profile.picture_search = true
       writeConfig(f.env, config)
       expect((await sync(f.source, f.index, f.env, "default", 200)).pictures).toBe(1)
     })

@@ -2653,7 +2653,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | readOnly, maxTextChars, pictureSearch, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | read_only, max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |

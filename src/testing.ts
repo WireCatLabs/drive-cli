@@ -2,6 +2,8 @@ import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { crc32 } from "node:zlib"
+import { itemEnvelopeSchema, listEnvelopeSchema } from "@wirecat/cli-base/standards"
+import * as v from "valibot"
 import { vi } from "vitest"
 import { writeConfig } from "./config.js"
 import { DOC, type DocumentContent, type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource } from "./model.js"
@@ -166,4 +168,11 @@ export const pdf = (text?: string): Buffer => {
     .map((at) => `${String(at).padStart(10, "0")} 00000 n \n`)
     .join("")}trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`
   return Buffer.from(body, "latin1")
+}
+
+/** Verify the public envelope before semantic command tests inspect its payload. */
+export const commandResult = (text: string) => {
+  const data = JSON.parse(text)
+  v.parse(v.union([itemEnvelopeSchema(v.unknown()), listEnvelopeSchema(v.unknown())]), data)
+  return Object.hasOwn(data, "item") ? data.item : data
 }

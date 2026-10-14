@@ -4,13 +4,13 @@ import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 import { createProgram } from "./program.js"
-import { fixture } from "./testing.js"
+import { commandResult, fixture } from "./testing.js"
 
 describe("explicit account selection", () => {
   it("refuses omitted profiles despite legacy defaults or environment, before providers and stores", async () => {
     const f = fixture()
     const config = readConfig(f.env)
-    config.defaultProfile = "default"
+    config.default_profile = "default"
     config.profiles.work = {
       ...{ principal: "synthetic-principal", roots: ["root"], storage: "keyring" as const },
       principal: "other-account",
@@ -57,7 +57,7 @@ describe("explicit account selection", () => {
     ]) {
       const streams = captureStreams()
       await createProgram({ env: f.env, streams }).parseAsync(args, { from: "user" })
-      expect(JSON.parse(streams.stdout.join(""))).toEqual({ items: [{ id: "personal-root" }] })
+      expect(commandResult(streams.stdout.join("")).items).toEqual([{ id: "personal-root" }])
     }
     for (const args of [
       ["default", "--profile", "other", "status"],

@@ -76,3 +76,13 @@ describe("failure handler", () => {
     expect(raised.filter((reason) => !known.has(reason as string))).toEqual([])
   })
 })
+
+it("retains shared Core reasons and their declared details", () => {
+  const failure = new CliError("not_found", "fixture model unavailable", {
+    reason: "model.not-downloaded",
+    model: "fixture-model",
+  })
+  expect(errorObject(failure)).toMatchObject({
+    error: { code: "not_found", reason: "model.not-downloaded", details: { model: "fixture-model" } },
+  })
+})

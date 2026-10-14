@@ -8,6 +8,7 @@ import {
   type Streams,
 } from "@wirecat/cli-base"
 import { defineReasons, type ErrorReason } from "@wirecat/cli-base/standards"
+import { failureContext } from "@wirecat/cli-core"
 import { type Command, CommanderError } from "commander"
 import { VERSION } from "./version.js"
 
@@ -66,7 +67,7 @@ const recognisable = (error: unknown, invalidArguments: string): unknown =>
   error instanceof CommanderError ? new CliError("validation_error", invalidArguments) : error
 
 export const errorObject = (error: unknown, invalidArguments = "invalid command arguments; use drive --help") =>
-  errorObjectOf(recognisable(error, invalidArguments), { reasons: REASONS })
+  errorObjectOf(recognisable(error, invalidArguments), failureContext({ reasons: REASONS }))
 
 export const mcpFailure = (error: unknown) => mcpErrorResult(errorObject(error, "invalid tool arguments"))
 
@@ -106,7 +107,7 @@ export interface ReportOptions {
 /** One error object on stderr, `✗ message` at a terminal; returns the exit code. */
 export const reportFailure = (error: unknown, { args, program, streams, tty }: ReportOptions): number => {
   const failure = recognisable(error, "invalid command arguments; use drive --help")
-  const object = errorObjectOf(failure, { reasons: REASONS })
+  const object = errorObjectOf(failure, failureContext({ reasons: REASONS }))
   const flags = optionsOf(args)
   const record = flags.includes("--debug")
     ? errorRecordOf(failure, object, { command: commandOf(program, flags), service: "drive", version: VERSION })

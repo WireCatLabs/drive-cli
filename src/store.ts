@@ -154,8 +154,8 @@ export const indexOver = (
           by: "words",
           hits: [],
           linked: [],
-          hasMore: false,
-          meaningSkipped: "this Google account has no imported sources",
+          has_more: false,
+          meaning_skipped: "this Google account has no imported sources",
         }
       const { searchNotes } = await import("@wirecat/cli-core/services")
       const result = await searchNotes(store, query, {
@@ -176,11 +176,11 @@ export const indexOver = (
           }
         }),
       )
-      const { pictures: _, picturesSkipped, ...rest } = result
+      const { pictures: _, pictures_skipped, ...rest } = result
       return {
         ...rest,
         ...(result.pictures ? { pictures } : {}),
-        ...(picturesSkipped ? { pictures_skipped: picturesSkipped } : {}),
+        ...(pictures_skipped ? { pictures_skipped } : {}),
         hits: await Promise.all(
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)

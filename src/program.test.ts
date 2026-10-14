@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
 import { readState } from "./state.js"
-import { fixture } from "./testing.js"
+import { commandResult, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
   it("lists and exports imported snapshots without overwriting existing files", async () => {
@@ -38,7 +38,7 @@ describe("standalone command workflow", () => {
       ["default", "folders", "add", "root", "--json"],
       { from: "user" },
     )
-    expect(JSON.parse(streams.stdout.join("")).added).toBe(true)
+    expect(commandResult(streams.stdout.join("")).added).toBe(true)
   })
   it("exposes shared registry metadata without remote access", async () => {
     const f = fixture()
@@ -49,6 +49,7 @@ describe("standalone command workflow", () => {
     await createProgram({ env: f.env, streams: root }).parseAsync(["default", "commands", "--json"], { from: "user" })
     const contract = JSON.parse(root.stdout.join(""))
     expect(contract.cli).toBe("drive")
+    expect(contract.contract).toBe(2)
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
     expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
@@ -94,7 +95,7 @@ describe("standalone command workflow", () => {
       ["default", "sync", "--json"],
       { from: "user" },
     )
-    expect(JSON.parse(streams.stdout.join("")).saved).toBe(2)
+    expect(commandResult(streams.stdout.join("")).saved).toBe(2)
     expect(f.index.close).toHaveBeenCalledTimes(1)
     expect(Object.keys(readState(f.env, "default", "synthetic-principal").documents)).toHaveLength(2)
     const searched = captureStreams()
@@ -108,6 +109,6 @@ describe("standalone command workflow", () => {
     const f = fixture()
     const streams = captureStreams()
     await createProgram({ env: f.env, streams }).parseAsync(["default", "status", "--json"], { from: "user" })
-    expect(JSON.parse(streams.stdout.join("")).remote_checked).toBe(false)
+    expect(commandResult(streams.stdout.join("")).remote_checked).toBe(false)
   })
 })

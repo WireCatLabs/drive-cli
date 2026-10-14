@@ -23,11 +23,13 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "hits": [
-          {
-            "ref": "{{document}}"
-          }
-        ]
+        "item": {
+          "hits": [
+            {
+              "ref": "{{document}}"
+            }
+          ]
+        }
       },
       "allowSensitiveOutput": true
     },
@@ -38,7 +40,9 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "tags": ["budget"]
+        "item": {
+          "tags": ["budget"]
+        }
       }
     },
     {

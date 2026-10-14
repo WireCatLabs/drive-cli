@@ -9,6 +9,12 @@ keep it current and export a document when another tool needs it. Examples use p
 saved source content and metadata from that sync. An **export** is an additional file you request;
 it is not required for search.
 
+Machine-readable command answers use an envelope: `item` for a single or rich result, or `items`
+with `page` for a simple list; `meta` identifies the invocation and its duration. Drive-owned keys
+are snake_case. Provider metadata and user dictionaries keep their original keys. Search passages
+are under `item.hits`, and sync/status counters are under `item`. Help and shell completion remain
+text; `commands --json` uses the shared discovery document with contract `2`.
+
 ## Choose the right operation
 
 | What you want | Command | Where the data comes from | What is saved |
@@ -32,12 +38,12 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`), Excel (`.xlsx`), CSV or TSV | Downloads and reads the text | PDF and `.docx` text, every Excel sheet, CSV rows |
 | Scanned PDF without a text layer | Saved by name with the reason | No OCR; found by its name |
-| Images, with `pictureSearch` on | Saved by name, then downloaded (up to 25 MB, only where Google allows downloads) and given a picture vector; the file is not kept | Found by what it shows, in `pictures`; see [picture search](search.md#search-images-by-what-they-show) |
-| Native Google Slides, presentations, `.xlsm`, images (with `pictureSearch` off), audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
+| Images, with `picture_search` on | Saved by name, then downloaded (up to 25 MB, only where Google allows downloads) and given a picture vector; the file is not kept | Found by what it shows, in `pictures`; see [picture search](search.md#search-images-by-what-they-show) |
+| Native Google Slides, presentations, `.xlsm`, images (with `picture_search` off), audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
 | Drive shortcut | Skipped | Target is not followed through the shortcut |
 | Download restricted by Google | Saved by name with the reason | Metadata access does not guarantee content access; found by its name |
 
-`drive personal config set pictureSearch true` turns picture search on for one profile (see
+`drive personal config set picture_search true` turns picture search on for one profile (see
 [configuration](configuration.md)). The next `drive personal sync` then downloads each image once, and the sync
 output counts them in `pictures`. `pictures_too_large` counts images over 25 MB, which stay name-only.
 `pictures_skipped` says the picture model is not downloaded; the rest of the sync still finishes, and the
@@ -46,7 +52,7 @@ images are picked up by a later sync once the model is there.
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
 Files over 50 MB are skipped before download, and so is text of 2 000 000 characters or more
-(lower it with the [`maxTextChars` setting](configuration.md#saved-settings)). Files skipped by an older version only for their type
+(lower it with the [`max_text_chars` setting](configuration.md#saved-settings)). Files skipped by an older version only for their type
 are read on the next sync.
 A different filename does not convert a binary document into text. Native Docs search includes
 body text, tables and footnotes; headers, footers, comments, images and suggested edits are

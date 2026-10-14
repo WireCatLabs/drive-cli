@@ -19,10 +19,12 @@ import {
   activeProfile,
   application,
   checkTextLimit,
+  configKey,
   fileId,
   pictureSearch,
   profileName,
   readConfig,
+  SETTING_NAMES,
   writeConfig,
 } from "./config.js"
 import { googleError } from "./errors.js"
@@ -32,6 +34,7 @@ import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource, metadataJson, skipJson } from "./model.js"
+import { answerOf } from "./output.js"
 import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram, examples } from "./registry.js"
@@ -66,6 +69,7 @@ const offset = (input: string) => {
   return n
 }
 export const createProgram = (options: ProgramOptions = {}): Command => {
+  const startedAt = Date.now()
   const env = options.env ?? process.env
   const streams = options.streams ?? processStreams
   const program = new Command("drive")
@@ -138,6 +142,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     return value
   }
   const output = (value: unknown) => {
+    const result =
+      currentAction?.name() === "commands" ? value : answerOf(value, { startedAt, limit: currentAction?.opts().limit })
     const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
     createRenderer({
       format: program.opts().jsonl
@@ -148,7 +154,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       color: false,
       streams: { ...streams, data: (text) => buffer.data(text) },
       quiet: program.opts().quiet === true,
-    }).result(program.opts().agentJson ? safeForAgent(value) : value)
+    }).result(program.opts().agentJson ? safeForAgent(result) : result)
     buffer.flush((text) => streams.data(text))
   }
   const source = async () => {
@@ -489,13 +495,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     "drive personal config show",
   ]).action(() => output(readConfig(env)))
   examples(config.command("set").description("set one setting of this profile, or of the defaults"), [
-    "drive personal config set readOnly true",
+    "drive personal config set read_only true",
     `drive personal config set permissions.files '"readonly"' --defaults`,
   ])
-    .argument("<key>", "readOnly, maxTextChars, pictureSearch, permissions.<key> or models.<purpose>.<field>")
+    .argument(
+      "<key>",
+      "read_only, max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>",
+    )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
-    .action((key: string, raw: string, args: { defaults?: boolean }) => {
+    .action((rawKey: string, raw: string, args: { defaults?: boolean }) => {
+      const key = configKey(rawKey)
       const value = readConfig(env)
       if (args.defaults) value.defaults ??= {}
       const target = args.defaults
@@ -504,24 +514,21 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (!args.defaults) value.profiles[selected()] = target as (typeof value.profiles)[string]
       const [head, ...parts] = key.split(".")
       if (
-        !["readOnly", "permissions", "models", "maxTextChars", "pictureSearch"].includes(head ?? "") ||
+        !SETTING_NAMES.has(head ?? "") ||
         parts.some((part) => ["__proto__", "prototype", "constructor"].includes(part))
       )
-        throw new CliError(
-          "validation_error",
-          "config set accepts readOnly, permissions, models, maxTextChars or pictureSearch",
-        )
+        throw new CliError("validation_error", "config set accepts profile settings and shared AI settings")
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {
         throw new CliError("validation_error", "setting value must be JSON")
       }
-      if (head === "pictureSearch") {
+      if (head === "picture_search") {
         if (args.defaults || parts.length || typeof parsed !== "boolean")
-          throw new CliError("validation_error", "pictureSearch is true or false, set per profile")
-        ;(target as { pictureSearch?: boolean }).pictureSearch = parsed
-      } else if (head === "maxTextChars" && !parts.length) target.maxTextChars = checkTextLimit(parsed)
+          throw new CliError("validation_error", "picture_search is true or false, set per profile")
+        ;(target as { picture_search?: boolean }).picture_search = parsed
+      } else if (head === "max_text_chars" && !parts.length) target.max_text_chars = checkTextLimit(parsed)
       else if (!parts.length) Object.assign(target, { [key]: parsed })
       else if (head === "permissions") {
         target.permissions ??= {}
@@ -576,7 +583,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       config.defaults.models[args.purpose] = {
         provider: args.provider,
         ...(args.model ? { model: args.model } : {}),
-        ...(args.baseUrl ? { baseUrl: args.baseUrl } : {}),
+        ...(args.baseUrl ? { base_url: args.baseUrl } : {}),
       }
       writeConfig(env, config)
       output({ purpose: args.purpose, configured: true })

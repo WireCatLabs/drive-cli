@@ -207,7 +207,7 @@ export const sync = async (
     skipped: [],
     errors: [],
     coverage: "selected folders only; unsupported files are reported",
-    ...(profile.pictureSearch ? { pictures: 0 } : {}),
+    ...(profile.picture_search ? { pictures: 0 } : {}),
   }
   let writer: PictureWriter | undefined
   try {
@@ -223,7 +223,7 @@ export const sync = async (
     if (state.pending?.scope !== currentScope || rescan) delete state.pending
     if (rescan) delete state.cursor
     if (!state.pending) {
-      state.pending = await plan(source, state, profile.roots, limit, profile.pictureSearch ?? false, abandoned)
+      state.pending = await plan(source, state, profile.roots, limit, profile.picture_search ?? false, abandoned)
       state.skipped = state.pending.skipped
       saveState(env, name, state)
     }
@@ -244,7 +244,7 @@ export const sync = async (
     let modelMissing = false
     const savePictureOf = async (file: FileMetadata) => {
       const entry = state.documents[file.id] as IndexedDocument
-      if (!profile.pictureSearch || !isPicture(file) || modelMissing) return
+      if (!profile.picture_search || !isPicture(file) || modelMissing) return
       if ((file.size ?? 0) > MAX_PICTURE_BYTES) {
         entry.picture = "too-large"
         result.pictures_too_large = (result.pictures_too_large ?? 0) + 1

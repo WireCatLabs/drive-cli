@@ -9,7 +9,7 @@ import { googleApi } from "./google-api.js"
 import { invokeTool, mcpTools, toolArgv } from "./mcp.js"
 import { createProgram } from "./program.js"
 import { requestSchema } from "./schema.js"
-import { fixture } from "./testing.js"
+import { commandResult, fixture } from "./testing.js"
 
 describe("schema-generated Google contracts", () => {
   it("keeps all 68 operations and validates required IDs, bounds, enums and recursive bodies", () => {
@@ -93,7 +93,7 @@ describe("shared CLI policy and execution", () => {
   it("blocks local and all equivalent remote mutation paths before touching credentials, stores or network", async () => {
     const f = fixture()
     const config = readConfig(f.env)
-    config.defaults = { readOnly: true }
+    config.defaults = { read_only: true }
     writeConfig(f.env, config)
     const request = vi.fn(async () => ({}))
     const index = vi.fn(async () => f.index)
@@ -142,17 +142,17 @@ describe("shared CLI policy and execution", () => {
     }
     await run("config", "set", "permissions", '{"api":"readonly"}', "--defaults")
     await run("config", "set", "maxTextChars", "500000")
-    expect(readConfig(f.env).profiles.default?.maxTextChars).toBe(500000)
+    expect(readConfig(f.env).profiles.default?.max_text_chars).toBe(500000)
     await expect(run("config", "set", "maxTextChars", "3000000")).rejects.toThrow("document readers return at most")
     await expect(run("config", "set", "maxTextChars", "0")).rejects.toThrow("positive whole number")
     await expect(run("config", "set", "maxTextChars", "1.5")).rejects.toThrow("positive whole number")
     expect(readConfig(f.env).defaults?.permissions?.api).toBe("readonly")
     expect(await run("complete", "--", "fil")).toContain("files")
     await expect(run("--offline", "files", "get", "doc-a")).rejects.toThrow("offline")
-    expect(JSON.parse(await run("--dry-run", "api", "drive-files-get", "--file-id", "doc-a"))).toMatchObject({
+    expect(commandResult(await run("--dry-run", "api", "drive-files-get", "--file-id", "doc-a"))).toMatchObject({
       dry_run: true,
     })
-    expect(JSON.parse(await run("--dry-run", "tags", "add", "doc-a", "tag"))).toMatchObject({
+    expect(commandResult(await run("--dry-run", "tags", "add", "doc-a", "tag"))).toMatchObject({
       dry_run: true,
       local: true,
     })
@@ -207,7 +207,7 @@ describe("MCP derived from the same guarded command tree", () => {
     const get = readonly.find((tool) => tool.name === "drive_api_drive_files_get")
     if (!get) throw new Error("missing generated tool")
     expect(await invokeTool(get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
-      structuredContent: { result: { id: "doc-a" } },
+      structuredContent: { item: { id: "doc-a" } },
     })
     const config = readConfig(f.env)
     config.defaults = { permissions: { files: "deny" } }
@@ -217,11 +217,7 @@ describe("MCP derived from the same guarded command tree", () => {
     const tools = mcpTools(options, "default")
     const show = tools.find((tool) => tool.name === "drive_documents_show")
     if (!show) throw new Error("missing local tool")
-    expect(toolArgv(show, { document: "--permission", permission: "api=allow" })).toEqual([
-      "documents",
-      "show",
-      "--",
-      "--permission",
-    ])
+    expect(() => toolArgv(show, { document: "--permission", permission: "api=allow" })).toThrow("permission")
+    expect(toolArgv(show, { document: "--permission" })).toEqual(["documents", "show", "--", "--permission"])
   })
 })
