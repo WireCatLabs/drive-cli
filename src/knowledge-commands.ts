@@ -87,21 +87,24 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     )
   examples(notes.command("list").description("list a document's notes"), [
     "drive personal notes list DOC_ID",
-    "drive personal notes list DOC_ID --search review --limit 10",
+    "drive personal notes list DOC_ID review --limit 10",
   ])
     .argument("<document>", documentArgument)
-    .option("--search <text>", "only notes that contain this text")
+    .argument("[query...]", "words a note must contain")
     .option("--limit <n>", "how many notes to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)
-    .action(async (doc: string, { page, ...args }: { search?: string; limit: number; page: number }) => {
-      const found = await run(doc, (k, p, ref) => k.notes(p, ref, { ...args, offset: (page - 1) * args.limit }))
+    .action(async (doc: string, words: string[], { page, limit }: { limit: number; page: number }) => {
+      const query = words.length ? words.join(" ") : undefined
+      const found = await run(doc, (k, p, ref) =>
+        k.notes(p, ref, { ...(query ? { search: query } : {}), limit, offset: (page - 1) * limit }),
+      )
       output(
         listOf("notes list", {
           items: found.items,
-          limit: args.limit,
+          limit,
           has_more: found.hasMore,
           page,
-          args: { document: doc, search: args.search },
+          args: { document: doc, query },
         }),
       )
     })

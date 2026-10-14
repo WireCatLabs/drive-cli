@@ -517,16 +517,16 @@ drive <profile> notes add <document> <text> [options]
 list a document's notes
 
 ```sh
-drive <profile> notes list <document> [options]
+drive <profile> notes list <document> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `document` | required | Google file or folder id or URL in the local catalog. |
+| `query` | optional | words a note must contain. |
 
 | Option | What it does |
 |---|---|
-| `--search <text>` | only notes that contain this text. |
 | `--limit <n>` | how many notes to return. Default: `50`. |
 | `--page <n>` | which page to return. Default: `1`. |
 

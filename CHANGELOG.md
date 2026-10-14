@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`notes list` takes its search as words after the document (breaking).** `drive personal notes list DOC_ID
+  review` replaces `--search review`, which now fails as an unknown option; the answer's `page.args` names it
+  `query`.
+- A store that fails to migrate no longer advises `tg store reset`: drive keeps its own store and has no such command.
+
 - **Cursor lists page.** `files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives` and
   `documents history` answer a list of Google's rows with `page.mode: "cursor"`, `page.next_cursor` set from
   Google's `nextPageToken`, and a `page.next` step; before, the whole Google response came back as one item and the

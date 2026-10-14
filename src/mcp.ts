@@ -146,7 +146,7 @@ export const invokeTool = async (
   for (const value of flags.permission ?? []) startup.push("--permission", value)
   let audit: Awaited<ReturnType<typeof openStore>>
   try {
-    audit = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "tg" })
+    audit = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env })
   } catch (error) {
     return mcpFailure(error)
   }

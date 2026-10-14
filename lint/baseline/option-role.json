@@ -41,7 +41,6 @@
   "models set --purpose",
   "notes add --title",
   "notes edit --revision",
-  "notes list --search",
   "relationships add --evidence",
   "relationships add --kind",
   "relationships add --role",
