@@ -68,7 +68,7 @@ drive personal --offline documents show DOC_ID --json
 ```
 
 Read the saved passage and source metadata before interpreting it as a decision. You can inspect
-them offline; open the original link when you need to verify the current Google version. If you see `meaningSkipped`,
+them offline; open the original link when you need to verify the current Google version. If you see `meaning_skipped`,
 inspect its explanation rather than assuming semantic search ran. Scanned PDFs, Slides, images
 and other unsupported content have no text, so they are left out of text and semantic search. Their names are
 indexed: a word from the file name finds them, and the hit has `not_read` set to the reason (it is `null` for a
@@ -78,7 +78,7 @@ See [file-type coverage](usage.md#which-document-types-are-searchable) and
 
 ## Search images by what they show
 
-When the profile has `pictureSearch` on, `drive personal search "cat on a sofa"` also returns `pictures`: the
+When the profile has `picture_search` on, `drive personal search "cat on a sofa"` also returns `pictures`: the
 images whose content is nearest to the words, best first, each with `ref`, `score`, `title` and `source_url`.
 They are a separate list, never mixed into `hits`. With the setting off, `pictures` is absent.
 

@@ -3,6 +3,8 @@ import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { levelFor } from "@wirecat/cli-core/sends"
+import { openStore } from "@wirecat/cli-core/store"
+import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
 import { createProgram, type ProgramOptions } from "./program.js"
@@ -15,6 +17,36 @@ interface ToolDefinition {
   schema: Record<string, unknown>
 }
 const excluded = new Set(["session", "config", "complete", "mcp", "models"])
+
+/** Advertise the strict schema, but validate in our handler so failures are structured and audited. */
+const advertised = (tool: ToolDefinition) => {
+  const schema = fromJsonSchema<Record<string, unknown>>(tool.schema)
+  return { "~standard": { ...schema["~standard"], validate: (value: unknown) => ({ value }) } } as typeof schema
+}
+
+const checkedInput = async (tool: ToolDefinition, input: unknown): Promise<Record<string, unknown>> => {
+  const refuse = (field: string) => {
+    throw new CliError("validation_error", `invalid tool argument ${JSON.stringify(field)}`, { arguments: tool.schema })
+  }
+  if (input === undefined) return refuse((tool.schema.required as string[] | undefined)?.[0] ?? "arguments")
+  if (!input || typeof input !== "object" || Array.isArray(input)) return refuse("arguments")
+  const properties = tool.schema.properties as Record<string, unknown>
+  for (const field of Object.keys(input)) if (!Object.hasOwn(properties, field)) refuse(field)
+  for (const field of (tool.schema.required as string[] | undefined) ?? [])
+    if (!Object.hasOwn(input, field)) refuse(field)
+  for (const [field, value] of Object.entries(input)) {
+    const checked = await fromJsonSchema(properties[field] as Record<string, unknown>)["~standard"].validate(value)
+    if (checked.issues) refuse(field)
+  }
+  const checked = await fromJsonSchema<Record<string, unknown>>(tool.schema)["~standard"].validate(input)
+  if (checked.issues) {
+    const path = checked.issues[0]?.path?.[0]
+    const field = typeof path === "object" ? String(path.key) : path === undefined ? undefined : String(path)
+    const missing = (tool.schema.required as string[] | undefined)?.find((key) => !Object.hasOwn(input, key))
+    return refuse(field ?? missing ?? "arguments")
+  }
+  return checked.value
+}
 export const mcpTools = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}): ToolDefinition[] => {
   const settings = policySettings(options.env ?? process.env, profile, flags)
   return flatten(describeDriveProgram(createProgram(options)))
@@ -58,11 +90,16 @@ export const mcpTools = (options: ProgramOptions, profile: string, flags: Policy
     })
 }
 export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) => {
+  for (const field of Object.keys(input))
+    if (!Object.hasOwn(tool.schema.properties as object, field))
+      throw new CliError("validation_error", `unknown tool argument ${JSON.stringify(field)}`, {
+        arguments: tool.schema,
+      })
   const args: string[] = [...tool.command.path]
   for (const option of tool.command.options) {
     const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
     if (!name || input[name] === undefined) continue
-    if (option.takes_value) args.push(`--${name}`, String(input[name]))
+    if (option.takes_value) args.push(`--${name}=${String(input[name])}`)
     else if (input[name] === true) args.push(`--${name}`)
   }
   if (tool.command.arguments.length) args.push("--")
@@ -80,25 +117,67 @@ export const invokeTool = async (
   profile: string,
   flags: PolicyFlags = {},
 ) => {
+  const startedAt = Date.now()
+  const env = options.env ?? process.env
   const streams = captureStreams()
   const startup: string[] = ["--profile", profile, "--json", "--agent-json"]
   if (flags.readOnly) startup.push("--read-only")
   if (flags.offline) startup.push("--offline")
   if (flags.dryRun) startup.push("--dry-run")
   for (const value of flags.permission ?? []) startup.push("--permission", value)
+  let audit: Awaited<ReturnType<typeof openStore>>
   try {
-    await createProgram({
-      ...options,
-      streams,
-      ask: async () => false,
-      readBody: () => {
-        throw new CliError("permission_error", "MCP does not read files or stdin; supply JSON body text")
-      },
-    }).parseAsync([...startup, ...toolArgv(tool, input)], { from: "user" })
-    const value: unknown = JSON.parse(streams.stdout.join(""))
-    return { content: [{ type: "text" as const, text: JSON.stringify(value) }], structuredContent: { result: value } }
+    audit = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "tg" })
   } catch (error) {
     return mcpFailure(error)
+  }
+  try {
+    let result:
+      | ReturnType<typeof mcpFailure>
+      | {
+          content: { type: "text"; text: string }[]
+          structuredContent: Record<string, unknown>
+        }
+    try {
+      const checked = await checkedInput(tool, input)
+      await createProgram({
+        ...options,
+        streams,
+        ask: async () => false,
+        readBody: () => {
+          throw new CliError("permission_error", "MCP does not read files or stdin; supply JSON body text")
+        },
+      }).parseAsync([...startup, ...toolArgv(tool, checked)], { from: "user" })
+      const value = JSON.parse(streams.stdout.join("")) as Record<string, unknown>
+      result = { content: [{ type: "text", text: JSON.stringify(value) }], structuredContent: value }
+    } catch (error) {
+      result = mcpFailure(error)
+    }
+    const failure = result.structuredContent as { error?: { code?: string }; missing?: unknown[] } | undefined
+    try {
+      await audit.agentActions.record({
+        actor: { bot: "drive-mcp" },
+        tool: tool.name,
+        tier: tool.command.mutates ? (tool.command.local ? "write-private" : "write-public") : "read",
+        status: "isError" in result && result.isError ? "failed" : "ok",
+        ...(failure?.error?.code ? { error: failure.error.code } : {}),
+        startedAt,
+        finishedAt: Date.now(),
+      })
+    } catch {
+      // A logging failure after a remote write must not hide its result or invite a retry.
+      const value = {
+        ...result.structuredContent,
+        missing: [
+          ...(failure?.missing ?? []),
+          { field: "audit", why: "the local tool-call record could not be saved", step: "audit.record" },
+        ],
+      }
+      return { ...result, structuredContent: value, content: [{ type: "text" as const, text: JSON.stringify(value) }] }
+    }
+    return result
+  } finally {
+    await audit.close()
   }
 }
 export const buildMcpServer = (options: ProgramOptions, profile: string, flags: PolicyFlags = {}) => {
@@ -115,7 +194,7 @@ export const buildMcpServer = (options: ProgramOptions, profile: string, flags: 
       tool.name,
       {
         description: tool.command.description,
-        inputSchema: fromJsonSchema<Record<string, unknown>>(tool.schema),
+        inputSchema: advertised(tool),
         annotations: {
           readOnlyHint: !tool.command.mutates,
           destructiveHint: tool.command.mutates === true,
@@ -143,3 +222,5 @@ export const serveMcp = async (options: ProgramOptions, profile: string, flags: 
     await server.close()
   }
 }
+
+import { join } from "node:path"

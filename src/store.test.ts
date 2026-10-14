@@ -6,6 +6,30 @@ import { indexOver, openIndex } from "./store.js"
 import { content, file, fixture, workbook } from "./testing.js"
 
 describe("released shared store and search", () => {
+  it("returns snake_case search fields for both empty accounts and indexed passages", async () => {
+    const f = fixture()
+    const index = await openIndex(f.env)
+    try {
+      expect(await index.search("empty-account", "budget", { limit: 5, offset: 0, exact: true })).toMatchObject({
+        hits: [],
+        has_more: false,
+        meaning_skipped: "this Google account has no imported sources",
+      })
+      await index.save("synthetic-principal", content(file("snake-test")), "fixture-hash")
+      const found = await index.search("synthetic-principal", "budget", { limit: 5, offset: 0, exact: true })
+      expect(found).toMatchObject({
+        has_more: false,
+        hits: [
+          { updated_at: expect.any(String), excerpt: expect.any(String), found_by: expect.arrayContaining(["words"]) },
+        ],
+      })
+      const text = JSON.stringify(found)
+      for (const key of ["hasMore", "meaningSkipped", "modifiedAt", "foundBy", "folderId"])
+        expect(text).not.toContain(`"${key}"`)
+    } finally {
+      await index.close()
+    }
+  })
   it("searches document tags through the shared query language and preserves account scope", async () => {
     const f = fixture()
     const index = await openIndex(f.env)

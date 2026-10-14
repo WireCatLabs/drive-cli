@@ -2,7 +2,7 @@ import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
 import { createProgram } from "./program.js"
-import { content, file, fixture } from "./testing.js"
+import { commandResult, content, file, fixture } from "./testing.js"
 
 describe("document knowledge commands", () => {
   it("runs notes, tags, links, memories and extraction through the released shared store", async () => {
@@ -28,7 +28,7 @@ describe("document knowledge commands", () => {
         ["default", ...args, "--json"],
         { from: "user" },
       )
-      return JSON.parse(streams.stdout.join(""))
+      return commandResult(streams.stdout.join(""))
     }
     await call("sync")
     expect((await call("tags", "add", "doc-a", "budget")).tags).toEqual(["budget"])

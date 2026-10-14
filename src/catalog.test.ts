@@ -8,7 +8,7 @@ import { createProgram } from "./program.js"
 import { readState, saveState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
-import { content, file, fixture } from "./testing.js"
+import { commandResult, content, file, fixture } from "./testing.js"
 
 it("sync catalogs folders and unreadable files before downloading text, retaining references and owner tags", async () => {
   const f = fixture()
@@ -90,7 +90,7 @@ it("runs import, tree, search, folder tags and folder notes entirely offline wit
     await createProgram({ env: f.env, streams, source: remote }).parseAsync(["default", "--offline", ...args], {
       from: "user",
     })
-    return JSON.parse(streams.stdout.join(""))
+    return commandResult(streams.stdout.join(""))
   }
   expect(await invoke("catalog", "import")).toEqual({ entries: 3, retired: 0 })
   const tree = await invoke("catalog", "tree", "--depth", "1")
@@ -99,12 +99,12 @@ it("runs import, tree, search, folder tags and folder notes entirely offline wit
   expect(
     (await invoke("catalog", "search", 'budget AND mime:"image/png"')).items.map((e: { id: string }) => e.id),
   ).toEqual(["photo"])
-  expect(await invoke("catalog", "tags", "add", "nested", "work")).toContain("work")
+  expect((await invoke("catalog", "tags", "add", "nested", "work")).items).toContain("work")
   expect((await invoke("catalog", "list", "tag:work")).items[0].id).toBe("nested")
   await invoke("notes", "add", "nested", "Owner's folder memo")
   expect((await invoke("notes", "list", "nested")).items).toHaveLength(1)
-  expect(await invoke("catalog", "tags", "remove", "nested", "work")).toEqual(["work"])
-  expect(await invoke("catalog", "tags", "list", "nested")).toEqual([])
+  expect((await invoke("catalog", "tags", "remove", "nested", "work")).items).toEqual(["work"])
+  expect((await invoke("catalog", "tags", "list", "nested")).items).toEqual([])
   expect((await invoke("catalog", "show", "photo")).content).toBe("metadata")
   await expect(invoke("catalog", "show", "absent")).rejects.toThrow("not in the active")
   await expect(invoke("catalog", "import", "--read-only")).rejects.toThrow()
@@ -128,7 +128,7 @@ it("previews catalog writes before opening the database and publishes local muta
   await createProgram({ env: f.env, index: open, streams }).parseAsync(["default", "catalog", "import", "--dry-run"], {
     from: "user",
   })
-  expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ dry_run: true, local: true, mutates: true })
+  expect(commandResult(streams.stdout.join(""))).toMatchObject({ dry_run: true, local: true, mutates: true })
   expect(open).not.toHaveBeenCalled()
 })
 it("uses the pending hierarchy and excludes scheduled removals when backfilling a checkpoint", () => {

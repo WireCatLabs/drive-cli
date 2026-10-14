@@ -24,17 +24,21 @@ The local database defaults to `drive.db` in the data directory; profile snapsho
 are under `profiles/PROFILE_NAME/`. Read [local storage](usage.md#disk-use-index-without-an-export-directory)
 before moving or deleting them.
 
+Existing files using camelCase setting names are migrated to snake_case on their first successful
+read. The file keeps its permissions and is not rewritten again if nothing changes. Profile names,
+permission paths and model-purpose names are preserved. Conflicting old/new values are refused.
+
 ## Saved settings
 
 | Key | What it controls | Scope |
 | --- | --- | --- |
-| `readOnly` | Refuses local and remote mutations, including sync and adding notes | A profile or `defaults` |
+| `read_only` | Refuses local and remote mutations, including sync and adding notes | A profile or `defaults` |
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
-| `maxTextChars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
-| `pictureSearch` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
+| `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
+| `picture_search` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
-| `models.memories.baseUrl` | Optional endpoint for the configured provider | A profile or `defaults` |
+| `models.memories.base_url` | Optional endpoint for the configured provider | A profile or `defaults` |
 
 The commands manage account details separately: `session start` records identity and credential
 storage, and `folders add`/`folders remove` change selected roots. Do not put access tokens or
@@ -58,33 +62,33 @@ drive personal config show --json
 ```
 
 These permissions restrict the live file/Doc command families. Local sync and local notes use
-separate keys. `readOnly true` is broader: it also blocks local changes, so do not enable it when
+separate keys. `read_only true` is broader: it also blocks local changes, so do not enable it when
 you want to import or tag documents. Inspect the [command reference](commands.md) and
 [data permissions](security.md) before choosing broader rules.
 
 `config set` changes the selected profile unless you add `--defaults`. For example:
 
 ```sh
-drive personal config set readOnly true --defaults
-drive work config set readOnly false
+drive personal config set read_only true --defaults
+drive work config set read_only false
 drive personal config show --json
 ```
 
-`drive personal config set pictureSearch true` turns picture search on for `personal` only.
+`drive personal config set picture_search true` turns picture search on for `personal` only.
 Prepare the shared local `clip-b32` model first (about 160 MB), then use queries in English.
 An agent with terminal access can use the installed SDK's verified model installer:
 
 ```text prompt
 Prepare WireCat's local CLIP image model for Drive profile personal using the installed shared SDK.
 Use its verified model installer and the same WIRECAT_STATE_DIR as Drive. Download only model files;
-do not connect to Google or change my source files. Then enable pictureSearch for personal.
+do not connect to Google or change my source files. Then enable picture_search for personal.
 ```
 
 The public SDK exports `modelsCommand` through `@wirecat/cli-core/cli`; an agent can inspect that
 API for model setup. Drive's command tree currently exposes the setting and search, while model
 installation uses the shared SDK or a WireCat tool that already supports image-model setup.
 In the earlier example, the first line changes the shared default; the second overrides it for `work`.
-`drive personal config set maxTextChars 500000` makes sync skip longer files with that reason; a
+`drive personal config set max_text_chars 500000` makes sync skip longer files with that reason; a
 file skipped for its length is read again on the next sync after the limit is raised. The final command
 prints the configuration with both sections, not a merged list of effective values.
 A missing profile is an error: `DRIVE_PROFILE` and a legacy saved default do not select one.
@@ -122,7 +126,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 
 These flags are not file settings. Command-specific options such as `search --limit` and
 `sync --limit` are described with their commands. Permission overrides take priority over profile
-permissions, then shared defaults. A saved `readOnly true` remains a restriction even when a
+permissions, then shared defaults. A saved `read_only true` remains a restriction even when a
 permission says `allow`. AI environment overrides take priority over profile/default model choices.
 
 ## Optional AI extraction

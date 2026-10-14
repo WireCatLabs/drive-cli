@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { CliError, loadConfigFile, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
-import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-core/cli"
+import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
+import { AI_ENTRIES, loadSnakeCaseConfig, usableProfileName } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
@@ -9,27 +9,34 @@ import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
   ...AI_ENTRIES,
-  readOnly: v.optional(v.boolean()),
+  read_only: v.optional(v.boolean()),
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
-  maxTextChars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
+  max_text_chars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
+}
+export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search"])
+const snakeSetting = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase()
+export const configKey = (key: string) => {
+  const [head = "", ...parts] = key.split(".")
+  if (head === "models" && parts.length === 2) parts[1] = snakeSetting(parts[1] ?? "")
+  return [snakeSetting(head), ...parts].join(".")
 }
 const Profile = v.strictObject({
   principal: v.string(),
   roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
   storage: v.picklist(["keyring", "file"]),
-  pictureSearch: v.optional(v.boolean()),
+  picture_search: v.optional(v.boolean()),
   ...Common,
 })
 export const ConfigSchema = v.strictObject({
   profiles: v.record(v.string(), Profile),
   defaults: v.optional(v.strictObject(Common)),
-  defaultProfile: v.optional(v.string()),
+  default_profile: v.optional(v.string()),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
 export const readConfig = (env: NodeJS.ProcessEnv): Config => {
   try {
-    return loadConfigFile(join(paths(env).config, "config.json"), ConfigSchema, () => ({ profiles: {} }))
+    return loadSnakeCaseConfig(join(paths(env).config, "config.json"), ConfigSchema, () => ({ profiles: {} }))
   } catch {
     throw new CliError("configuration_error", "drive configuration is invalid; no configuration values were logged")
   }
@@ -65,18 +72,18 @@ export interface OAuthApplication {
 }
 export const checkTextLimit = (value: unknown): number => {
   if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
-    throw new CliError("validation_error", "maxTextChars must be a positive whole number of characters")
+    throw new CliError("validation_error", "max_text_chars must be a positive whole number of characters")
   if (value > MAX_TEXT_CHARS)
     throw new CliError(
       "validation_error",
-      `maxTextChars can be at most ${MAX_TEXT_CHARS}: the document readers return at most that many characters`,
+      `max_text_chars can be at most ${MAX_TEXT_CHARS}: the document readers return at most that many characters`,
     )
   return value
 }
 export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
-  activeProfile(env, name).maxTextChars ?? readConfig(env).defaults?.maxTextChars ?? MAX_TEXT_CHARS
+  activeProfile(env, name).max_text_chars ?? readConfig(env).defaults?.max_text_chars ?? MAX_TEXT_CHARS
 export const pictureSearch = (env: NodeJS.ProcessEnv, name: string): boolean =>
-  activeProfile(env, name).pictureSearch ?? false
+  activeProfile(env, name).picture_search ?? false
 export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication => {
   if (!file) {
     if (!env.DRIVE_GOOGLE_CLIENT_ID) {

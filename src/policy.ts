@@ -31,7 +31,7 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
     ["profile", own?.permissions],
     ["defaults", config.defaults?.permissions],
   ])
-  return { levels, readOnly: flags.readOnly === true || (own?.readOnly ?? config.defaults?.readOnly ?? false) }
+  return { levels, readOnly: flags.readOnly === true || (own?.read_only ?? config.defaults?.read_only ?? false) }
 }
 const defaults = Object.fromEntries(
   operations.filter((op) => op.effect === "destructive").map((op) => [`api.${op.id}`, "ask"]),

@@ -63,6 +63,7 @@ assert.match(run(["--help"]), /Google Drive/)
 assert.equal(run(["--version"]).trim(), JSON.parse(readFileSync(join(root, "package.json"), "utf8")).version)
 assert.match(run(["session", "start", "--help"]), /client-file/)
 const registry = JSON.parse(run(["commands", "sync", "--json"]))
+assert.equal(registry.contract, 2)
 assert.equal(registry.commands[0].name, "sync")
 assert.equal(registry.commands[0].mutates, true)
 let failed = false

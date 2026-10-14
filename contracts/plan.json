@@ -49,8 +49,10 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "dry_run": true,
-        "method": "drive.files.get"
+        "item": {
+          "dry_run": true,
+          "method": "drive.files.get"
+        }
       }
     },
     {
