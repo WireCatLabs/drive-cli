@@ -9,7 +9,8 @@ command mappings, generated schema validation and explicit write/delete/scope bo
 Alignment tests cover local/remote policy denial, generated flags, operation aliases, atomic
 output, agent controls, profile/config syntax, dry-run/offline and shared write journaling.
 Executable contracts verify missing generated arguments produce JSON errors, MCP schemas remain
-stable and a store seeded with the real 0.226.0 shared package retains data under 0.231.0.
+stable and a store seeded with the real 0.226.0 shared package retains data under the current
+exact shared-package pin. Installed-Drive release comparisons are separate checks in cli-testing.
 OAuth callbacks use invented codes and a memory keyring over local loopback HTTP.
 
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, DRIVE_STORE, MESSAGING_STORE

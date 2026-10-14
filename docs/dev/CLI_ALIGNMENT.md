@@ -40,7 +40,7 @@ are preserved. Validators and operation effects are generated from committed inp
 
 Both `drive work documents list` and `drive --profile work documents list` select a profile.
 Permission layers use the shared nearest-layer/specific-path rules: temporary flags, profile,
-then defaults. `readOnly` prevents mutation even when another level allows it. Housekeeping such
+then defaults. `read_only` prevents mutation even when another level allows it. Housekeeping such
 as command discovery and owner configuration remains available so a policy can be inspected/fixed.
 
 ```sh
@@ -70,7 +70,7 @@ automatic write retry is disabled. No provider idempotency is invented.
 `--timeout 30s` supplies a whole-command deadline; transports retain their own request bounds.
 `--max-output-bytes` uses cli-base's atomic output buffer (4 MiB default, zero disables the cap).
 An oversized result fails before partial stdout. `--jsonl`, `--quiet` and `--offline`
-are available. Agent mode displays control/direction characters visibly. Offline refuses sync,
+are available. MCP displays control/direction characters visibly. Offline refuses sync,
 Google actions and AI extraction; cached-document and knowledge reads remain available.
 
 ## Completion and MCP
@@ -84,7 +84,7 @@ drive personal --read-only mcp
 
 Completion uses cli-base's registry and suggestion engine plus the same shell-script library as
 MAX. It does not load Google credentials, open a store or fetch names over the network.
-MCP stdio uses the same SDK version as MAX. Tool names and input flags come from the command tree;
+MCP stdio uses the protocol SDK pinned in package.json. Tool names and input flags come from the command tree;
 tool calls construct argv and run the same CLI, so schemas, profile selection and policies cannot
 drift into a second executor. Input is untrusted: positional values follow the end-of-options
 delimiter and a client cannot supply policy overrides. Denied/write-disabled tools are hidden and
@@ -105,16 +105,26 @@ pnpm smoke
 pnpm smoke:bun
 ```
 
-The reviewed community preset revision and cli-core 0.231.0 match the audited MAX checkout;
-cli-base remains 0.19.4. Upgrade contracts use the real previous shared-store package 0.226.0 to
-seed an isolated database, then verify current search, document identity, tags, notes and memories.
-There is no previous published Drive release to pretend to test. The default database remains
-isolated; adopting an existing messenger store is an explicit operation, not a side effect.
+Exact shared dependency pins live in package.json; reviewed community revisions live in
+config/wirecat. Upgrade contracts use the real previous shared-store package 0.226.0 to seed an
+isolated database, then verify current search, document identity, tags, notes and memories.
+Those store fixtures are distinct from installed-Drive release acceptance. Published artifact
+comparisons live in cli-testing's performance/documents/offline-catalog report. The default
+database remains isolated; adopting an existing messenger store is an explicit operation.
+
+Discovery contract 3 uses `effects: {remote, local}` and `api_operation` instead of `mutates`,
+`local` and `operation_id`. Effects also inform error retry safety. Standard output envelopes
+include `meta.complete`; lists use page metadata with `next_page`. JSONL emits item records and
+one end record. Search and note lists use `--page`; the old `--offset` and `--agent-json` flags
+are refused. MCP inputs are checked in Drive's handler and failures are recorded through the
+shared audit API without argument values. Configuration uses the shared snake_case migration
+loader; original provider dictionaries and profile/model-purpose identifiers retain their keys.
 
 Full CI includes offline generation freshness, executable help/discovery/error contracts, MCP
 schema snapshots, the store upgrade and no-leak checks. Installed-package acceptance covers
 Node and Bun. Fixtures use no owner sessions, data, models or network. Google browser OAuth,
-real requests and real-model quality still await the application registration.
+real requests and real-model quality require separate live validation; application availability
+does not establish content fidelity.
 
 Differences that remain: this CLI has Google-specific profile/state configuration and a thin
 registry-to-MCP adapter because shared messenger/bot factories require messenger capabilities.
@@ -126,9 +136,8 @@ media-upload workflow or automatic background watches. Those are not reported as
 Drive reuses the shared `commandWords`, `liftProfile`, `refuseCommandName` and `usableProfileName`
 helpers used by MAX. Account actions require an explicit first-word profile or `--profile`;
 legacy config/environment defaults are ignored and repeated/conflicting selectors are rejected.
-Help/version and account-independent discovery remain configuration-free. MAX's inspected shared
-parser still permits an implicit default; Drive intentionally enforces the owner's stricter
-cross-CLI account-selection requirement. No account records are renamed or migrated.
+Help/version and account-independent discovery remain configuration-free. This enforces the
+owner's cross-CLI account-selection requirement. Account records are not renamed by selection.
 
 Catalog lists use cli-base's validated query registry and the shared store's SQL compiler,
 with `kind`, `mime`, `name`, `parent`, observed `person`, `tag` and metadata `text` fields.

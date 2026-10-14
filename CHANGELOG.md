@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Clarify contract-3 output, page/JSONL metadata and interrupted-sync recovery in the import
+  guide; refresh developer alignment and testing notes to distinguish current pins, previous-store
+  fixtures and published-package acceptance.
+
 ## 0.6.0 — 2026-10-14
 
 - **An interrupted first folder walk resumes.** `sync` saves the walk as it goes (`walk.json` beside the sync
