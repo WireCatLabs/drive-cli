@@ -9,18 +9,6 @@ keep it current and export a document when another tool needs it. Examples use p
 saved source content and metadata from that sync. An **export** is an additional file you request;
 it is not required for search.
 
-Machine-readable command answers use an envelope: `item` for a single or rich result, or `items`
-with `page` for a simple list; `meta` identifies the invocation, its duration and `complete` status. Drive-owned keys
-are snake_case. Provider metadata and user dictionaries keep their original keys. Search passages
-are under `item.hits`, and sync/status counters are under `item`. Help and shell completion remain
-text; `commands --json` uses the shared discovery document with contract `3`. Command `effects`
-describe remote and local reads/writes; `api_operation` identifies a generated Google method.
-Lists use `page.mode: "page"` and return `next_page` when more results remain. Search and note
-lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
-one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`;
-an uncertain remote write must be inspected before repeating it. MCP displays control characters
-visibly; `--agent-json` is no longer an option.
-
 ## Choose the right operation
 
 | What you want | Command | Where the data comes from | What is saved |
@@ -253,3 +241,32 @@ not a promise that SQLite shrinks or every separately created note is erased.
 
 Check that the document list and search now match your selected scope. Continue with
 [searching documents](search.md) or [complete task recipes](recipes.md).
+
+## Use structured output
+
+JSON and JSONL let another tool read results without parsing terminal text. You can keep only
+its required fields while retaining pagination and completeness information.
+
+Machine-readable command answers use an envelope: `item` for a single or rich result, or `items`
+with `page` for a simple list; `meta` identifies the invocation, its duration and `complete` status. Drive-owned keys
+are snake_case. Provider metadata and user dictionaries keep their original keys. Search passages
+are under `item.hits`, and sync/status counters are under `item`. Help and shell completion remain
+text; `commands --json` uses the shared discovery document with contract `3`. Command `effects`
+describe remote and local reads/writes; `api_operation` identifies a generated Google method.
+Lists use `page.mode: "page"` and return `next_page` when more results remain. Search and note
+lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
+one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`;
+an uncertain remote write must be inspected before repeating it. MCP displays control characters
+visibly; `--agent-json` is no longer an option.
+
+For a few catalog fields, use `--json=id,name` instead of `--json`.
+Only those fields of each item are returned; envelope and page metadata stay available.
+The same selection works with `--jsonl`. Unknown top-level fields are refused with the
+available field names. A write without declared result fields requires ordinary `--json`;
+field selection is refused before that write runs.
+
+At an interactive terminal, commands with declared result fields ask you to name those fields
+when you request JSON. Omit `--json` for ordinary reading, or select fields explicitly. Agents
+and pipes can use bare `--json` for the full result.
+
+See the [command reference](commands.md) for each operation's arguments and output options.

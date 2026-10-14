@@ -111,7 +111,7 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
       .option("--limit <n>", "how many entries to return (at most 1000)", positive, 50)
       .option("--page <n>", "which page to return", positive, 1)
       .action(async (words: string[], args: { limit: number; page: number }) => list(words, args, action === "search"))
-    annotate(command, { query: CATALOG_QUERY, output: { entity: "document" } })
+    annotate(command, { query: CATALOG_QUERY, output: { entity: "document", view: "drive_catalog" } })
   }
   examples(
     local(catalog.command("tree").description("show the cached hierarchy below a folder or all selected roots")),
