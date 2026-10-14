@@ -19,7 +19,7 @@
 - **`--agent-json` is gone (breaking).** MCP answers always show control and direction characters visibly; `--json`
   keeps text as it is.
 - `folders remove` no longer returns a `next` sentence; its help says the next sync drops the folder's documents.
-- Adopt cli-core 0.273.0 and cli-base 0.28.1.
+- Adopt cli-core 0.275.0 and cli-base 0.28.2.
 
 ## 0.5.0 — 2026-10-14
 
