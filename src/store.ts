@@ -11,7 +11,7 @@ export const openIndex = async (env: NodeJS.ProcessEnv): Promise<DocumentIndex> 
   const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
   await ensureSqlite()
   const { openStore } = await import("@wirecat/cli-core/store")
-  const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env, command: "tg" })
+  const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env })
   return indexOver(store, env)
 }
 type PictureEmbedder = Awaited<ReturnType<typeof import("@wirecat/cli-core/services")["openPictureEmbedderFor"]>>
