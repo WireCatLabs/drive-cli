@@ -35,3 +35,8 @@ Use a branch and isolated checkout. Commit hooks check staged Biome and secrets.
 presets, lint, Markdown and bounded typechecking. Full validation adds tests, coverage, build,
 installed-package acceptance and Bun smoke. Publishing requires owner authorization. Visible
 changes get an Unreleased changelog entry. Keep cleanup separate from development work.
+
+Security audits of this repository follow the shared
+[security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing;
+vulnerabilities are reported as the
+[security policy](https://github.com/WireCatLabs/.github/blob/main/SECURITY.md) says.
