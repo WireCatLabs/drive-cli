@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- The MCP contract snapshot reflects the positional `notes list` query, so full validation checks
+  the current tool arguments instead of the removed `--search` option.
+
+- Maintainer OAuth guidance reflects the released shared app, keeps user-owned clients optional,
+  and links the isolated Google acceptance workflow instead of duplicating source-build instructions.
+
 - **`notes list` takes its search as words after the document (breaking).** `drive personal notes list DOC_ID
   review` replaces `--search review`, which now fails as an unknown option; the answer's `page.args` names it
   `query`.
