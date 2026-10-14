@@ -18,7 +18,16 @@ import {
 } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { within } from "./scope.js"
-import { readState, removeSnapshot, saveSnapshot, saveState } from "./state.js"
+import {
+  readState,
+  readWalk,
+  removeSnapshot,
+  removeWalk,
+  saveSnapshot,
+  saveState,
+  saveWalk,
+  type Walk,
+} from "./state.js"
 import { VERSION } from "./version.js"
 
 const scopeHash = (roots: string[]) =>
@@ -48,6 +57,15 @@ const hashText = (text: string) => createHash("sha256").update(text).digest("hex
 
 export { within } from "./scope.js"
 
+/** How often an unfinished walk or batch is written down; a kill loses at most this much, and a rerun redoes it. */
+const SAVE_EVERY_MS = 2000
+const SAVE_EVERY_ITEMS = 25
+
+interface WalkStore {
+  read: (scope: string) => Walk | undefined
+  save: (walk: Walk) => void
+}
+
 const plan = async (
   source: GoogleSource | undefined,
   state: SyncState,
@@ -55,6 +73,7 @@ const plan = async (
   limit: number,
   pictures: boolean,
   abandoned: string[] = [],
+  walks?: WalkStore,
 ): Promise<NonNullable<SyncState["pending"]>> => {
   const scope = scopeHash(roots)
   if (!roots.length)
@@ -67,7 +86,8 @@ const plan = async (
     }
   if (!source) throw new CliError("configuration_error", "selected folders require an authenticated Google source")
   const initial = !state.cursor || scope !== state.scope
-  const cursor = initial ? (roots.length ? await source.startToken() : (state.cursor ?? "")) : (state.cursor as string)
+  const resumed = initial ? walks?.read(scope) : undefined
+  const cursor = initial ? (resumed?.cursor ?? (await source.startToken())) : (state.cursor as string)
   const folders: Record<string, FileMetadata> = initial ? {} : structuredClone(state.folders)
   const files = new Map<string, FileMetadata>(
     Object.values(state.documents).map((doc) => [doc.metadata.id, doc.metadata]),
@@ -93,12 +113,56 @@ const plan = async (
   let finalCursor = cursor
   if (initial) {
     files.clear()
-    for (const root of roots) {
-      if (visited.has(root)) continue
-      const folder = await source.metadata(root)
-      if (folder.mime !== FOLDER || folder.trashed)
-        throw new CliError("validation_error", "configured root is not an accessible folder")
-      await crawl(folder)
+    const walk: Walk = resumed ?? {
+      scope,
+      cursor,
+      stack: [...roots].reverse().map((id) => ({ id, ancestry: [] })),
+      visited: [],
+      folders: {},
+      files: [],
+      discovered: 0,
+    }
+    for (const id of walk.visited) visited.add(id)
+    Object.assign(folders, walk.folders)
+    for (const file of walk.files) {
+      files.set(file.id, file)
+      changed.add(file.id)
+    }
+    discovered = walk.discovered
+    let savedAt = Date.now()
+    const record = () => {
+      walks?.save({ ...walk, visited: [...visited], folders, files: [...files.values()], discovered })
+      savedAt = Date.now()
+    }
+    try {
+      for (let step = walk.stack.at(-1); step; step = walk.stack.at(-1)) {
+        if (step.ancestry.includes(step.id)) throw new CliError("invalid_response", "folder traversal contains a cycle")
+        if (visited.has(step.id)) {
+          walk.stack.pop()
+          continue
+        }
+        const folder = step.folder ?? (await source.metadata(step.id))
+        if (!step.folder && (folder.mime !== FOLDER || folder.trashed))
+          throw new CliError("validation_error", "configured root is not an accessible folder")
+        const children = await source.children(folder.id)
+        if (discovered + children.length > MAX_ENTRIES) throw tooManyEntries()
+        discovered += children.length
+        walk.stack.pop()
+        visited.add(folder.id)
+        folders[folder.id] = folder
+        const nested = []
+        for (const file of children)
+          if (file.mime === FOLDER) nested.push({ id: file.id, ancestry: [...step.ancestry, folder.id], folder: file })
+          else {
+            files.set(file.id, file)
+            changed.add(file.id)
+          }
+        walk.stack.push(...nested.reverse())
+        if (Date.now() - savedAt > SAVE_EVERY_MS) record()
+      }
+    } catch (error) {
+      record()
+      throw error
     }
   } else {
     const page = await source.changes(cursor)
@@ -210,6 +274,7 @@ export const sync = async (
     ...(profile.picture_search ? { pictures: 0 } : {}),
   }
   let writer: PictureWriter | undefined
+  let flush: (() => void) | undefined
   try {
     if (profile.roots.length && (!source || (await source.identity()) !== profile.principal))
       throw new CliError("authentication_error", "signed-in Google account does not match this profile", {
@@ -221,11 +286,18 @@ export const sync = async (
     const abandoned =
       state.pending && (state.pending.scope !== currentScope || rescan) ? state.pending.jobs.map((job) => job.id) : []
     if (state.pending?.scope !== currentScope || rescan) delete state.pending
-    if (rescan) delete state.cursor
+    if (rescan) {
+      delete state.cursor
+      removeWalk(env, name)
+    }
     if (!state.pending) {
-      state.pending = await plan(source, state, profile.roots, limit, profile.picture_search ?? false, abandoned)
+      state.pending = await plan(source, state, profile.roots, limit, profile.picture_search ?? false, abandoned, {
+        read: (scope) => readWalk(env, name, scope),
+        save: (walk) => saveWalk(env, name, walk),
+      })
       state.skipped = state.pending.skipped
       saveState(env, name, state)
+      removeWalk(env, name)
     }
     const pending = state.pending
     if (!pending) throw new CliError("invalid_response", "could not prepare a sync batch")
@@ -270,6 +342,17 @@ export const sync = async (
       if ((await writer.save(entry.reference, bytes)) === "saved") result.pictures = (result.pictures ?? 0) + 1
       entry.picture = "saved"
     }
+    // Saving the whole state after every file grows with the profile; a batch at a time keeps it bounded.
+    let unsaved = 0
+    let savedAt = Date.now()
+    flush = () => {
+      if (unsaved) saveState(env, name, state)
+      unsaved = 0
+      savedAt = Date.now()
+    }
+    const progress = () => {
+      if (++unsaved >= SAVE_EVERY_ITEMS || Date.now() - savedAt >= SAVE_EVERY_MS) flush?.()
+    }
     const jobs = [...pending.jobs].slice(0, max)
     for (const job of jobs) {
       if (signal?.aborted) throw new CliError("cancelled", "sync was cancelled; pending operations are retained")
@@ -308,7 +391,7 @@ export const sync = async (
           }
         }
         pending.jobs = pending.jobs.filter((item) => item !== job)
-        saveState(env, name, state)
+        progress()
       } catch (error) {
         const safe = googleError(error)
         if (safe.code === "cancelled") throw safe
@@ -330,12 +413,13 @@ export const sync = async (
           state.skipped.push(skipped)
           result.skipped.push({ id: skipped.id, reason: skipped.reason })
           pending.jobs = pending.jobs.filter((item) => item !== job)
-          saveState(env, name, state)
+          progress()
           continue
         }
         result.errors.push({ id: job.id, code: safe.code, message: safe.message })
       }
     }
+    flush()
     result.pending = pending.jobs.length
     if (!pending.jobs.length) {
       state.cursor = pending.cursor
@@ -347,6 +431,7 @@ export const sync = async (
     }
     return result
   } finally {
+    flush?.()
     await writer?.close()
     await lock.release()
   }

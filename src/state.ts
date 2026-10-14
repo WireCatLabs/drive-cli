@@ -61,6 +61,17 @@ const State = v.object({
   ),
 })
 
+const Walk = v.object({
+  scope: v.string(),
+  cursor: v.string(),
+  stack: v.array(v.object({ id: ID, ancestry: v.array(ID), folder: v.optional(File) })),
+  visited: v.array(ID),
+  folders: v.record(ID, File),
+  files: v.array(File),
+  discovered: v.number(),
+})
+export type Walk = v.InferOutput<typeof Walk>
+
 export const profileDir = (env: NodeJS.ProcessEnv, name: string) =>
   join(paths(env).state, "profiles", profileName(name))
 export const statePath = (env: NodeJS.ProcessEnv, name: string) => join(profileDir(env, name), "state.json")
@@ -84,6 +95,26 @@ export const readState = (env: NodeJS.ProcessEnv, name: string, principal: strin
 }
 export const saveState = (env: NodeJS.ProcessEnv, name: string, state: SyncState): void => {
   writeSecurely(statePath(env, name), `${JSON.stringify(state)}\n`, 0o600)
+}
+const walkPath = (env: NodeJS.ProcessEnv, name: string) => join(profileDir(env, name), "walk.json")
+/** The first folder walk of a scope, saved as it goes so an interrupted walk resumes where it stopped. */
+export const readWalk = (env: NodeJS.ProcessEnv, name: string, scope: string): Walk | undefined => {
+  try {
+    const parsed = v.safeParse(Walk, JSON.parse(readFileSync(walkPath(env, name), "utf8")))
+    return parsed.success && parsed.output.scope === scope ? parsed.output : undefined
+  } catch {
+    return undefined
+  }
+}
+export const saveWalk = (env: NodeJS.ProcessEnv, name: string, walk: Walk): void => {
+  writeSecurely(walkPath(env, name), `${JSON.stringify(walk)}\n`, 0o600)
+}
+export const removeWalk = (env: NodeJS.ProcessEnv, name: string): void => {
+  try {
+    unlinkSync(walkPath(env, name))
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error
+  }
 }
 export const ensureProfileDir = (env: NodeJS.ProcessEnv, name: string): void => {
   mkdirSync(profileDir(env, name), { recursive: true, mode: 0o700 })

@@ -87,8 +87,10 @@ drive personal folders remove FOLDER_ID
 drive personal sync --json
 ```
 
-A batch is persisted before processing; interrupted work resumes next run. The change cursor
-advances when the batch completes. Incomplete discovery preserves the prior checkpoint and
+A batch is persisted before processing; interrupted work resumes next run. Progress is saved
+every 25 files or 2 seconds, so a killed sync redoes at most that many. The first walk of the
+chosen folders is saved as it goes, and an interrupted walk continues from the folders it had not
+listed yet. The change cursor advances when the batch completes. Incomplete discovery preserves the prior checkpoint and
 documents. A per-profile heartbeat lock prevents simultaneous syncs and recovers after crashes.
 
 Confirmed removals and scope exits remove sources from search and delete their snapshots.
