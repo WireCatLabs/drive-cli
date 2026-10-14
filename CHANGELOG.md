@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-10-14
 
 - **Drive images found by what they show.** With `drive <profile> config set pictureSearch true`, sync downloads each
   image file (up to 25 MB, only where Google allows downloads), gives it a picture vector with the local model and
@@ -12,8 +12,6 @@
   say one sync reads at most 10,000 entries under the chosen folders and 10,000 changes. Past the change-feed cap the
   error no longer just says "retry with --rescan": it says a rescan works only while the folders hold at most 10,000
   entries. Past the folder cap it says to choose fewer or smaller folders.
-
-## 0.4.0 — 2026-10-14
 
 - **Offline file and folder catalog.** Sync stores metadata and parent relationships in the shared database for every selected file/folder, including unreadable formats and pending content. `catalog import` backfills the saved checkpoint without Google; `catalog list`, `show`, `search` and `tree` browse it offline. Filter names, MIME types, observed owners/editors and local tags. Folder tags, notes and relationships reuse existing knowledge APIs; metadata refresh preserves indexed text and stable references.
 
@@ -32,7 +30,7 @@
   provenance `file_id`; `mcp --tools` `input_schema`; `commands --json` `global_options`, `inherited_options`,
   `exit_codes`, `operation_id` and `takes_value`, with its `contract` raised to 1. Google's own answers (`api`,
   `files`, `comments` and the rest) keep Google's names.
-- **drive runs on `@wirecat/cli-base` 0.27.1 and `@wirecat/cli-core` 0.264.0**, the renamed `@wirecat/cli-messaging`.
+- **drive runs on `@wirecat/cli-base` 0.27.1 and `@wirecat/cli-core` 0.265.0**, the renamed `@wirecat/cli-messaging`.
 
 - **Files drive cannot read are found by their name.** A scanned PDF, an image, a Slides deck, a file Google
   restricts for download or a file over the text limit is now saved with its name, type, size, owners and link, and
