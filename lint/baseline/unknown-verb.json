@@ -5,6 +5,7 @@
   "files get",
   "files mkdir",
   "files trash",
+  "files upload",
   "memories stale",
   "permissions get",
   "revisions get",

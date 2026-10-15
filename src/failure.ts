@@ -37,6 +37,8 @@ const ENTRIES: Entry[] = [
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   ["extraction.invalid-proposals", "invalid_response", "the model's memory proposals could not be used"],
   ["extraction.text-too-long", "validation_error", "the text is too long for memory extraction"],
+  ["file.not-file", "validation_error", "upload takes one file, not a folder"],
+  ["file.unreadable", "validation_error", "the file to upload could not be read"],
   ["listing.too-large", "provider_error", "the listing is over its bound; the checkpoint was kept"],
   ["oauth-client.rejected", "configuration_error", "Google rejected the OAuth client"],
   ["offline.refused", "permission_error", "this command needs Google; --offline was given"],
@@ -56,6 +58,16 @@ const ENTRIES: Entry[] = [
   ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive sync"],
   ["store.refused", "validation_error", "the local store refused the document text", ["store_refused_in"]],
   ["sync.partial", "provider_error", "the sync finished only in part; run it again"],
+  [
+    "upload.checksum-mismatch",
+    "provider_error",
+    "the uploaded file differs from the local file (MD5); upload it again",
+    ["file_id"],
+  ],
+  ["upload.interrupted", "provider_error", "the upload kept failing; run it again to continue where it stopped"],
+  ["upload.refused", "provider_error", "Google refused part of the upload"],
+  ["upload.session-expired", "provider_error", "Google expired the upload session; run the upload again"],
+  ["upload.start-refused", "provider_error", "Google refused to start the upload"],
   ["write.not-allowed", "permission_error", "this method changes Google data; pass --allow-writes"],
 ]
 

@@ -49,7 +49,7 @@ import {
 import { googleError } from "./errors.js"
 import { type Complete, memoryModel } from "./extraction.js"
 import { googleSource, MAX_ENTRIES } from "./google.js"
-import { apiMethod, type GoogleApi, googleApi } from "./google-api.js"
+import { apiMethod, type GoogleApi, googleApi, googleUploadRequest } from "./google-api.js"
 import { installKnowledgeCommands } from "./knowledge-commands.js"
 import { login } from "./login.js"
 import { type DocumentIndex, FOLDER, type GoogleSource, metadataJson, skipJson } from "./model.js"
@@ -59,10 +59,11 @@ import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, commandsDocument, describeDriveProgram, examples } from "./registry.js"
 import { installRemoteCommands } from "./remote-commands.js"
-import { readSnapshot, readState } from "./state.js"
+import { profileDir, readSnapshot, readState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
 import { authorizedClient, checkAuthorization, credentials } from "./tokens.js"
+import { type UploadRequest, uploadFile } from "./upload.js"
 import { VERSION } from "./version.js"
 
 export interface ProgramOptions {
@@ -77,6 +78,7 @@ export interface ProgramOptions {
   complete?: Complete
   ask?: (key: string) => Promise<boolean>
   readBody?: (path: string | number) => string
+  uploadRequest?: UploadRequest
 }
 const NETWORK_GROUPS = ["files", "comments", "permissions", "revisions", "shared-drives"]
 const NETWORK_COMMANDS = ["folders add", "documents get", "documents history", "sync"]
@@ -557,6 +559,29 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }
       return descriptor.mutates ? guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce) : act()
     },
+    upload: async (path, args) => {
+      const method = "drive.files.create"
+      const flags = policyFlags()
+      for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, true, flags, askOnce)
+      if (flags.offline)
+        throw new CliError("permission_error", "this operation needs Google; --offline was requested", {
+          reason: "offline.refused",
+        })
+      if (flags.dryRun) {
+        output(itemOf({ dry_run: true, method, mutates: true, path, ...args }))
+        throw new Preview()
+      }
+      const act = async () => {
+        let request = options.uploadRequest
+        if (!request) {
+          const client = authorizedClient(env, selected(), options.keyring, activeSignal)
+          await checkAuthorization(client, apiMethod(method).scope)
+          request = googleUploadRequest(client)
+        }
+        return uploadFile({ path, ...args, stateDir: profileDir(env, selected()), request })
+      }
+      return guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce)
+    },
   })
   const config = program.command("config").description("read and change settings; credentials are kept apart")
   examples(config.command("show").description("show the defaults and every profile's settings"), [
@@ -721,6 +746,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "files trash",
       "files restore",
       "files mkdir",
+      "files upload",
       "documents create",
       "documents update",
     ]

@@ -7,6 +7,7 @@ import { operations, validateRequest } from "./api-contract.js"
 import { googleError } from "./errors.js"
 import { metadata } from "./generated/metadata.js"
 import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
+import type { UploadRequest } from "./upload.js"
 
 export interface ApiMethod {
   name: string
@@ -121,3 +122,31 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
     },
   }
 }
+
+/** Sends the upload's requests through the signed-in client; every status comes back, 308 included. */
+export const googleUploadRequest =
+  (client: OAuth2Client): UploadRequest =>
+  async ({ url, method, headers, body }) => {
+    const response = await client.request<string>({
+      url,
+      method,
+      headers,
+      ...(body === undefined ? {} : { data: body }),
+      responseType: "text",
+      validateStatus: () => true,
+      retry: false,
+      timeout: 120000,
+    })
+    const raw = response.headers as unknown
+    const header = (name: string) =>
+      typeof (raw as Headers)?.get === "function"
+        ? ((raw as Headers).get(name) ?? undefined)
+        : (raw as Record<string, string> | undefined)?.[name.toLowerCase()]
+    let data: unknown = response.data
+    if (typeof data === "string" && data.trim()) {
+      try {
+        data = JSON.parse(data)
+      } catch {}
+    }
+    return { status: response.status, header, data }
+  }
