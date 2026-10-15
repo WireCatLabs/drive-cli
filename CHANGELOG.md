@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 — 2026-10-15
 
 - **Flag names follow the shared vocabulary of cli-base 0.31.0 (breaking, no aliases).** `documents export
   --out` is now `--output`; `api call --allow-write` is now `--allow-writes`; `relationships add --evidence` is now
