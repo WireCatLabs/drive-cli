@@ -265,8 +265,11 @@ the old parent while adding the selected one. Google files have one parent; see 
 Confirm the selected folder contains
 it and that local search finds the new text. Existing-document edits should use the Docs
 `writeControl` revision check exposed by [the update schema](commands.md#drive-documents-update).
-Creating a native Doc from text is supported; uploading arbitrary local PDF/Office/media files
-or converting local Markdown into a formatted Doc is not an implemented upload workflow.
+To upload an existing local PDF, Office document or media file instead, use
+`drive personal files upload ./report.pdf --parent FOLDER_ID`. The same write grant is required.
+The command returns the uploaded file ID; an interrupted upload resumes when you repeat it.
+Run sync to index supported files inside selected folders. Uploading preserves the file format;
+it does not convert local Markdown into a formatted Google Doc.
 
 ## Use a local MCP client
 

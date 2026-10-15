@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Recipes now explain the existing resumable `files upload` command instead of claiming that
+  arbitrary local file uploads are unsupported. Uploads preserve the original file format.
+
 ## 0.13.0 — 2026-10-16
 
 ### Added
