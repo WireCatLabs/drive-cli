@@ -21,7 +21,7 @@ Show the matching passage and original Google link. Tell me which selected sourc
 | Either of two topics | `drive personal search 'budget OR launch' --exact --json` |
 | A labelled follow-up | `drive personal search 'budget AND tag:follow-up' --exact --json` |
 | The question, rather than its wording | Prepare local embeddings, then search a natural-language question |
-| The person associated with a source | Use `documents list --person person:PERSON_ID`, then inspect the sources |
+| The person associated with a source | Use `documents list person:PERSON_UID`, then inspect the sources |
 
 Metadata is available in document detail and listings; it is not a universal field-search API.
 Use local tags and the supported person/list filters rather than inventing Google fields in a

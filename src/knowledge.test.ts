@@ -1,4 +1,5 @@
-import { openStore } from "@wirecat/cli-core/store"
+import { listQuery } from "@wirecat/cli-core/cli"
+import { IMPORTED_DOCUMENT_QUERY, openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it } from "vitest"
 import { openIndex } from "./store.js"
 import { content, file, fixture } from "./testing.js"
@@ -106,8 +107,15 @@ describe("shared document knowledge", () => {
       expect(
         (await f.k.linkPerson(f.principal, f.ref, "email:editor@example.invalid", `person:${person.uid}`)).uid,
       ).toBe(person.uid)
-      expect(await f.k.matches(f.principal, f.ref, { person: `person:${person.uid}` })).toBe(true)
-      expect(await f.k.matches("second-google-account", otherRef, { person: `person:${person.uid}` })).toBe(true)
+      const linked = async (principal: string) =>
+        (
+          await f.k.documents(principal, listQuery(`person:${person.uid}`, IMPORTED_DOCUMENT_QUERY, "documents list"), {
+            limit: 10,
+            offset: 0,
+          })
+        ).items.map((note) => note.ref)
+      expect(await linked(f.principal)).toEqual([f.ref])
+      expect(await linked("second-google-account")).toEqual([otherRef])
       await expect(f.k.linkPerson(f.principal, f.ref, "unknown-user", `person:${person.uid}`)).rejects.toThrow(
         "observed",
       )

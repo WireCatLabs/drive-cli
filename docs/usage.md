@@ -148,7 +148,7 @@ Combine them with `AND`, `OR` and `NOT`. `person:Rin*` matches an observed owner
 editor's name, email or Google ID by prefix; quote a full name for an exact value. Metadata
 search also accepts bare words matching names, descriptions or types. This is separate from
 indexed text/meaning search and from
-`documents list --person`, which filters an explicitly linked stored person reference.
+`documents list person:PERSON_UID`, which lists the documents linked to a stored person.
 
 Catalog entries return a stable `document:<id>` reference. That reference also represents a
 Google folder; it does not mean the folder has document text. Inspect `kind` and `content`:

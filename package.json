@@ -1,6 +1,6 @@
 {
   "name": "@wirecat/drive-cli",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Google Drive and Docs sync, Markdown snapshots and local search",
   "license": "Apache-2.0",
   "type": "module",
@@ -56,8 +56,8 @@
     "@googleapis/drive": "26.0.2",
     "@googleapis/driveactivity": "11.0.1",
     "@modelcontextprotocol/server": "2.1.0",
-    "@wirecat/cli-base": "0.32.0",
-    "@wirecat/cli-core": "0.287.0",
+    "@wirecat/cli-base": "0.33.0",
+    "@wirecat/cli-core": "0.288.0",
     "commander": "15.0.0",
     "google-auth-library": "11.2.0",
     "mammoth": "1.13.0",

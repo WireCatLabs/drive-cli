@@ -22,10 +22,15 @@ import {
   itemOf,
   liftJson,
   liftProfile,
+  listOf,
+  listQuery,
   parseDuration,
   refuseCommandName,
   renderAnswer,
+  typedQuery,
+  withQuery,
 } from "@wirecat/cli-core/cli"
+import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store"
 import { Command, Help, InvalidArgumentError, Option } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./catalog-commands.js"
@@ -370,38 +375,39 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   })
   const documents = program.command("documents").description("read imported documents and Google Docs")
   const documentArgument = "document id or Google Docs URL"
-  examples(documents.command("list").description("list imported documents with their Google URLs"), [
-    "drive personal documents list",
-    "drive personal documents list --tag budget",
-  ])
-    .option("--tag <tag>", "only documents with this tag")
-    .option("--person <uid>", "only documents linked to this person, by uid or person:<uid>")
-    .action(async (args: { tag?: string; person?: string }) => {
+  withQuery(
+    examples(documents.command("list").description("list imported documents with their Google URLs"), [
+      "drive personal documents list",
+      "drive personal documents list tag:budget",
+      "drive personal documents list person:PERSON_UID --limit 10",
+    ]),
+    IMPORTED_DOCUMENT_QUERY,
+  )
+    .option("--limit <n>", "how many documents to return", positive, 50)
+    .option("--page <n>", "which page to return", positive, 1)
+    .action(async (words: string[], { limit, page }: { limit: number; page: number }) => {
       const profile = activeProfile(env, selected())
       const state = readState(env, selected(), profile.principal)
-      let docs = Object.values(state.documents)
-      const filters = {
-        ...(args.tag ? { tag: args.tag } : {}),
-        ...(args.person ? { person: args.person.startsWith("person:") ? args.person : `person:${args.person}` } : {}),
-      }
-      // BUG-243: still one check per document. No cli-core store query yet scopes imported documents of one
-      // account by tag or by a person:<uid> link, so this stays a flag until one does; it must not become a query.
-      if (args.tag || args.person)
-        docs = await withIndex(async (index) => {
-          if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
-          const filtered = []
-          for (const doc of docs)
-            if (await index.knowledge.matches(profile.principal, doc.reference, filters)) filtered.push(doc)
-          return filtered
-        })
+      const query = typedQuery(words)
+      const ast = listQuery(query, IMPORTED_DOCUMENT_QUERY, "documents list")
+      const found = await withIndex(async (index) => {
+        if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
+        return index.knowledge.documents(profile.principal, ast, { limit, offset: (page - 1) * limit })
+      })
       output(
-        allOf(
-          docs.map((doc) => ({
-            ...metadataJson(doc.metadata),
-            reference: doc.reference,
-            tabs: doc.tabs,
-          })),
-        ),
+        listOf("documents list", {
+          items: found.items.map((note) => {
+            const id = (note.path ?? "").replace(/\.md$/, "")
+            const doc = state.documents[id]
+            return doc
+              ? { ...metadataJson(doc.metadata), reference: doc.reference, tabs: doc.tabs }
+              : { id, name: note.title, reference: note.ref, tabs: 0 }
+          }),
+          limit,
+          has_more: found.hasMore,
+          page,
+          args: { query: query || undefined },
+        }),
       )
     })
   const imported = (input: string) => {

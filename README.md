@@ -141,7 +141,7 @@ See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
 
 ```sh
 drive personal tags add DOC_ID project-budget review
-drive personal documents list --tag review
+drive personal documents list tag:review
 drive personal notes add DOC_ID 'Check the assumptions' --title Review
 drive personal identities list DOC_ID
 drive personal documents context DOC_ID

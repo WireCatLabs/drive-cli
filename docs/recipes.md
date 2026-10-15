@@ -135,12 +135,12 @@ what a file says. See [catalog navigation and filters](usage.md#browse-and-organ
 ```sh
 drive personal tags add DOC_ID follow-up budget
 drive personal notes add DOC_ID 'Confirm whether tax is included' --title 'Budget review'
-drive personal documents list --tag follow-up --json
+drive personal documents list tag:follow-up --json
 drive personal search 'budget AND tag:follow-up' --exact --json
 drive personal notes list DOC_ID --json
 ```
 
-The document list's `--tag` filters labels; search uses `tag:` inside the query. Read the note
+Both the document list and search take `tag:` inside the query. Read the note
 list to confirm the saved memo. These operations change local context, not Google's document.
 
 ## Link a document to a person or project

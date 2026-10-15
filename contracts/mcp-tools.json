@@ -1583,10 +1583,15 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "person": {
+        "limit": {
           "type": "string"
         },
-        "tag": {
+        "page": {
+          "type": "string"
+        },
+        "query": {
+          "description": "field:value terms, as the CLI takes them; fields: tag, person",
+          "maxLength": 8192,
           "type": "string"
         }
       },

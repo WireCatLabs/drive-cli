@@ -31,7 +31,7 @@ describe("standalone command workflow", () => {
   })
   it("lists and exports imported snapshots without overwriting existing files", async () => {
     const f = fixture()
-    const options = { env: f.env, source: async () => f.source, index: async () => f.index }
+    const options = { env: f.env, source: async () => f.source }
     await createProgram({ ...options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
     const listed = captureStreams()
     await createProgram({ ...options, streams: listed }).parseAsync(["default", "documents", "list", "--json"], {

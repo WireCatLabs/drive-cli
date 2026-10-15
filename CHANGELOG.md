@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.0 — 2026-10-15
+
+### Changed — may break callers
+
+- **`documents list` takes a query the store applies, not `--tag` and `--person`.** The shared store narrows the
+  imported documents; drive no longer checks each one after reading.
+  - `documents list --tag budget` → `documents list tag:budget`; the tag is an owner tag, by name or alias.
+  - `documents list --person person:PERSON_UID` → `documents list person:PERSON_UID`.
+  - The list is paged: `--limit` (default 50) and `--page`. Documents come in import order, also without a query.
+  - The MCP tool takes `query`, `limit` and `page` instead of `tag` and `person`.
+- Built on `@wirecat/cli-base` 0.33.0 and `@wirecat/cli-core` 0.288.0.
+
 ## 0.10.0 — 2026-10-15
 
 ### Changed — may break callers

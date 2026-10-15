@@ -10,7 +10,7 @@ as their source argument and resolve its shared reference in the selected profil
 ```sh
 drive personal tags add DOC_ID budget review
 drive personal tags list DOC_ID
-drive personal documents list --tag review
+drive personal documents list tag:review
 drive personal tags remove DOC_ID review
 drive personal notes add DOC_ID 'Check the assumptions' --title Review
 drive personal notes list DOC_ID assumptions
@@ -37,7 +37,7 @@ with memo or messenger tools requires an explicit compatible store path and alig
 ```sh
 drive personal identities list DOC_ID
 drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID
-drive personal documents list --person person:PERSON_UID
+drive personal documents list person:PERSON_UID
 drive personal documents history DOC_ID --limit 100
 drive personal session start --client-file /path/to/client.json --grant activity
 drive personal documents history DOC_ID --activity
