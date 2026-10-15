@@ -2,17 +2,15 @@ import { CliError } from "@wirecat/cli-base"
 import { metaOf } from "@wirecat/cli-base/commands"
 import type { ItemEnvelope, ListEnvelope } from "@wirecat/cli-base/standards"
 import { writes } from "@wirecat/cli-base/standards"
-import { answerFields, checkJson } from "@wirecat/cli-core/cli"
+import { answerFields, checkJson, entityFields } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { CATALOG_FIELDS } from "./catalog.js"
 import { DOCUMENT_LIST_FIELDS } from "./model.js"
 
-export const providerJsonFields = (command: Command | undefined): string[] | undefined => {
-  if (command?.parent?.name() === "catalog" && ["list", "search", "show"].includes(command.name()))
-    return CATALOG_FIELDS
-  if (command?.parent?.name() === "documents" && command.name() === "list") return DOCUMENT_LIST_FIELDS
-  return undefined
-}
+export const providerJsonFields = entityFields({
+  "document.drive_catalog": CATALOG_FIELDS,
+  drive_document: DOCUMENT_LIST_FIELDS,
+})
 
 export const checkProviderJson = (command: Command, request: { json: boolean; fields?: string }, terminal: boolean) => {
   checkJson(command, request, terminal, providerJsonFields)
