@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A document whose name has Cyrillic or other non-Latin capitals comes first for a search by its name, and
+  `title:` finds it in any case (cli-core 0.285.0).
+
 ## 0.8.1 — 2026-10-15
 
 - Maintainers can set `WIRECAT_RELEASE_WAIT_SECONDS` when using `bin/release` to wait for the
