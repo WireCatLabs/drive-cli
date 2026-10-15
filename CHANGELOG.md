@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.2 — 2026-10-16
+
+### Fixed
+
+- AI memory extraction explicitly allows supporting source quotes in the shared model gateway.
+  Its mandatory exact-evidence request no longer conflicts with the gateway’s ordinary no-copy
+  instruction. Preview, proposal review and exact-quote validation retain their existing behavior.
+  Uses `@wirecat/cli-core` 0.294.0 with matching `@wirecat/cli-base` 0.35.0.
+
 ## 0.12.1 — 2026-10-15
 
 ### Changed
