@@ -216,6 +216,17 @@ describe("MCP derived from the same guarded command tree", () => {
     const options = { env: f.env, api: { call: request } }
     const readonly = mcpTools(createProgram, options, "default", { readOnly: true })
     expect(readonly.every((tool) => !writes(tool.command.effects))).toBe(true)
+    expect(readonly.some((tool) => tool.name === "drive_facts_reverse")).toBe(false)
+    const reverse = mcpTools(createProgram, options, "default").find((tool) => tool.name === "drive_facts_reverse")
+    if (!reverse) throw new Error("missing decision reversal tool")
+    expect(reverse.command.effects).toEqual({ remote: "none", local: "write" })
+    expect(toolArgv(reverse, { document: "doc-a", fact: "fact:1" })).toEqual([
+      "facts",
+      "reverse",
+      "--",
+      "doc-a",
+      "fact:1",
+    ])
     const get = readonly.find((tool) => tool.name === "drive_api_drive_files_get")
     if (!get) throw new Error("missing generated tool")
     expect(await invokeTool(createProgram, get, { "file-id": "doc-a" }, options, "default")).toMatchObject({

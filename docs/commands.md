@@ -721,6 +721,8 @@ drive <profile> facts add <document> <statement> [options]
 |---|---|
 | `--type <type>` | what kind of fact it is. One of: `fact`, `statement`, `question`, `decision`, `promise`. Default: `fact`. |
 | `--scope <scope>` | whose fact it is: personal or work. One of: `personal`, `work`. |
+| `--supersedes <ref>` | a decision only: the decision this one replaces. |
+| `--occurred-time <time>` | when it happened, as the evidence shows, ISO 8601. |
 
 ### `drive facts list`
 
@@ -754,12 +756,27 @@ drive <profile> facts show <document> <fact>
 
 ### `drive facts confirm`
 
-confirm a proposed fact as true
+confirm a proposed fact; a decision it supersedes stops holding
 
 This command changes local state.
 
 ```sh
 drive <profile> facts confirm <document> <fact>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required | Google file or folder id or URL in the local catalog. |
+| `fact` | required | fact:<id> reference, as facts list prints it. |
+
+### `drive facts reverse`
+
+an accepted decision no longer holds, and nothing replaced it
+
+This command changes local state.
+
+```sh
+drive <profile> facts reverse <document> <fact>
 ```
 
 | Argument | | What it is |

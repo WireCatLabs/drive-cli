@@ -27,7 +27,7 @@ protect against stale edits. Local tags, notes and owner relationships survive d
 resync. Removing a source from ingestion retains owner-created notes; its source-backed memories
 become stale. These commands do not write Google comments or Google Drive labels.
 
-Each command verifies the source belongs to the selected Google account. Note and memory
+Each command verifies the source belongs to the selected Google account. Note, memory and fact
 operations also check that the item is attached to that document. Explicit links can connect
 the document to other known shared entities. The database remains isolated by default; sharing
 with memo or messenger tools requires an explicit compatible store path and aligned package pins.
@@ -86,8 +86,11 @@ a fact, statement, question, decision or promise — is a fact: `facts add` reco
 `memories extract --yes` saves the facts it finds as proposed, next to the memories. Old memories of kind
 fact became facts when the shared store upgraded (cli-core 0.247.0).
 `--supersedes` replaces an earlier memory about this document; the earlier one becomes superseded.
-The shared store owns memory persistence, evidence references and search. Memory search filters
-the shared search result to this document and reports when its bounded candidate limit is reached.
+For decisions, `facts add --supersedes fact:FACT_ID` replaces an earlier decision from the same
+source on acceptance. An agent proposal does not supersede it until confirmed. `facts reverse DOC_ID fact:FACT_ID` marks an accepted decision as no longer holding without a replacement;
+other fact kinds cannot be reversed. `--occurred-time` records the evidence's ISO 8601 event time.
+The shared store owns persistence, state transitions, evidence references and search. Memory search
+runs within this document and reports when the document's own result limit is reached.
 
 Extraction uses cli-core's public modelGateway, AI settings schema and provider adapters.
 Configure a provider/model once or use the standard `DRIVE_MODELS_MEMORIES_PROVIDER`,

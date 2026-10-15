@@ -63,6 +63,30 @@
       "kind": "json",
       "errorCode": "validation_error",
       "contains": "choose a profile explicitly"
+    },
+    {
+      "id": "decision-reverse-readonly-before-auth",
+      "args": ["personal", "--read-only", "facts", "reverse", "synthetic-doc", "fact:1"],
+      "exit": 5,
+      "stream": "stderr",
+      "kind": "json",
+      "errorCode": "permission_error"
+    },
+    {
+      "id": "decision-reverse-dry-run-before-auth",
+      "args": ["personal", "--dry-run", "facts", "reverse", "synthetic-doc", "fact:1", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "json": {
+        "item": {
+          "dry_run": true,
+          "effects": {
+            "remote": "none",
+            "local": "write"
+          }
+        }
+      }
     }
   ],
   "mcp": {
