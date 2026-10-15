@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.12.1 — 2026-10-15
+
+### Changed
+
+- `catalog show`, `catalog list`, `catalog search` and `documents list` declare the rows they answer
+  (`document.drive_catalog`, `drive_document`) in `commands --json`, and `--json=<field>` is checked against those
+  declarations through cli-core's `entityFields` rather than by command name. A field the rows lack is still
+  refused with `output.unknown-field`.
+- drive runs on `@wirecat/cli-core` 0.292.0.
+
 ## 0.12.0 — 2026-10-15
 
 ### Added

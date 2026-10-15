@@ -377,13 +377,16 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   })
   const documents = program.command("documents").description("read imported documents and Google Docs")
   const documentArgument = "document id or Google Docs URL"
-  withQuery(
-    examples(documents.command("list").description("list imported documents with their Google URLs"), [
-      "drive personal documents list",
-      "drive personal documents list tag:budget",
-      "drive personal documents list person:PERSON_UID --limit 10",
-    ]),
-    IMPORTED_DOCUMENT_QUERY,
+  annotate(
+    withQuery(
+      examples(documents.command("list").description("list imported documents with their Google URLs"), [
+        "drive personal documents list",
+        "drive personal documents list tag:budget",
+        "drive personal documents list person:PERSON_UID --limit 10",
+      ]),
+      IMPORTED_DOCUMENT_QUERY,
+    ),
+    { output: { entity: "drive_document" } },
   )
     .option("--limit <n>", "how many documents to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)

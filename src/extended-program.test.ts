@@ -116,6 +116,9 @@ describe("document knowledge commands", () => {
     expect(tagged.page.has_more).toBe(false)
     const projected = await call("documents", "list", "tag:budget", "--json=id,reference,tabs")
     expect(projected.items).toEqual([{ id: "doc-b", reference: expect.stringMatching(/^document:/), tabs: 0 }])
+    await expect(call("documents", "list", "--json=subject")).rejects.toMatchObject({
+      details: { reason: "output.unknown-field" },
+    })
     await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/query/)
     await expect(call("documents", "list", "kind:file")).rejects.toThrow(/kind/)
   })

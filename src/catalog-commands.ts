@@ -69,9 +69,15 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
       ),
     ),
   )
-  examples(local(catalog.command("show").description("show stored metadata and the stable file or folder reference")), [
-    "drive personal catalog show FILE_ID --offline",
-  ])
+  examples(
+    annotate(
+      local(catalog.command("show").description("show stored metadata and the stable file or folder reference")),
+      {
+        output: { entity: "document", view: "drive_catalog" },
+      },
+    ),
+    ["drive personal catalog show FILE_ID --offline"],
+  )
     .argument("<file>", "Google file or folder id, or its Drive URL")
     .action(async (id: string) =>
       output(itemOf(await run(async (index, principal) => catalogOutput(await entry(index, principal, id))))),

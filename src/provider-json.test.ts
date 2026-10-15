@@ -11,6 +11,10 @@ describe("provider result fields", () => {
     const f = fixture()
     const discovery = commandsDocument(createProgram({ env: f.env, streams: captureStreams() }), ["catalog", "list"])
     expect(discovery.commands[0]?.output).toEqual({ entity: "document", view: "drive_catalog" })
+    const declared = (words: string[]) =>
+      commandsDocument(createProgram({ env: f.env, streams: captureStreams() }), words).commands[0]?.output
+    expect(declared(["catalog", "show"])).toEqual({ entity: "document", view: "drive_catalog" })
+    expect(declared(["documents", "list"])).toEqual({ entity: "drive_document" })
     saveState(f.env, "default", {
       version: 1,
       principal: "synthetic-principal",
