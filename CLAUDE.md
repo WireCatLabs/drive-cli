@@ -18,7 +18,7 @@ No implicit model download or credential-file fallback.
 Browser login uses PKCE and state checks; its listener closes on success, failure, cancellation
 and timeout. Help, version and command discovery never load config, keyring or database. Remote
 document operations default to reads. Remote writes require an explicitly requested OAuth write
-grant; generic mutating methods also require --allow-write, and permanent deletion requires
+grant; generic mutating methods also require --allow-writes, and permanent deletion requires
 --allow-delete. Account setup and local ingestion are explicit. No live remote writes in tests.
 
 Shared notes, tags, relationships, identity links and memories stay in cli-core's public

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Flag names follow the shared vocabulary of cli-base 0.31.0 (breaking, no aliases).** `documents export
+  --out` is now `--output`; `api call --allow-write` is now `--allow-writes`; `relationships add --evidence` is now
+  `--reason`. `files list` takes its Google Drive query as words after the command instead of `--query`. Value names
+  in help read `--max-output-bytes <bytes>`, `--parent <id>`, `--old-parent <id>`, `--person <uid>` and
+  `--supersedes <ref>`; `documents list --person` accepts a bare uid as well as `person:<uid>`.
+- A missing text or picture model now says that tg or max downloads it, with both commands, instead of naming only
+  `tg`: drive has no download command of its own.
+- Uses `@wirecat/cli-base` 0.31.0 and `@wirecat/cli-core` 0.281.0.
+
 - `status` names the supported Google Sheets and uploaded PDF, Word, Excel, CSV and TSV readers,
   alongside Docs and Markdown/TXT, while retaining the native-export fidelity limitation.
 

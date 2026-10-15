@@ -134,6 +134,17 @@ describe("released shared store and search", () => {
     }
   })
 
+  it("advises tg or max for a missing text model, not a drive command", async () => {
+    const index = await openIndex(fixture().env)
+    try {
+      await expect(index.embed(10)).rejects.toThrow(
+        /tg or max downloads it: `tg models text download [^`]+` or `max models/,
+      )
+    } finally {
+      await index.close()
+    }
+  })
+
   describe("picture search", () => {
     const axis = (i: number) => Float32Array.from({ length: 512 }, (_, n) => (n === i ? 1 : 0))
     const embedder = {

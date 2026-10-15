@@ -113,7 +113,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
       parseDuration(raw, "--timeout"),
     )
-    .option("--max-output-bytes <n>", "largest result to print, in bytes; 0 for no limit", offset, 4 * 1024 * 1024)
+    .option("--max-output-bytes <bytes>", "largest result to print, in bytes; 0 for no limit", offset, 4 * 1024 * 1024)
     .option("--read-only", "refuse local and remote mutations")
     .option("--offline", "answer only operations that use local cached data")
     .option("--dry-run", "validate command/policy and preview without acting")
@@ -374,17 +374,21 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     "drive personal documents list --tag budget",
   ])
     .option("--tag <tag>", "only documents with this tag")
-    .option("--person <reference>", "only documents linked to this person:<uid> reference")
+    .option("--person <uid>", "only documents linked to this person, by uid or person:<uid>")
     .action(async (args: { tag?: string; person?: string }) => {
       const profile = activeProfile(env, selected())
       const state = readState(env, selected(), profile.principal)
       let docs = Object.values(state.documents)
+      const filters = {
+        ...(args.tag ? { tag: args.tag } : {}),
+        ...(args.person ? { person: args.person.startsWith("person:") ? args.person : `person:${args.person}` } : {}),
+      }
       if (args.tag || args.person)
         docs = await withIndex(async (index) => {
           if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
           const filtered = []
           for (const doc of docs)
-            if (await index.knowledge.matches(profile.principal, doc.reference, args)) filtered.push(doc)
+            if (await index.knowledge.matches(profile.principal, doc.reference, filters)) filtered.push(doc)
           return filtered
         })
       output(
@@ -430,22 +434,22 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       .command("export")
       .argument("<document>", documentArgument)
       .description("write an imported document to a new Markdown file"),
-    ["drive personal documents export DOC_ID --out notes.md"],
+    ["drive personal documents export DOC_ID --output notes.md"],
   )
-    .requiredOption("--out <file>", "path of the Markdown file to write; an existing file is refused")
-    .action((input: string, args: { out: string }) => {
+    .requiredOption("--output <file>", "path of the Markdown file to write; an existing file is refused")
+    .action((input: string, args: { output: string }) => {
       const { id, snapshot } = imported(input)
       try {
-        writeFileSync(args.out, snapshot.markdown, { flag: "wx", mode: 0o600 })
+        writeFileSync(args.output, snapshot.markdown, { flag: "wx", mode: 0o600 })
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code === "EEXIST")
-          throw new CliError("validation_error", "the output file already exists; choose another --out", {
+          throw new CliError("validation_error", "the output file already exists; choose another --output", {
             reason: "export.exists",
-            param: "--out",
+            param: "--output",
           })
         throw error
       }
-      output(itemOf({ id, path: args.out, format: "markdown" }))
+      output(itemOf({ id, path: args.output, format: "markdown" }))
     })
   examples(
     program
@@ -762,8 +766,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const method = metadata.api_operation ?? rawMethod
     if (rawMethod) {
       const descriptor = apiMethod(rawMethod)
-      if (descriptor.mutates && !action.opts().allowWrite)
-        throw new CliError("permission_error", "this method changes Google data; pass --allow-write", {
+      if (descriptor.mutates && !action.opts().allowWrites)
+        throw new CliError("permission_error", "this method changes Google data; pass --allow-writes", {
           reason: "write.not-allowed",
         })
       if (descriptor.destructive && !action.opts().allowDelete && !flags.allowDangerous)

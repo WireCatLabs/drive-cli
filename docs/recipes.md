@@ -209,7 +209,7 @@ Comments are inspectable here but are not included in document search.
 ## Give another tool one Markdown file
 
 ```sh
-drive personal documents export DOC_ID --out ./decision.md
+drive personal documents export DOC_ID --output ./decision.md
 ```
 
 Open the resulting file or pass its path to a tool running on the same computer. Export reads

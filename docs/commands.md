@@ -17,7 +17,7 @@ These options apply to the selected profile and current invocation.
 | `--quiet` | suppress optional diagnostics. |
 | `--debug` | on failure, show the full error record: cause and stack. |
 | `--timeout <duration>` | whole-command deadline, e.g. 30s. |
-| `--max-output-bytes <n>` | largest result to print, in bytes; 0 for no limit. Default: `4194304`. |
+| `--max-output-bytes <bytes>` | largest result to print, in bytes; 0 for no limit. Default: `4194304`. |
 | `--read-only` | refuse local and remote mutations. |
 | `--offline` | answer only operations that use local cached data. |
 | `--dry-run` | validate command/policy and preview without acting. |
@@ -145,7 +145,7 @@ drive <profile> documents list [options]
 | Option | What it does |
 |---|---|
 | `--tag <tag>` | only documents with this tag. |
-| `--person <reference>` | only documents linked to this person:<uid> reference. |
+| `--person <uid>` | only documents linked to this person, by uid or person:<uid>. |
 
 ### `drive documents show`
 
@@ -175,7 +175,7 @@ drive <profile> documents export <document> [options]
 
 | Option | What it does |
 |---|---|
-| `--out <file>` | path of the Markdown file to write; an existing file is refused. |
+| `--output <file>` | path of the Markdown file to write; an existing file is refused. |
 
 ### `drive documents context`
 
@@ -472,7 +472,7 @@ drive <profile> relationships add <document> <reference> [options]
 |---|---|
 | `--kind <kind>` | how the two relate. One of: `links-to`, `about`, `evidence`, `created-from`, `related-to`, `assigned-to`. Default: `related-to`. |
 | `--role <role>` | the part the reference plays, in a word or two. |
-| `--evidence <text>` | why the two are connected. |
+| `--reason <text>` | why the two are connected. |
 
 ### `drive relationships remove`
 
@@ -601,7 +601,7 @@ drive <profile> memories add <document> <text> [options]
 |---|---|
 | `--scope <scope>` | whose memory it is: personal or work. One of: `personal`, `work`. |
 | `--kind <kind>` | what kind of memory it is. One of: `summary`, `digest`, `preference`. Default: `summary`. |
-| `--supersedes <memory>` | a memory:<id> about the same document that this one replaces. |
+| `--supersedes <ref>` | a memory:<id> about the same document that this one replaces. |
 
 ### `drive memories list`
 
@@ -849,7 +849,7 @@ drive <profile> api call <method> [options]
 |---|---|
 | `--params <json>` | query and path parameters as a JSON object. Default: `[object Object]`. |
 | `--body <json>` | request body as a JSON object. |
-| `--allow-write` | allow a method that changes Google data. |
+| `--allow-writes` | allow a method that changes Google data. |
 | `--allow-delete` | allow a method that deletes for good or empties the trash. |
 
 ### `drive api docs-documents-batch-update`
@@ -2389,15 +2389,18 @@ read and change files in Google Drive; nothing is imported
 list files in Google Drive, one page at a time
 
 ```sh
-drive <profile> files list [options]
+drive <profile> files list [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | Google Drive query the files match; trashed = false when omitted. |
 
 | Option | What it does |
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
 | `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
-| `--query <q>` | only files that match this Google Drive query. Default: `trashed = false`. |
-| `--parent <folder>` | only the files directly inside this folder id. |
+| `--parent <id>` | only the files directly inside this folder id. |
 
 ### `drive files get`
 
@@ -2428,7 +2431,7 @@ drive <profile> files copy <file> [options]
 | Option | What it does |
 |---|---|
 | `--name <name>` | name of the copy; Google's default when omitted. |
-| `--parent <folder>` | folder id to put the copy in. |
+| `--parent <id>` | folder id to put the copy in. |
 
 ### `drive files move`
 
@@ -2446,8 +2449,8 @@ drive <profile> files move <file> [options]
 
 | Option | What it does |
 |---|---|
-| `--parent <folder>` | folder id to move the file into. |
-| `--old-parent <folder>` | folder id to take the file out of. |
+| `--parent <id>` | folder id to move the file into. |
+| `--old-parent <id>` | folder id to take the file out of. |
 
 ### `drive files update`
 
@@ -2511,7 +2514,7 @@ drive <profile> files mkdir <name> [options]
 
 | Option | What it does |
 |---|---|
-| `--parent <folder>` | folder id to create it in; My Drive when omitted. |
+| `--parent <id>` | folder id to create it in; My Drive when omitted. |
 
 ## `drive comments`
 

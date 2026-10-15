@@ -64,9 +64,13 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         .default("related-to"),
     )
     .option("--role <role>", "the part the reference plays, in a word or two")
-    .option("--evidence <text>", "why the two are connected")
-    .action(async (doc: string, to: string, args) =>
-      output(itemOf(await run(doc, (k, p, ref) => k.addLink(p, ref, { to, ...args })))),
+    .option("--reason <text>", "why the two are connected")
+    .action(async (doc: string, to: string, { reason, ...args }) =>
+      output(
+        itemOf(
+          await run(doc, (k, p, ref) => k.addLink(p, ref, { to, ...args, ...(reason ? { evidence: reason } : {}) })),
+        ),
+      ),
     )
   examples(relationships.command("remove").description("remove one of a document's relationships"), [
     "drive personal relationships remove DOC_ID LINK_ID",
@@ -142,7 +146,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<text>", "what to remember")
     .addOption(scope("whose memory it is: personal or work").makeOptionMandatory())
     .addOption(new Option("--kind <kind>", "what kind of memory it is").choices(MEMORY_KINDS).default("summary"))
-    .option("--supersedes <memory>", "a memory:<id> about the same document that this one replaces")
+    .option("--supersedes <ref>", "a memory:<id> about the same document that this one replaces")
     .action(async (doc: string, body: string, args) =>
       output(itemOf(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" })))),
     )
