@@ -99,7 +99,7 @@ describe("document knowledge commands", () => {
     const call = async (...args: string[]) => {
       const streams = captureStreams()
       await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
-        ["default", ...args, "--json"],
+        ["default", ...args, ...(args.some((arg) => arg.startsWith("--json")) ? [] : ["--json"])],
         { from: "user" },
       )
       return JSON.parse(streams.stdout.join(""))
@@ -114,6 +114,8 @@ describe("document knowledge commands", () => {
       expect.objectContaining({ id: "doc-b", url: expect.any(String), reference: expect.stringMatching(/^document:/) }),
     ])
     expect(tagged.page.has_more).toBe(false)
+    const projected = await call("documents", "list", "tag:budget", "--json=id,reference,tabs")
+    expect(projected.items).toEqual([{ id: "doc-b", reference: expect.stringMatching(/^document:/), tabs: 0 }])
     await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/query/)
     await expect(call("documents", "list", "kind:file")).rejects.toThrow(/kind/)
   })

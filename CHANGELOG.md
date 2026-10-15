@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `documents list --json=reference,tabs` selects the fields the list answers again. 0.11.0 refused them, because
+  the list's query named the shared `document` entity, whose fields drive's list does not use.
+
 ## 0.11.0 — 2026-10-15
 
 ### Changed — may break callers
