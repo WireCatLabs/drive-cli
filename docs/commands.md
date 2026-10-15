@@ -2512,6 +2512,25 @@ drive <profile> files mkdir <name> [options]
 |---|---|
 | `--parent <id>` | folder id to create it in; My Drive when omitted. |
 
+### `drive files upload`
+
+upload a local file to Google Drive; an interrupted upload resumes
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files upload <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | local file to upload. |
+
+| Option | What it does |
+|---|---|
+| `--parent <id>` | folder id to put it in; My Drive when omitted. |
+| `--name <name>` | name in Google Drive; the local file name when omitted. |
+
 ## `drive comments`
 
 read the comments of a file in Google Drive

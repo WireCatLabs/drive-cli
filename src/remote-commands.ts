@@ -62,6 +62,7 @@ export interface RemoteCommands {
   output(body: Body): void
   positive(input: string): number
   readBody?: (path: string | number) => string
+  upload(path: string, options: { name?: string; parent?: string }): Promise<unknown>
 }
 export const installRemoteCommands = (program: Command, helpers: RemoteCommands) => {
   const { call, output, positive } = helpers
@@ -251,6 +252,25 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
               ...(args.parent ? { parents: [fileId(args.parent)] } : {}),
             },
           ),
+        ),
+      ),
+    )
+  examples(
+    files
+      .command("upload")
+      .description("upload a local file to Google Drive; an interrupted upload resumes")
+      .argument("<path>", "local file to upload"),
+    ["drive personal files upload ./backup.db.zst --parent FOLDER_ID"],
+  )
+    .option("--parent <id>", "folder id to put it in; My Drive when omitted")
+    .option("--name <name>", "name in Google Drive; the local file name when omitted")
+    .action(async (path: string, args) =>
+      output(
+        itemOf(
+          await helpers.upload(path, {
+            ...(args.name ? { name: args.name } : {}),
+            ...(args.parent ? { parent: fileId(args.parent) } : {}),
+          }),
         ),
       ),
     )

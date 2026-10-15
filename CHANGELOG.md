@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `files upload <path> [--parent ID] [--name NAME]` uploads a local file of any size with Google's resumable
+  upload, in 8 MiB chunks. An interrupted upload continues from the byte Google holds on the next run; the session
+  waits in the profile's state folder (`uploads/`, mode 600) for up to a week. The answer carries the file id, size
+  and MD5, and drive refuses the upload when Google's MD5 differs from the local file's. It is a write: profile
+  policy, `--dry-run` and `--read-only` apply.
+
 ## 0.11.2 — 2026-10-15
 
 ### Fixed

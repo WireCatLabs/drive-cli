@@ -126,6 +126,7 @@ drive personal revisions get FILE_ID REVISION_ID
 drive shared-drives
 drive personal session start --client-file /path/to/client.json --grant write
 drive personal files mkdir 'Research' --parent FOLDER_ID
+drive personal files upload ./backup.db.zst --parent FOLDER_ID
 drive personal files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
 drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID
 drive personal files update FILE_ID --body '{"name":"Renamed"}'
