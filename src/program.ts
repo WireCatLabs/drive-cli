@@ -190,7 +190,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     }
     if (fields && currentAction) checkResultFields(currentAction, whole, fields)
     const paths = fields ? fieldsOf(fields) : undefined
-    const answer = paths ? eachItem(whole, (item) => projectFields(item, paths)) : whole
+    const answer = paths ? (projectFields(whole, paths) as typeof whole) : whole
     print((renderer, format, buffered) =>
       renderAnswer(currentAction ?? program, { renderer, format, streams: buffered }, answer),
     )

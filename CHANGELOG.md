@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Nested JSON selection uses the shared projector.** Dotted paths traverse arrays and report objects; coverage, pagination and execution metadata stay available.
+
 ## 0.8.1 — 2026-10-15
 
 - Fresh npm installs preserve generated API operation names and remote effects. Aligns Base 0.31.1

@@ -261,7 +261,10 @@ an uncertain remote write must be inspected before repeating it. MCP displays co
 visibly; `--agent-json` is no longer an option.
 
 For a few catalog fields, use `--json=id,name` instead of `--json`.
-Only those fields of each item are returned; envelope and page metadata stay available.
+Dotted paths select nested objects and arrays: use `--json=hits.ref,hits.excerpt` for search
+passages under `item.hits`. Paths are relative to the answer payload. Envelope, page, coverage,
+next steps, missing data and execution metadata stay available. Field selection reduces printed
+output, not the work scanned.
 The same selection works with `--jsonl`. Unknown top-level fields are refused with the
 available field names. A write without declared result fields requires ordinary `--json`;
 field selection is refused before that write runs.
