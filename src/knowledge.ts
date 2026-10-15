@@ -50,7 +50,7 @@ export interface DocumentKnowledge {
     ref: string,
     query: string,
     scope?: Memory["scope"],
-  ): Promise<{ items: Memory[]; candidate_limit_reached: boolean }>
+  ): Promise<{ items: Memory[]; limit_reached: boolean }>
   addFact(
     principal: string,
     ref: string,
@@ -182,12 +182,8 @@ export const documentKnowledge = (
     },
     searchMemories: async (principal, ref, query, scope) => {
       await document(principal, ref)
-      // The store's search takes no subject yet, so the document narrows its best 200 here.
-      const candidates = await store.memories.search(query, { ...(scope ? { scope } : {}), limit: 200 })
-      return {
-        items: candidates.filter((memory) => memory.subject === ref),
-        candidate_limit_reached: candidates.length === 200,
-      }
+      const items = await store.memories.search(query, { subject: ref, ...(scope ? { scope } : {}), limit: 200 })
+      return { items, limit_reached: items.length === 200 }
     },
     addFact: async (principal, ref, { statement, type, scope, by }) => {
       await document(principal, ref)
