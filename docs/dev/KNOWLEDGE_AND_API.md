@@ -39,7 +39,7 @@ drive personal identities list DOC_ID
 drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID
 drive personal documents list --person person:PERSON_UID
 drive personal documents history DOC_ID --limit 100
-drive personal session start --client-file /path/to/client.json --activity
+drive personal session start --client-file /path/to/client.json --grant activity
 drive personal documents history DOC_ID --activity
 ```
 
@@ -74,12 +74,12 @@ drive personal memories search DOC_ID budget --scope work
 drive personal memories stale DOC_ID memory:MEMORY_ID
 drive personal models set --provider openai --model YOUR_MODEL
 drive personal memories extract DOC_ID --scope work
-drive personal memories extract DOC_ID --scope work --tab TAB_ID --save
+drive personal memories extract DOC_ID --scope work --tab TAB_ID --yes
 ```
 
 Scopes are explicitly `personal` or `work`; memory kinds are summary, digest or preference. What happened —
 a fact, statement, question, decision or promise — is a fact: `facts add` records yours as accepted, and
-`memories extract --save` saves the facts it finds as proposed, next to the memories. Old memories of kind
+`memories extract --yes` saves the facts it finds as proposed, next to the memories. Old memories of kind
 fact became facts when the shared store upgraded (cli-core 0.247.0).
 `--supersedes` replaces an earlier memory about this document; the earlier one becomes superseded.
 The shared store owns memory persistence, evidence references and search. Memory search filters
@@ -94,7 +94,7 @@ Anthropic and OpenAI-compatible endpoints are supported by the shared gateway. K
 keys in ordinary model configuration. This adapter does not import another CLI's private key files.
 
 Invoking extraction explicitly sends the chosen cached text to that configured endpoint.
-Preview is the default. `--save` stores agent-authored **proposed** memories with model identity,
+Preview is the default. `--yes` stores agent-authored **proposed** memories with model identity,
 supporting quotes and the snapshot hash. Every quote must occur verbatim in the source. Invalid
 JSON, unsupported quotes, input above 50,000 characters or a changed source hash prevents saving.
 Pick a smaller tab for large documents. A quote supports review; it does not establish that the
@@ -120,7 +120,7 @@ drive personal comments list FILE_ID
 drive personal permissions list FILE_ID
 drive personal revisions get FILE_ID REVISION_ID
 drive shared-drives
-drive personal session start --client-file /path/to/client.json --write
+drive personal session start --client-file /path/to/client.json --grant write
 drive personal files mkdir 'Research' --parent FOLDER_ID
 drive personal files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
 drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID
@@ -134,9 +134,9 @@ drive personal api call drive.about.get --params '{"fields":"user,storageQuota"}
 drive personal api call docs.documents.batchUpdate --allow-writes --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
 ```
 
-Creation, movement and editing require the explicit `--write` grant (`drive`). Listing and
-ingestion use `drive.readonly` by default. Activity needs `--activity`; installed-app methods
-need `session start --apps` (`drive.apps.readonly`). Generating file IDs needs the write grant
+Creation, movement and editing require the explicit `--grant write` (`drive`). Listing and
+ingestion use `drive.readonly` by default. Activity needs `--grant activity`; installed-app methods
+need `session start --grant apps` (`drive.apps.readonly`). Generating file IDs needs the write grant
 even though it is a read-style method. See Google's [apps scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/apps/list)
 and [file-ID scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/generateIds).
 

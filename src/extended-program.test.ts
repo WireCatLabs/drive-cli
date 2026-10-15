@@ -67,7 +67,7 @@ describe("document knowledge commands", () => {
     expect((await call("memories", "stale", "doc-a", memory.ref)).status).toBe("stale")
     const preview = await call("memories", "extract", "doc-a", "--scope", "work", "--tab", "tab-one")
     expect(preview.saved).toEqual([])
-    const saved = await call("memories", "extract", "doc-a", "--scope", "work", "--save")
+    const saved = await call("memories", "extract", "doc-a", "--scope", "work", "--yes")
     expect(saved.saved[0]).toMatchObject({ type: "fact", model: "fixture-model", status: "proposed" })
     expect(saved.saved[0].statement).toContain("Source quote: budget decision")
     expect(saved.saved[1]).toMatchObject({ kind: "summary", model: "fixture-model", status: "proposed" })
@@ -107,7 +107,7 @@ describe("document knowledge commands", () => {
     }
     await expect(
       createProgram({ ...options, complete, streams: captureStreams() }).parseAsync(
-        ["default", "memories", "extract", "doc-a", "--scope", "work", "--save"],
+        ["default", "--yes", "memories", "extract", "doc-a", "--scope", "work"],
         { from: "user" },
       ),
     ).rejects.toThrow("source changed")

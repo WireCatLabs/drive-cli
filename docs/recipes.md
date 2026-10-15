@@ -15,7 +15,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | Prepare a brief from the saved copy | No | No | No |
 | Browse and organize the cached folder tree | No | Tags/notes, when requested | No |
 | Add follow-up tags, notes or links | No | Yes | No |
-| Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--save` or confirmation | No |
+| Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--yes` or confirmation | No |
 | Inspect comments or history | Yes | No automatic import | No |
 | Create or edit a Doc | Yes | Imported on the next sync | Yes |
 
@@ -175,14 +175,14 @@ With an [AI provider configured](configuration.md#optional-ai-extraction):
 
 ```sh
 drive personal memories extract DOC_ID --scope work
-drive personal memories extract DOC_ID --scope work --save
+drive personal memories extract DOC_ID --scope work --yes
 drive personal memories list DOC_ID --scope work --json
 drive personal facts list DOC_ID --status proposed --json
 drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal facts confirm DOC_ID fact:FACT_ID
 ```
 
-Extraction previews by default; `--save` creates proposals. Replace `MEMORY_ID` with a returned
+Extraction previews by default; `--yes` creates proposals. Replace `MEMORY_ID` with a returned
 reference only after reviewing it. Source changes/removal mark active memories stale.
 Extraction sends selected cached text to your provider; local embedding search is a separate
 operation. You can write a memory yourself with `memories add DOC_ID 'Your fact' --scope work`.
@@ -198,7 +198,7 @@ These are live Google reads. Revisions/comments use Drive API. For actor/activit
 Drive Activity API and reconnect with its additional permission:
 
 ```sh
-drive personal session start --client-file /path/to/desktop-client.json --activity
+drive personal session start --client-file /path/to/desktop-client.json --grant activity
 drive personal documents history DOC_ID --activity --json
 ```
 
@@ -218,11 +218,11 @@ Remove your extra export when finished if you do not need that copy; the managed
 
 ## Create a native Doc and include it in search
 
-Use this only when you want to change Google Drive. Reconnect with `--write`, then create a
+Use this only when you want to change Google Drive. Reconnect with `--grant write`, then create a
 native Doc and move it into a selected folder:
 
 ```sh
-drive personal session start --client-file /path/to/desktop-client.json --write
+drive personal session start --client-file /path/to/desktop-client.json --grant write
 drive personal documents create --title 'Project review'
 drive personal documents update NEW_DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"Review notes\n"}}]}'
 drive personal files get NEW_DOC_ID --json

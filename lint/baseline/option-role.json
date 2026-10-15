@@ -4,12 +4,8 @@
   "documents list --tag",
   "facts list --status",
   "mcp --tools",
-  "memories extract --save",
   "memories extract --tab",
   "models set --purpose",
-  "session start --activity",
-  "session start --apps",
   "session start --client-file",
-  "session start --credential-storage",
-  "session start --write"
+  "session start --credential-storage"
 ]

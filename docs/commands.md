@@ -31,7 +31,7 @@ sign in to Google and manage local profiles
 
 ### `drive session start`
 
-sign in to Google in the browser; read-only unless you pass --write
+sign in to Google in the browser; read-only unless you pass --grant write
 
 This command can change Google data or send data to the configured model.
 
@@ -44,9 +44,7 @@ drive <profile> session start [options]
 | `--client-file <file>` | path to your own Desktop OAuth client JSON, used instead of WireCat's. |
 | `--credential-storage <storage>` | where the sign-in is kept: keyring, or file for a private file. Default: `keyring`. |
 | `--no-browser` | print the sign-in URL instead of opening a browser. |
-| `--write` | also ask for permission to change Drive files and Docs. |
-| `--activity` | also ask for permission to read Drive Activity history. |
-| `--apps` | also ask for permission to see installed Drive apps. |
+| `--grant <scopes>` | also ask for these permissions, comma-separated: write (change Drive files and Docs), activity (read Drive Activity history), apps (see installed Drive apps). |
 
 ### `drive session list`
 
@@ -249,7 +247,7 @@ drive <profile> documents history <document> [options]
 |---|---|
 | `--limit <n>` | how many items one page holds. Default: `100`. |
 | `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
-| `--activity` | list activity events instead of revisions; needs session start --activity. |
+| `--activity` | list activity events instead of revisions; needs session start --grant activity. |
 
 ## `drive search`
 
@@ -699,7 +697,7 @@ drive <profile> memories extract <document> [options]
 |---|---|
 | `--scope <scope>` | whose memories they become: personal or work. One of: `personal`, `work`. |
 | `--tab <id>` | send only this tab of the document. |
-| `--save` | save the proposals, each with its quote and the document's version. |
+| `--yes` | save the proposals, each with its quote and the document's version. |
 
 ## `drive facts`
 

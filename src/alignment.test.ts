@@ -233,5 +233,15 @@ describe("MCP derived from the same guarded command tree", () => {
     if (!show) throw new Error("missing local tool")
     expect(() => toolArgv(show, { document: "--permission", permission: "api=allow" })).toThrow("permission")
     expect(toolArgv(show, { document: "--permission" })).toEqual(["documents", "show", "--", "--permission"])
+    const extract = tools.find((tool) => tool.name === "drive_memories_extract")
+    if (!extract) throw new Error("missing extract tool")
+    expect(toolArgv(extract, { document: "doc-a", scope: "work", yes: true })).toEqual([
+      "memories",
+      "extract",
+      "--scope=work",
+      "--yes",
+      "--",
+      "doc-a",
+    ])
   })
 })

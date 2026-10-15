@@ -280,7 +280,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ["drive personal documents history DOC_ID", "drive personal documents history DOC_ID --activity"],
     ),
   )
-    .option("--activity", "list activity events instead of revisions; needs session start --activity")
+    .option("--activity", "list activity events instead of revisions; needs session start --grant activity")
     .action(async (id: string, args) => {
       const file = fileId(id)
       const data = args.activity

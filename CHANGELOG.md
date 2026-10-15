@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Changed
+
+- **Breaking:** `session start --write`, `--activity` and `--apps` are one `--grant <scopes>`, comma-separated:
+  `drive personal session start --grant write,activity`. An unknown scope is refused before the browser opens.
+- **Breaking:** `memories extract --save` is `--yes`, on the CLI and as the MCP tool's `yes` argument. Without it
+  the command only proposes. `--yes` also answers the profile policy's confirmation, as it does for every command.
+- Built on `@wirecat/cli-base` 0.32.0 and `@wirecat/cli-core` 0.287.0; a clean install still holds one cli-base.
+
 ### Fixed
 
 - A document whose name has Cyrillic or other non-Latin capitals comes first for a search by its name, and
