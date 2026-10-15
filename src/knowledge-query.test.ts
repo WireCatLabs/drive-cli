@@ -53,12 +53,12 @@ describe("document knowledge lists filter in the store's query", () => {
       subject: ref,
     })
   })
-  it("searches memories by the words and the scope: term in one store query", async () => {
+  it("searches memories by the words and the scope: term for the document in one store query", async () => {
     const store = stubStore()
     await commands(store).run("memories", "search", "DOC", "async", "reviews", "scope:work")
-    expect(store.memories.search).toHaveBeenCalledWith("async reviews", { scope: "work", limit: 200 })
+    expect(store.memories.search).toHaveBeenCalledWith("async reviews", { subject: ref, scope: "work", limit: 200 })
     await commands(store).run("memories", "search", "DOC", "reviews")
-    expect(store.memories.search).toHaveBeenLastCalledWith("reviews", { limit: 200 })
+    expect(store.memories.search).toHaveBeenLastCalledWith("reviews", { subject: ref, limit: 200 })
   })
   it("refuses the removed filter flags and unknown fields before the store is asked", async () => {
     const store = stubStore()

@@ -199,7 +199,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       const found = await run(doc, (k, p, ref) => k.searchMemories(p, ref, text, scope))
       output({
         ...allOf(found.items.map(memoryItem)),
-        ...(found.candidate_limit_reached ? { meta: { truncated: true } } : {}),
+        ...(found.limit_reached ? { meta: { truncated: true } } : {}),
       })
     })
   annotate(search, { query: defineQuery(MEMORY_SEARCH_QUERY), output: { entity: "memory" } })

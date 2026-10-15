@@ -46,6 +46,21 @@ describe("shared document knowledge", () => {
       await f.index.close()
     }
   })
+  it("finds a document's memories that rank below 200 other documents' matches", async () => {
+    const f = await setup()
+    try {
+      const other = await f.index.save(f.principal, content(file("doc-b")), "hash")
+      const memory = { body: "Budget review", scope: "work", kind: "summary" } as const
+      for (let index = 0; index < 200; index += 1) await f.k.addMemory(f.principal, other, memory)
+      const mine = await f.k.addMemory(f.principal, f.ref, memory)
+      expect(await f.k.searchMemories(f.principal, f.ref, "budget")).toEqual({
+        items: [expect.objectContaining({ ref: mine.ref })],
+        limit_reached: false,
+      })
+    } finally {
+      await f.index.close()
+    }
+  })
   it("scopes documents, notes and memories to their source and guards stale note edits", async () => {
     const f = await setup()
     try {

@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- `memories search <document>` finds the document's memories however many other documents match. The store now
+  searches only that document's memories; before, drive took the best 200 matches across every memory and kept
+  the document's own, so one whose matches ranked lower answered nothing. `meta.truncated` now means the document
+  itself has 200 matches or more.
+
+### Changed
+
+- drive runs on `@wirecat/cli-core` 0.289.0.
+
 ## 0.11.1 — 2026-10-15
 
 ### Fixed
