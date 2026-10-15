@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Fresh npm installs preserve generated API operation names and remote effects. Aligns Base 0.31.1
+  with Core 0.283.0, avoiding separate framework instances; installed Node/Bun smoke checks both
+  generated reads and writes before publication. Legacy camelCase settings still migrate once,
+  retaining their file mode and refusing conflicting aliases.
+
 - **Search puts a file whose title matches the query first.** A plain-words query ranks a title equal to the query,
   then a title containing it as a phrase, then a title holding all its words, ahead of text matches; a field, `OR`,
   `NOT`, wildcard or regular expression query keeps its order. A hit's `found_by` may now say `title`.

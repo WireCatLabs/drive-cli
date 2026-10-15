@@ -91,8 +91,7 @@ export const guardedGoogleWrite = async <T>(
   const guard = sendGuard({
     profile,
     command: "drive",
-    readOnly: settings.readOnly,
-    readOnlyFrom: "profile",
+    readOnlyLock: settings.readOnly ? "profile" : undefined,
     permissions: settings.levels,
     permissionDefaults: defaults,
     ask: async (permission) => checkPolicy(env, profile, permission, true, flags, ask),

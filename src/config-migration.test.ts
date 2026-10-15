@@ -49,6 +49,18 @@ describe("existing AI settings", () => {
     expect([after.ino, after.mtimeNs, readFileSync(path, "utf8")]).toEqual([before.ino, before.mtimeNs, text])
   })
 
+  it("leaves an invalid legacy file unchanged instead of partially upgrading it", () => {
+    const f = fixture()
+    const path = join(paths(f.env).config, "config.json")
+    const text = JSON.stringify({
+      ...readConfig(f.env),
+      defaults: { embeddingModel: "fixture", maxTextChars: 0, unknownSetting: true },
+    })
+    writeFileSync(path, text)
+    expect(() => readConfig(f.env)).toThrow("drive configuration is invalid")
+    expect(readFileSync(path, "utf8")).toBe(text)
+  })
+
   it("refuses conflicting aliases without rewriting or exposing settings", () => {
     const f = fixture()
     const path = join(paths(f.env).config, "config.json")
