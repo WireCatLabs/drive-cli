@@ -41,6 +41,15 @@ tab IDs, titles and text. Tables and footnotes are included; headers, footers, c
 and suggested edits are not part of the indexed text. Use `tag:follow-up` to search local labels,
 alone or with words. `drive personal search` has no `--tag` flag; message-only fields are not supported.
 
+## Which result comes first
+
+A file whose title matches your words comes first. The order is: the title equals the query, then the title
+contains the query as a phrase, then the title holds all the words in any order. Such a hit lists `title` in
+`found_by`, even when the file's text is long and mentions the words only once or not at all.
+
+This applies to plain-word queries such as `budget decision`. A query that uses a field (`tag:follow-up`), `OR`,
+`NOT`, a wildcard or a regular expression keeps the order of its text matches.
+
 ## Search by meaning
 
 Drive uses the shared local search model cache. If you also use Telegram or MAX, prepare the

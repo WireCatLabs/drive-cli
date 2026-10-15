@@ -98,6 +98,33 @@ describe("released shared store and search", () => {
       await index.close()
     }
   })
+  it("ranks a document whose title matches the plain words first and lists title in found_by", async () => {
+    const index = await openIndex(fixture().env)
+    try {
+      const filler = Array.from({ length: 400 }, (_, i) => `paragraph ${i} about rotas and invoices`).join("\n")
+      const titled = await index.save(
+        "synthetic-principal",
+        content({ ...file("long-doc"), name: "Zebra harbor plan" }, filler),
+        "hash-long",
+      )
+      for (let i = 0; i < 12; i++)
+        await index.save(
+          "synthetic-principal",
+          content({ ...file(`short-${i}`), name: `Note ${i}` }, "zebra harbor zebra harbor zebra harbor"),
+          `hash-short-${i}`,
+        )
+      const found = (await index.search("synthetic-principal", "zebra harbor", {
+        limit: 20,
+        offset: 0,
+        exact: true,
+      })) as { hits: { ref: string; found_by: string[] }[] }
+      expect(found.hits).toHaveLength(13)
+      expect(found.hits[0]?.ref).toBe(titled)
+      expect(found.hits[0]?.found_by).toContain("title")
+    } finally {
+      await index.close()
+    }
+  })
   it("does not search another principal when this account has no indexed folder", async () => {
     const f = fixture()
     const index = await openIndex(f.env)

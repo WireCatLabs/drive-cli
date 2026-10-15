@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Search puts a file whose title matches the query first.** A plain-words query ranks a title equal to the query,
+  then a title containing it as a phrase, then a title holding all its words, ahead of text matches; a field, `OR`,
+  `NOT`, wildcard or regular expression query keeps its order. A hit's `found_by` may now say `title`.
+
 ## 0.8.0 — 2026-10-15
 
 - **Flag names follow the shared vocabulary of cli-base 0.31.0 (breaking, no aliases).** `documents export
