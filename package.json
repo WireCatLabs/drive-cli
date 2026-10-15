@@ -57,7 +57,7 @@
     "@googleapis/driveactivity": "11.0.1",
     "@modelcontextprotocol/server": "2.1.0",
     "@wirecat/cli-base": "0.31.1",
-    "@wirecat/cli-core": "0.283.0",
+    "@wirecat/cli-core": "0.285.0",
     "commander": "15.0.0",
     "google-auth-library": "11.2.0",
     "mammoth": "1.13.0",
