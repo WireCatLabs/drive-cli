@@ -5,11 +5,14 @@ import { writes } from "@wirecat/cli-base/standards"
 import { answerFields, checkJson } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { CATALOG_FIELDS } from "./catalog.js"
+import { DOCUMENT_LIST_FIELDS } from "./model.js"
 
-export const providerJsonFields = (command: Command | undefined): string[] | undefined =>
-  command?.parent?.name() === "catalog" && ["list", "search", "show"].includes(command.name())
-    ? CATALOG_FIELDS
-    : undefined
+export const providerJsonFields = (command: Command | undefined): string[] | undefined => {
+  if (command?.parent?.name() === "catalog" && ["list", "search", "show"].includes(command.name()))
+    return CATALOG_FIELDS
+  if (command?.parent?.name() === "documents" && command.name() === "list") return DOCUMENT_LIST_FIELDS
+  return undefined
+}
 
 export const checkProviderJson = (command: Command, request: { json: boolean; fields?: string }, terminal: boolean) => {
   checkJson(command, request, terminal, providerJsonFields)

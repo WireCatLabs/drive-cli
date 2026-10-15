@@ -42,6 +42,27 @@ export const metadataJson = ({
   ...(driveId === undefined ? {} : { drive_id: driveId }),
   ...(lastModifiedBy === undefined ? {} : { last_modified_by: lastModifiedBy }),
 })
+// documents list declares the shared document entity for its query, but answers drive's own fields.
+export const DOCUMENT_LIST_FIELDS = Object.keys({
+  id: true,
+  name: true,
+  mime: true,
+  parents: true,
+  version: true,
+  url: true,
+  trashed: true,
+  size: true,
+  description: true,
+  owners: true,
+  provider_metadata: true,
+  modified_at: true,
+  can_download: true,
+  created_at: true,
+  drive_id: true,
+  last_modified_by: true,
+  reference: true,
+  tabs: true,
+} satisfies Record<keyof ReturnType<typeof metadataJson> | "reference" | "tabs", true>)
 export const skipJson = ({ file, textLimit, storeRefusedIn, ...rest }: Skip) => ({
   ...rest,
   ...(file ? { file: metadataJson(file) } : {}),
