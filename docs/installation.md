@@ -190,7 +190,7 @@ Find each API, open its page and press **Enable**. Check them under **Enabled AP
 | --- | --- | --- |
 | [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) | Folders, files, exports, comments, revisions and permissions | Always |
 | [Google Docs API](https://console.cloud.google.com/apis/library/docs.googleapis.com) | Reading all Doc tabs and creating/editing native Docs | Always |
-| [Google Drive Activity API](https://console.cloud.google.com/apis/library/driveactivity.googleapis.com) | Actor/activity history | Optional `--activity`; enable it for the shared app's full feature set |
+| [Google Drive Activity API](https://console.cloud.google.com/apis/library/driveactivity.googleapis.com) | Actor/activity history | Optional `--grant activity`; enable it for the shared app's full feature set |
 
 Enabling an API makes it available to the project; it does not grant any user access. Sheets,
 Slides, People and Gmail APIs are not used by the current connector.
@@ -231,9 +231,9 @@ from the table, use the manual scope entry field.
 | Permission | Use in the CLI |
 | --- | --- |
 | `https://www.googleapis.com/auth/drive.readonly` | Default folder import and document reads |
-| `https://www.googleapis.com/auth/drive` | Optional remote create/edit/manage actions with `--write` |
-| `https://www.googleapis.com/auth/drive.activity.readonly` | Optional history with `--activity` |
-| `https://www.googleapis.com/auth/drive.apps.readonly` | Optional installed-Drive-application metadata with `--apps` |
+| `https://www.googleapis.com/auth/drive` | Optional remote create/edit/manage actions with `--grant write` |
+| `https://www.googleapis.com/auth/drive.activity.readonly` | Optional history with `--grant activity` |
+| `https://www.googleapis.com/auth/drive.apps.readonly` | Optional installed-Drive-application metadata with `--grant apps` |
 
 For a personal read-only test, the first scope is enough. For the shared app, declare the optional
 scopes it will offer too; the CLI requests them only when their flags are selected. A separate

@@ -8,7 +8,7 @@ an appropriate scope, see where data goes and disconnect without confusing sign-
 
 The default Google grant is account-wide `drive.readonly`. Selected folders limit ingestion;
 they are not a Google-enforced permission boundary. Google file roles and organization policy
-still apply. Remote editing needs the additional `--write` sign-in grant and permission for the
+still apply. Remote editing needs the additional `--grant write` at sign-in and permission for the
 command. Activity history and installed-app metadata use separate optional grants.
 
 ```sh

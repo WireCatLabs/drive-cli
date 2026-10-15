@@ -97,6 +97,15 @@ const commandIn = (root: Command, words: readonly string[]) => {
   return at === root ? undefined : at
 }
 class Preview extends Error {}
+const GRANTS = ["write", "activity", "apps"] as const
+type Grant = (typeof GRANTS)[number]
+const grants = (raw: string): Set<Grant> => {
+  const values = raw.split(",").map((value) => value.trim())
+  const unknown = values.filter((value) => !(GRANTS as readonly string[]).includes(value))
+  if (unknown.length)
+    throw new CliError("validation_error", `--grant takes ${GRANTS.join(", ")}; got ${unknown.join(", ")}`)
+  return new Set(values as Grant[])
+}
 export const createProgram = (options: ProgramOptions = {}): Command => {
   const startedAt = Date.now()
   const env = options.env ?? process.env
@@ -212,8 +221,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   const session = program.command("session").description("sign in to Google and manage local profiles")
   examples(
-    session.command("start").description("sign in to Google in the browser; read-only unless you pass --write"),
-    ["drive personal session start", "drive work session start --write --activity"],
+    session.command("start").description("sign in to Google in the browser; read-only unless you pass --grant write"),
+    ["drive personal session start", "drive work session start --grant write,activity"],
   )
     .option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's")
     .option(
@@ -222,39 +231,31 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "keyring",
     )
     .option("--no-browser", "print the sign-in URL instead of opening a browser")
-    .option("--write", "also ask for permission to change Drive files and Docs")
-    .option("--activity", "also ask for permission to read Drive Activity history")
-    .option("--apps", "also ask for permission to see installed Drive apps")
-    .action(
-      async (args: {
-        clientFile?: string
-        credentialStorage: string
-        browser: boolean
-        write?: boolean
-        activity?: boolean
-        apps?: boolean
-      }) => {
-        if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
-          throw new CliError("validation_error", "credential storage is keyring or file")
-        output(
-          itemOf(
-            await login({
-              env,
-              profile: selected(),
-              application: application(env, args.clientFile),
-              storage: args.credentialStorage,
-              ...(args.write ? { write: true } : {}),
-              ...(args.activity ? { activity: true } : {}),
-              ...(args.apps ? { apps: true } : {}),
-              ...(options.keyring ? { keyring: options.keyring } : {}),
-              ...(activeSignal ? { signal: activeSignal } : {}),
-              openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
-              showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
-            }),
-          ),
-        )
-      },
+    .option(
+      "--grant <scopes>",
+      "also ask for these permissions, comma-separated: write (change Drive files and Docs), " +
+        "activity (read Drive Activity history), apps (see installed Drive apps)",
+      grants,
     )
+    .action(async (args: { clientFile?: string; credentialStorage: string; browser: boolean; grant?: Set<Grant> }) => {
+      if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
+        throw new CliError("validation_error", "credential storage is keyring or file")
+      output(
+        itemOf(
+          await login({
+            env,
+            profile: selected(),
+            application: application(env, args.clientFile),
+            storage: args.credentialStorage,
+            ...Object.fromEntries([...(args.grant ?? [])].map((grant) => [grant, true])),
+            ...(options.keyring ? { keyring: options.keyring } : {}),
+            ...(activeSignal ? { signal: activeSignal } : {}),
+            openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
+            showUrl: (url) => streams.diagnostic(`Open Google sign-in: ${url}\n`),
+          }),
+        ),
+      )
+    })
   examples(session.command("list").description("list the configured profiles; credentials are never printed"), [
     "drive personal session list",
   ]).action(() =>

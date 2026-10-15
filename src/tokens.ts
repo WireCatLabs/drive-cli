@@ -94,7 +94,7 @@ export const checkAuthorization = async (client: OAuth2Client, required = READ_S
     if (!info.scopes.includes(required) && !(required === READ_SCOPE && info.scopes.includes(WRITE_SCOPE)))
       throw new CliError(
         "permission_error",
-        "sign-in lacks the required permission; run drive <profile> session start with --write, --activity or --apps when needed",
+        "sign-in lacks the required permission; run drive <profile> session start --grant write, activity or apps when needed",
         { reason: "sign-in.scope-missing" },
       )
   } catch (error) {

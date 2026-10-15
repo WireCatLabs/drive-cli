@@ -43,7 +43,7 @@ For Google Cloud setup and an isolated first run, follow the
 Sign-in opens the system browser and receives Google's callback on a temporary loopback port.
 `--no-browser` prints the URL. `drive.readonly` grants account-wide reading; our selected-folder
 scope limits ingestion. Sync reads remote files. Optional remote management commands need a
-new sign-in with `session start --write`; history events need `session start --activity`.
+new sign-in with `session start --grant write`; history events need `session start --grant activity`.
 
 Credentials use the OS keyring. Without one, explicitly choose `--credential-storage file`;
 the shared helper writes an owner-only private file. Tokens never enter regular config, output
@@ -153,7 +153,7 @@ drive api list --service docs
 ```
 
 AI extraction explicitly sends selected cached text to the configured model. It previews proposals
-unless `--save` is given; saved proposals include source quotes, snapshot hashes and model authorship.
+unless `--yes` is given; saved proposals include source quotes, snapshot hashes and model authorship.
 Use the shared model setup with `models set --provider openai --model MODEL_ID`. Provider keys
 come from the corresponding API-key environment variable and never enter regular configuration.
 Source content changes and scope removals mark source-backed memories stale. User notes stay local.

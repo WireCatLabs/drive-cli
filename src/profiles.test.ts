@@ -87,4 +87,15 @@ describe("explicit account selection", () => {
     ).rejects.toMatchObject({ exitCode: 0 })
     expect(help.stdout.join("")).toContain("drive <profile> session start")
   })
+  it("refuses a sign-in grant it does not know before opening a browser", async () => {
+    const f = fixture()
+    const openBrowser = vi.fn(async () => {})
+    await expect(
+      createProgram({ env: f.env, openBrowser, streams: captureStreams() }).parseAsync(
+        ["default", "session", "start", "--grant", "write,email"],
+        { from: "user" },
+      ),
+    ).rejects.toMatchObject({ code: "validation_error" })
+    expect(openBrowser).not.toHaveBeenCalled()
+  })
 })

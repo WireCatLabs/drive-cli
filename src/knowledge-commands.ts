@@ -189,13 +189,15 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       .description("send a document's text to the model and show the memories it proposes"),
     [
       "drive personal memories extract DOC_ID --scope work",
-      "drive personal memories extract DOC_ID --scope work --save",
+      "drive personal memories extract DOC_ID --scope work --yes",
     ],
   )
     .addOption(scope("whose memories they become: personal or work").makeOptionMandatory())
     .option("--tab <id>", "send only this tab of the document")
-    .option("--save", "save the proposals, each with its quote and the document's version")
-    .action(async (doc: string, args: { scope: Memory["scope"]; tab?: string; save?: boolean }) => {
+    .option("--yes", "save the proposals, each with its quote and the document's version")
+    .action(async function (this: Command, doc: string) {
+      // The root --yes takes the flag wherever it is typed; this one only lists it for help and MCP.
+      const args = this.optsWithGlobals<{ scope: Memory["scope"]; tab?: string; yes?: boolean }>()
       const source = helpers.document(doc)
       const text = args.tab ? source.snapshot.tabs.find((tab) => tab.id === args.tab)?.text : source.snapshot.text
       if (text === undefined) throw new CliError("not_found", "tab was not found in this imported document")
@@ -212,7 +214,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         url: source.snapshot.metadata.url,
         tab: args.tab ?? null,
       }
-      const saved = args.save
+      const saved = args.yes
         ? await run(doc, async (k, p, ref) => {
             if (helpers.document(doc).hash !== source.hash)
               throw new CliError("validation_error", "source changed during extraction; no memories were saved", {
