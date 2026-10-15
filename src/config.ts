@@ -1,10 +1,11 @@
-import { readFileSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
+import { CliError, resolvePaths, saveConfigFile, writeSecurely } from "@wirecat/cli-base"
 import { AI_ENTRIES, loadSnakeCaseConfig, usableProfileName } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
+import { upgradeConfig } from "./config-upgrade.js"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
@@ -36,7 +37,20 @@ export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
 export const readConfig = (env: NodeJS.ProcessEnv): Config => {
   try {
-    return loadSnakeCaseConfig(join(paths(env).config, "config.json"), ConfigSchema, () => ({ profiles: {} }))
+    const path = join(paths(env).config, "config.json")
+    let changed = false
+    const schema = v.pipe(
+      v.unknown(),
+      v.transform((raw) => {
+        const upgraded = upgradeConfig(raw, SETTING_NAMES)
+        changed = upgraded.changed
+        return upgraded.config
+      }),
+      ConfigSchema,
+    )
+    const config = loadSnakeCaseConfig(path, schema, () => ({ profiles: {} }))
+    if (changed) writeSecurely(path, `${JSON.stringify(config, null, 2)}\n`, statSync(path).mode & 0o777)
+    return config
   } catch {
     throw new CliError("configuration_error", "drive configuration is invalid; no configuration values were logged")
   }

@@ -66,6 +66,16 @@ const registry = JSON.parse(run(["commands", "sync", "--json"]))
 assert.equal(registry.contract, 3)
 assert.equal(registry.commands[0].name, "sync")
 assert.deepEqual(registry.commands[0].effects, { remote: "read", local: "write" })
+for (const [command, operation, remote] of [
+  ["drive-files-get", "drive.files.get", "read"],
+  ["drive-files-create", "drive.files.create", "write"],
+] as const) {
+  const generated = JSON.parse(run(["commands", "api", command, "--json"]))
+  assert.equal(generated.commands.length, 1)
+  assert.equal(generated.commands[0].origin, "generated")
+  assert.equal(generated.commands[0].api_operation, operation)
+  assert.deepEqual(generated.commands[0].effects, { remote, local: "none" })
+}
 let failed = false
 try {
   run(["synthetic", "status", "--json"])
