@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.2 — 2026-10-15
 
 - **Nested JSON selection uses the shared projector.** Dotted paths traverse arrays and report objects; coverage, pagination and execution metadata stay available.
 
