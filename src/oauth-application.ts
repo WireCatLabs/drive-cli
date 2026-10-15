@@ -3,5 +3,6 @@
 // This identifies WireCat; it does not contain account access or refresh tokens.
 export const WIRECAT_APPLICATION = Object.freeze({
   clientId: "240274586781-vssrlm9c0l3n1ti12ce7tg95ro4bghal.apps.googleusercontent.com",
+  // biome-ignore lint/security/noSecrets: public installed-app OAuth identity, non-confidential per Google native-app guidance
   clientSecret: "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", // gitleaks:allow -- public installed-app identity
 })
