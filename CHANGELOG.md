@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.8.1 — 2026-10-15
 
 - Fresh npm installs preserve generated API operation names and remote effects. Aligns Base 0.31.1
   with Core 0.283.0, avoiding separate framework instances; installed Node/Bun smoke checks both
