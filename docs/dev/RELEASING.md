@@ -67,3 +67,10 @@ GitHub release; a failed publication never creates either.
 After release, verify a clean `npm install -g @wirecat/drive-cli` and `drive --version`, then
 update the portal's reviewed release pin and EN/RU/ES guides. PR checks and monthly
 nonpublishing validation keep their shared WireCat policies.
+
+## Wait for another release
+
+The machine-wide lock permits one package release at a time. By default `bin/release` refuses
+when another release holds it. To join the queue for up to 30 minutes, use
+`WIRECAT_RELEASE_WAIT_SECONDS=1800 bin/release`. It still acquires the same lock and performs
+the normal source, publication and tag checks. Do not dispatch the workflow manually.

@@ -2,6 +2,9 @@
 
 ## 0.8.1 — 2026-10-15
 
+- Maintainers can set `WIRECAT_RELEASE_WAIT_SECONDS` when using `bin/release` to wait for the
+  existing machine-wide lock; the default remains immediate refusal when busy.
+
 - The create-document recipe names the CLI response field `document_id`; Google request bodies
   keep their provider field names.
 
