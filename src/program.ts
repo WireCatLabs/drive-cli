@@ -737,6 +737,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       "memories extract",
       "facts add",
       "facts confirm",
+      "facts reverse",
       "identities link",
       "models set",
       "config set",

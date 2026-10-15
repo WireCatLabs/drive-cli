@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.13.0 — 2026-10-16
+
+### Added
+
+- Track changing decisions with `facts add --supersedes fact:ID` and `facts reverse`.
+  Replacements supersede the earlier decision on acceptance; reversals keep its history.
+  Both require the same imported document and account, use shared Core fact transitions,
+  and respect offline, read-only and dry-run controls. `facts add --occurred-time` records
+  the evidence’s event time.
+
 ## 0.12.2 — 2026-10-16
 
 ### Fixed

@@ -54,14 +54,21 @@ export interface DocumentKnowledge {
   addFact(
     principal: string,
     ref: string,
-    input: { statement: string; type: Fact["type"]; scope?: Memory["scope"]; by?: Author },
+    input: {
+      statement: string
+      type: Fact["type"]
+      scope?: Memory["scope"]
+      by?: Author
+      supersedes?: string
+      occurredAt?: string
+    },
   ): Promise<Fact>
   facts(
     principal: string,
     ref: string,
     options?: { type?: Fact["type"]; status?: Fact["status"]; limit?: number },
   ): Promise<Fact[]>
-  fact(principal: string, ref: string, factRef: string, action?: "show" | "confirm"): Promise<Fact>
+  fact(principal: string, ref: string, factRef: string, action?: "show" | "confirm" | "reverse"): Promise<Fact>
   people(principal: string, ref: string): Promise<unknown>
   linkPerson(principal: string, ref: string, googleId: string, personRef: string): Promise<PersonRecord>
 }
@@ -185,12 +192,15 @@ export const documentKnowledge = (
       const items = await store.memories.search(query, { subject: ref, ...(scope ? { scope } : {}), limit: 200 })
       return { items, limit_reached: items.length === 200 }
     },
-    addFact: async (principal, ref, { statement, type, scope, by }) => {
+    addFact: async (principal, ref, { statement, type, scope, by, supersedes, occurredAt }) => {
       await document(principal, ref)
+      if (supersedes) await factFor(principal, ref, supersedes)
       return store.facts.add({
         type,
         statement,
         by: by ?? "owner",
+        ...(supersedes === undefined ? {} : { supersedes }),
+        ...(occurredAt === undefined ? {} : { occurredAt }),
         subject: ref,
         evidence: [ref],
         ...(scope === undefined ? {} : { scope }),
@@ -202,7 +212,9 @@ export const documentKnowledge = (
     },
     fact: async (principal, ref, factRef, action = "show") => {
       const fact = await factFor(principal, ref, factRef)
-      return action === "confirm" ? store.facts.accept(fact.ref) : fact
+      if (action === "confirm") return store.facts.accept(fact.ref)
+      if (action === "reverse") return store.facts.reverse(fact.ref)
+      return fact
     },
     people: async (principal, ref) => {
       const note = await document(principal, ref)

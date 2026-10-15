@@ -275,9 +275,30 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .argument("<statement>", "the fact, in one sentence")
     .addOption(new Option("--type <type>", "what kind of fact it is").choices(FACT_TYPES).default("fact"))
     .addOption(scope("whose fact it is: personal or work"))
+    .option("--supersedes <ref>", "a decision only: the decision this one replaces")
+    .option("--occurred-time <time>", "when it happened, as the evidence shows, ISO 8601")
     .action(
-      async (doc: string, statement: string, args: { type: (typeof FACT_TYPES)[number]; scope?: Memory["scope"] }) =>
-        output(itemOf(factItem(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args }))))),
+      async (
+        doc: string,
+        statement: string,
+        {
+          occurredTime,
+          ...args
+        }: { type: (typeof FACT_TYPES)[number]; scope?: Memory["scope"]; supersedes?: string; occurredTime?: string },
+      ) =>
+        output(
+          itemOf(
+            factItem(
+              await run(doc, (k, p, ref) =>
+                k.addFact(p, ref, {
+                  statement,
+                  ...args,
+                  ...(occurredTime === undefined ? {} : { occurredAt: occurredTime }),
+                }),
+              ),
+            ),
+          ),
+        ),
     )
   withQuery(
     examples(facts.command("list").description("list a document's facts"), [
@@ -295,7 +316,11 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       }
       output(allOf((await run(doc, (k, p, ref) => k.facts(p, ref, { ...filters, limit }))).map(factItem)))
     })
-  const factActions = { show: "show one fact", confirm: "confirm a proposed fact as true" } as const
+  const factActions = {
+    show: "show one fact",
+    confirm: "confirm a proposed fact; a decision it supersedes stops holding",
+    reverse: "an accepted decision no longer holds, and nothing replaced it",
+  } as const
   for (const [action, description] of Object.entries(factActions) as [keyof typeof factActions, string][])
     examples(facts.command(action).description(description), [`drive personal facts ${action} DOC_ID fact:FACT_ID`])
       .argument("<document>", documentArgument)

@@ -181,4 +181,61 @@ describe("shared document knowledge", () => {
       await f.index.close()
     }
   })
+  it("replaces decisions on acceptance and reverses them without changing other documents", async () => {
+    const f = await setup()
+    try {
+      const old = await f.k.addFact(f.principal, f.ref, { statement: "Use the April budget", type: "decision" })
+      const proposed = await f.k.addFact(f.principal, f.ref, {
+        statement: "Use the May budget",
+        type: "decision",
+        supersedes: old.ref,
+        occurredAt: "2026-05-01T12:00:00Z",
+        by: { bot: "drive-memory", model: "example-model" },
+      })
+      expect(proposed).toMatchObject({ status: "proposed", supersedes: old.ref })
+      expect((await f.k.fact(f.principal, f.ref, old.ref)).status).toBe("accepted")
+      await expect(f.k.fact(f.principal, f.ref, proposed.ref, "reverse")).rejects.toThrow()
+      expect((await f.k.fact(f.principal, f.ref, proposed.ref, "confirm")).status).toBe("accepted")
+      expect((await f.k.fact(f.principal, f.ref, old.ref)).status).toBe("superseded")
+      const replacement = await f.k.addFact(f.principal, f.ref, {
+        statement: "Pause the budget",
+        type: "decision",
+        supersedes: proposed.ref,
+      })
+      expect(replacement).toMatchObject({ status: "accepted", supersedes: proposed.ref })
+      expect((await f.k.fact(f.principal, f.ref, proposed.ref)).status).toBe("superseded")
+      const other = await f.index.save(f.principal, content(file("doc-b")), "hash")
+      await expect(f.k.fact(f.principal, other, replacement.ref, "reverse")).rejects.toThrow("attached")
+      await expect(f.k.fact("other-account", f.ref, replacement.ref, "reverse")).rejects.toThrow("account")
+      await expect(
+        f.k.addFact(f.principal, other, {
+          statement: "Wrong source",
+          type: "decision",
+          supersedes: replacement.ref,
+        }),
+      ).rejects.toThrow("attached")
+      await expect(
+        f.k.addFact("other-account", f.ref, {
+          statement: "Wrong account",
+          type: "decision",
+          supersedes: replacement.ref,
+        }),
+      ).rejects.toThrow("account")
+      expect(await f.k.facts(f.principal, other)).toEqual([])
+      expect((await f.k.fact(f.principal, f.ref, replacement.ref)).status).toBe("accepted")
+      expect((await f.k.fact(f.principal, f.ref, replacement.ref, "reverse")).status).toBe("reversed")
+      const ordinary = await f.k.addFact(f.principal, f.ref, { statement: "Budget discussed", type: "fact" })
+      await expect(f.k.fact(f.principal, f.ref, ordinary.ref, "reverse")).rejects.toThrow()
+      await expect(
+        f.k.addFact(f.principal, f.ref, {
+          statement: "Invalid replacement",
+          type: "fact",
+          supersedes: ordinary.ref,
+        }),
+      ).rejects.toThrow()
+      expect(await f.k.facts(f.principal, f.ref)).toHaveLength(4)
+    } finally {
+      await f.index.close()
+    }
+  })
 })

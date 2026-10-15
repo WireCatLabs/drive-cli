@@ -78,6 +78,31 @@ describe("document knowledge commands", () => {
     expect((await call("facts", "list", "doc-a", "status:proposed")).items).toHaveLength(1)
     expect((await call("facts", "confirm", "doc-a", saved.saved[0].ref)).status).toBe("accepted")
     expect((await call("facts", "show", "doc-a", decision.ref)).text).toBe("Budget approved")
+    const replacement = await call(
+      "facts",
+      "add",
+      "doc-a",
+      "Budget deferred",
+      "--type",
+      "decision",
+      "--supersedes",
+      decision.ref,
+      "--occurred-time",
+      "2026-05-01T12:00:00Z",
+    )
+    expect(replacement).toMatchObject({
+      supersedes: decision.ref,
+      status: "accepted",
+      occurred_at: "2026-05-01T12:00:00.000Z",
+    })
+    expect((await call("facts", "show", "doc-a", decision.ref)).status).toBe("superseded")
+    expect((await call("--dry-run", "facts", "reverse", "doc-a", replacement.ref)).effects).toEqual({
+      remote: "none",
+      local: "write",
+    })
+    await expect(call("--read-only", "facts", "reverse", "doc-a", replacement.ref)).rejects.toThrow()
+    expect((await call("facts", "show", "doc-a", replacement.ref)).status).toBe("accepted")
+    expect((await call("--offline", "facts", "reverse", "doc-a", replacement.ref)).status).toBe("reversed")
     const people = await call("identities", "list", "doc-a")
     expect(people.items[0].google_id).toBe("google-owner")
     expect((await call("documents", "list", `person:"${people.items[0].person.ref}"`)).items).toHaveLength(2)

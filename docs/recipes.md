@@ -187,6 +187,34 @@ reference only after reviewing it. Source changes/removal mark active memories s
 Extraction sends selected cached text to your provider; local embedding search is a separate
 operation. You can write a memory yourself with `memories add DOC_ID 'Your fact' --scope work`.
 
+## Update a decision
+
+Keep the earlier decision and its source when an agreement changes. These commands update
+local facts for the imported document; they do not edit Google Drive.
+
+```sh
+drive personal facts list DOC_ID kind:decision --json
+drive personal facts add DOC_ID 'Move the launch to November' --type decision --scope work --supersedes fact:OLD_ID --occurred-time 2026-10-16T10:00:00Z
+drive personal facts show DOC_ID fact:OLD_ID --json
+```
+
+Use the earlier decision's returned reference for `fact:OLD_ID`. Your replacement is accepted
+immediately and the earlier decision becomes `superseded`; both remain visible. The optional
+`--occurred-time` records when the decision happened, rather than when you saved it.
+An agent-authored replacement stays proposed until you confirm it; the earlier decision keeps
+holding until then. Review the source before confirming.
+
+If a decision no longer holds and there is no replacement:
+
+```sh
+drive personal facts reverse DOC_ID fact:DECISION_ID
+drive personal facts list DOC_ID status:reversed --json
+```
+
+Reversal applies to accepted decisions. Other fact kinds cannot be reversed. These operations
+require the fact to belong to the selected document and account, work offline and respect
+`--read-only`. Use `--dry-run` to preview the operation without changing local facts.
+
 ## Inspect revisions or optional activity history
 
 ```sh
