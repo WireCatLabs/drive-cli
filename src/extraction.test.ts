@@ -15,7 +15,9 @@ describe("source-grounded memory extraction", () => {
       answer([{ kind: "fact", body: "Use shared storage", quote: "shared document store" }]),
     )
     expect(await extractMemories(text, complete)).toMatchObject({ items: [{ kind: "fact" }], model: "fixture-model" })
-    expect(complete).toHaveBeenCalledWith(expect.objectContaining({ purpose: "memories", data: text, maxTokens: 6000 }))
+    expect(complete).toHaveBeenCalledWith(
+      expect.objectContaining({ purpose: "memories", allowSourceQuotes: true, data: text, maxTokens: 6000 }),
+    )
   })
   it.each([
     answer([{ kind: "fact", body: "Unsupported", quote: "Invented source text" }]),
