@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Lists take a query, not filter flags.** The store or the method table applies it; nothing is filtered after
+  reading. The old flags are refused.
+  - `facts list DOC_ID --type decision --status proposed` → `facts list DOC_ID kind:decision status:proposed`
+  - `memories list DOC_ID --scope work --kind preference` → `memories list DOC_ID scope:work kind:preference`;
+    `status:` is new.
+  - `memories search DOC_ID budget --scope work` → `memories search DOC_ID budget scope:work`. The scope is now
+    optional: without it both personal and work memories are searched.
+  - `api list --service docs` → `api list service:docs`.
+  - The MCP tools take the same terms as one `query` string; `catalog list` and `catalog search` too, which took
+    a list of words.
+- Facts and memories answer with the shared `fact` and `memory` fields, in every command that returns them and
+  in `documents context`: a fact's `type` is `kind`, its `statement` is `text`, its `source` is `origin`; a
+  memory's `body` is `text`. `--json=kind,text` selects them.
+
 ## 0.9.0 — 2026-10-15
 
 ### Changed

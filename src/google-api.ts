@@ -23,8 +23,10 @@ const roots = (auth?: OAuth2Client) => ({
   driveactivity: driveactivity({ version: "v2", ...(auth ? { auth } : {}) }),
 })
 type Resource = Record<string, unknown>
-export const apiMethods = (): ApiMethod[] => {
-  return operations.map((operation) => {
+/** The methods drive can call; `service` keeps those of one Google service, as `api list service:docs` asks. */
+export const apiMethods = (service?: string): ApiMethod[] => {
+  const chosen = service === undefined ? operations : operations.filter(({ id }) => id.startsWith(`${service}.`))
+  return chosen.map((operation) => {
     const scopes = (metadata.scopes as Record<string, readonly string[]>)[operation.id] ?? []
     const preference =
       operation.effect === "read"

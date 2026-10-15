@@ -149,7 +149,7 @@ drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope
 drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
 drive personal memories extract DOC_ID --scope work
 drive personal documents history DOC_ID
-drive api list --service docs
+drive api list service:docs
 ```
 
 AI extraction explicitly sends selected cached text to the configured model. It previews proposals

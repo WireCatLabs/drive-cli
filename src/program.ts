@@ -384,6 +384,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ...(args.tag ? { tag: args.tag } : {}),
         ...(args.person ? { person: args.person.startsWith("person:") ? args.person : `person:${args.person}` } : {}),
       }
+      // BUG-243: still one check per document. No cli-core store query yet scopes imported documents of one
+      // account by tag or by a person:<uid> link, so this stays a flag until one does; it must not become a query.
       if (args.tag || args.person)
         docs = await withIndex(async (index) => {
           if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")

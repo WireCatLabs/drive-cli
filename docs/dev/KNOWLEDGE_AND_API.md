@@ -63,19 +63,23 @@ Pass the answer's `page.next_cursor` as `--cursor` to read another page.
 
 ```sh
 drive personal facts add DOC_ID 'Budget approved for Q4' --type decision --scope work
-drive personal facts list DOC_ID --status proposed
+drive personal facts list DOC_ID status:proposed
 drive personal facts confirm DOC_ID fact:FACT_ID
 drive personal memories add DOC_ID 'Q4 budget, in short' --scope work --kind summary
-drive personal memories list DOC_ID --scope work
+drive personal memories list DOC_ID scope:work
 drive personal memories show DOC_ID memory:MEMORY_ID
 drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal memories add DOC_ID 'Corrected budget summary' --scope work --supersedes memory:MEMORY_ID
-drive personal memories search DOC_ID budget --scope work
+drive personal memories search DOC_ID budget scope:work
 drive personal memories stale DOC_ID memory:MEMORY_ID
 drive personal models set --provider openai --model YOUR_MODEL
 drive personal memories extract DOC_ID --scope work
 drive personal memories extract DOC_ID --scope work --tab TAB_ID --yes
 ```
+
+`facts list` and `memories list` narrow by the terms after the document — `kind:`, `status:` and, for
+memories, `scope:` — and the store applies them. Facts and memories answer with the shared `fact` and `memory`
+fields: `kind`, `text`, `status`, `scope`.
 
 Scopes are explicitly `personal` or `work`; memory kinds are summary, digest or preference. What happened —
 a fact, statement, question, decision or promise — is a fact: `facts add` records yours as accepted, and
@@ -113,7 +117,7 @@ structured request bodies; binary media upload and arbitrary transport settings 
 
 ```sh
 drive api list
-drive api list --service docs
+drive api list service:docs
 drive personal files list --parent FOLDER_ID
 drive personal files get FILE_ID
 drive personal comments list FILE_ID

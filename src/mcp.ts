@@ -2,6 +2,7 @@ import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams, visibleControls } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
+import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { openStore } from "@wirecat/cli-core/store"
@@ -18,6 +19,8 @@ interface ToolDefinition {
   command: CommandInfo
   schema: Record<string, unknown>
 }
+/** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
+const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
 const excluded = new Set(["session", "config", "complete", "mcp", "models"])
 
 /** Advertise the strict schema, but validate in our handler so failures are structured and audited. */
@@ -78,9 +81,15 @@ export const mcpTools = (
       const properties: Record<string, unknown> = {}
       const required: string[] = []
       for (const argument of command.arguments) {
-        properties[argument.name] = argument.variadic
-          ? { type: "array", items: { type: "string", maxLength: 100000 }, maxItems: 100 }
-          : { type: "string", maxLength: 100000 }
+        properties[argument.name] = isQuery(command, argument.name)
+          ? {
+              type: "string",
+              maxLength: QUERY_LIMITS.bytes,
+              description: `field:value terms, as the CLI takes them; fields: ${command.query?.fields.map((field) => field.name).join(", ")}`,
+            }
+          : argument.variadic
+            ? { type: "array", items: { type: "string", maxLength: 100000 }, maxItems: 100 }
+            : { type: "string", maxLength: 100000 }
         if (argument.required) required.push(argument.name)
       }
       for (const option of command.options) {
