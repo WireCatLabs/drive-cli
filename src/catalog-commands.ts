@@ -137,7 +137,7 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
           const items = []
           for (let skip = 0; skip < 10000; skip += 1000) {
             const page = await index.catalog.list(principal, { limit: 1000, offset: skip })
-            items.push(...page.items)
+            for (const item of page.items) items.push(item)
             if (!page.hasMore) break
           }
           const roots = id ? [fileId(id)] : activeProfile(env, selected()).roots
