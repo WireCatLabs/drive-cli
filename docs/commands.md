@@ -137,13 +137,17 @@ read imported documents and Google Docs
 list imported documents with their Google URLs
 
 ```sh
-drive <profile> documents list [options]
+drive <profile> documents list [query] [options]
 ```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
-| `--tag <tag>` | only documents with this tag. |
-| `--person <uid>` | only documents linked to this person, by uid or person:<uid>. |
+| `--limit <n>` | how many documents to return. Default: `50`. |
+| `--page <n>` | which page to return. Default: `1`. |
 
 ### `drive documents show`
 

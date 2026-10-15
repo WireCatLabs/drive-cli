@@ -33,8 +33,8 @@ describe("document knowledge commands", () => {
     await call("sync")
     expect((await call("tags", "add", "doc-a", "budget")).tags).toEqual(["budget"])
     expect((await call("tags", "list", "doc-a")).tags).toEqual(["budget"])
-    expect((await call("documents", "list", "--tag", "Budget")).items).toHaveLength(1)
-    expect((await call("documents", "list", "--tag", "missing")).items).toHaveLength(0)
+    expect((await call("documents", "list", "tag:Budget")).items).toHaveLength(1)
+    expect((await call("documents", "list", "tag:missing")).items).toHaveLength(0)
     await call("tags", "remove", "doc-a", "budget")
     const note = await call("notes", "add", "doc-a", "Review memo", "--title", "Review")
     expect((await call("notes", "list", "doc-a", "memo")).items).toHaveLength(1)
@@ -80,9 +80,9 @@ describe("document knowledge commands", () => {
     expect((await call("facts", "show", "doc-a", decision.ref)).text).toBe("Budget approved")
     const people = await call("identities", "list", "doc-a")
     expect(people.items[0].google_id).toBe("google-owner")
-    expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)
-    expect((await call("documents", "list", "--person", people.items[0].person.uid)).items).toHaveLength(2)
-    expect((await call("documents", "list", "--person", "person:missing")).items).toHaveLength(0)
+    expect((await call("documents", "list", `person:"${people.items[0].person.ref}"`)).items).toHaveLength(2)
+    expect((await call("documents", "list", `person:${people.items[0].person.uid}`)).items).toHaveLength(2)
+    expect((await call("documents", "list", "person:missing")).items).toHaveLength(0)
     expect((await call("identities", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(
       people.items[0].person.uid,
     )
@@ -94,6 +94,29 @@ describe("document knowledge commands", () => {
       call("models", "set", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
     ).rejects.toThrow("invalid")
   }, 30_000)
+  it("lists documents through the store's query, so a page of one still finds the newest tagged document", async () => {
+    const f = fixture()
+    const call = async (...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
+        ["default", ...args, "--json"],
+        { from: "user" },
+      )
+      return JSON.parse(streams.stdout.join(""))
+    }
+    await call("sync")
+    await call("tags", "add", "doc-b", "budget")
+    const first = await call("documents", "list", "--limit", "1")
+    expect(first.items.map((doc: { id: string }) => doc.id)).toEqual(["doc-a"])
+    expect(first.page.has_more).toBe(true)
+    const tagged = await call("documents", "list", "tag:budget", "--limit", "1")
+    expect(tagged.items).toEqual([
+      expect.objectContaining({ id: "doc-b", url: expect.any(String), reference: expect.stringMatching(/^document:/) }),
+    ])
+    expect(tagged.page.has_more).toBe(false)
+    await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/query/)
+    await expect(call("documents", "list", "kind:file")).rejects.toThrow(/kind/)
+  })
   it("refuses stale extraction results after the source changes while the model is running", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source }

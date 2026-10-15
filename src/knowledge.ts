@@ -1,5 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
-import { normalizeTag } from "@wirecat/cli-core"
+import type { QueryAst } from "@wirecat/cli-base/query"
 import type {
   Author,
   Fact,
@@ -15,7 +15,11 @@ import { factItem, memoryItem } from "./knowledge-query.js"
 import type { FileMetadata, GoogleUser } from "./model.js"
 
 export interface DocumentKnowledge {
-  matches(principal: string, ref: string, filters: { tag?: string; person?: string }): Promise<boolean>
+  documents(
+    principal: string,
+    query: QueryAst | undefined,
+    page: { limit: number; offset: number },
+  ): Promise<{ items: Note[]; hasMore: boolean }>
   context(principal: string, ref: string): Promise<unknown>
   tags(principal: string, ref: string, action: "list" | "add" | "remove", tags?: string[]): Promise<string[]>
   links(principal: string, ref: string): Promise<Link[]>
@@ -107,16 +111,9 @@ export const documentKnowledge = (
     return fact
   }
   const port: DocumentKnowledge = {
-    matches: async (principal, ref, filters) => {
-      const note = await document(principal, ref)
-      if (
-        filters.tag &&
-        !(await store.knowledge.tags(null, { type: "document", id: note.id })).includes(normalizeTag(filters.tag))
-      )
-        return false
-      if (filters.person && !(await store.notes.links({ from: ref })).some((link) => link.to === filters.person))
-        return false
-      return true
+    documents: async (principal, query, page) => {
+      const folderId = await folder(principal)
+      return folderId ? store.notes.importedDocuments(folderId, query, page) : { items: [], hasMore: false }
     },
     context: async (principal, ref) => {
       const note = await document(principal, ref)
