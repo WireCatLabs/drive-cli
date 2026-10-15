@@ -6,6 +6,10 @@
   with Core 0.283.0, avoiding separate framework instances; installed Node/Bun smoke checks both
   generated reads and writes before publication. Legacy camelCase settings still migrate once,
   retaining their file mode and refusing conflicting aliases.
+- A clean install holds one copy of `@wirecat/cli-base` (0.8.0 installed two: 0.31.0 for drive, 0.28.2 for
+  cli-core); the installed-package smoke check now fails when `npm ls @wirecat/cli-base` lists more than one.
+- Security: the MCP client used by the MCP tests is `@modelcontextprotocol/client` 2.3.1; below 2.2.0 it could send
+  OAuth credentials to an authorization server chosen by the MCP server.
 
 - **Search puts a file whose title matches the query first.** A plain-words query ranks a title equal to the query,
   then a title containing it as a phrase, then a title holding all its words, ahead of text matches; a field, `OR`,

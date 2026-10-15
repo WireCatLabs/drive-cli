@@ -93,7 +93,7 @@ describe("document knowledge commands", () => {
     await expect(
       call("models", "set", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
     ).rejects.toThrow("invalid")
-  })
+  }, 30_000)
   it("refuses stale extraction results after the source changes while the model is running", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source }

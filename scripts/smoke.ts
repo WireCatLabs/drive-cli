@@ -23,6 +23,13 @@ execFileSync(
   ["install", "--prefix", installed, "--ignore-scripts", "--no-audit", "--no-fund", join(temp, packed[0].filename)],
   { encoding: "utf8", env: { ...process.env, NPM_CONFIG_USERCONFIG: userConfig }, stdio: "pipe" },
 )
+const cliBaseCopies = execFileSync("npm", ["ls", "@wirecat/cli-base", "--all", "--parseable", "--prefix", installed], {
+  encoding: "utf8",
+  env: { ...process.env, NPM_CONFIG_USERCONFIG: userConfig },
+})
+  .split("\n")
+  .filter(Boolean)
+assert.equal(cliBaseCopies.length, 1, `expected one @wirecat/cli-base, found:\n${cliBaseCopies.join("\n")}`)
 const guard = join(temp, "guard.mjs")
 writeFileSync(
   guard,
