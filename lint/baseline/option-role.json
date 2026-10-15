@@ -1,8 +1,6 @@
 [
-  "api list --service",
   "documents history --activity",
   "documents list --tag",
-  "facts list --status",
   "mcp --tools",
   "memories extract --tab",
   "models set --purpose",

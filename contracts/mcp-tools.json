@@ -1295,7 +1295,9 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
-        "service": {
+        "query": {
+          "description": "field:value terms, as the CLI takes them; fields: service",
+          "maxLength": 8192,
           "type": "string"
         }
       },
@@ -1339,12 +1341,9 @@
           "type": "string"
         },
         "query": {
-          "items": {
-            "maxLength": 100000,
-            "type": "string"
-          },
-          "maxItems": 100,
-          "type": "array"
+          "description": "field:value terms, as the CLI takes them; fields: text, name, kind, mime, parent, person, tag",
+          "maxLength": 8192,
+          "type": "string"
         }
       },
       "required": [],
@@ -1368,12 +1367,9 @@
           "type": "string"
         },
         "query": {
-          "items": {
-            "maxLength": 100000,
-            "type": "string"
-          },
-          "maxItems": 100,
-          "type": "array"
+          "description": "field:value terms, as the CLI takes them; fields: text, name, kind, mime, parent, person, tag",
+          "maxLength": 8192,
+          "type": "string"
         }
       },
       "required": ["query"],
@@ -1634,12 +1630,9 @@
         "limit": {
           "type": "string"
         },
-        "status": {
-          "enum": ["proposed", "accepted", "superseded", "reversed"],
-          "type": "string"
-        },
-        "type": {
-          "enum": ["fact", "statement", "question", "decision", "promise"],
+        "query": {
+          "description": "field:value terms, as the CLI takes them; fields: kind, status",
+          "maxLength": 8192,
           "type": "string"
         }
       },
@@ -1768,15 +1761,12 @@
           "maxLength": 100000,
           "type": "string"
         },
-        "kind": {
-          "enum": ["summary", "digest", "preference"],
-          "type": "string"
-        },
         "limit": {
           "type": "string"
         },
-        "scope": {
-          "enum": ["personal", "work"],
+        "query": {
+          "description": "field:value terms, as the CLI takes them; fields: kind, status, scope",
+          "maxLength": 8192,
           "type": "string"
         }
       },
@@ -1799,15 +1789,12 @@
           "type": "string"
         },
         "query": {
-          "maxLength": 100000,
-          "type": "string"
-        },
-        "scope": {
-          "enum": ["personal", "work"],
+          "description": "field:value terms, as the CLI takes them; fields: text, scope",
+          "maxLength": 8192,
           "type": "string"
         }
       },
-      "required": ["document", "query", "scope"],
+      "required": ["document", "query"],
       "type": "object"
     },
     "name": "drive_memories_search"

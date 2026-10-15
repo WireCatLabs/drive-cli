@@ -1,4 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
+import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
   apiPlainJson,
   type Body,
@@ -9,7 +10,10 @@ import {
   type ListBody,
   listOf,
   parseApiJson,
+  queryTerms,
   readApiBody,
+  termField,
+  withQuery,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { operationOf, operations, schemas, validateRequest } from "./api-contract.js"
@@ -18,6 +22,12 @@ import { apiMethod, apiMethods, validateApiParams } from "./google-api.js"
 import { allOf } from "./output.js"
 import { examples } from "./registry.js"
 import { requestSchema } from "./schema.js"
+
+const API_METHOD_QUERY = {
+  entity: "api_method",
+  backend: "native",
+  fields: [termField("service", "enum", "service:docs", { values: ["drive", "docs", "driveactivity"] })],
+} as const satisfies QueryRegistry
 
 export const jsonObject = (value: string): Record<string, unknown> => {
   const parsed = apiPlainJson(parseApiJson(value))
@@ -61,14 +71,14 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .option("--cursor <cursor>", "continue from page.next_cursor of the previous answer")
   const fileArgument = "file id or Google Drive URL"
   const api = program.command("api").description("discover and call the official Drive, Docs and Activity API methods")
-  examples(
-    api
-      .command("list")
-      .description("list the Google API methods drive can call")
-      .option("--service <name>", "only the methods of this service: drive, docs or driveactivity"),
-    ["drive api list --service docs"],
-  ).action((args: { service?: string }) =>
-    output(allOf(apiMethods().filter((m) => !args.service || m.name.startsWith(`${args.service}.`)))),
+  withQuery(
+    examples(api.command("list").description("list the Google API methods drive can call"), [
+      "drive api list",
+      "drive api list service:docs",
+    ]),
+    API_METHOD_QUERY,
+  ).action((words: string[]) =>
+    output(allOf(apiMethods(queryTerms(words, API_METHOD_QUERY, "api list").get("service")))),
   )
   examples(
     api

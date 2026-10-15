@@ -11,6 +11,7 @@ import type {
   Note,
   PersonRecord,
 } from "@wirecat/cli-core/store"
+import { factItem, memoryItem } from "./knowledge-query.js"
 import type { FileMetadata, GoogleUser } from "./model.js"
 
 export interface DocumentKnowledge {
@@ -37,14 +38,14 @@ export interface DocumentKnowledge {
   memories(
     principal: string,
     ref: string,
-    options?: { scope?: Memory["scope"]; kind?: Memory["kind"]; limit?: number },
+    options?: { scope?: Memory["scope"]; kind?: Memory["kind"]; status?: Memory["status"]; limit?: number },
   ): Promise<Memory[]>
   memory(principal: string, ref: string, memoryRef: string, action?: "show" | "confirm" | "stale"): Promise<Memory>
   searchMemories(
     principal: string,
     ref: string,
     query: string,
-    scope: Memory["scope"],
+    scope?: Memory["scope"],
   ): Promise<{ items: Memory[]; candidate_limit_reached: boolean }>
   addFact(
     principal: string,
@@ -124,8 +125,8 @@ export const documentKnowledge = (
         tags: await store.notes.noteTags(ref),
         links: await store.notes.links({ from: ref }),
         notes: await store.notes.notes({ source: "internal", about: ref, limit: 100 }),
-        memories: await store.memories.list({ subject: ref, limit: 100 }),
-        facts: await store.facts.list({ subject: ref, limit: 100 }),
+        memories: (await store.memories.list({ subject: ref, limit: 100 })).map(memoryItem),
+        facts: (await store.facts.list({ subject: ref, limit: 100 })).map(factItem),
         people: await port.people(principal, ref),
       }
     },
@@ -184,7 +185,8 @@ export const documentKnowledge = (
     },
     searchMemories: async (principal, ref, query, scope) => {
       await document(principal, ref)
-      const candidates = await store.memories.search(query, { scope, limit: 200 })
+      // The store's search takes no subject yet, so the document narrows its best 200 here.
+      const candidates = await store.memories.search(query, { ...(scope ? { scope } : {}), limit: 200 })
       return {
         items: candidates.filter((memory) => memory.subject === ref),
         candidate_limit_reached: candidates.length === 200,

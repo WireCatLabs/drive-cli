@@ -606,17 +606,16 @@ drive <profile> memories add <document> <text> [options]
 list a document's memories
 
 ```sh
-drive <profile> memories list <document> [options]
+drive <profile> memories list <document> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `document` | required | Google file or folder id or URL in the local catalog. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
-| `--scope <scope>` | only personal or only work memories. One of: `personal`, `work`. |
-| `--kind <kind>` | only memories of this kind. One of: `summary`, `digest`, `preference`. |
 | `--limit <n>` | how many memories to return. Default: `50`. |
 
 ### `drive memories show`
@@ -667,17 +666,13 @@ drive <profile> memories stale <document> <memory>
 search a document's memories by words
 
 ```sh
-drive <profile> memories search <document> <query> [options]
+drive <profile> memories search <document> <query>
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `document` | required | Google file or folder id or URL in the local catalog. |
-| `query` | required | words to look for. |
-
-| Option | What it does |
-|---|---|
-| `--scope <scope>` | search personal or work memories. One of: `personal`, `work`. |
+| `query` | required | words to look for, and scope:personal or scope:work — the fields are below. |
 
 ### `drive memories extract`
 
@@ -728,17 +723,16 @@ drive <profile> facts add <document> <statement> [options]
 list a document's facts
 
 ```sh
-drive <profile> facts list <document> [options]
+drive <profile> facts list <document> [query] [options]
 ```
 
 | Argument | | What it is |
 |---|---|---|
 | `document` | required | Google file or folder id or URL in the local catalog. |
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 | Option | What it does |
 |---|---|
-| `--type <type>` | only facts of this kind. One of: `fact`, `statement`, `question`, `decision`, `promise`. |
-| `--status <status>` | only facts in this state. One of: `proposed`, `accepted`, `superseded`, `reversed`. |
 | `--limit <n>` | how many facts to return. Default: `50`. |
 
 ### `drive facts show`
@@ -810,12 +804,12 @@ discover and call the official Drive, Docs and Activity API methods
 list the Google API methods drive can call
 
 ```sh
-drive api list [options]
+drive api list [query]
 ```
 
-| Option | What it does |
-|---|---|
-| `--service <name>` | only the methods of this service: drive, docs or driveactivity. |
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
 
 ### `drive api show`
 

@@ -1,10 +1,13 @@
 import { CliError } from "@wirecat/cli-base"
-import { type Body, itemOf, listOf } from "@wirecat/cli-core/cli"
-import { FACT_STATUSES, FACT_TYPES, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
+import { annotate } from "@wirecat/cli-base/commands"
+import { defineQuery } from "@wirecat/cli-base/query"
+import { type Body, itemOf, listOf, queryHelp, queryTerms, withQuery } from "@wirecat/cli-core/cli"
+import { FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"
 import { extractMemories } from "./extraction.js"
 import type { DocumentKnowledge } from "./knowledge.js"
+import { FACT_QUERY, factItem, MEMORY_QUERY, MEMORY_SEARCH_QUERY, memoryItem, memorySearch } from "./knowledge-query.js"
 import type { DocumentContent } from "./model.js"
 import { allOf } from "./output.js"
 import { examples } from "./registry.js"
@@ -148,16 +151,27 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(new Option("--kind <kind>", "what kind of memory it is").choices(MEMORY_KINDS).default("summary"))
     .option("--supersedes <ref>", "a memory:<id> about the same document that this one replaces")
     .action(async (doc: string, body: string, args) =>
-      output(itemOf(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" })))),
+      output(
+        itemOf(memoryItem(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" })))),
+      ),
     )
-  examples(memories.command("list").description("list a document's memories"), [
-    "drive personal memories list DOC_ID --scope work",
-  ])
-    .argument("<document>", documentArgument)
-    .addOption(scope("only personal or only work memories"))
-    .addOption(new Option("--kind <kind>", "only memories of this kind").choices(MEMORY_KINDS))
+  withQuery(
+    examples(memories.command("list").description("list a document's memories"), [
+      "drive personal memories list DOC_ID scope:work",
+      "drive personal memories list DOC_ID kind:preference status:confirmed",
+    ]).argument("<document>", documentArgument),
+    MEMORY_QUERY,
+  )
     .option("--limit <n>", "how many memories to return", positive, 50)
-    .action(async (doc: string, args) => output(allOf(await run(doc, (k, p, ref) => k.memories(p, ref, args)))))
+    .action(async (doc: string, words: string[], { limit }: { limit: number }) => {
+      const terms = queryTerms(words, MEMORY_QUERY, "memories list")
+      const filters = {
+        ...(terms.has("kind") ? { kind: terms.get("kind") as Memory["kind"] } : {}),
+        ...(terms.has("status") ? { status: terms.get("status") as Memory["status"] } : {}),
+        ...(terms.has("scope") ? { scope: terms.get("scope") as Memory["scope"] } : {}),
+      }
+      output(allOf((await run(doc, (k, p, ref) => k.memories(p, ref, { ...filters, limit }))).map(memoryItem)))
+    })
   const memoryActions = {
     show: "show one memory",
     confirm: "confirm a proposed memory as true",
@@ -170,18 +184,25 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       .argument("<document>", documentArgument)
       .argument("<memory>", memoryArgument)
       .action(async (doc: string, memoryRef: string) =>
-        output(itemOf(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action)))),
+        output(itemOf(memoryItem(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action))))),
       )
-  examples(memories.command("search").description("search a document's memories by words"), [
-    "drive personal memories search DOC_ID reviews --scope work",
+  const search = examples(memories.command("search").description("search a document's memories by words"), [
+    "drive personal memories search DOC_ID reviews scope:work",
+    `drive personal memories search DOC_ID "async reviews"`,
   ])
     .argument("<document>", documentArgument)
-    .argument("<query>", "words to look for")
-    .addOption(scope("search personal or work memories").makeOptionMandatory())
-    .action(async (doc: string, query: string, args) => {
-      const found = await run(doc, (k, p, ref) => k.searchMemories(p, ref, query, args.scope))
-      output({ ...allOf(found.items), ...(found.candidate_limit_reached ? { meta: { truncated: true } } : {}) })
+    .argument("<query...>", "words to look for, and scope:personal or scope:work — the fields are below")
+    .allowUnknownOption()
+    .addHelpText("after", queryHelp(MEMORY_SEARCH_QUERY))
+    .action(async (doc: string, words: string[]) => {
+      const { text, scope } = memorySearch(words)
+      const found = await run(doc, (k, p, ref) => k.searchMemories(p, ref, text, scope))
+      output({
+        ...allOf(found.items.map(memoryItem)),
+        ...(found.candidate_limit_reached ? { meta: { truncated: true } } : {}),
+      })
     })
+  annotate(search, { query: defineQuery(MEMORY_SEARCH_QUERY), output: { entity: "memory" } })
   examples(
     memories
       .command("extract")
@@ -226,14 +247,16 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
               const body = `${item.body}\n\nSource quote: ${item.quote}\nSnapshot: ${source.hash}`
               items.push(
                 item.kind === "fact"
-                  ? await k.addFact(p, ref, { statement: body, type: "fact", scope: args.scope, by })
-                  : await k.addMemory(p, ref, {
-                      kind: item.kind,
-                      body,
-                      scope: args.scope,
-                      status: "proposed",
-                      author: by,
-                    }),
+                  ? factItem(await k.addFact(p, ref, { statement: body, type: "fact", scope: args.scope, by }))
+                  : memoryItem(
+                      await k.addMemory(p, ref, {
+                        kind: item.kind,
+                        body,
+                        scope: args.scope,
+                        status: "proposed",
+                        author: by,
+                      }),
+                    ),
               )
             }
             return items
@@ -254,23 +277,31 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(scope("whose fact it is: personal or work"))
     .action(
       async (doc: string, statement: string, args: { type: (typeof FACT_TYPES)[number]; scope?: Memory["scope"] }) =>
-        output(itemOf(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args })))),
+        output(itemOf(factItem(await run(doc, (k, p, ref) => k.addFact(p, ref, { statement, ...args }))))),
     )
-  examples(facts.command("list").description("list a document's facts"), [
-    "drive personal facts list DOC_ID --status proposed",
-  ])
-    .argument("<document>", documentArgument)
-    .addOption(new Option("--type <type>", "only facts of this kind").choices(FACT_TYPES))
-    .addOption(new Option("--status <status>", "only facts in this state").choices(FACT_STATUSES))
+  withQuery(
+    examples(facts.command("list").description("list a document's facts"), [
+      "drive personal facts list DOC_ID status:proposed",
+      "drive personal facts list DOC_ID kind:decision",
+    ]).argument("<document>", documentArgument),
+    FACT_QUERY,
+  )
     .option("--limit <n>", "how many facts to return", positive, 50)
-    .action(async (doc: string, args) => output(allOf(await run(doc, (k, p, ref) => k.facts(p, ref, args)))))
+    .action(async (doc: string, words: string[], { limit }: { limit: number }) => {
+      const terms = queryTerms(words, FACT_QUERY, "facts list")
+      const filters = {
+        ...(terms.has("kind") ? { type: terms.get("kind") as Fact["type"] } : {}),
+        ...(terms.has("status") ? { status: terms.get("status") as Fact["status"] } : {}),
+      }
+      output(allOf((await run(doc, (k, p, ref) => k.facts(p, ref, { ...filters, limit }))).map(factItem)))
+    })
   const factActions = { show: "show one fact", confirm: "confirm a proposed fact as true" } as const
   for (const [action, description] of Object.entries(factActions) as [keyof typeof factActions, string][])
     examples(facts.command(action).description(description), [`drive personal facts ${action} DOC_ID fact:FACT_ID`])
       .argument("<document>", documentArgument)
       .argument("<fact>", factArgument)
       .action(async (doc: string, factRef: string) =>
-        output(itemOf(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action)))),
+        output(itemOf(factItem(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action))))),
       )
   const identities = program
     .command("identities")

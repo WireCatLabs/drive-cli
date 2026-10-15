@@ -176,8 +176,8 @@ With an [AI provider configured](configuration.md#optional-ai-extraction):
 ```sh
 drive personal memories extract DOC_ID --scope work
 drive personal memories extract DOC_ID --scope work --yes
-drive personal memories list DOC_ID --scope work --json
-drive personal facts list DOC_ID --status proposed --json
+drive personal memories list DOC_ID scope:work --json
+drive personal facts list DOC_ID status:proposed --json
 drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal facts confirm DOC_ID fact:FACT_ID
 ```
