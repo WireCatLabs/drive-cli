@@ -230,7 +230,7 @@ drive personal files move NEW_DOC_ID --parent FOLDER_ID --old-parent OLD_PARENT_
 drive personal sync --json
 ```
 
-Replace `NEW_DOC_ID` with the create response's `documentId`. Docs creates it in My Drive's root.
+Replace `NEW_DOC_ID` with the create response's `document_id`. Docs creates it in My Drive's root.
 Read its `parents` from `files get` and replace `OLD_PARENT_ID` with that parent ID; `--old-parent` removes
 the old parent while adding the selected one. Google files have one parent; see the
 [official folder-move guide](https://developers.google.com/workspace/drive/api/guides/folder#move-files-between-folders).
