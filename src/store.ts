@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, isCliError } from "@wirecat/cli-base"
 import { walkQuery } from "@wirecat/cli-base/query"
 import type { MessageStore, Note } from "@wirecat/cli-core/store"
 import { catalogInput } from "./catalog.js"
@@ -13,6 +13,21 @@ export const openIndex = async (env: NodeJS.ProcessEnv): Promise<DocumentIndex> 
   const { openStore } = await import("@wirecat/cli-core/store")
   const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env })
   return indexOver(store, env)
+}
+// cli-core names one app's download command; drive has none and reads the models tg and max download.
+const modelAdvice = (text: string) =>
+  text.replace(
+    /`tg ((?:images )?models (?:text )?download [^`]+)`(?: fetches it)?/,
+    "tg or max downloads it: `tg $1` or `max $1`",
+  )
+const withModelAdvice = async <T>(act: () => Promise<T>): Promise<T> => {
+  try {
+    return await act()
+  } catch (error) {
+    if (isCliError(error) && error.details.reason === "model.not-downloaded")
+      throw new CliError(error.code, modelAdvice(error.message), error.details)
+    throw error
+  }
 }
 type PictureEmbedder = Awaited<ReturnType<typeof import("@wirecat/cli-core/services")["openPictureEmbedderFor"]>>
 export const indexOver = (
@@ -140,7 +155,7 @@ export const indexOver = (
     },
     openPictures: async () => {
       const { openPictureEmbedderFor, savePicture } = await import("@wirecat/cli-core/services")
-      const embedder = pictureEmbedder ?? (await openPictureEmbedderFor({ env, command: "tg" }))
+      const embedder = pictureEmbedder ?? (await withModelAdvice(() => openPictureEmbedderFor({ env, command: "tg" })))
       return {
         save: (reference, bytes) => savePicture(store, { ref: reference }, bytes, { embedder }),
         close: () => (pictureEmbedder ? Promise.resolve() : embedder.close()),
@@ -158,13 +173,15 @@ export const indexOver = (
           meaning_skipped: "this Google account has no imported sources",
         }
       const { searchNotes } = await import("@wirecat/cli-core/services")
-      const result = await searchNotes(store, query, {
-        ...options,
-        folderIds: selected ? [selected.id] : [],
-        env,
-        command: "tg",
-        ...(pictureEmbedder ? { pictureEmbedder } : {}),
-      })
+      const result = await withModelAdvice(() =>
+        searchNotes(store, query, {
+          ...options,
+          folderIds: selected ? [selected.id] : [],
+          env,
+          command: "tg",
+          ...(pictureEmbedder ? { pictureEmbedder } : {}),
+        }),
+      )
       const pictures = await Promise.all(
         (result.pictures ?? []).map(async (picture) => {
           const note = await store.notes.note(picture.ref)
@@ -176,11 +193,12 @@ export const indexOver = (
           }
         }),
       )
-      const { pictures: _, pictures_skipped, ...rest } = result
+      const { pictures: _, pictures_skipped, meaning_skipped, ...rest } = result
       return {
         ...rest,
+        ...(meaning_skipped ? { meaning_skipped: modelAdvice(meaning_skipped) } : {}),
         ...(result.pictures ? { pictures } : {}),
-        ...(pictures_skipped ? { pictures_skipped } : {}),
+        ...(pictures_skipped ? { pictures_skipped: modelAdvice(pictures_skipped) } : {}),
         hits: await Promise.all(
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)
@@ -207,7 +225,7 @@ export const indexOver = (
     },
     embed: async (max) => {
       const { embedNotes } = await import("@wirecat/cli-core/services")
-      return embedNotes(store, { maxChunks: max, env, command: "tg" })
+      return withModelAdvice(() => embedNotes(store, { maxChunks: max, env, command: "tg" }))
     },
     close: () => store.close(),
   }

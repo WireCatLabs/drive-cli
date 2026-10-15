@@ -56,7 +56,7 @@ const ENTRIES: Entry[] = [
   ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive sync"],
   ["store.refused", "validation_error", "the local store refused the document text", ["store_refused_in"]],
   ["sync.partial", "provider_error", "the sync finished only in part; run it again"],
-  ["write.not-allowed", "permission_error", "this method changes Google data; pass --allow-write"],
+  ["write.not-allowed", "permission_error", "this method changes Google data; pass --allow-writes"],
 ]
 
 /** Every reason drive raises; cli-base's base reasons are known to the handler already. */

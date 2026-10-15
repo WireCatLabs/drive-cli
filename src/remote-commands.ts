@@ -86,18 +86,18 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .argument("<method>", "Google method name, as api list prints it"),
     [
       `drive personal api call drive.files.get --params '{"fileId":"FILE_ID"}'`,
-      `drive personal api call drive.files.update --params '{"fileId":"FILE_ID"}' --body '{"name":"New"}' --allow-write`,
+      `drive personal api call drive.files.update --params '{"fileId":"FILE_ID"}' --body '{"name":"New"}' --allow-writes`,
     ],
   )
     .option("--params <json>", "query and path parameters as a JSON object", jsonObject, {})
     .option("--body <json>", "request body as a JSON object", jsonObject)
-    .option("--allow-write", "allow a method that changes Google data")
+    .option("--allow-writes", "allow a method that changes Google data")
     .option("--allow-delete", "allow a method that deletes for good or empties the trash")
     .action(async (name: string, args) => {
       const method = apiMethod(name)
       validateApiParams(args.params)
-      if (method.mutates && !args.allowWrite)
-        throw new CliError("permission_error", "this method changes Google data; pass --allow-write", {
+      if (method.mutates && !args.allowWrites)
+        throw new CliError("permission_error", "this method changes Google data; pass --allow-writes", {
           reason: "write.not-allowed",
         })
       if (method.destructive && !args.allowDelete)
@@ -128,17 +128,18 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   page(
     examples(files.command("list").description("list files in Google Drive, one page at a time"), [
       "drive personal files list --parent FOLDER_ID",
-      `drive personal files list --query "name contains 'plan'" --limit 20`,
+      `drive personal files list "name contains 'plan'" --limit 20`,
     ]),
   )
-    .option("--query <q>", "only files that match this Google Drive query", "trashed = false")
-    .option("--parent <folder>", "only the files directly inside this folder id")
-    .action(async (args) =>
-      output(
+    .argument("[query...]", "Google Drive query the files match; trashed = false when omitted")
+    .option("--parent <id>", "only the files directly inside this folder id")
+    .action(async (words: string[], args) => {
+      const query = words.length ? words.join(" ") : "trashed = false"
+      return output(
         pageOf(
           "files list",
           await call("drive.files.list", {
-            q: args.parent ? `'${fileId(args.parent)}' in parents and (${args.query})` : args.query,
+            q: args.parent ? `'${fileId(args.parent)}' in parents and (${query})` : query,
             pageSize: args.limit,
             ...(args.cursor ? { pageToken: args.cursor } : {}),
             supportsAllDrives: true,
@@ -147,10 +148,10 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           }),
           "files",
           args.limit,
-          { query: args.query, parent: args.parent },
+          { query, parent: args.parent },
         ),
-      ),
-    )
+      )
+    })
   examples(files.command("get").description("show one file's Google Drive metadata").argument("<file>", fileArgument), [
     "drive personal files get FILE_ID",
   ]).action(async (id: string) =>
@@ -160,7 +161,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     `drive personal files copy FILE_ID --name "Plan copy" --parent FOLDER_ID`,
   ])
     .option("--name <name>", "name of the copy; Google's default when omitted")
-    .option("--parent <folder>", "folder id to put the copy in")
+    .option("--parent <id>", "folder id to put the copy in")
     .action(async (id: string, args) =>
       output(
         itemOf(
@@ -179,8 +180,8 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     files.command("move").description("move a file to another Google Drive folder").argument("<file>", fileArgument),
     ["drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID"],
   )
-    .requiredOption("--parent <folder>", "folder id to move the file into")
-    .option("--old-parent <folder>", "folder id to take the file out of")
+    .requiredOption("--parent <id>", "folder id to move the file into")
+    .option("--old-parent <id>", "folder id to take the file out of")
     .action(async (id: string, args) =>
       output(
         itemOf(
@@ -227,7 +228,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     files.command("mkdir").description("create an empty folder in Google Drive").argument("<name>", "folder name"),
     ["drive personal files mkdir Reports --parent FOLDER_ID"],
   )
-    .option("--parent <folder>", "folder id to create it in; My Drive when omitted")
+    .option("--parent <id>", "folder id to create it in; My Drive when omitted")
     .action(async (name: string, args) =>
       output(
         itemOf(

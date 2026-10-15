@@ -1709,7 +1709,12 @@
           "type": "string"
         },
         "query": {
-          "type": "string"
+          "items": {
+            "maxLength": 100000,
+            "type": "string"
+          },
+          "maxItems": 100,
+          "type": "array"
         }
       },
       "required": [],

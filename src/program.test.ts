@@ -40,13 +40,13 @@ describe("standalone command workflow", () => {
     expect(JSON.parse(listed.stdout.join("")).items).toHaveLength(2)
     const target = join(f.directory, "export.md")
     await createProgram({ ...options, streams: captureStreams() }).parseAsync(
-      ["default", "documents", "export", "doc-a", "--out", target],
+      ["default", "documents", "export", "doc-a", "--output", target],
       { from: "user" },
     )
     expect(readFileSync(target, "utf8")).toContain("budget decision")
     await expect(
       createProgram({ ...options, streams: captureStreams() }).parseAsync(
-        ["default", "documents", "export", "doc-a", "--out", target],
+        ["default", "documents", "export", "doc-a", "--output", target],
         { from: "user" },
       ),
     ).rejects.toMatchObject({ code: "validation_error", details: { reason: "export.exists" } })

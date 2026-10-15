@@ -61,7 +61,7 @@ workflow with several Google reads. OAuth scopes and Google file roles are addit
 
 `ask` is answered once per permission during a command, by the supplied confirmation handler or
 explicit flags. `--yes` answers ordinary confirmation; `--allow-dangerous` answers permanent
-deletion. Neither changes deny/readonly. Legacy raw API `--allow-write` and `--allow-delete` remain
+deletion. Neither changes deny/readonly. Legacy raw API `--allow-writes` and `--allow-delete` remain
 supported. Normal non-destructive writes default to allow; an OAuth write grant is still required.
 Google writes use cli-core's guardedWrite/SendJournal and retain only operation metadata,
 never titles, document text, tokens or request bodies. An uncertain response is outcome_unknown;

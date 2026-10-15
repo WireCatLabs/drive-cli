@@ -65,7 +65,7 @@ drive personal search 'budget decision' --json
 drive personal search 'budget' --exact --json
 drive personal documents list --json
 drive personal documents show DOC_ID --json
-drive personal documents export DOC_ID --out ./document.md
+drive personal documents export DOC_ID --output ./document.md
 drive personal status --json
 drive commands sync --json
 ```

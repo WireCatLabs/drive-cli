@@ -131,7 +131,7 @@ drive personal documents create --title 'Planning'
 drive personal documents get DOC_ID
 drive personal documents update DOC_ID --body '{"requests":[{"insertText":{"endOfSegmentLocation":{},"text":"New paragraph\n"}}]}'
 drive personal api call drive.about.get --params '{"fields":"user,storageQuota"}'
-drive personal api call docs.documents.batchUpdate --allow-write --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
+drive personal api call docs.documents.batchUpdate --allow-writes --params '{"documentId":"DOC_ID"}' --body '{"requests":[]}'
 ```
 
 Creation, movement and editing require the explicit `--write` grant (`drive`). Listing and
@@ -140,7 +140,7 @@ need `session start --apps` (`drive.apps.readonly`). Generating file IDs needs t
 even though it is a read-style method. See Google's [apps scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/apps/list)
 and [file-ID scope](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/generateIds).
 
-Generic mutating calls require `--allow-write`; permanent deletion and emptyTrash additionally
+Generic mutating calls require `--allow-writes`; permanent deletion and emptyTrash additionally
 require `--allow-delete`. Convenient named commands already describe their action. Google file
 roles, domain policy and API availability remain authoritative. The SDK forwards structured Docs
 batch requests for text, formatting, tables and tabs. Use `writeControl.requiredRevisionId` from

@@ -17,7 +17,7 @@ it is not required for search.
 | Read a native Google Doc now | `drive personal documents get DOC_ID` | Google, immediately | No local import; prints Docs JSON |
 | Keep a folder searchable | `drive personal folders add FOLDER_ID`, then `drive personal sync` | Google folder and descendants | Index, snapshots and sync checkpoint |
 | Read an imported source | `drive personal documents show DOC_ID` | Local snapshot | Nothing new |
-| Save a Markdown file for another tool | `drive personal documents export DOC_ID --out ./decision.md` | Local snapshot | The file you requested |
+| Save a Markdown file for another tool | `drive personal documents export DOC_ID --output ./decision.md` | Local snapshot | The file you requested |
 
 Redirecting command output to a file also saves that output. Browsing or reading live content
 alone does not add it to local search. Search needs an import; an export is optional.
@@ -229,7 +229,7 @@ and observed editors. For reviewed facts or person/project links, use [recipes](
 ## Export or stop importing
 
 ```sh
-drive personal documents export DOC_ID --out ./decision.md
+drive personal documents export DOC_ID --output ./decision.md
 drive personal folders remove FOLDER_ID
 drive personal sync --json
 ```

@@ -42,10 +42,22 @@ describe("document knowledge commands", () => {
     expect((await call("notes", "show", "doc-a", note.ref)).text).toBe("Review memo")
     const edited = await call("notes", "edit", "doc-a", note.ref, "Reviewed memo", "--revision", String(note.revision))
     expect(edited.text).toBe("Reviewed memo")
-    const link = await call("relationships", "add", "doc-a", note.ref, "--kind", "related-to", "--role", "review")
+    const link = await call(
+      "relationships",
+      "add",
+      "doc-a",
+      note.ref,
+      "--kind",
+      "related-to",
+      "--role",
+      "review",
+      "--reason",
+      "cited",
+    )
     expect(
       (await call("relationships", "list", "doc-a")).items.some((item: { id: string }) => item.id === link.id),
     ).toBe(true)
+    expect(link.evidence).toBe("cited")
     await call("relationships", "remove", "doc-a", link.id)
     const memory = await call("memories", "add", "doc-a", "Budget decision", "--scope", "work", "--kind", "summary")
     expect((await call("memories", "list", "doc-a", "--scope", "work")).items).toHaveLength(1)
@@ -69,6 +81,7 @@ describe("document knowledge commands", () => {
     const people = await call("identities", "list", "doc-a")
     expect(people.items[0].google_id).toBe("google-owner")
     expect((await call("documents", "list", "--person", people.items[0].person.ref)).items).toHaveLength(2)
+    expect((await call("documents", "list", "--person", people.items[0].person.uid)).items).toHaveLength(2)
     expect((await call("documents", "list", "--person", "person:missing")).items).toHaveLength(0)
     expect((await call("identities", "link", "doc-a", "google-owner", people.items[0].person.ref)).uid).toBe(
       people.items[0].person.uid,
@@ -184,15 +197,23 @@ describe("remote action commands", () => {
     await expect(call("api", "call", "drive.files.delete", "--params", '{"fileId":"doc-a"}')).rejects.toThrow(
       "allow-write",
     )
-    await expect(call("api", "call", "drive.files.delete", "--allow-write")).rejects.toThrow("allow-delete")
+    await expect(call("api", "call", "drive.files.delete", "--allow-writes")).rejects.toThrow("allow-delete")
     await expect(call("api", "call", "drive.files.get", "--params", '{"auth":"override"}')).rejects.toThrow("override")
     expect(request).not.toHaveBeenCalled()
-    await call("api", "call", "drive.files.delete", "--allow-write", "--allow-delete", "--params", '{"fileId":"doc-a"}')
+    await call(
+      "api",
+      "call",
+      "drive.files.delete",
+      "--allow-writes",
+      "--allow-delete",
+      "--params",
+      '{"fileId":"doc-a"}',
+    )
     await call(
       "api",
       "call",
       "docs.documents.batchUpdate",
-      "--allow-write",
+      "--allow-writes",
       "--params",
       '{"documentId":"doc-a"}',
       "--body",
