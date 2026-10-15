@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "rule": "unknown-verb",
+    "target": "facts reverse",
+    "reason": "Use Memo’s existing facts reverse command and Core’s facts.reverse transition: an accepted decision no longer holds without a replacement. Review when the shared decision vocabulary includes reverse.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-11-16"
+  }
+]
