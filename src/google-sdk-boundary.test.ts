@@ -61,10 +61,19 @@ describe("actual Google SDK security boundary", () => {
     expect(requests[1]?.url.searchParams.get("q")).toBe(query)
     expect(requests[1]?.url.searchParams.has("access_token")).toBe(false)
   })
-  it.each([401, 403, 404, 429, 500])("sanitizes actual SDK HTTP %i failures", async (status) => {
-    const { api } = fixture(() => Response.json({ error: { message: `${bearer} ${content}` } }, { status }))
+  it.each([
+    [401, "authentication_error"],
+    [403, "permission_error"],
+    [404, "not_found"],
+    [429, "rate_limited"],
+    [500, "provider_error"],
+  ] as const)("sanitizes actual SDK HTTP %i failures", async (status, code) => {
+    const { api, requests } = fixture(() => Response.json({ error: { message: `${bearer} ${content}` } }, { status }))
     const error = await api.call("drive.files.get", { fileId: "synthetic-file" }).catch((error: unknown) => error)
     expect(error).toBeInstanceOf(Error)
+    expect(error).toMatchObject({ code })
+    expect(requests.length).toBeGreaterThan(0)
+    expect(requests.length).toBeLessThanOrEqual(4)
     const serialized = `${String(error)} ${JSON.stringify(error)}`
     expect(serialized).not.toContain(bearer)
     expect(serialized).not.toContain(content)
@@ -91,8 +100,9 @@ describe("actual Google SDK security boundary", () => {
   it("rejects an oversized declared response before consuming its body", async () => {
     const response = new Response(content, { headers: { "content-length": String(budget + 1) } })
     const consume = vi.spyOn(response, "text")
-    const { api } = fixture(() => response)
+    const { api, requests } = fixture(() => response)
     await expect(api.call("drive.files.get", { fileId: "synthetic-file" })).rejects.toBeInstanceOf(Error)
     expect(consume).not.toHaveBeenCalled()
+    expect(requests).toHaveLength(1)
   })
 })
