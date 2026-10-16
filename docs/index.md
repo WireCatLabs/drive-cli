@@ -8,6 +8,7 @@ connect, what to keep offline and which task to try first.
 ## What you can do
 
 - Find a decision across imported documents and return its passage, title and original Google link.
+- Find imported documents alongside saved messages and notes through Memo, Telegram and MAX.
 - Read cached text and file metadata, navigate folder trees and find unreadable files without opening Drive.
 - Keep selected folders current through repeatable sync, including documents in subfolders.
 - Add local tags, notes and source-backed memories that survive renames and ordinary updates.

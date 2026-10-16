@@ -62,7 +62,8 @@ drive personal search 'what did we agree to spend?' --json
 ```
 
 The model download uses the network; embedding runs locally. Drive does not download a missing
-model automatically. Word search works without it. Empty results mean no match in the imported
+model automatically. Embedding processes pending notes and documents across the shared database,
+including other profiles; Drive search still reads only the selected Google account. Word search works without it. Empty results mean no match in the imported
 coverage, not that Google Drive has no such document. Check [sync troubleshooting](troubleshooting.md).
 
 ## Check what was searched

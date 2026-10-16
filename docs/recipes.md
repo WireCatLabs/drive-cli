@@ -182,7 +182,8 @@ drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal facts confirm DOC_ID fact:FACT_ID
 ```
 
-Extraction previews by default; `--yes` creates proposals. Replace `MEMORY_ID` with a returned
+Extraction previews by default. `--yes` generates a fresh batch and saves all its valid proposals;
+it does not save the previous preview. Review the saved proposals before confirming them. Replace `MEMORY_ID` with a returned
 reference only after reviewing it. Source changes/removal mark active memories stale.
 Extraction sends selected cached text to your provider; local embedding search is a separate
 operation. You can write a memory yourself with `memories add DOC_ID 'Your fact' --scope work`.
@@ -304,10 +305,10 @@ For exact commands, replace `CHAT_ID` with a chat selected in your Telegram prof
 
 ```sh
 drive personal sync
-tg personal search all budget --source drive:personal --exact
+tg personal search all budget --exact
 tg personal chats documents list CHAT_ID
 ```
 
-The search result includes the document's reference, Google URL and last Google edit time. The
+Drive's own search includes the document's reference, Google URL and last Google edit time. The
 chat list shows the imported document title when its link has been connected. Empty results can
 mean that the relevant documents or messages have not been imported.

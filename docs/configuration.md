@@ -150,7 +150,8 @@ See [memory extraction](recipes.md#remember-a-source-backed-decision) for review
 
 Drive uses the WireCat database that Memo, Telegram and MAX use. Imported documents can appear
 in their local searches, with the Google URL and last Google edit time. A successful sync records
-the selected Drive profile, so a shared search can select it with `--source drive:personal`.
+the selected Drive profile alongside its imported collection. Drive search reads that selected
+Google account; combined searches in other tools can cover multiple stored sources.
 Snapshots and checkpoints remain under `DRIVE_STATE_DIR`; `MESSAGING_STORE` selects the database.
 Sharing storage does not share sign-ins or Google permissions.
 
