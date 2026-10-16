@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`bin/release` restarts itself once when the release brings a newer `bin/release`**: folding the changelog
+  fast-forwards `main`, and the shell went on reading the old script from the byte it had reached, so the rest of the
+  run was a mix of old and new text. It now starts the new script over; a second change during that run stops it
+  with `run it again`. Only the repository's own release is affected; the published package does not change.
+
 ## 0.15.0 — 2026-10-16
 
 ### Changed
