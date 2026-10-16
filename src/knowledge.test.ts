@@ -109,9 +109,9 @@ describe("shared document knowledge", () => {
     const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
     try {
       const key = { provider: "synthetic-messenger", account: "synthetic-account" }
-      await store.saveAccount(key, { name: "Synthetic" })
-      await store.savePeople(key, [{ id: "external-editor", name: "Editor Sample" }])
-      const person = await store.personOf({ provider: key.provider, id: "external-editor" })
+      await store.accounts.saveAccount(key, { name: "Synthetic" })
+      await store.people.savePeople(key, [{ id: "external-editor", name: "Editor Sample" }])
+      const person = await store.people.personOf({ provider: key.provider, id: "external-editor" })
       if (!person) throw new Error("missing fixture person")
       const otherRef = await f.index.save("second-google-account", content({ ...f.metadata, id: "doc-b" }), "hash")
       const observed = (await f.k.people(f.principal, f.ref)) as {

@@ -86,7 +86,6 @@ export const guardedGoogleWrite = async <T>(
   flags: PolicyFlags = {},
   ask?: (key: string) => Promise<boolean>,
 ): Promise<T> => {
-  await checkPolicy(env, profile, key, true, flags, ask)
   const settings = policySettings(env, profile, flags)
   const guard = sendGuard({
     profile,

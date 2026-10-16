@@ -45,7 +45,7 @@ export const documentKnowledge = (
         items: await Promise.all(
           contributors.map(async (user) => {
             const id = googleUserId(user)
-            const person = id ? await store.personOf({ provider: "google-drive", id }) : undefined
+            const person = id ? await store.people.personOf({ provider: "google-drive", id }) : undefined
             return {
               ...user,
               google_id: id ?? null,
@@ -63,9 +63,9 @@ export const documentKnowledge = (
       if (!users.some((user) => googleUserId(user) === googleId))
         throw new CliError("not_found", "Google identity was not observed on this document")
       if (!personRef.startsWith("person:")) throw new CliError("validation_error", "target must be a person reference")
-      const person = await store.personByUid(personRef.slice(7))
+      const person = await store.people.personByUid(personRef.slice(7))
       if (!person?.identities[0]) throw new CliError("not_found", "target person has no known identity")
-      const linked = await store.linkIdentities(
+      const linked = await store.people.linkIdentities(
         person.identities[0],
         { provider: "google-drive", id: googleId },
         {
@@ -133,15 +133,15 @@ export const saveContributors = async (
     return id ? [{ id, user, role }] : []
   })
   if (register && identified.length) {
-    await store.saveAccount(key, { name: "Google Drive" })
-    await store.savePeople(
+    await store.accounts.saveAccount(key, { name: "Google Drive" })
+    await store.people.savePeople(
       key,
       identified.map(({ id, user }) => ({ id, name: user.name ?? user.email ?? null })),
     )
   }
   const links: Omit<LinkInput, "from" | "origin">[] = []
   for (const { id, user, role } of identified) {
-    const person = await store.personOf({ provider: "google-drive", id })
+    const person = await store.people.personOf({ provider: "google-drive", id })
     if (person)
       links.push({
         kind: "related-to",

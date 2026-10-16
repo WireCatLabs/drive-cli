@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { afterAll, describe, expect, it, vi } from "vitest"
+import { writeConfig } from "./config.js"
 import { createProgram } from "./program.js"
 import { fixture } from "./testing.js"
 import { type UploadRequest, type UploadResponse, uploadFile } from "./upload.js"
@@ -160,6 +161,29 @@ describe("files upload", () => {
       )
     await run("--dry-run")
     await expect(run("--read-only")).rejects.toThrow("policy refuses")
+    expect(request).not.toHaveBeenCalled()
+  })
+
+  it("answers to the files.create permission, not only files.upload", async () => {
+    const { path } = fileOf(10)
+    const f = fixture()
+    writeConfig(f.env, {
+      profiles: {
+        default: {
+          principal: "synthetic-principal",
+          roots: ["root"],
+          storage: "keyring",
+          permissions: { "files.create": "deny" },
+        },
+      },
+    })
+    const request = vi.fn(async () => reply(500))
+    await expect(
+      createProgram({ env: f.env, streams: captureStreams(), uploadRequest: request }).parseAsync(
+        ["default", "--dry-run", "files", "upload", path, "--json"],
+        { from: "user" },
+      ),
+    ).rejects.toMatchObject({ code: "permission_error", details: { permission: "files.create" } })
     expect(request).not.toHaveBeenCalled()
   })
 })
