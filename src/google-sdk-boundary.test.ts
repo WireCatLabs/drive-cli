@@ -21,12 +21,41 @@ const fixture = (respond: (attempt: number) => Response = () => Response.json({ 
     },
   })
   auth.setCredentials({ access_token: bearer, expiry_date: Date.now() + 3600000 })
-  return { api: googleApi(auth), requests, network }
+  return { api: googleApi(auth), auth, requests, network }
 }
 
 afterEach(() => vi.restoreAllMocks())
 
 describe("actual Google SDK security boundary", () => {
+  it.each(["drive.files.get", "docs.documents.batchUpdate"])(
+    "refreshes once after a definite auth refusal for %s",
+    async (method) => {
+      const { api, auth, requests } = fixture((attempt) => {
+        if (attempt === 1) return Response.json({ error: "invalid_token" }, { status: 401 })
+        if (attempt === 2)
+          return Response.json({ access_token: "SYNTHETIC-REFRESHED-BEARER", token_type: "Bearer", expires_in: 3600 })
+        return Response.json({ id: "synthetic-file" })
+      })
+      auth.setCredentials({ access_token: bearer, refresh_token: "SYNTHETIC-REFRESH-TOKEN" })
+      await api.call(
+        method,
+        method === "drive.files.get" ? { fileId: "synthetic-file" } : { documentId: "synthetic-file" },
+        method === "drive.files.get" ? undefined : { requests: [] },
+      )
+      expect(requests).toHaveLength(3)
+      expect(requests[1]?.url.origin).toBe("https://oauth2.googleapis.com")
+      expect(requests[2]?.url.toString()).toBe(requests[0]?.url.toString())
+      expect(new Headers(requests[2]?.options.headers).get("authorization")).toBe("Bearer SYNTHETIC-REFRESHED-BEARER")
+    },
+  )
+  it("does not refresh or replay an uncertain write even when a refresh token is available", async () => {
+    const { api, auth, requests } = fixture(() => Response.json({ error: content }, { status: 503 }))
+    auth.setCredentials({ access_token: bearer, refresh_token: "SYNTHETIC-REFRESH-TOKEN" })
+    await expect(
+      api.call("docs.documents.batchUpdate", { documentId: "synthetic-file" }, { requests: [] }),
+    ).rejects.toMatchObject({ code: "outcome_unknown" })
+    expect(requests).toHaveLength(1)
+  })
   it("runs the pinned SDK and auth transporter without real network access", async () => {
     const { api, requests, network } = fixture()
     expect(await api.call("drive.files.get", { fileId: "synthetic-file" })).toEqual({ id: "synthetic-file" })
