@@ -53,7 +53,7 @@ body text, tables and footnotes; headers, footers, comments, images and suggeste
 excluded. Search text and Google's Markdown export are separate representations, so inspect the
 export when layout or tab coverage matters. Check the sync report for each skipped source.
 
-A file drive cannot read is still saved by its name, type, size, owners and link, with no text. `drive sync` counts
+A file Drive cannot read is still saved by its name, type, size, owners and link, with no text. `drive personal sync` counts
 these as `names_only` and lists each reason under `skipped`. `search` finds them by the words in their name, and
 the hit carries `not_read` with the reason, so open `source_url` instead of quoting text that is not there.
 Meaning search ignores them. They leave the index like any other file: trashed, moved out of the folders or deleted.

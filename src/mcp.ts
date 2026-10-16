@@ -123,8 +123,9 @@ export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) =
   if (tool.command.arguments.length) args.push("--")
   for (const argument of tool.command.arguments) {
     const value = input[argument.name]
-    if (Array.isArray(value)) args.push(...value.map(String))
-    else if (value !== undefined) args.push(String(value))
+    if (Array.isArray(value)) {
+      for (const item of value) args.push(String(item))
+    } else if (value !== undefined) args.push(String(value))
   }
   return args
 }

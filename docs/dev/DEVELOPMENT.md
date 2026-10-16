@@ -23,7 +23,8 @@ Tests inject ports; production opens the released shared store implementation. N
 
 Keep Google types below the source port. Generic store/search changes belong in cli-core,
 through its reviewed release. Use cli-base's helpers instead of copying them. Use public exports,
-never dependency-internal imports. Sibling dependency pins differ, so database sharing is explicit.
+never dependency-internal imports. The default database is shared with other WireCat tools;
+use temporary storage for development and verify compatibility when changing dependency pins.
 
 Fast checks are standards:check, lint, docs:lint and ci:quick. Full validation adds tests, coverage,
 build and installed-package smoke. Commit hooks never install, build or run tests. Live account

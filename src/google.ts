@@ -90,7 +90,7 @@ export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: stri
     read.status === "needs-agent"
       ? "file has no text layer (a scan or images only); OCR is not supported"
       : read.status === "engine-missing"
-        ? `${ENGINE_LABEL[read.engine]} files need the package ${read.engine} installed next to drive; then run drive sync --rescan`
+        ? `${ENGINE_LABEL[read.engine]} files need the package ${read.engine} installed next to drive; then run drive <profile> sync --rescan`
         : read.status === "unreadable"
           ? "file could not be read as text; it may be damaged or protected"
           : read.status === "unsupported"
@@ -142,7 +142,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           )
           if (data.incompleteSearch)
             throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
-          files.push(...(data.files ?? []).map(metadataOf))
+          for (const file of data.files ?? []) files.push(metadataOf(file))
           if (files.length > MAX_ENTRIES) throw tooManyEntries()
           if (!data.nextPageToken) return files
           if (seen.has(data.nextPageToken))
@@ -274,7 +274,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             "validation_error",
             maxChars >= MAX_TEXT_CHARS
               ? `text reaches ${MAX_TEXT_CHARS} characters, the most the document readers return; it was not imported`
-              : `text reaches the ${maxChars}-character limit; raise it with drive <profile> config set maxTextChars <n>`,
+              : `text reaches the ${maxChars}-character limit; raise it with drive <profile> config set max_text_chars <n>`,
             { reason: "document.too-long", text_limit: maxChars },
           )
         const after = await metadata(id)
