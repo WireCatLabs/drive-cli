@@ -16,8 +16,10 @@ OAuth callbacks use invented codes and a memory keyring over local loopback HTTP
 The Google SDK boundary suite uses the pinned Google service clients, OAuth client and Gaxios
 pipeline with a synthetic bearer and in-memory fetch responses. It checks transport override
 refusal, URL encoding, sanitized failures, mutation retry suppression and declared response-size
-refusal. A socket guard blocks network access. This does not test live Google, redirects or
-chunked-response size enforcement by the default HTTP transport.
+refusal. A socket guard blocks network access. Synthetic refresh-token cases check the separate
+401 replay path and preserve refusal to replay uncertain writes. The transport suite runs pinned
+node-fetch against confined loopback listeners to check chunked-response limits and same-host
+and changed-host redirects. No live Google or production TLS/proxy behavior is certified.
 
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE
 and WIRECAT_STATE_DIR. No owner's config, credential, database or model cache is used. Fixture
