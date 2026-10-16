@@ -274,11 +274,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     upload: async (path, args) => {
       const method = "drive.files.create"
       const flags = policyFlags()
+      // The hook checked the command's own key (files.upload); creating a file has its own keys.
       for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, true, flags, askOnce)
-      if (flags.offline)
-        throw new CliError("permission_error", "this operation needs Google; --offline was requested", {
-          reason: "offline.refused",
-        })
       if (flags.dryRun) {
         output(itemOf({ dry_run: true, method, mutates: true, path, ...args }))
         throw new Preview()
