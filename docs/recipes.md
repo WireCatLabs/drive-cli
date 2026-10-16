@@ -182,7 +182,8 @@ drive personal memories confirm DOC_ID memory:MEMORY_ID
 drive personal facts confirm DOC_ID fact:FACT_ID
 ```
 
-Extraction previews by default; `--yes` creates proposals. Replace `MEMORY_ID` with a returned
+Extraction previews by default. `--yes` generates a fresh batch and saves all its valid proposals;
+it does not save the previous preview. Review the saved proposals before confirming them. Replace `MEMORY_ID` with a returned
 reference only after reviewing it. Source changes/removal mark active memories stale.
 Extraction sends selected cached text to your provider; local embedding search is a separate
 operation. You can write a memory yourself with `memories add DOC_ID 'Your fact' --scope work`.
