@@ -137,5 +137,5 @@ results private, publishing only versions, totals and behavior outcomes.
 Use an already prepared shared text-model cache, then run `sync --embed` and search for a
 paraphrase of a document phrase without `--exact`. Follow the model setup instructions in the
 [README](../../README.md#search-and-export). A missing model is a setup result, not a successful
-semantic search check. Sharing an existing messenger database remains deferred until shared
-package versions align.
+semantic search check. The default database is shared with other WireCat tools; live acceptance must still use its own
+isolated `MESSAGING_STORE` so it cannot change the owner’s existing data.

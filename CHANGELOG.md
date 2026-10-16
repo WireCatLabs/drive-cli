@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.15.1 — 2026-10-17
 
 ### Fixed
 
+- Documentation lint uses patched TOML and math-rendering dependencies; runtime dependency pins are unchanged.
 - Import recovery messages now include the required profile and use the `max_text_chars` setting name.
   The overview clarifies Sheets import versus editing and optional image search.
 - Google listings and MCP argument construction append values without spreading unbounded arrays into calls.

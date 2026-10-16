@@ -12,3 +12,8 @@ minimumReleaseAgeExclude:
   - '@wirecat/cli-messaging-onnx@1.0.1'
   - '@wirecat/cli-messaging-sqlite@1.0.1'
   - '@wirecat/cli-testing@0.3.0 || 0.4.0'
+
+# Limit these fixes to the documentation lint dependency chain.
+overrides:
+  'markdownlint-cli2@0.23.3>smol-toml': '1.9.1'
+  'micromark-extension-math@3.1.0>katex': '0.18.2'
