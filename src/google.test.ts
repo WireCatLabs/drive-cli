@@ -181,7 +181,7 @@ describe("official Google SDK source", () => {
     const f = scripted((request) => (request.params?.alt === "media" ? "0123456789" : metadata("long", "text/plain")))
     await expect(f.source.content("long", 10)).rejects.toMatchObject({
       code: "validation_error",
-      message: expect.stringContaining("config set maxTextChars"),
+      message: expect.stringContaining("drive <profile> config set max_text_chars"),
       details: { reason: "document.too-long", text_limit: 10 },
     })
     expect((await f.source.content("long", 11)).text).toBe("0123456789")

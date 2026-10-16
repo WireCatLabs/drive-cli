@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- Import recovery messages now include the required profile and use the `max_text_chars` setting name.
+  The overview clarifies Sheets import versus editing and optional image search.
+- Google listings and MCP argument construction append values without spreading unbounded arrays into calls.
+
 - **`bin/release` restarts itself once when the release brings a newer `bin/release`**: folding the changelog
   fast-forwards `main`, and the shell went on reading the old script from the byte it had reached, so the rest of the
   run was a mix of old and new text. It now starts the new script over; a second change during that run stops it

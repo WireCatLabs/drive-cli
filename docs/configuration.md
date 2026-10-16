@@ -74,6 +74,9 @@ drive work config set read_only false
 drive personal config show --json
 ```
 
+The first line changes the shared default; the second overrides it for `work`.
+The final command prints both configuration sections, not a merged list of effective values.
+
 `drive personal config set picture_search true` turns picture search on for `personal` only.
 Prepare the shared local `clip-b32` model first (about 160 MB), then use queries in English.
 An agent with terminal access can use the installed SDK's verified model installer:
@@ -87,10 +90,9 @@ do not connect to Google or change my source files. Then enable picture_search f
 The public SDK exports `modelsCommand` through `@wirecat/cli-core/cli`; an agent can inspect that
 API for model setup. Drive's command tree currently exposes the setting and search, while model
 installation uses the shared SDK or a WireCat tool that already supports image-model setup.
-In the earlier example, the first line changes the shared default; the second overrides it for `work`.
+
 `drive personal config set max_text_chars 500000` makes sync skip longer files with that reason; a
-file skipped for its length is read again on the next sync after the limit is raised. The final command
-prints the configuration with both sections, not a merged list of effective values.
+file skipped for its length is read again on the next sync after the limit is raised.
 A missing profile is an error: `DRIVE_PROFILE` and a legacy saved default do not select one.
 
 ## Environment variables
