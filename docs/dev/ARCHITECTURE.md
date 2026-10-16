@@ -12,12 +12,13 @@ No SQL or separate embedding engine exists here.
 | config.ts, state.ts | selected folders, validated checkpoints and snapshots |
 | sync.ts | bind Google classification/errors, profile settings, locks and state I/O to Core sync |
 | store.ts | bind Google metadata, catalog keys and contributor callbacks to Core ingestion; enrich scoped search results |
-| catalog.ts, catalog-commands.ts, scope.ts | metadata mapping, offline navigation and selected ancestry |
-| program.ts | commands, dependency injection and shared registry |
-| google-api.ts, remote-commands.ts | generated operation contracts, SDK requests and remote actions |
+| catalog.ts, commands/catalog.ts, scope.ts | metadata mapping, offline navigation and selected ancestry |
+| program.ts | the root command, the command context, the policy hook and argument lifting |
+| commands/ | one file per command group; each command declares its effects where it is built |
+| google-api.ts, commands/remote.ts | generated operation contracts, SDK requests and remote actions |
 | api-contract.ts, generated/, schema.ts | shared generated validators, metadata and agent-visible schemas |
 | policy.ts, mcp.ts | shared permission/write guards and the registry-derived agent adapter |
-| knowledge.ts, knowledge-commands.ts | Core knowledge adapter, Google contributor links, CLI parsing and output mapping |
+| knowledge.ts, commands/knowledge.ts | Core knowledge adapter, Google contributor links, CLI parsing and output mapping |
 | extraction.ts | bind Drive settings and explicit provider keys to the shared model gateway |
 | profile-lock.ts | shared heartbeat lock for sync and document knowledge operations |
 | bin/drive.ts | process, browser, cancellation and sanitized errors |

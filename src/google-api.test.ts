@@ -1,7 +1,7 @@
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
+import { jsonObject } from "./commands/remote.js"
 import { apiMethod, apiMethods, googleApi, validateApiParams } from "./google-api.js"
-import { jsonObject } from "./remote-commands.js"
 import { ACTIVITY_SCOPE, checkAuthorization, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 
 describe("official SDK method surface", () => {

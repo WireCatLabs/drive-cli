@@ -1,16 +1,16 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { parseLucene, validateQuery } from "@wirecat/cli-base/query"
-import { type Body, itemOf, listOf } from "@wirecat/cli-core/cli"
+import { type Body, itemOf, LOCAL_READ, LOCAL_WRITE, listOf } from "@wirecat/cli-core/cli"
 import { CATALOG_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
-import { catalogFiles, catalogOutput, catalogTree, type SourceCatalog } from "./catalog.js"
-import { activeProfile, fileId } from "./config.js"
-import type { DocumentIndex } from "./model.js"
-import { allOf } from "./output.js"
-import { lockProfile } from "./profile-lock.js"
-import { examples } from "./registry.js"
-import { readState } from "./state.js"
+import { catalogFiles, catalogOutput, catalogTree, type SourceCatalog } from "../catalog.js"
+import { activeProfile, fileId } from "../config.js"
+import type { DocumentIndex } from "../model.js"
+import { allOf } from "../output.js"
+import { lockProfile } from "../profile-lock.js"
+import { examples } from "../registry.js"
+import { readState } from "../state.js"
 
 interface Helpers {
   env: NodeJS.ProcessEnv
@@ -20,9 +20,10 @@ interface Helpers {
   offset(input: string): number
   withIndex<T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T>
 }
+const local = (command: Command, mutates = false) => annotate(command, { effects: mutates ? LOCAL_WRITE : LOCAL_READ })
 export const installCatalogCommands = (program: Command, helpers: Helpers) => {
   const { env, selected, output, positive, offset, withIndex } = helpers
-  const catalog = program.command("catalog").description("browse stored Drive files and folders offline")
+  const catalog = local(program.command("catalog")).description("browse stored Drive files and folders offline")
   const run = async <T>(
     fn: (index: DocumentIndex & { catalog: SourceCatalog }, principal: string) => Promise<T>,
     write = false,
@@ -52,10 +53,6 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
         reason: "catalog.not-found",
       })
     return found
-  }
-  const local = (command: Command, mutates = false) => {
-    annotate(command, { effects: { remote: "none", local: mutates ? "write" : "read" } })
-    return command
   }
   examples(
     local(catalog.command("import").description("put cached file and folder metadata into the shared database"), true),
@@ -152,7 +149,7 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
         }),
       ),
     )
-  const tags = catalog.command("tags").description("add owner tags to cached files or folders")
+  const tags = local(catalog.command("tags")).description("add owner tags to cached files or folders")
   for (const action of ["list", "add", "remove"] as const) {
     const command = examples(
       local(tags.command(action).description(`${action} local tags on a cached file or folder`), action !== "list"),
