@@ -8,6 +8,10 @@
   fast-forwards `main`, and the shell went on reading the old script from the byte it had reached, so the rest of the
   run was a mix of old and new text. It now starts the new script over; a second change during that run stops it
   with `run it again`. Only the repository's own release is affected; the published package does not change.
+- **A broken config file now says which key is wrong.** Instead of only "drive configuration is invalid",
+  drive names the first bad key and why: `profiles.work.principal is missing`, `colour is not a known setting`,
+  `profiles.work.read_only has the wrong type or is out of range`. An old camelCase key set beside its new
+  snake_case name says which one to keep. The message never shows a value from the file.
 
 ## 0.15.0 — 2026-10-16
 
