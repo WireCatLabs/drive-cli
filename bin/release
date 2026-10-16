@@ -7,16 +7,10 @@ git fetch -q origin
 [ "$(git branch --show-current)" = main ] || { echo "run from main" >&2; exit 1; }
 [ -z "$(git status --porcelain --untracked-files=no)" ] || { echo "uncommitted changes" >&2; exit 1; }
 [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "update main to origin/main first" >&2; exit 1; }
-lock="${XDG_RUNTIME_DIR:-/tmp}/leemour-release.lock"
-exec 9>"$lock"
-wait_seconds=${WIRECAT_RELEASE_WAIT_SECONDS:-0}
-case "$wait_seconds" in
-  ''|*[!0-9]*) echo "WIRECAT_RELEASE_WAIT_SECONDS must be a nonnegative integer" >&2; exit 2 ;;
-esac
-flock -w "$wait_seconds" 9 || { echo "another release is running: $(cat "$lock.who" 2>/dev/null)" >&2; exit 1; }
+. ./config/wirecat/release-lock.sh
+wirecat_release_lock "${WIRECAT_RELEASE_WAIT_SECONDS:-0}"
 git fetch -q origin
 [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || { echo "main changed while waiting; review and update main before releasing" >&2; exit 1; }
-echo "$(basename "$PWD") pid $$ since $(date -u +%H:%M)" > "$lock.who"
 version=$(node -p 'require("./package.json").version')
 # A session that merges after the version was dated, but before it was published, adds Unreleased above it.
 # --land folds on a fresh main through its own pull request, and folds again once if main moves under it.

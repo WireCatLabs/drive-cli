@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- **Release scripts report observed lock holders separately from stale release labels.** Shared
+  diagnostics no longer attribute a live lock to a previous run; wait for the holders to finish, then
+  retry.
+
 - Recipes now explain the existing resumable `files upload` command instead of claiming that
   arbitrary local file uploads are unsupported. Uploads preserve the original file format.
 
