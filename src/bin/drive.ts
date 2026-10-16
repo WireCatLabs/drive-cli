@@ -1,9 +1,14 @@
 #!/usr/bin/env node
 import { execFile } from "node:child_process"
+import { enableCompileCache } from "node:module"
 import { CliError, catchCrashes, processStreams } from "@wirecat/cli-base"
 import { type Command, CommanderError } from "commander"
-import { interactiveOf, REASONS, reportFailure } from "../failure.js"
-import { createProgram } from "../program.js"
+
+// Compiling the program's module files is most of a start; later runs reuse what this one compiled.
+enableCompileCache()
+// A static import compiles before the cache is on; cli-core and the program are most of those files.
+const { interactiveOf, REASONS, reportFailure } = await import("../failure.js")
+const { createProgram } = await import("../program.js")
 
 const args = process.argv.slice(2)
 const tty = process.stdout.isTTY === true

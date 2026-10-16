@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.14.1 — 2026-10-16
+
+### Changed
+
+- **drive starts about a fifth faster after its first run.** It keeps Node's compiled code in a cache, in the
+  system's temporary folder (`NODE_COMPILE_CACHE` moves it): `drive --help` went from about 0.54 to 0.43 seconds.
+- Uses `@wirecat/cli-core` 0.299.0.
+
 ## 0.14.0 — 2026-10-16
 
 ### Changed
