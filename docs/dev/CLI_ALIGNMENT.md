@@ -110,7 +110,7 @@ config/wirecat. Upgrade contracts use the real previous shared-store package 0.2
 isolated database, then verify current search, document identity, tags, notes and memories.
 Those store fixtures are distinct from installed-Drive release acceptance. Published artifact
 comparisons live in cli-testing's performance/documents/offline-catalog report. The default
-database remains isolated; adopting an existing messenger store is an explicit operation.
+database is the shared WireCat store; upgrade tests also cover offline reference rebuilding.
 
 Discovery contract 3 uses `effects: {remote, local}` and `api_operation` instead of `mutates`,
 `local` and `operation_id`. Effects also inform error retry safety. Standard output envelopes

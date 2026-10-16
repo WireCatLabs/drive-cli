@@ -5,9 +5,8 @@ import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import { levelFor } from "@wirecat/cli-core/sends"
-import { openStore } from "@wirecat/cli-core/store"
+import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
-import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
 import type { ProgramOptions } from "./program.js"
@@ -155,7 +154,12 @@ export const invokeTool = async (
   for (const value of flags.permission ?? []) startup.push("--permission", value)
   let audit: Awaited<ReturnType<typeof openStore>>
   try {
-    audit = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env })
+    if (env.DRIVE_STORE)
+      throw new CliError(
+        "configuration_error",
+        "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
+      )
+    audit = await openStore({ path: storePath(env), env })
   } catch (error) {
     return mcpFailure(error)
   }
@@ -264,5 +268,3 @@ export const serveMcp = async (
     await server.close()
   }
 }
-
-import { join } from "node:path"

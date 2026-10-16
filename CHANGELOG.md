@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Documents now use the shared WireCat database. `MESSAGING_STORE` replaces `DRIVE_STORE`. Existing document references rebuild offline from snapshots; legacy annotations stop the switch rather than being stranded.
+
+### Added
+
+- Sync connects imported documents to stored messages containing their Google links, including later messages about unchanged documents. Interrupted linking retries before its watermark advances.
+
 ## 0.14.1 — 2026-10-16
 
 ### Changed

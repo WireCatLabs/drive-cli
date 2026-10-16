@@ -106,7 +106,7 @@ describe("shared document knowledge", () => {
   })
   it("records observed contributors and permits explicit identity linking without matching by names", async () => {
     const f = await setup()
-    const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env, command: "drive" })
+    const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
     try {
       const key = { provider: "synthetic-messenger", account: "synthetic-account" }
       await store.saveAccount(key, { name: "Synthetic" })
@@ -149,7 +149,7 @@ describe("shared document knowledge", () => {
   })
   it("stales source-backed memories on scope removal and refuses removed documents", async () => {
     const f = await setup()
-    const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env, command: "drive" })
+    const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
     try {
       const memory = await f.k.addMemory(f.principal, f.ref, { body: "Source summary", kind: "summary", scope: "work" })
       await f.index.remove(f.principal, "doc-a")

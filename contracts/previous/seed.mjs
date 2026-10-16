@@ -11,7 +11,10 @@ await ensureSqlite()
 const locations = resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env: process.env })
 const directory = locations.state
 mkdirSync(directory, { recursive: true, mode: 0o700 })
-const store = await openStore({ path: join(directory, "drive.db"), command: "drive" })
+const shared =
+  process.env.MESSAGING_STORE ??
+  join(resolvePaths({ appName: "WireCat", prefix: "WIRECAT", env: process.env }).state, "wirecat.db")
+const store = await openStore({ path: shared, command: "drive" })
 try {
   const folder = await store.notes.addFolder({ name: "google-drive:synthetic-principal" })
   const text = "budget fixture upgrade evidence"
@@ -49,6 +52,7 @@ try {
     join(profile, "state.json"),
     JSON.stringify({
       version: 1,
+      store: shared,
       principal: "synthetic-principal",
       scope: "",
       folders: {},

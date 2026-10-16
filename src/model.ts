@@ -75,8 +75,10 @@ export type GoogleSource = DocumentSource<FileMetadata>
 export type IndexedDocument = IndexedSource<FileMetadata>
 export type WorkItem = SourceWork<FileMetadata>
 export type Skip = SourceSkip<FileMetadata>
-export type SyncState = SourceState<FileMetadata>
+export type SyncState = SourceState<FileMetadata> & { store?: string; linkedThrough?: string; linksPending?: boolean }
 export interface DocumentIndex {
+  registerProfile?(name: string, principal: string): Promise<void>
+  linkMessages?(documents: { reference: string; fileId: string }[], since?: string): Promise<number>
   catalog?: import("./catalog.js").SourceCatalog
   knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>

@@ -36,7 +36,7 @@ describe("MCP validation through the SDK", () => {
         structuredContent: { item: { id: "fixture-file" }, meta: { run_id: expect.any(String) } },
       })
       expect(call).toHaveBeenCalledTimes(1)
-      const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env })
+      const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
       try {
         const rows = await store.agentActions.list({ tool: "drive_api_drive_files_get" })
         expect(rows).toHaveLength(4)

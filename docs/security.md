@@ -35,7 +35,7 @@ WireCat's included identity. See [Google's native-app OAuth explanation](https:/
 | --- | --- |
 | Google sign-in tokens | Operating-system keyring; private-file storage only when explicitly selected |
 | Profiles and selected roots | `config.json` in the configuration directory |
-| Source text, chunks, vectors and local context | The chosen local database; default `drive.db` |
+| Source text, chunks, vectors and local context | The shared WireCat database, selected by `MESSAGING_STORE` |
 | Source snapshots and folder ancestry | Profile documents and sync state in the data directory |
 | Extra Markdown exports | The path you request; export refuses to overwrite an existing file |
 

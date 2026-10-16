@@ -204,8 +204,8 @@ retains them: there is no download→index→discard mode or automatic snapshot 
 managed snapshot files by hand breaks those workflows even if indexed text remains searchable.
 To avoid extra copies, search/read the cache and export only documents another tool needs.
 
-The database defaults to Drive's isolated state directory. `DRIVE_STATE_DIR` controls snapshots
-and checkpoints; `DRIVE_STORE` selects the database. `DRIVE_CACHE_DIR` does not relocate source
+The database is shared with other WireCat tools. `DRIVE_STATE_DIR` controls snapshots
+and checkpoints; `MESSAGING_STORE` selects the database. `DRIVE_CACHE_DIR` does not relocate source
 snapshots. See [storage settings](configuration.md). Local text and vectors still take disk space
 when you avoid exports; indexing cannot retain search content with zero local storage.
 

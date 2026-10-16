@@ -1,18 +1,30 @@
-import { join } from "node:path"
 import { CliError, isCliError } from "@wirecat/cli-base"
 import { documentIngestion } from "@wirecat/cli-core/documents"
 import type { MessageStore } from "@wirecat/cli-core/store"
 import { catalogInput } from "./catalog.js"
-import { paths } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
+import { prepareStore } from "./store-transition.js"
 
-export const openIndex = async (env: NodeJS.ProcessEnv): Promise<DocumentIndex> => {
+export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
   const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
   await ensureSqlite()
-  const { openStore } = await import("@wirecat/cli-core/store")
-  const store = await openStore({ path: env.DRIVE_STORE ?? join(paths(env).state, "drive.db"), env })
-  return indexOver(store, env)
+  const { openStore, storePath } = await import("@wirecat/cli-core/store")
+  if (env.DRIVE_STORE)
+    throw new CliError(
+      "configuration_error",
+      "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
+      { reason: "store.override-retired" },
+    )
+  const store = await openStore({ path: storePath(env), env, command: "drive" })
+  const index = indexOver(store, env)
+  try {
+    if (name) await prepareStore(index, env, name, rescan)
+    return index
+  } catch (error) {
+    await store.close()
+    throw error
+  }
 }
 // cli-core names one app's download command; drive has none and reads the models tg and max download.
 const modelAdvice = (text: string) =>
@@ -57,6 +69,11 @@ export const indexOver = (
   const folder = ingestion.collection
   return {
     ...ingestion,
+    registerProfile: async (name, principal) => {
+      await folder(principal, true)
+      await store.saveProfile("drive", name, { provider: "folder", account: `google-drive:${principal}` })
+    },
+    linkMessages: (documents, since) => store.notes.linkMessages({ documents, ...(since ? { since } : {}) }),
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),
     openPictures: async () => {
       const { openPictureEmbedderFor, savePicture } = await import("@wirecat/cli-core/services")

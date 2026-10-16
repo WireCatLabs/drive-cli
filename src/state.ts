@@ -34,6 +34,9 @@ const Skip = v.object({
 })
 const State = v.object({
   version: v.literal(1),
+  store: v.optional(v.string()),
+  linkedThrough: v.optional(v.string()),
+  linksPending: v.optional(v.boolean()),
   principal: v.string(),
   scope: v.string(),
   cursor: v.optional(v.string()),
@@ -141,7 +144,7 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
   try {
     return JSON.parse(readFileSync(snapshotPath(env, name, id), "utf8")) as DocumentContent
   } catch {
-    throw new CliError("not_found", "source snapshot is unavailable — run drive sync", {
+    throw new CliError("not_found", "source snapshot is unavailable — run drive <profile> folders sync --rescan", {
       reason: "state.snapshot-missing",
     })
   }
