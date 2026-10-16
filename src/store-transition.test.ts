@@ -62,7 +62,7 @@ describe("shared database transition", () => {
     expect((await old.notes.note(f.ref)).text).toBe(f.doc.text)
     await old.close()
     const shared = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
-    expect((await shared.profiles()).drive?.default).toEqual({
+    expect((await shared.accounts.profiles()).drive?.default).toEqual({
       provider: "folder",
       account: `google-drive:${principal}`,
     })
@@ -155,23 +155,23 @@ describe("Drive sync links stored messages", () => {
     vi.mocked(f.source.children).mockResolvedValue([file("synthetic-document-a")])
     const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
     const index = indexOver(store, f.env)
-    await store.saveChats(owner, [
+    await store.chats.saveChats(owner, [
       { id: "7", title: "Synthetic chat", kind: "group", unreadCount: 0, lastMessageAt: null, participantsCount: null },
     ])
-    await store.saveMessages(owner, "7", [message("1", file("synthetic-document-a").url)], { via: "history" })
+    await store.messages.saveMessages(owner, "7", [message("1", file("synthetic-document-a").url)], { via: "history" })
     await sync(f.source, index, f.env, "default", 100)
     const scoped = await store.forAccount(owner)
-    expect((await scoped.documentLinkMessages("7"))[0]?.documents).toMatchObject([
+    expect((await scoped.messages.documentLinkMessages("7"))[0]?.documents).toMatchObject([
       { fileId: "synthetic-document-a", title: "Same name" },
     ])
-    await store.saveMessages(owner, "7", [message("2", file("synthetic-document-a").url)], { via: "history" })
+    await store.messages.saveMessages(owner, "7", [message("2", file("synthetic-document-a").url)], { via: "history" })
     await sync(f.source, index, f.env, "default", 100)
     expect(f.source.content).toHaveBeenCalledTimes(1)
-    const rows = await scoped.documentLinkMessages("7")
+    const rows = await scoped.messages.documentLinkMessages("7")
     expect(rows).toHaveLength(2)
     expect(rows.every((row) => row.documents.length === 1)).toBe(true)
     await sync(f.source, index, f.env, "default", 100)
-    expect((await scoped.documentLinkMessages("7")).every((row) => row.documents.length === 1)).toBe(true)
+    expect((await scoped.messages.documentLinkMessages("7")).every((row) => row.documents.length === 1)).toBe(true)
     await store.close()
   })
   it("retries the historical pass after a link failure without advancing its watermark", async () => {

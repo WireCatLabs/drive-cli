@@ -71,7 +71,7 @@ export const indexOver = (
     ...ingestion,
     registerProfile: async (name, principal) => {
       await folder(principal, true)
-      await store.saveProfile("drive", name, { provider: "folder", account: `google-drive:${principal}` })
+      await store.accounts.saveProfile("drive", name, { provider: "folder", account: `google-drive:${principal}` })
     },
     linkMessages: (documents, since) => store.notes.linkMessages({ documents, ...(since ? { since } : {}) }),
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),

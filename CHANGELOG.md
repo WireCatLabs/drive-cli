@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Uses `@wirecat/cli-core` 0.307.0.
+
 ## 0.15.1 — 2026-10-17
 
 ### Fixed
