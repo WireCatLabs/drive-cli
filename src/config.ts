@@ -35,29 +35,59 @@ export const ConfigSchema = v.strictObject({
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
-export const readConfig = (env: NodeJS.ProcessEnv): Config => {
+// Built from the key path and a fixed reason only: valibot's own messages quote the value.
+const problem = (where: string, issue: v.BaseIssue<unknown>) => {
+  const key = v.getDotPath(issue)
+  if (key === null) return `${where} has to be a JSON object`
+  if (issue.expected === "never") return `${where}: ${key} is not a known setting`
+  if (issue.received === "undefined") return `${where}: ${key} is missing`
+  if (issue.path?.at(-1)?.origin === "key") return `${where}: ${key} is not an allowed name`
+  return `${where}: ${key} has the wrong type or is out of range`
+}
+const UNEXPLAINED = "drive configuration is invalid; no configuration values were logged"
+// The loader's message embeds valibot's issue messages, so the file is checked again here.
+const explain = (path: string, schema: v.GenericSchema): CliError => {
+  let raw: unknown
   try {
-    const path = join(paths(env).config, "config.json")
-    let changed = false
-    const schema = v.pipe(
-      v.unknown(),
-      v.transform((raw) => {
-        const upgraded = upgradeConfig(raw, SETTING_NAMES)
-        changed = upgraded.changed
-        return upgraded.config
-      }),
-      ConfigSchema,
-    )
-    const config = loadSnakeCaseConfig(path, schema, () => ({ profiles: {} }))
-    if (changed) writeSecurely(path, `${JSON.stringify(config, null, 2)}\n`, statSync(path).mode & 0o777)
-    return config
+    raw = JSON.parse(readFileSync(path, "utf8"))
   } catch {
-    throw new CliError("configuration_error", "drive configuration is invalid; no configuration values were logged")
+    return new CliError("configuration_error", `${path} is not valid JSON`)
   }
+  try {
+    const issue = v.safeParse(schema, raw).issues?.[0]
+    return new CliError("configuration_error", issue ? problem(path, issue) : UNEXPLAINED)
+  } catch (error) {
+    return error instanceof CliError ? error : new CliError("configuration_error", UNEXPLAINED)
+  }
+}
+export const readConfig = (env: NodeJS.ProcessEnv): Config => {
+  const path = join(paths(env).config, "config.json")
+  let changed = false
+  const schema = v.pipe(
+    v.unknown(),
+    v.transform((raw) => {
+      const upgraded = upgradeConfig(raw, SETTING_NAMES)
+      changed = upgraded.changed
+      return upgraded.config
+    }),
+    ConfigSchema,
+  )
+  let config: Config
+  try {
+    config = loadSnakeCaseConfig(path, schema, () => ({ profiles: {} }))
+  } catch {
+    throw explain(path, schema)
+  }
+  try {
+    if (changed) writeSecurely(path, `${JSON.stringify(config, null, 2)}\n`, statSync(path).mode & 0o777)
+  } catch {
+    throw new CliError("configuration_error", UNEXPLAINED)
+  }
+  return config
 }
 export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
   const checked = v.safeParse(ConfigSchema, config)
-  if (!checked.success) throw new CliError("configuration_error", "drive settings are invalid; no values were logged")
+  if (!checked.success) throw new CliError("configuration_error", problem("drive settings", checked.issues[0]))
   saveConfigFile(join(paths(env).config, "config.json"), checked.output)
 }
 export const profileName = usableProfileName
