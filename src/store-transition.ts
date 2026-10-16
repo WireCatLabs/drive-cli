@@ -11,10 +11,15 @@ import { readSnapshot, readState, saveState } from "./state.js"
 // Old row numbers are meaningful only in their original database, even when the new row happens to exist.
 export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv, name: string, rescan = false) => {
   const profile = activeProfile(env, name)
+  const target = resolve(storePath(env))
+  const current = readState(env, name, profile.principal)
+  if (current.store && resolve(current.store) === target) {
+    await index.registerProfile?.(name, profile.principal)
+    return
+  }
   const lock = await lockProfile(env, name)
   try {
     const state = readState(env, name, profile.principal)
-    const target = resolve(storePath(env))
     const previous = resolve(state.store ?? join(paths(env).state, "drive.db"))
     if (previous !== target && existsSync(previous)) {
       const old = await openStore({ path: previous, env, command: "drive" })
@@ -74,7 +79,8 @@ export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv,
           })
         return [{ id, doc, content }]
       })
-      await index.catalog?.import(profile.principal, catalogFiles(state, profile.roots))
+      if (Object.keys(state.documents).length || Object.keys(state.folders).length)
+        await index.catalog?.import(profile.principal, catalogFiles(state, profile.roots))
       for (const { id, doc, content } of contents) {
         lock.assertHeld()
         state.documents[id] = {

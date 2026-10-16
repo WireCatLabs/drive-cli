@@ -392,13 +392,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--page <n>", "which page to return", positive, 1)
     .action(async (words: string[], { limit, page }: { limit: number; page: number }) => {
       const profile = activeProfile(env, selected())
-      const state = readState(env, selected(), profile.principal)
       const query = typedQuery(words)
       const ast = listQuery(query, IMPORTED_DOCUMENT_QUERY, "documents list")
       const found = await withIndex(async (index) => {
         if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
         return index.knowledge.documents(profile.principal, ast, { limit, offset: (page - 1) * limit })
       })
+      const state = readState(env, selected(), profile.principal)
       output(
         listOf("documents list", {
           items: found.items.map((note) => {

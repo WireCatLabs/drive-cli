@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.15.0 — 2026-10-16
 
 ### Changed
 
@@ -8,6 +8,7 @@
 
 ### Added
 
+- Shared search uses cli-core 0.301.0 with cli-base 0.40.0: imported documents keep their Google URL, Google edit time and recorded Drive profile.
 - Sync connects imported documents to stored messages containing their Google links, including later messages about unchanged documents. Interrupted linking retries before its watermark advances.
 
 ## 0.14.1 — 2026-10-16

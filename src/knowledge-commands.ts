@@ -218,6 +218,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .action(async function (this: Command, doc: string) {
       // The root --yes takes the flag wherever it is typed; this one only lists it for help and MCP.
       const args = this.optsWithGlobals<{ scope: Memory["scope"]; tab?: string; yes?: boolean }>()
+      await run(doc, async () => undefined)
       const result = await extractDocumentMemories({
         read: () => helpers.document(doc),
         complete: helpers.complete(),

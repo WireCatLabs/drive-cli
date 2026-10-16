@@ -60,7 +60,7 @@ const ENTRIES: Entry[] = [
     "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
   ],
   ["state.invalid", "configuration_error", "the sync state cannot be used; it was not reset"],
-  ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive <profile> folders sync --rescan"],
+  ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive <profile> sync --rescan"],
   ["sync.partial", "provider_error", "the sync finished only in part; run it again"],
   [
     "upload.checksum-mismatch",

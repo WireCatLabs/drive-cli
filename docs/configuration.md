@@ -156,7 +156,7 @@ Sharing storage does not share sign-ins or Google permissions.
 
 When moving from an older separate database, Drive rebuilds document references from local
 snapshots and retains the original file. An interrupted rebuild can be retried. If snapshots are
-missing, run `drive personal folders sync --rescan` to fetch the selected sources again.
+missing, run `drive personal sync --rescan` to fetch the selected sources again.
 
 Drive stops if the previous database contains annotations that would be left behind. To continue
 using them, set `MESSAGING_STORE` to the previous database path; do not delete it. `DRIVE_STORE`

@@ -144,7 +144,7 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
   try {
     return JSON.parse(readFileSync(snapshotPath(env, name, id), "utf8")) as DocumentContent
   } catch {
-    throw new CliError("not_found", "source snapshot is unavailable — run drive <profile> folders sync --rescan", {
+    throw new CliError("not_found", "source snapshot is unavailable — run drive <profile> sync --rescan", {
       reason: "state.snapshot-missing",
     })
   }

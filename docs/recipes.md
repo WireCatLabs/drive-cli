@@ -303,7 +303,7 @@ without a visible Google URL are not detected.
 For exact commands, replace `CHAT_ID` with a chat selected in your Telegram profile:
 
 ```sh
-drive personal folders sync
+drive personal sync
 tg personal search all budget --source drive:personal --exact
 tg personal chats documents list CHAT_ID
 ```

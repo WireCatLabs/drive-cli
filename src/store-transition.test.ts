@@ -1,9 +1,12 @@
 import { readFileSync, unlinkSync } from "node:fs"
 import { join, resolve } from "node:path"
+import { captureStreams } from "@wirecat/cli-base"
 import { openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it, vi } from "vitest"
 import { activeProfile } from "./config.js"
 import { errorObject } from "./failure.js"
+import { lockProfile } from "./profile-lock.js"
+import { createProgram } from "./program.js"
 import { readState, saveSnapshot, saveState, statePath } from "./state.js"
 import { indexOver, openIndex } from "./store.js"
 import { prepareStore } from "./store-transition.js"
@@ -41,6 +44,11 @@ describe("shared database transition", () => {
       await target.notes.saveFileNote({ folderId: folder.id, path: "other.md", title: "Other", text: "owner evidence" })
     ).note
     await target.close()
+    const streams = captureStreams()
+    await createProgram({ env: f.env, streams }).parseAsync(["default", "documents", "list", "--json"], {
+      from: "user",
+    })
+    expect(JSON.parse(streams.stdout.join("")).items[0].reference).not.toBe(unrelated.ref)
     const index = await openIndex(f.env, "default")
     const state = readState(f.env, "default", principal)
     expect(state.store).toBe(resolve(f.env.MESSAGING_STORE as string))
@@ -93,6 +101,19 @@ describe("shared database transition", () => {
     await prepareStore(index, f.env, "default")
     expect((await index.knowledge?.documents(principal, undefined, { limit: 10, offset: 0 }))?.items).toHaveLength(1)
     await store.close()
+  })
+  it("allows cached readers while sync holds an already prepared profile lock", async () => {
+    const f = fixture()
+    const first = await openIndex(f.env, "default")
+    await first.close()
+    const lock = await lockProfile(f.env, "default")
+    try {
+      const reader = await openIndex(f.env, "default")
+      expect(await reader.search(principal, "budget", { limit: 5, offset: 0, exact: true })).toMatchObject({ hits: [] })
+      await reader.close()
+    } finally {
+      await lock.release()
+    }
   })
   it("requires explicit rescan when a snapshot is missing and clears stale cursors for that rebuild", async () => {
     const f = await legacy()
