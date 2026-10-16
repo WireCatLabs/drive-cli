@@ -305,10 +305,10 @@ For exact commands, replace `CHAT_ID` with a chat selected in your Telegram prof
 
 ```sh
 drive personal sync
-tg personal search all budget --source drive:personal --exact
+tg personal search all budget --exact
 tg personal chats documents list CHAT_ID
 ```
 
-The search result includes the document's reference, Google URL and last Google edit time. The
+Drive's own search includes the document's reference, Google URL and last Google edit time. The
 chat list shows the imported document title when its link has been connected. Empty results can
 mean that the relevant documents or messages have not been imported.
