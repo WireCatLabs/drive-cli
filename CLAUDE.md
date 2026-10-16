@@ -1,8 +1,9 @@
 # drive-cli — working rules
 
-Read architecture and testing before changes. Google-specific sign-in, read-only sources and
-ingestion coordination live here. Reuse cli-base for credentials, paths, output, errors and
+Read architecture and testing before changes. Google-specific sign-in, sources, native conversion and
+account-bound I/O live here. Reuse cli-base for credentials, paths, output, errors and
 command discovery; reuse cli-core's public store/services for indexing, search and embeddings.
+Provider-neutral sync, ingestion, scoped knowledge and extraction belong in cli-core/documents.
 No SQL, replacement embedding engine or gog subprocess belongs here.
 
 Public code, fixtures and docs contain synthetic data only. Plans and journals live in cli-private.

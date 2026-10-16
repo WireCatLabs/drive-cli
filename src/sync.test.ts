@@ -382,11 +382,19 @@ describe("durable source sync", () => {
       expect(first).toMatchObject({ pictures: 1, names_only: 1 })
       expect(f.source.bytes).toHaveBeenCalledTimes(1)
       expect(f.pictures.get("document:photo")).toBeDefined()
+      expect(readState(f.env, "default", "synthetic-principal").documents.photo?.picture).toBe("saved")
       const writer = await vi.mocked(f.index.openPictures).mock.results[0]?.value
       expect(writer.close).toHaveBeenCalledTimes(1)
       const second = await sync(f.source, f.index, f.env, "default", 200, undefined, true)
       expect(second.pictures).toBe(0)
       expect(f.source.bytes).toHaveBeenCalledTimes(2)
+    })
+    it("does not download cached pictures again during incremental sync", async () => {
+      const f = withPictures()
+      await sync(f.source, f.index, f.env, "default", 200)
+      vi.mocked(f.source.bytes).mockClear()
+      expect((await sync(f.source, f.index, f.env, "default", 200)).pictures).toBe(0)
+      expect(f.source.bytes).not.toHaveBeenCalled()
     })
     it("does not open the picture model for a sync with no images", async () => {
       const f = withPictures()

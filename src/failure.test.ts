@@ -2,6 +2,7 @@ import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, captureStreams } from "@wirecat/cli-base"
 import { BASE_REASONS } from "@wirecat/cli-base/standards"
+import { CORE_REASONS } from "@wirecat/cli-core"
 import { CommanderError } from "commander"
 import { describe, expect, it } from "vitest"
 import { errorObject, mcpFailure, REASONS, reportFailure } from "./failure.js"
@@ -76,7 +77,7 @@ describe("failure handler", () => {
   })
 
   it("registers every reason drive raises", () => {
-    const known = new Set([...REASONS, ...BASE_REASONS].map((entry) => entry.reason))
+    const known = new Set([...REASONS, ...BASE_REASONS, ...CORE_REASONS].map((entry) => entry.reason))
     const raised = readdirSync("src", { recursive: true, encoding: "utf8" })
       .filter((file) => file.endsWith(".ts") && !file.endsWith(".test.ts") && !file.startsWith("generated"))
       .flatMap((file) =>

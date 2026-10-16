@@ -1,27 +1,28 @@
 # Architecture
 
 cli-base owns credentials, paths, atomic writes, output, errors and command registry data.
-cli-core owns document storage, chunking, keyword/vector search and local models. Provider
-types stay in the Google modules; a source port feeds domain metadata into ingestion. No SQL
-or separate embedding engine exists here.
+cli-core owns document storage, chunking, keyword/vector search and local models. Provider-neutral source contracts and the sync, ingestion, scoped knowledge and extraction workflows
+also live in cli-core's document module. Provider types and account/resource bindings stay here.
+No SQL or separate embedding engine exists here.
 
 | Module | Responsibility |
 | --- | --- |
 | google.ts, documents.ts | SDK reads and all-tab content extraction |
 | login.ts, tokens.ts | browser OAuth, scopes and shared credential storage |
 | config.ts, state.ts | selected folders, validated checkpoints and snapshots |
-| sync.ts | folder graph, durable jobs, retries and source removal |
-| store.ts | shared public store/services adapter and account-scoped search |
+| sync.ts | bind Google classification/errors, profile settings, locks and state I/O to Core sync |
+| store.ts | bind Google metadata, catalog keys and contributor callbacks to Core ingestion; enrich scoped search results |
 | catalog.ts, catalog-commands.ts, scope.ts | metadata mapping, offline navigation and selected ancestry |
 | program.ts | commands, dependency injection and shared registry |
 | google-api.ts, remote-commands.ts | generated operation contracts, SDK requests and remote actions |
 | api-contract.ts, generated/, schema.ts | shared generated validators, metadata and agent-visible schemas |
 | policy.ts, mcp.ts | shared permission/write guards and the registry-derived agent adapter |
-| knowledge.ts, knowledge-commands.ts | shared tags, notes, relationships, identity links and source-backed memories |
-| extraction.ts | shared model gateway, structured proposals and exact source quote validation |
+| knowledge.ts, knowledge-commands.ts | Core knowledge adapter, Google contributor links, CLI parsing and output mapping |
+| extraction.ts | bind Drive settings and explicit provider keys to the shared model gateway |
 | profile-lock.ts | shared heartbeat lock for sync and document knowledge operations |
 | bin/drive.ts | process, browser, cancellation and sanitized errors |
 
+Core’s provider-neutral document services own traversal, durable work and cursor commits.
 Initial scanning captures a token first; subsequent polling replays changes made during the scan.
 Discovery completes before pending work is persisted. Snapshot/index operations are idempotent.
 Failures leave pending work, and the cursor advances after the batch finishes. Scope changes
@@ -59,7 +60,9 @@ active memories stale before ingestion commits its checkpoint. Invalidation drai
 confirmed batches through the public API; no new SQL or independent knowledge store exists here.
 
 AI extraction is an explicit command, with preview as the default and optional saving of proposed
-memories. Shared AI settings/schema and modelGateway own provider transport. A bounded structured
+memories. Core owns tab selection, bounded proposals, quote validation, provenance, proposed saves
+and source checks. Drive binds account-specific snapshot access and the same lock used by sync.
+Shared AI settings/schema and modelGateway own provider transport. A bounded structured
 response requires exact source quotes; validation finishes before any memory writes. The current
 snapshot hash is rechecked after the model call. Quotes support review, not automatic factual approval.
 Saving then takes the same profile lock as sync and checks the hash again before writing, so a
@@ -80,3 +83,17 @@ requests all fields; no OAuth response or request headers are stored. Old checkp
 available summary. Shared metadata writes preserve content, hashes and revisions, and readers retain
 the catalog namespace. Folder tags/notes/relationships use the existing knowledge adapter; tree nodes
 are compact and bounded, while `catalog show` returns the stored metadata.
+
+## Shared module boundary
+
+Drive consumes `@wirecat/cli-core/documents`, never its internal files. The shared domain contains
+source file/content/change/state interfaces and scope helpers. Its services separately implement
+planning, execution, ingestion, knowledge and extraction. Existing readers, models and public store
+APIs remain separate dependencies of those services. Import rules prevent the domain from depending
+on services, prevent services from importing SQL/vendor/CLI adapters, and keep other Core modules
+on the public facade. See [Core document workflows](https://github.com/WireCatLabs/cli-core/blob/main/docs/dev/DOCUMENTS.md).
+
+Google OAuth/scopes, SDK calls, native Docs/Sheets conversion, upload protocol, metadata mapping,
+identity provenance and CLI/MCP presentation remain here. Another provider supplies those adapters
+and its own collection namespace, cursor semantics and persisted-state validation. Existing Drive
+checkpoint and snapshot formats, collection names, external keys and database paths are preserved.

@@ -1,8 +1,18 @@
 # Changelog
 
-## Unreleased
+## 0.14.0 — 2026-10-16
+
+### Changed
+
+- Document tree planning, resumable sync, ingestion, scoped knowledge and evidence-backed memory
+  extraction use Core’s provider-neutral document module. Drive retains Google adapters, settings,
+  account locks and snapshot/checkpoint I/O. Existing account data and file formats are unchanged.
+  Uses `@wirecat/cli-core` 0.295.0 with matching `@wirecat/cli-base` 0.40.0.
 
 ### Fixed
+
+- Preserve saved/oversized picture markers when reading a sync checkpoint, so unchanged images
+  are not downloaded again on the next incremental sync.
 
 - **Release scripts report observed lock holders separately from stale release labels.** Shared
   diagnostics no longer attribute a live lock to a previous run; wait for the holders to finish, then

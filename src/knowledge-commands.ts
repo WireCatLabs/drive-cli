@@ -1,11 +1,10 @@
-import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { defineQuery } from "@wirecat/cli-base/query"
 import { type Body, itemOf, listOf, queryHelp, queryTerms, withQuery } from "@wirecat/cli-core/cli"
+import { extractDocumentMemories } from "@wirecat/cli-core/documents"
 import { FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
 import type { Complete } from "./extraction.js"
-import { extractMemories } from "./extraction.js"
 import type { DocumentKnowledge } from "./knowledge.js"
 import { FACT_QUERY, factItem, MEMORY_QUERY, MEMORY_SEARCH_QUERY, memoryItem, memorySearch } from "./knowledge-query.js"
 import type { DocumentContent } from "./model.js"
@@ -219,50 +218,18 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .action(async function (this: Command, doc: string) {
       // The root --yes takes the flag wherever it is typed; this one only lists it for help and MCP.
       const args = this.optsWithGlobals<{ scope: Memory["scope"]; tab?: string; yes?: boolean }>()
-      const source = helpers.document(doc)
-      const text = args.tab ? source.snapshot.tabs.find((tab) => tab.id === args.tab)?.text : source.snapshot.text
-      if (text === undefined) throw new CliError("not_found", "tab was not found in this imported document")
-      const result = await extractMemories(text, helpers.complete())
-      const current = helpers.document(doc)
-      if (current.hash !== source.hash)
-        throw new CliError("validation_error", "source changed during extraction; no memories were saved", {
-          reason: "document.changed",
-        })
-      const provenance = {
-        document: source.ref,
-        file_id: source.id,
-        hash: source.hash,
-        url: source.snapshot.metadata.url,
-        tab: args.tab ?? null,
-      }
-      const saved = args.yes
-        ? await run(doc, async (k, p, ref) => {
-            if (helpers.document(doc).hash !== source.hash)
-              throw new CliError("validation_error", "source changed during extraction; no memories were saved", {
-                reason: "document.changed",
-              })
-            const items = []
-            const by = { bot: "drive-memory", model: result.model }
-            for (const item of result.items) {
-              const body = `${item.body}\n\nSource quote: ${item.quote}\nSnapshot: ${source.hash}`
-              items.push(
-                item.kind === "fact"
-                  ? factItem(await k.addFact(p, ref, { statement: body, type: "fact", scope: args.scope, by }))
-                  : memoryItem(
-                      await k.addMemory(p, ref, {
-                        kind: item.kind,
-                        body,
-                        scope: args.scope,
-                        status: "proposed",
-                        author: by,
-                      }),
-                    ),
-              )
-            }
-            return items
-          })
-        : []
-      output(itemOf({ ...result, provenance, saved }))
+      const result = await extractDocumentMemories({
+        read: () => helpers.document(doc),
+        complete: helpers.complete(),
+        scope: args.scope,
+        author: "drive-memory",
+        tab: args.tab,
+        save: args.yes,
+        withWrite: (write) => run(doc, write),
+      })
+      output(
+        itemOf({ ...result, saved: result.saved.map((item) => ("type" in item ? factItem(item) : memoryItem(item))) }),
+      )
     })
   const facts = program
     .command("facts")
