@@ -34,8 +34,9 @@ identity independently of title or ancestry. Hashes reuse embeddings for unchang
 profile without an indexed folder returns an explicit empty search: the shared service interprets
 an empty folder filter as unfiltered search.
 
-The default database belongs to this CLI. Explicit sharing requires aligned dependency versions;
-an implicit open could migrate the messenger database. Keyring entries are isolated when config
+The default database is the shared WireCat store. A profile checkpoint records its absolute store
+path; changing stores rebuilds references from snapshots under the profile lock. Legacy annotations
+block a rebuild rather than being silently stranded. Keyring entries are isolated when config
 paths are overridden. All tests isolate model cache, config and store.
 
 Native Markdown and searchable all-tab text are separate artifacts. Tab IDs/titles are preserved;
@@ -96,4 +97,4 @@ on the public facade. See [Core document workflows](https://github.com/WireCatLa
 Google OAuth/scopes, SDK calls, native Docs/Sheets conversion, upload protocol, metadata mapping,
 identity provenance and CLI/MCP presentation remain here. Another provider supplies those adapters
 and its own collection namespace, cursor semantics and persisted-state validation. Existing Drive
-checkpoint and snapshot formats, collection names, external keys and database paths are preserved.
+checkpoint and snapshot formats, collection names, external keys are preserved; database selection uses the shared `storePath` helper.

@@ -30,7 +30,6 @@ export const fixture = (roots = ["root"]) => {
     DRIVE_CONFIG_DIR: join(directory, "config"),
     DRIVE_STATE_DIR: join(directory, "state"),
     DRIVE_CACHE_DIR: join(directory, "cache"),
-    DRIVE_STORE: join(directory, "store.db"),
     WIRECAT_STATE_DIR: join(directory, "wirecat"),
     MESSAGING_STORE: join(directory, "never-owner.db"),
   }

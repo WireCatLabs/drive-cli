@@ -219,7 +219,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     return googleSource(client)
   }
   const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T> => {
-    const index = await (options.index?.() ?? openIndex(env))
+    const index = await (options.index?.() ?? openIndex(env, selected(), currentAction?.opts().rescan === true))
     try {
       return await fn(index)
     } finally {
@@ -392,13 +392,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .option("--page <n>", "which page to return", positive, 1)
     .action(async (words: string[], { limit, page }: { limit: number; page: number }) => {
       const profile = activeProfile(env, selected())
-      const state = readState(env, selected(), profile.principal)
       const query = typedQuery(words)
       const ast = listQuery(query, IMPORTED_DOCUMENT_QUERY, "documents list")
       const found = await withIndex(async (index) => {
         if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
         return index.knowledge.documents(profile.principal, ast, { limit, offset: (page - 1) * limit })
       })
+      const state = readState(env, selected(), profile.principal)
       output(
         listOf("documents list", {
           items: found.items.map((note) => {
@@ -495,10 +495,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     output,
     positive,
     complete: () => options.complete ?? memoryModel(env, selected(), activeSignal),
-    run: async (input, fn) => {
-      const lock = await lockProfile(env, selected())
-      try {
-        return await withIndex(async (index) => {
+    run: async (input, fn) =>
+      withIndex(async (index) => {
+        const lock = await lockProfile(env, selected())
+        try {
           lock.assertHeld()
           if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
           const principal = activeProfile(env, selected()).principal
@@ -507,11 +507,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           const result = await fn(index.knowledge, principal, ref)
           lock.assertHeld()
           return result
-        })
-      } finally {
-        await lock.release()
-      }
-    },
+        } finally {
+          await lock.release()
+        }
+      }),
   })
   installRemoteCommands(program, {
     output,

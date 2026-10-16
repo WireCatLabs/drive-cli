@@ -14,7 +14,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | A file was skipped | Check its type and download permission. Docs, Sheets and uploaded Markdown/TXT, PDF, `.docx`, `.xlsx` and CSV are imported; scanned PDFs, Slides and shortcuts are not. |
 | Sync stopped with errors | Repeat sync; pending work resumes. Read the report rather than treating a partial import as complete. |
 | Semantic search reports a missing model | Prepare the shared model cache as described in [search](search.md#search-by-meaning), or use `--exact`. |
-| A link target cannot be found | Use a reference from the selected database. Check explicit store sharing before linking to messenger people/projects. |
+| A link target cannot be found | Use a reference from the selected database. Check that every tool uses the same MESSAGING_STORE override before linking to messenger people/projects. |
 
 ```sh
 drive personal status --json
@@ -62,3 +62,14 @@ If a command reports an uncertain result after a timeout or interrupted response
 file in Google before repeating it. Creating a Doc or copying a file again can duplicate the
 successful operation. The [command reference](commands.md) explains errors; include the sanitized
 error code when asking for help rather than SDK responses or private content.
+
+## The store upgrade reports existing annotations
+
+Drive keeps the previous database when it finds tags, notes, memories, facts or links that a
+rebuild would leave behind. Set `MESSAGING_STORE` to that previous database file to continue
+using its annotations. Use the same override in your other WireCat tools if they should search
+that data too. Do not delete the previous file or reset its checkpoint to bypass this safeguard.
+Automatic annotation transfer between database files is not supported.
+
+If the upgrade instead reports a missing snapshot, run `drive personal sync --rescan`
+to fetch the selected folder tree again. This does not bypass the annotation safeguard.

@@ -1,4 +1,6 @@
+import { resolve } from "node:path"
 import { syncDocuments } from "@wirecat/cli-core/documents"
+import { storePath } from "@wirecat/cli-core/store"
 import { activeProfile, textLimit } from "./config.js"
 import { googleError } from "./errors.js"
 import { MAX_ENTRIES, supported, tooManyEntries } from "./google.js"
@@ -34,7 +36,10 @@ export const sync = async (
   const profile = activeProfile(env, name)
   const lock = await lockProfile(env, name)
   try {
-    return await syncDocuments({
+    await index.registerProfile?.(name, profile.principal)
+    const before = readState(env, name, profile.principal)
+    const started = new Date().toISOString()
+    const result = await syncDocuments({
       source,
       index,
       principal: profile.principal,
@@ -54,7 +59,7 @@ export const sync = async (
       storeVersion: VERSION,
       state: {
         read: () => readState(env, name, profile.principal),
-        save: (state) => saveState(env, name, state),
+        save: (state) => saveState(env, name, { ...state, store: resolve(storePath(env)) }),
         readWalk: (scope) => readWalk(env, name, scope),
         saveWalk: (walk) => saveWalk(env, name, walk),
         removeWalk: () => removeWalk(env, name),
@@ -62,6 +67,27 @@ export const sync = async (
         removeSnapshot: (id) => removeSnapshot(env, name, id),
       },
     })
+    if (index.linkMessages) {
+      const state = readState(env, name, profile.principal)
+      const documents = Object.entries(state.documents).map(([fileId, doc]) => ({ fileId, reference: doc.reference }))
+      const changed = documents.filter(
+        ({ fileId, reference }) =>
+          before.linksPending ||
+          !before.linkedThrough ||
+          before.documents[fileId]?.hash !== state.documents[fileId]?.hash ||
+          before.documents[fileId]?.reference !== reference,
+      )
+      lock.assertHeld()
+      state.linksPending = true
+      saveState(env, name, state)
+      await index.linkMessages(changed)
+      await index.linkMessages(documents, before.linkedThrough)
+      lock.assertHeld()
+      delete state.linksPending
+      state.linkedThrough = started
+      saveState(env, name, state)
+    }
+    return result
   } finally {
     await lock.release()
   }

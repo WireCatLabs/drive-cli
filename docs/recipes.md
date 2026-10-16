@@ -160,7 +160,7 @@ drive personal documents context DOC_ID --json
 
 Use references returned by the same store. Drive links existing records; it does not create
 projects or tasks. Observed owners/last editors are not a complete contributor history. To link
-messenger records, choose a compatible shared store explicitly first. Separate databases do not
+messenger records, use the same `MESSAGING_STORE` override in every tool if you change the default. Separate databases do not
 share IDs. See [configuration](configuration.md) and
 [organize sources](https://wirecat.dev/en/docs/organize).
 
@@ -284,3 +284,30 @@ drive personal --read-only mcp
 Inspect the first command's tools before starting the stdio server. It uses the same command tree,
 profile and guards. This is not a hosted HTTP browser connector. Use
 [the full command reference](commands.md) to discover other supported operations.
+
+## Find a document and the conversation where it was shared
+
+After importing a folder, use Memo, Telegram or MAX to find its documents alongside stored
+messages and notes. Ask your agent:
+
+```text prompt
+Use Drive CLI to sync my personal profile's selected folders. Find the budget document in the
+shared WireCat search, show its Google link, then find the stored conversations that shared it.
+```
+
+Drive sync links imported documents to Google file URLs in messages already stored by the
+messenger tools. Later syncs also link newly stored messages when the document has not changed.
+No messenger history is fetched and nothing is marked read. Links hidden behind formatted text
+without a visible Google URL are not detected.
+
+For exact commands, replace `CHAT_ID` with a chat selected in your Telegram profile:
+
+```sh
+drive personal sync
+tg personal search all budget --source drive:personal --exact
+tg personal chats documents list CHAT_ID
+```
+
+The search result includes the document's reference, Google URL and last Google edit time. The
+chat list shows the imported document title when its link has been connected. Empty results can
+mean that the relevant documents or messages have not been imported.

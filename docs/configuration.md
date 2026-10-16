@@ -20,7 +20,7 @@ changes one command invocation. These are different ways to control the tool.
 These are the operating-system defaults; the environment overrides below can move them. The
 configuration contains selected folder IDs, account identity and settings, not OAuth tokens.
 Tokens use the system keyring unless file credential storage was explicitly selected at sign-in.
-The local database defaults to `drive.db` in the data directory; profile snapshots and checkpoints
+The local database defaults to `~/.local/share/WireCat/wirecat.db` on Linux; profile snapshots and checkpoints
 are under `profiles/PROFILE_NAME/`. Read [local storage](usage.md#disk-use-index-without-an-export-directory)
 before moving or deleting them.
 
@@ -100,10 +100,10 @@ These values apply to the process that runs Drive; they are not saved by `config
 | Variable | Purpose |
 | --- | --- |
 | `DRIVE_CONFIG_DIR` | Move `config.json` and the associated credential namespace |
-| `DRIVE_STATE_DIR` | Move snapshots, checkpoints and the default database directory |
+| `DRIVE_STATE_DIR` | Move snapshots and checkpoints |
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
-| `DRIVE_STORE` | Select an explicit database file instead of the default `drive.db` |
-| `WIRECAT_STATE_DIR` | Move the WireCat folder that holds the shared local search models (default `~/.local/share/WireCat/`) |
+| `MESSAGING_STORE` | Select the shared database file instead of the default WireCat database |
+| `WIRECAT_STATE_DIR` | Move the WireCat folder that holds the shared database and local search models (default `~/.local/share/WireCat/`) |
 | `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Use your own Desktop OAuth application instead of WireCat's included app; set the ID before supplying its secret |
 | `DRIVE_MODELS_MEMORIES_PROVIDER`, `DRIVE_MODELS_MEMORIES_MODEL`, `DRIVE_MODELS_MEMORIES_BASE_URL` | Override optional AI extraction choices for this process |
 | `DRIVE_OPENAI_API_KEY`, `DRIVE_ANTHROPIC_API_KEY` | Supply the selected provider's credential; the corresponding unprefixed API-key variable is also accepted |
@@ -144,10 +144,23 @@ do not paste it into an agent conversation. Extraction sends selected cached tex
 provider. Local keyword search and local embeddings are separate and do not need an AI API key.
 See [memory extraction](recipes.md#remember-a-source-backed-decision) for review and saving.
 
-## Share a store deliberately
+<a id="share-a-store-deliberately"></a>
 
-To use the same stored people, projects and evidence as other tools, set `DRIVE_STORE` to the
-chosen compatible database. Separate stores do not share references. Back up an existing store
-and check the tools use compatible shared-library versions before opening it with another CLI.
-Sharing storage does not share sign-ins or Google permissions. Continue with
-[linking documents to people and projects](recipes.md#link-a-document-to-a-person-or-project).
+## Shared documents and messages
+
+Drive uses the WireCat database that Memo, Telegram and MAX use. Imported documents can appear
+in their local searches, with the Google URL and last Google edit time. A successful sync records
+the selected Drive profile, so a shared search can select it with `--source drive:personal`.
+Snapshots and checkpoints remain under `DRIVE_STATE_DIR`; `MESSAGING_STORE` selects the database.
+Sharing storage does not share sign-ins or Google permissions.
+
+When moving from an older separate database, Drive rebuilds document references from local
+snapshots and retains the original file. An interrupted rebuild can be retried. If snapshots are
+missing, run `drive personal sync --rescan` to fetch the selected sources again.
+
+Drive stops if the previous database contains annotations that would be left behind. To continue
+using them, set `MESSAGING_STORE` to the previous database path; do not delete it. `DRIVE_STORE`
+is retired and produces an error rather than silently selecting another file. Transfer of owner
+annotations between databases is not automatic.
+
+Continue with [linking documents to people and projects](recipes.md#link-a-document-to-a-person-or-project).

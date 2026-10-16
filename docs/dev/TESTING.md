@@ -13,7 +13,7 @@ stable and a store seeded with the real 0.226.0 shared package retains data unde
 exact shared-package pin. Installed-Drive release comparisons are separate checks in cli-testing.
 OAuth callbacks use invented codes and a memory keyring over local loopback HTTP.
 
-Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, DRIVE_STORE, MESSAGING_STORE
+Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE
 and WIRECAT_STATE_DIR. No owner's config, credential, database or model cache is used. Fixture
 directories stay available until cleanup is requested.
 

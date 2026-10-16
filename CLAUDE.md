@@ -10,7 +10,8 @@ Public code, fixtures and docs contain synthetic data only. Plans and journals l
 Tests inject a memory keyring, local source fixtures and temporary database/config/model-cache
 paths. Never run tests against the owner's account or store. No memory production fallback.
 
-Default storage is isolated; sharing an existing messenger store requires explicit configuration.
+Default storage is the shared WireCat database; MESSAGING_STORE is its only file override.
+Checkpoints bind row references to their store. Never strand legacy annotations when switching stores.
 Pin shared packages exactly and keep reviewed community presets aligned with MAX.
 Credentials use the keyring unless the user explicitly chooses private-file storage. Never log
 SDK error objects, headers, OAuth responses or document bodies. Data belongs in requested output.

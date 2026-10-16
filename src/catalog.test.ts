@@ -207,7 +207,7 @@ it("clears active catalog scope when the owner removes all selected roots", asyn
     writeConfig(f.env, { profiles: { default: { principal: "synthetic-principal", roots: [], storage: "keyring" } } })
     await sync(undefined, index, f.env, "default", 10)
     expect((await index.catalog?.list("synthetic-principal"))?.items).toEqual([])
-    const store = await openStore({ path: f.env.DRIVE_STORE, env: f.env })
+    const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
     try {
       expect((await store.memories.get(memory?.ref ?? "")).status).toBe("stale")
     } finally {

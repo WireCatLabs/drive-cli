@@ -28,9 +28,9 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
     write = false,
   ) => {
     const profile = activeProfile(env, selected())
-    const lock = write ? await lockProfile(env, selected()) : undefined
-    try {
-      return await withIndex(async (index) => {
+    return withIndex(async (index) => {
+      const lock = write ? await lockProfile(env, selected()) : undefined
+      try {
         if (!index.catalog)
           throw new CliError("configuration_error", "index has no shared catalog adapter", {
             reason: "catalog.unavailable",
@@ -39,11 +39,12 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
         const value = await fn({ ...index, catalog: index.catalog }, profile.principal)
         lock?.assertHeld()
         return value
-      })
-    } finally {
-      await lock?.release()
-    }
+      } finally {
+        await lock?.release()
+      }
+    })
   }
+
   const entry = async (index: DocumentIndex, principal: string, id: string) => {
     const found = await index.catalog?.get(principal, fileId(id))
     if (!found)

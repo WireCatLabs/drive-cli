@@ -183,7 +183,7 @@ describe("released shared store and search", () => {
     const open = async () => {
       const f = fixture()
       const { openStore } = await import("@wirecat/cli-core/store")
-      const store = await openStore({ path: f.env.DRIVE_STORE as string, env: f.env, command: "drive" })
+      const store = await openStore({ path: f.env.MESSAGING_STORE as string, env: f.env, command: "drive" })
       return { store, index: indexOver(store, f.env, embedder) }
     }
     const image = (id: string) => ({

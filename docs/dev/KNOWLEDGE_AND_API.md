@@ -29,8 +29,8 @@ become stale. These commands do not write Google comments or Google Drive labels
 
 Each command verifies the source belongs to the selected Google account. Note, memory and fact
 operations also check that the item is attached to that document. Explicit links can connect
-the document to other known shared entities. The database remains isolated by default; sharing
-with memo or messenger tools requires an explicit compatible store path and aligned package pins.
+the document to other known shared entities. The database is shared with Memo and messenger tools by default. A custom `MESSAGING_STORE`
+path must be the same in every tool that should share references.
 
 ## Editors and history
 

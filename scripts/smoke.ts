@@ -59,7 +59,6 @@ try {
     DRIVE_CONFIG_DIR: config,
     DRIVE_STATE_DIR: join(temp, "state"),
     DRIVE_CACHE_DIR: join(temp, "cache"),
-    DRIVE_STORE: join(temp, "store.db"),
     WIRECAT_STATE_DIR: join(temp, "wirecat"),
     MESSAGING_STORE: join(temp, "never-owner.db"),
   }

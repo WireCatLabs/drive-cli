@@ -48,8 +48,19 @@ const ENTRIES: Entry[] = [
   ["sign-in.not-saved", "configuration_error", "the sign-in could not be saved in the keyring"],
   ["sign-in.scope-missing", "permission_error", "the sign-in lacks the Google permission this command needs"],
   ["source.changed", "provider_error", "the document changed during export; retry the sync"],
+  [
+    "store.annotations-present",
+    "configuration_error",
+    "old store has annotations (at least {annotation_counts}); keep it through MESSAGING_STORE until transferred",
+    ["annotation_counts"],
+  ],
+  [
+    "store.override-retired",
+    "configuration_error",
+    "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
+  ],
   ["state.invalid", "configuration_error", "the sync state cannot be used; it was not reset"],
-  ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive sync"],
+  ["state.snapshot-missing", "not_found", "the imported copy is missing; run drive <profile> sync --rescan"],
   ["sync.partial", "provider_error", "the sync finished only in part; run it again"],
   [
     "upload.checksum-mismatch",

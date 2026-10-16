@@ -104,10 +104,14 @@ The shared path helper chooses platform-appropriate config, data and cache direc
 drive-cli. Override with `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR` and `DRIVE_CACHE_DIR`. Snapshots are
 `profiles/<profile>/documents/<file-id>.md` plus private JSON metadata and raw Docs responses.
 
-The database defaults to `drive.db` in this CLI's state directory. It uses the released shared
-WireCat store and search engine. It defaults to a separate file so connecting Google does not
-implicitly migrate an existing messenger database. `DRIVE_STORE` selects another compatible
-database explicitly. Review shared package versions and schema compatibility before sharing.
+Documents use the same local WireCat database as Memo, Telegram and MAX. Imports become searchable
+across those tools, alongside messages and notes. `MESSAGING_STORE` selects another database;
+`WIRECAT_STATE_DIR` moves the default WireCat directory. Google sign-ins remain separate.
+
+On first use after an upgrade, Drive rebuilds old document references from its managed snapshots,
+without fetching Google. It retains the old database. If that database contains tags, notes,
+memories, facts or relationships, Drive refuses to strand them: keep using that file through
+`MESSAGING_STORE` until those annotations are transferred.
 
 Search covers body text, nested tables and footnotes from all tabs. Images, headers, footers,
 comments and suggested edits are excluded. Image assets are not downloaded. Search text and Google’s native Markdown export are separate representations; inspect the export
