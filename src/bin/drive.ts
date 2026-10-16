@@ -5,8 +5,8 @@ import { CliError, catchCrashes, processStreams } from "@wirecat/cli-base"
 import { type Command, CommanderError } from "commander"
 
 // Compiling the program's module files is most of a start; later runs reuse what this one compiled.
-// Static imports compile before this line runs, so cli-core and the program load below it.
 enableCompileCache()
+// A static import compiles before the cache is on; cli-core and the program are most of those files.
 const { interactiveOf, REASONS, reportFailure } = await import("../failure.js")
 const { createProgram } = await import("../program.js")
 
