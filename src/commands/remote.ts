@@ -1,4 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
+import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
   apiPlainJson,
@@ -8,7 +9,9 @@ import {
   generatedApiCommand,
   itemOf,
   type ListBody,
+  LOCAL_READ,
   listOf,
+  NO_EFFECTS,
   parseApiJson,
   queryTerms,
   readApiBody,
@@ -16,12 +19,12 @@ import {
   withQuery,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { operationOf, operations, schemas, validateRequest } from "./api-contract.js"
-import { fileId } from "./config.js"
-import { apiMethod, apiMethods, validateApiParams } from "./google-api.js"
-import { allOf } from "./output.js"
-import { examples } from "./registry.js"
-import { requestSchema } from "./schema.js"
+import { operationOf, operations, schemas } from "../api-contract.js"
+import { fileId } from "../config.js"
+import { apiMethods, validateApiParams } from "../google-api.js"
+import { allOf } from "../output.js"
+import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
+import { requestSchema } from "../schema.js"
 
 const API_METHOD_QUERY = {
   entity: "api_method",
@@ -71,19 +74,20 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .option("--limit <n>", "how many items one page holds", positive, 100)
       .option("--cursor <cursor>", "continue from page.next_cursor of the previous answer")
   const fileArgument = "file id or Google Drive URL"
-  const api = program.command("api").description("discover and call the official Drive, Docs and Activity API methods")
+  const api = annotate(program.command("api"), { effects: LOCAL_READ }).description(
+    "discover and call the official Drive, Docs and Activity API methods",
+  )
   withQuery(
-    examples(api.command("list").description("list the Google API methods drive can call"), [
-      "drive api list",
-      "drive api list service:docs",
-    ]),
+    examples(
+      annotate(api.command("list"), { effects: NO_EFFECTS }).description("list the Google API methods drive can call"),
+      ["drive api list", "drive api list service:docs"],
+    ),
     API_METHOD_QUERY,
   ).action((words: string[]) =>
     output(allOf(apiMethods(queryTerms(words, API_METHOD_QUERY, "api list").get("service")))),
   )
   examples(
-    api
-      .command("show")
+    annotate(api.command("show"), { effects: NO_EFFECTS })
       .description("show one method's request schema and contract, without calling Google")
       .argument("<method>", "Google method name, as api list prints it"),
     ["drive api show docs.documents.batchUpdate --json"],
@@ -91,8 +95,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     output(itemOf({ operation: operationOf(method), request_schema: requestSchema(method) })),
   )
   examples(
-    api
-      .command("call")
+    annotate(api.command("call"), { effects: GOOGLE_WRITE })
       .description("call one Google API method by name with JSON parameters")
       .argument("<method>", "Google method name, as api list prints it"),
     [
@@ -105,17 +108,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--allow-writes", "allow a method that changes Google data")
     .option("--allow-delete", "allow a method that deletes for good or empties the trash")
     .action(async (name: string, args) => {
-      const method = apiMethod(name)
       validateApiParams(args.params)
-      if (method.mutates && !args.allowWrites)
-        throw new CliError("permission_error", "this method changes Google data; pass --allow-writes", {
-          reason: "write.not-allowed",
-        })
-      if (method.destructive && !args.allowDelete)
-        throw new CliError("permission_error", "this method permanently deletes Google data; pass --allow-delete", {
-          reason: "delete.not-allowed",
-        })
-      validateRequest(name, args.params, args.body)
       output(itemOf(await call(name, args.params, args.body)))
     })
   const generated = generatedApiCommand({
@@ -135,12 +128,16 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
   })
   for (const child of generated.commands) api.addCommand(child)
-  const files = program.command("files").description("read and change files in Google Drive; nothing is imported")
+  const files = annotate(program.command("files"), { effects: GOOGLE_READ }).description(
+    "read and change files in Google Drive; nothing is imported",
+  )
   page(
-    examples(files.command("list").description("list files in Google Drive, one page at a time"), [
-      "drive personal files list --parent FOLDER_ID",
-      `drive personal files list "name contains 'plan'" --limit 20`,
-    ]),
+    examples(
+      annotate(files.command("list"), { effects: GOOGLE_READ }).description(
+        "list files in Google Drive, one page at a time",
+      ),
+      ["drive personal files list --parent FOLDER_ID", `drive personal files list "name contains 'plan'" --limit 20`],
+    ),
   )
     .argument("[query...]", "Google Drive query the files match; trashed = false when omitted")
     .option("--parent <id>", "only the files directly inside this folder id")
@@ -163,14 +160,20 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         ),
       )
     })
-  examples(files.command("get").description("show one file's Google Drive metadata").argument("<file>", fileArgument), [
-    "drive personal files get FILE_ID",
-  ]).action(async (id: string) =>
+  examples(
+    annotate(files.command("get"), { effects: GOOGLE_READ })
+      .description("show one file's Google Drive metadata")
+      .argument("<file>", fileArgument),
+    ["drive personal files get FILE_ID"],
+  ).action(async (id: string) =>
     output(itemOf(await call("drive.files.get", { fileId: fileId(id), fields: "*", supportsAllDrives: true }))),
   )
-  examples(files.command("copy").description("copy a file in Google Drive").argument("<file>", fileArgument), [
-    `drive personal files copy FILE_ID --name "Plan copy" --parent FOLDER_ID`,
-  ])
+  examples(
+    annotate(files.command("copy"), { effects: GOOGLE_WRITE })
+      .description("copy a file in Google Drive")
+      .argument("<file>", fileArgument),
+    [`drive personal files copy FILE_ID --name "Plan copy" --parent FOLDER_ID`],
+  )
     .option("--name <name>", "name of the copy; Google's default when omitted")
     .option("--parent <id>", "folder id to put the copy in")
     .action(async (id: string, args) =>
@@ -188,7 +191,9 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
     )
   examples(
-    files.command("move").description("move a file to another Google Drive folder").argument("<file>", fileArgument),
+    annotate(files.command("move"), { effects: GOOGLE_WRITE })
+      .description("move a file to another Google Drive folder")
+      .argument("<file>", fileArgument),
     ["drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID"],
   )
     .requiredOption("--parent <id>", "folder id to move the file into")
@@ -210,7 +215,9 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
     )
   examples(
-    files.command("update").description("change a file's Google Drive metadata").argument("<file>", fileArgument),
+    annotate(files.command("update"), { effects: GOOGLE_WRITE })
+      .description("change a file's Google Drive metadata")
+      .argument("<file>", fileArgument),
     [`drive personal files update FILE_ID --body '{"name":"Renamed"}'`],
   )
     .requiredOption("--body <json>", "the metadata fields to change, as a JSON object", jsonObject)
@@ -219,8 +226,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     )
   for (const name of ["trash", "restore"] as const)
     examples(
-      files
-        .command(name)
+      annotate(files.command(name), { effects: GOOGLE_WRITE })
         .description(name === "trash" ? "move a file to the Google Drive trash" : "take a file out of the trash")
         .argument("<file>", fileArgument),
       [`drive personal files ${name} FILE_ID`],
@@ -236,7 +242,9 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
     )
   examples(
-    files.command("mkdir").description("create an empty folder in Google Drive").argument("<name>", "folder name"),
+    annotate(files.command("mkdir"), { effects: GOOGLE_WRITE })
+      .description("create an empty folder in Google Drive")
+      .argument("<name>", "folder name"),
     ["drive personal files mkdir Reports --parent FOLDER_ID"],
   )
     .option("--parent <id>", "folder id to create it in; My Drive when omitted")
@@ -256,8 +264,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
     )
   examples(
-    files
-      .command("upload")
+    annotate(files.command("upload"), { effects: GOOGLE_WRITE })
       .description("upload a local file to Google Drive; an interrupted upload resumes")
       .argument("<path>", "local file to upload"),
     ["drive personal files upload ./backup.db.zst --parent FOLDER_ID"],
@@ -277,22 +284,20 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   const documentArgument = "document id or Google Docs URL"
   examples(
-    documents
-      .command("get")
+    annotate(documents.command("get"), { effects: GOOGLE_READ })
       .argument("<document>", documentArgument)
       .description("read a document live from Google Docs, as JSON with every tab"),
     ["drive personal documents get DOC_ID --json"],
   ).action(async (id: string) =>
     output(itemOf(await call("docs.documents.get", { documentId: fileId(id), includeTabsContent: true }))),
   )
-  examples(documents.command("create").description("create an empty Google Doc"), [
+  examples(annotate(documents.command("create"), { effects: GOOGLE_WRITE }).description("create an empty Google Doc"), [
     `drive personal documents create --title "Meeting notes"`,
   ])
     .requiredOption("--title <title>", "title of the new document")
     .action(async (args) => output(itemOf(await call("docs.documents.create", {}, { title: args.title }))))
   examples(
-    documents
-      .command("update")
+    annotate(documents.command("update"), { effects: GOOGLE_WRITE })
       .description("change a Google Doc with a Docs batchUpdate request")
       .argument("<document>", documentArgument),
     [`drive personal documents update DOC_ID --body '{"requests":[]}'`],
@@ -303,8 +308,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     )
   page(
     examples(
-      documents
-        .command("history")
+      annotate(documents.command("history"), { effects: GOOGLE_READ })
         .description("list the revisions Google kept, or who did what with --activity")
         .argument("<document>", documentArgument),
       ["drive personal documents history DOC_ID", "drive personal documents history DOC_ID --activity"],
@@ -339,11 +343,16 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     })
   for (const resource of ["comments", "permissions", "revisions"] as const) {
     const one = resource.slice(0, -1)
-    const group = program.command(resource).description(`read the ${resource} of a file in Google Drive`)
+    const group = annotate(program.command(resource), { effects: GOOGLE_READ }).description(
+      `read the ${resource} of a file in Google Drive`,
+    )
     page(
-      examples(group.command("list").description(`list a file's ${resource}`).argument("<file>", fileArgument), [
-        `drive personal ${resource} list FILE_ID`,
-      ]),
+      examples(
+        annotate(group.command("list"), { effects: GOOGLE_READ })
+          .description(`list a file's ${resource}`)
+          .argument("<file>", fileArgument),
+        [`drive personal ${resource} list FILE_ID`],
+      ),
     ).action(async (id: string, args) =>
       output(
         pageOf(
@@ -362,8 +371,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
     )
     examples(
-      group
-        .command("get")
+      annotate(group.command("get"), { effects: GOOGLE_READ })
         .description(`show one ${one} of a file`)
         .argument("<file>", fileArgument)
         .argument(`<${one}-id>`, `${one} id, as ${resource} list prints it`),
@@ -382,9 +390,12 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     )
   }
   page(
-    examples(program.command("shared-drives").description("list the shared drives this account can open"), [
-      "drive personal shared-drives",
-    ]),
+    examples(
+      annotate(program.command("shared-drives"), { effects: GOOGLE_READ }).description(
+        "list the shared drives this account can open",
+      ),
+      ["drive personal shared-drives"],
+    ),
   ).action(async (args) =>
     output(
       pageOf(

@@ -117,7 +117,7 @@ describe("document knowledge commands", () => {
     expect(readConfig(f.env).defaults?.models?.memories?.model).toBe("fixture-model")
     await expect(
       call("models", "set", "--provider", "openai", "--base-url", "https://user:pass@example.invalid"),
-    ).rejects.toThrow("invalid")
+    ).rejects.toThrow("defaults.models.memories.base_url has the wrong type")
   }, 30_000)
   it("lists documents through the store's query, so a page of one still finds the newest tagged document", async () => {
     const f = fixture()

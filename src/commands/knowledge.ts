@@ -1,15 +1,32 @@
 import { annotate } from "@wirecat/cli-base/commands"
 import { defineQuery } from "@wirecat/cli-base/query"
-import { type Body, itemOf, listOf, queryHelp, queryTerms, withQuery } from "@wirecat/cli-core/cli"
+import {
+  type Body,
+  itemOf,
+  LOCAL_READ,
+  LOCAL_WRITE,
+  listOf,
+  queryHelp,
+  queryTerms,
+  REMOTE_WRITE,
+  withQuery,
+} from "@wirecat/cli-core/cli"
 import { extractDocumentMemories } from "@wirecat/cli-core/documents"
 import { FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
-import type { Complete } from "./extraction.js"
-import type { DocumentKnowledge } from "./knowledge.js"
-import { FACT_QUERY, factItem, MEMORY_QUERY, MEMORY_SEARCH_QUERY, memoryItem, memorySearch } from "./knowledge-query.js"
-import type { DocumentContent } from "./model.js"
-import { allOf } from "./output.js"
-import { examples } from "./registry.js"
+import type { Complete } from "../extraction.js"
+import type { DocumentKnowledge } from "../knowledge.js"
+import {
+  FACT_QUERY,
+  factItem,
+  MEMORY_QUERY,
+  MEMORY_SEARCH_QUERY,
+  memoryItem,
+  memorySearch,
+} from "../knowledge-query.js"
+import type { DocumentContent } from "../model.js"
+import { allOf } from "../output.js"
+import { examples } from "../registry.js"
 
 export interface KnowledgeCommands {
   document(input: string): { id: string; ref: string; hash: string; snapshot: DocumentContent }
@@ -24,17 +41,17 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
   const scopes = ["personal", "work"]
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   examples(
-    documents
-      .command("context")
+    annotate(documents.command("context"), { effects: LOCAL_READ })
       .argument("<document>", documentArgument)
       .description("show a document with its tags, relationships, notes, memories and editors"),
     ["drive personal documents context DOC_ID"],
   ).action(async (doc: string) => output(itemOf(await run(doc, (k, p, ref) => k.context(p, ref)))))
-  const tags = program.command("tags").description("label imported documents; labels survive a sync")
+  const tags = annotate(program.command("tags"), { effects: LOCAL_READ }).description(
+    "label imported documents; labels survive a sync",
+  )
   for (const action of ["list", "add", "remove"] as const) {
     const command = examples(
-      tags
-        .command(action)
+      annotate(tags.command(action), { effects: action === "list" ? LOCAL_READ : LOCAL_WRITE })
         .description(
           action === "list" ? "list a document's tags" : action === "add" ? "tag a document" : "untag a document",
         )
@@ -46,18 +63,24 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       output(itemOf({ tags: await run(doc, (k, p, ref) => k.tags(p, ref, action, action === "list" ? [] : values)) })),
     )
   }
-  const relationships = program
-    .command("relationships")
-    .description("connect a document to people, projects, notes and other references")
-  examples(relationships.command("list").description("list a document's relationships"), [
-    "drive personal relationships list DOC_ID",
-  ])
+  const relationships = annotate(program.command("relationships"), { effects: LOCAL_READ }).description(
+    "connect a document to people, projects, notes and other references",
+  )
+  examples(
+    annotate(relationships.command("list"), { effects: LOCAL_READ }).description("list a document's relationships"),
+    ["drive personal relationships list DOC_ID"],
+  )
     .argument("<document>", documentArgument)
     .action(async (doc: string) => output(allOf(await run(doc, (k, p, ref) => k.links(p, ref)))))
-  examples(relationships.command("add").description("connect a document to another reference"), [
-    "drive personal relationships add DOC_ID project:PROJECT_ID --kind about",
-    "drive personal relationships add DOC_ID person:PERSON_UID --kind assigned-to --role reviewer",
-  ])
+  examples(
+    annotate(relationships.command("add"), { effects: LOCAL_WRITE }).description(
+      "connect a document to another reference",
+    ),
+    [
+      "drive personal relationships add DOC_ID project:PROJECT_ID --kind about",
+      "drive personal relationships add DOC_ID person:PERSON_UID --kind assigned-to --role reviewer",
+    ],
+  )
     .argument("<document>", documentArgument)
     .argument("<reference>", "what it connects to, such as person:<uid>, project:<id> or note:<id>")
     .addOption(
@@ -74,15 +97,20 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         ),
       ),
     )
-  examples(relationships.command("remove").description("remove one of a document's relationships"), [
-    "drive personal relationships remove DOC_ID LINK_ID",
-  ])
+  examples(
+    annotate(relationships.command("remove"), { effects: LOCAL_WRITE }).description(
+      "remove one of a document's relationships",
+    ),
+    ["drive personal relationships remove DOC_ID LINK_ID"],
+  )
     .argument("<document>", documentArgument)
     .argument("<relationship-id>", "id, as relationships list prints it")
     .action(async (doc: string, id: string) => output(itemOf(await run(doc, (k, p, ref) => k.removeLink(p, ref, id)))))
-  const notes = program.command("notes").description("write notes about an imported document")
+  const notes = annotate(program.command("notes"), { effects: LOCAL_READ }).description(
+    "write notes about an imported document",
+  )
   const noteArgument = "note:<id> reference, as notes list prints it"
-  examples(notes.command("add").description("write a note about a document"), [
+  examples(annotate(notes.command("add"), { effects: LOCAL_WRITE }).description("write a note about a document"), [
     `drive personal notes add DOC_ID "Check the numbers" --title Review`,
   ])
     .argument("<document>", documentArgument)
@@ -91,7 +119,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .action(async (doc: string, text: string, args) =>
       output(itemOf(await run(doc, (k, p, ref) => k.addNote(p, ref, text, args.title)))),
     )
-  examples(notes.command("list").description("list a document's notes"), [
+  examples(annotate(notes.command("list"), { effects: LOCAL_READ }).description("list a document's notes"), [
     "drive personal notes list DOC_ID",
     "drive personal notes list DOC_ID review --limit 10",
   ])
@@ -114,13 +142,15 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         }),
       )
     })
-  examples(notes.command("show").description("show one note"), ["drive personal notes show DOC_ID note:NOTE_ID"])
+  examples(annotate(notes.command("show"), { effects: LOCAL_READ }).description("show one note"), [
+    "drive personal notes show DOC_ID note:NOTE_ID",
+  ])
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
     .action(async (doc: string, noteRef: string) =>
       output(itemOf(await run(doc, (k, p, ref) => k.note(p, ref, noteRef)))),
     )
-  examples(notes.command("edit").description("replace a note's text"), [
+  examples(annotate(notes.command("edit"), { effects: LOCAL_WRITE }).description("replace a note's text"), [
     `drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2`,
   ])
     .argument("<document>", documentArgument)
@@ -130,20 +160,23 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .action(async (doc: string, noteRef: string, text: string, args) =>
       output(itemOf(await run(doc, (k, p, ref) => k.editNote(p, ref, noteRef, text, args.revision)))),
     )
-  examples(notes.command("remove").description("delete one note"), ["drive personal notes remove DOC_ID note:NOTE_ID"])
+  examples(annotate(notes.command("remove"), { effects: LOCAL_WRITE }).description("delete one note"), [
+    "drive personal notes remove DOC_ID note:NOTE_ID",
+  ])
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
     .action(async (doc: string, noteRef: string) =>
       output(itemOf(await run(doc, (k, p, ref) => k.removeNote(p, ref, noteRef)))),
     )
-  const memories = program
-    .command("memories")
-    .description("keep what was learned from a document, with evidence; an agent's stay proposed")
+  const memories = annotate(program.command("memories"), { effects: LOCAL_READ }).description(
+    "keep what was learned from a document, with evidence; an agent's stay proposed",
+  )
   const memoryArgument = "memory:<id> reference, as memories list prints it"
   const scope = (description: string) => new Option("--scope <scope>", description).choices(scopes)
-  examples(memories.command("add").description("record a memory about a document"), [
-    `drive personal memories add DOC_ID "The team prefers async reviews" --scope work --kind preference`,
-  ])
+  examples(
+    annotate(memories.command("add"), { effects: LOCAL_WRITE }).description("record a memory about a document"),
+    [`drive personal memories add DOC_ID "The team prefers async reviews" --scope work --kind preference`],
+  )
     .argument("<document>", documentArgument)
     .argument("<text>", "what to remember")
     .addOption(scope("whose memory it is: personal or work").makeOptionMandatory())
@@ -155,7 +188,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
       ),
     )
   withQuery(
-    examples(memories.command("list").description("list a document's memories"), [
+    examples(annotate(memories.command("list"), { effects: LOCAL_READ }).description("list a document's memories"), [
       "drive personal memories list DOC_ID scope:work",
       "drive personal memories list DOC_ID kind:preference status:confirmed",
     ]).argument("<document>", documentArgument),
@@ -177,18 +210,24 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     stale: "mark a memory as out of date",
   } as const
   for (const [action, description] of Object.entries(memoryActions) as [keyof typeof memoryActions, string][])
-    examples(memories.command(action).description(description), [
-      `drive personal memories ${action} DOC_ID memory:MEMORY_ID`,
-    ])
+    examples(
+      annotate(memories.command(action), { effects: action === "show" ? LOCAL_READ : LOCAL_WRITE }).description(
+        description,
+      ),
+      [`drive personal memories ${action} DOC_ID memory:MEMORY_ID`],
+    )
       .argument("<document>", documentArgument)
       .argument("<memory>", memoryArgument)
       .action(async (doc: string, memoryRef: string) =>
         output(itemOf(memoryItem(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action))))),
       )
-  const search = examples(memories.command("search").description("search a document's memories by words"), [
-    "drive personal memories search DOC_ID reviews scope:work",
-    `drive personal memories search DOC_ID "async reviews"`,
-  ])
+  const search = examples(
+    annotate(memories.command("search"), { effects: LOCAL_READ }).description("search a document's memories by words"),
+    [
+      "drive personal memories search DOC_ID reviews scope:work",
+      `drive personal memories search DOC_ID "async reviews"`,
+    ],
+  )
     .argument("<document>", documentArgument)
     .argument("<query...>", "words to look for, and scope:personal or scope:work — the fields are below")
     .allowUnknownOption()
@@ -203,8 +242,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     })
   annotate(search, { query: defineQuery(MEMORY_SEARCH_QUERY), output: { entity: "memory" } })
   examples(
-    memories
-      .command("extract")
+    annotate(memories.command("extract"), { effects: REMOTE_WRITE })
       .argument("<document>", documentArgument)
       .description("send a document's text to the model and show the memories it proposes"),
     [
@@ -232,11 +270,11 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         itemOf({ ...result, saved: result.saved.map((item) => ("type" in item ? factItem(item) : memoryItem(item))) }),
       )
     })
-  const facts = program
-    .command("facts")
-    .description("what happened, as a document shows it; an agent's stay proposed until confirmed")
+  const facts = annotate(program.command("facts"), { effects: LOCAL_READ }).description(
+    "what happened, as a document shows it; an agent's stay proposed until confirmed",
+  )
   const factArgument = "fact:<id> reference, as facts list prints it"
-  examples(facts.command("add").description("record a fact a document shows"), [
+  examples(annotate(facts.command("add"), { effects: LOCAL_WRITE }).description("record a fact a document shows"), [
     `drive personal facts add DOC_ID "Budget approved" --type decision --scope work`,
   ])
     .argument("<document>", documentArgument)
@@ -269,7 +307,7 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         ),
     )
   withQuery(
-    examples(facts.command("list").description("list a document's facts"), [
+    examples(annotate(facts.command("list"), { effects: LOCAL_READ }).description("list a document's facts"), [
       "drive personal facts list DOC_ID status:proposed",
       "drive personal facts list DOC_ID kind:decision",
     ]).argument("<document>", documentArgument),
@@ -290,23 +328,34 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     reverse: "an accepted decision no longer holds, and nothing replaced it",
   } as const
   for (const [action, description] of Object.entries(factActions) as [keyof typeof factActions, string][])
-    examples(facts.command(action).description(description), [`drive personal facts ${action} DOC_ID fact:FACT_ID`])
+    examples(
+      annotate(facts.command(action), { effects: action === "show" ? LOCAL_READ : LOCAL_WRITE }).description(
+        description,
+      ),
+      [`drive personal facts ${action} DOC_ID fact:FACT_ID`],
+    )
       .argument("<document>", documentArgument)
       .argument("<fact>", factArgument)
       .action(async (doc: string, factRef: string) =>
         output(itemOf(factItem(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action))))),
       )
-  const identities = program
-    .command("identities")
-    .description("the Google accounts seen on a document, and the people they belong to")
-  examples(identities.command("list").description("list the owners and last editor Google shows for a document"), [
-    "drive personal identities list DOC_ID",
-  ])
+  const identities = annotate(program.command("identities"), { effects: LOCAL_READ }).description(
+    "the Google accounts seen on a document, and the people they belong to",
+  )
+  examples(
+    annotate(identities.command("list"), { effects: LOCAL_READ }).description(
+      "list the owners and last editor Google shows for a document",
+    ),
+    ["drive personal identities list DOC_ID"],
+  )
     .argument("<document>", documentArgument)
     .action(async (doc: string) => output(itemOf(await run(doc, (k, p, ref) => k.people(p, ref)))))
-  examples(identities.command("link").description("record that a Google account belongs to a known person"), [
-    "drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID",
-  ])
+  examples(
+    annotate(identities.command("link"), { effects: LOCAL_WRITE }).description(
+      "record that a Google account belongs to a known person",
+    ),
+    ["drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID"],
+  )
     .argument("<document>", documentArgument)
     .argument("<google-id>", "Google account id, as identities list prints it")
     .argument("<person>", "person:<uid> reference of someone already known")

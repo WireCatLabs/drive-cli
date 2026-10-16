@@ -32,6 +32,7 @@ describe("command data effects", () => {
     expect(effects("files copy")).toEqual({ remote: "write", local: "none" })
     expect(effects("sync")).toEqual({ remote: "read", local: "write" })
     expect(effects("session start")).toEqual({ remote: "write", local: "write" })
+    expect(commands.filter((command) => !command.effects).map((command) => command.path.join(" "))).toEqual([])
   })
 
   it("runs provider-only reads without opening the content store and still refuses them offline", async () => {
