@@ -1,7 +1,6 @@
 import { CliError } from "@wirecat/cli-base"
 import type { CatalogEntry, CatalogInput, CatalogQuery } from "@wirecat/cli-core/store"
-import { type FileMetadata, FOLDER, type SyncState } from "./model.js"
-import { within } from "./scope.js"
+import { type FileMetadata, FOLDER } from "./model.js"
 
 export const catalogInput = (file: FileMetadata): CatalogInput => ({
   externalId: `${file.id}.md`,
@@ -33,19 +32,7 @@ export interface SourceCatalog {
   get(principal: string, id: string): Promise<CatalogEntry | undefined>
   list(principal: string, query?: CatalogQuery): Promise<{ items: CatalogEntry[]; hasMore: boolean }>
 }
-export const catalogFiles = (state: SyncState, roots: string[]): FileMetadata[] => {
-  const folders = state.pending?.folders ?? state.folders
-  const files = new Map<string, FileMetadata>(
-    Object.values(state.documents).map((doc) => [doc.metadata.id, doc.metadata]),
-  )
-  for (const skip of state.skipped) if (skip.file) files.set(skip.id, skip.file)
-  for (const file of Object.values(folders)) files.set(file.id, file)
-  for (const job of state.pending?.jobs ?? []) {
-    if (job.kind === "remove") files.delete(job.id)
-    else if (job.file) files.set(job.id, job.file)
-  }
-  return [...files.values()].filter((file) => within(file, roots, folders))
-}
+export { catalogFiles } from "@wirecat/cli-core/documents"
 export interface CatalogTree {
   item: Pick<CatalogEntry, "ref" | "name" | "kind" | "url" | "content"> & { id: string }
   children: CatalogTree[]

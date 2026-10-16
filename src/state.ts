@@ -46,6 +46,7 @@ const State = v.object({
       reference: v.string(),
       tabs: v.number(),
       notRead: v.optional(v.string()),
+      picture: v.optional(v.picklist(["saved", "too-large"])),
     }),
   ),
   skipped: v.array(Skip),
