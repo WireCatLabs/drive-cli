@@ -4,7 +4,8 @@ export default defineConfig({
   tsconfig: "./node_modules/@wirecat/cli-base/config/tsconfig.base.json",
   test: {
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
-    maxWorkers: 4,
+    // Concurrent real-store fixtures compete for SQLite writes and coverage CPU on CI.
+    maxWorkers: 2,
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
