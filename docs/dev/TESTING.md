@@ -13,6 +13,12 @@ stable and a store seeded with the real 0.226.0 shared package retains data unde
 exact shared-package pin. Installed-Drive release comparisons are separate checks in cli-testing.
 OAuth callbacks use invented codes and a memory keyring over local loopback HTTP.
 
+The Google SDK boundary suite uses the pinned Google service clients, OAuth client and Gaxios
+pipeline with a synthetic bearer and in-memory fetch responses. It checks transport override
+refusal, URL encoding, sanitized failures, mutation retry suppression and declared response-size
+refusal. A socket guard blocks network access. This does not test live Google, redirects or
+chunked-response size enforcement by the default HTTP transport.
+
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE
 and WIRECAT_STATE_DIR. No owner's config, credential, database or model cache is used. Fixture
 directories stay available until cleanup is requested.
