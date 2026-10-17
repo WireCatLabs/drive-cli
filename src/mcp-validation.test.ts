@@ -57,6 +57,16 @@ describe("MCP validation through the SDK", () => {
         },
       })
       expect(JSON.stringify(unknownSheetArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
+      expect((await client.listTools()).tools.map((tool) => tool.name)).toContain("drive_store_import")
+      const unknownTransferArgument = await client.callTool({
+        name: "drive_store_import",
+        arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), "unknown-field": true },
+      })
+      expect(unknownTransferArgument).toMatchObject({
+        isError: true,
+        structuredContent: { error: { code: "validation_error", message: expect.stringContaining("unknown-field") } },
+      })
+      expect(JSON.stringify(unknownTransferArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
       expect(call).toHaveBeenCalledTimes(1)
       const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
       try {
@@ -67,6 +77,9 @@ describe("MCP validation through the SDK", () => {
           true,
         )
         expect(JSON.stringify(rows)).not.toContain("DO_NOT_LOG_ARGUMENT")
+        expect(await store.agentActions.list({ tool: "drive_store_import" })).toMatchObject([
+          { status: "failed", error: "validation_error" },
+        ])
       } finally {
         await store.close()
       }

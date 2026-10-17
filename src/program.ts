@@ -37,6 +37,7 @@ import { installMcpCommand } from "./commands/mcp.js"
 import { installRemoteCommands } from "./commands/remote.js"
 import { installSearchCommand } from "./commands/search.js"
 import { installSessionCommands } from "./commands/session.js"
+import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { activeProfile, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
@@ -199,6 +200,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installSessionCommands(program, context)
   installFolderCommands(program, context)
   installSyncCommands(program, context)
+  installStoreCommands(program, context)
   installDocumentCommands(program, context)
   installSearchCommand(program, context)
   installCatalogCommands(program, { env, selected, output, positive, offset, withIndex })

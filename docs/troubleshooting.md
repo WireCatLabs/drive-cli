@@ -89,7 +89,17 @@ Drive keeps the previous database when it finds tags, notes, memories, facts or 
 rebuild would leave behind. Set `MESSAGING_STORE` to that previous database file to continue
 using its annotations. Use the same override in your other WireCat tools if they should search
 that data too. Do not delete the previous file or reset its checkpoint to bypass this safeguard.
-Automatic annotation transfer between database files is not supported.
+To copy the context instead, run `drive personal status --json` to find `store.checkpoint`, then
+follow [the database-copy recipe](recipes.md#keep-notes-when-changing-databases). `store check` previews
+counts and conflicts without changing either file. `store import` requires that preview's fingerprint
+and only updates the profile checkpoint after the copy commits. Keep the original file. Missing
+project/task references need explicit bindings; differing content, identity decisions or tag aliases
+must be resolved first. Interrupted unchanged copies can be retried without duplicate annotations.
+
+A source schema older than version 2 needs an upgrade of a separate copy first; the original is never
+migrated by the transfer. You can provide that upgraded copy explicitly if its document hashes still
+match this profile's cache. Oversized graphs refuse without partial copying. Stop other writers to the
+source while switching; this operation does not keep two databases synchronized.
 
 If the upgrade instead reports a missing snapshot, run `drive personal sync --rescan`
 to fetch the selected folder tree again. This does not bypass the annotation safeguard.

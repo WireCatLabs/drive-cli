@@ -2395,6 +2395,29 @@
     "inputSchema": {
       "additionalProperties": false,
       "properties": {
+        "bindings": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "source": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["source"],
+      "type": "object"
+    },
+    "name": "drive_store_check"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": false,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
         "document": {
           "maxLength": 100000,
           "type": "string"
