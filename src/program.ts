@@ -243,10 +243,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const descriptor = apiMethod(method)
       validateRequest(method, params, body)
       const flags = policyFlags()
-      // An api command's own method was checked before its parameters were read; checking again changes nothing.
-      if (method !== checkedMethod)
-        for (const key of methodPolicyKeys(method))
-          await checkPolicy(env, selected(), key, descriptor.mutates, flags, askOnce)
+      const alreadyChecked = new Set(method === checkedMethod ? methodPolicyKeys(method) : [])
+      for (const key of methodPolicyKeys(method, body))
+        if (!alreadyChecked.has(key)) await checkPolicy(env, selected(), key, descriptor.mutates, flags, askOnce)
       if (flags.dryRun) {
         output(
           itemOf({

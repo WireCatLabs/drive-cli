@@ -7,44 +7,16 @@
     "review_after": "2026-11-16"
   },
   {
-    "rule": "unknown-resource",
-    "target": "sheets",
-    "reason": "Spreadsheet-specific resource; shared cli-base 0.40.0 predates the native Sheets commands. Register the noun centrally before removing this exception. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
+    "rule": "unknown-verb",
+    "target": "sheets insert",
+    "reason": "Insert bounded source rows or columns before an explicit index. Shared vocabulary registration is tracked in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-17"
   },
   {
-    "rule": "option-role",
-    "target": "sheets show --render",
-    "reason": "Output role: select Google formatted values, unformatted values or formulas, not a list filter. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
-  },
-  {
-    "rule": "option-role",
-    "target": "sheets update --values",
-    "reason": "Value role: bounded JSON cell rows for this explicit remote write. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
-  },
-  {
-    "rule": "option-role",
-    "target": "sheets add --values",
-    "reason": "Value role: bounded JSON cell rows appended to the selected table. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
-  },
-  {
-    "rule": "option-role",
-    "target": "sheets update --input",
-    "reason": "Mode role: literal RAW input by default; explicit USER_ENTERED formula/locale parsing. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
-  },
-  {
-    "rule": "option-role",
-    "target": "sheets add --input",
-    "reason": "Mode role: literal RAW input by default; explicit USER_ENTERED formula/locale parsing. Track in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
+    "rule": "unknown-verb",
+    "target": "sheets format",
+    "reason": "Change only selected cell-format fields, not source values/formulas. Shared vocabulary registration is tracked in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-17"
   }

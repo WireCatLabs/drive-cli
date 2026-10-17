@@ -19,6 +19,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | Inspect comments or history | Yes | No automatic import | No |
 | Create or edit a Doc | Yes | Imported on the next sync | Yes |
 | Read or edit spreadsheet cells | Yes | Imported on the next sync | Only when explicitly changing cells |
+| Organize spreadsheet tabs and formatting | Yes | Imported on the next sync | Yes |
 
 ## First searchable folder, without extra exports
 
@@ -376,3 +377,55 @@ or 10,000-cell checks. Raw `api call` writes also require `--allow-writes`. Gene
 comma-separated; use a JSON array in raw `api call --params` when a tab name itself contains a comma.
 Some POST-based lookup methods require the broader Drive grant even though their effect is a read;
 inspect the method contract and Google authorization requirements before reconnecting.
+
+## Organize tabs and format selected cells
+
+Use tab IDs from `sheets info` to change a specific tab inside an existing spreadsheet. These
+commands use the same explicit write connection as cell updates. They change Google data;
+refresh the imported copy with `sync` when local search needs the updated source.
+
+```text prompt
+Use drive CLI with profile personal. Inspect the tabs in my selected spreadsheet. Create a
+Quarter 2 tab, rename the tab I identify, and make only its A1:C1 header bold. Show the returned
+tab IDs and changed range. Preserve existing cell values and other formatting.
+```
+
+```sh
+drive personal sheets info SHEET_ID --json
+drive personal sheets create SHEET_ID 'Quarter 2' --json
+drive personal sheets rename SHEET_ID 101 'Quarter 1' --json
+drive personal sheets insert SHEET_ID 101 rows 1 3 --json
+drive personal sheets insert SHEET_ID 101 columns 0 1 --json
+drive personal sheets format SHEET_ID 101 A1:C1 --body '{"textFormat":{"bold":true}}' --json
+drive personal sheets format SHEET_ID 101 B2:B10 --body '{"numberFormat":{"type":"NUMBER","pattern":"0.00"}}' --json
+```
+
+`create` adds an empty tab to the existing spreadsheet, rather than creating a new spreadsheet
+file. Replace `101` with the numeric tab ID Google returned. The ID remains stable after rename;
+rename changes only the title. Tab names must contain 1–100 characters; Google also checks name
+validity and uniqueness.
+
+Insert takes `rows` or `columns`, a **zero-based index to insert before**, and a count of 1–1,000.
+Index `0` means the first row/column; row index `1` inserts before the second row. Later entries
+shift. Google validates the current grid bounds and spreadsheet limits; use the generated API
+for appending grid dimensions at the end. The command requests formatting inheritance from the
+dimension after the insertion position.
+
+Format uses an explicit tab ID and a finite range **without a tab prefix**, such as `A1:C4`.
+At most 10,000 cells can be selected. Its JSON body supports text bold/italic/underline/
+strikethrough, font family/size, foreground/background colors, horizontal/vertical alignment,
+wrap strategy and number format. Field names follow Google's `CellFormat` JSON. Unknown fields,
+empty objects, cell values and formulas are refused.
+
+Only the formatting properties you provide are included in the request's field mask. Setting
+`textFormat.bold` preserves italic text, number formatting and cell values; use `false` to remove
+bold. Both color channels (`red`, `green`, `blue`, `alpha`) and theme-color styles are supported.
+For other formatting fields or multiple operations in one request, use the generated
+`api sheets-spreadsheets-batch-update` command. A generic batch has broader effects and none of
+the friendly formatter's 10,000-cell/allowed-field limits.
+
+All paths retain profile policy, OAuth write, offline/read-only, dry-run and uncertain-write
+handling. A profile denial such as `sheets.rename` also applies to an equivalent raw/generated
+batch request. Inspect current cells before repeating an uncertain structure change; otherwise
+you could create duplicate tabs or insert more rows. Separate commands can observe collaborator
+changes between requests.

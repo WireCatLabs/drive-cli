@@ -1,8 +1,6 @@
-import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
-  apiPlainJson,
   type Body,
   checkApiBody,
   checkApiParameter,
@@ -12,14 +10,13 @@ import {
   LOCAL_READ,
   listOf,
   NO_EFFECTS,
-  parseApiJson,
   queryTerms,
   readApiBody,
   termField,
   withQuery,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { operationOf, operations, schemas } from "../api-contract.js"
+import { jsonObject, operationOf, operations, schemas } from "../api-contract.js"
 import { fileId } from "../config.js"
 import { apiMethods, validateApiParams } from "../google-api.js"
 import { allOf } from "../output.js"
@@ -33,12 +30,8 @@ const API_METHOD_QUERY = {
   fields: [termField("service", "enum", "service:docs", { values: ["drive", "docs", "driveactivity", "sheets"] })],
 } as const satisfies QueryRegistry
 
-export const jsonObject = (value: string): Record<string, unknown> => {
-  const parsed = apiPlainJson(parseApiJson(value))
-  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
-    throw new CliError("validation_error", "use a JSON object")
-  return parsed as Record<string, unknown>
-}
+export { jsonObject } from "../api-contract.js"
+
 /** One page of a Google list, which names its rows `key` and the next page `nextPageToken`. */
 const pageOf = (
   command: string,
