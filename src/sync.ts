@@ -12,6 +12,8 @@ import { VERSION } from "./version.js"
 export type { SyncResult } from "@wirecat/cli-core/documents"
 export { within } from "./scope.js"
 
+const MESSAGE_LINKS_VERSION = 1
+
 const skipReason = (file: FileMetadata) =>
   !file.canDownload ? "downloads restricted" : supported(file) ? undefined : `unsupported type: ${file.mime}`
 // Skips decided by type are retried once a newer version reads the type; length skips once the limit is raised.
@@ -72,6 +74,7 @@ export const sync = async (
       const documents = Object.entries(state.documents).map(([fileId, doc]) => ({ fileId, reference: doc.reference }))
       const changed = documents.filter(
         ({ fileId, reference }) =>
+          before.linksVersion !== MESSAGE_LINKS_VERSION ||
           before.linksPending ||
           !before.linkedThrough ||
           before.documents[fileId]?.hash !== state.documents[fileId]?.hash ||
@@ -84,6 +87,7 @@ export const sync = async (
       await index.linkMessages(documents, before.linkedThrough)
       lock.assertHeld()
       delete state.linksPending
+      state.linksVersion = MESSAGE_LINKS_VERSION
       state.linkedThrough = started
       saveState(env, name, state)
     }

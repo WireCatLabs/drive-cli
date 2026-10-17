@@ -188,4 +188,51 @@ describe("Drive sync links stored messages", () => {
     expect(readState(f.env, "default", principal).linksPending).toBeUndefined()
     expect(readState(f.env, "default", principal).linkedThrough).toBeDefined()
   })
+
+  it("repairs pre-upgrade link checkpoints once, then resumes incremental linking", async () => {
+    const f = fixture()
+    f.index.linkMessages = vi.fn().mockResolvedValue(0)
+    await sync(f.source, f.index, f.env, "default", 100)
+    const previous = readState(f.env, "default", principal)
+    delete previous.linksVersion
+    previous.linkedThrough = "2026-01-01T00:00:00.000Z"
+    saveState(f.env, "default", previous)
+    vi.mocked(f.index.linkMessages).mockClear()
+    await sync(f.source, f.index, f.env, "default", 100)
+    expect(f.index.linkMessages).toHaveBeenNthCalledWith(
+      1,
+      expect.arrayContaining([{ fileId: "doc-a", reference: "document:doc-a" }]),
+    )
+    const current = readState(f.env, "default", principal)
+    expect(current.linksVersion).toBe(1)
+    vi.mocked(f.index.linkMessages).mockClear()
+    await sync(f.source, f.index, f.env, "default", 100)
+    expect(f.index.linkMessages).toHaveBeenNthCalledWith(1, [])
+    expect(f.index.linkMessages).toHaveBeenNthCalledWith(2, expect.any(Array), current.linkedThrough)
+  })
+
+  it("does not advance the link version or checkpoint if the incremental pass fails", async () => {
+    const f = fixture()
+    f.index.linkMessages = vi.fn().mockResolvedValue(0)
+    await sync(f.source, f.index, f.env, "default", 100)
+    const previous = readState(f.env, "default", principal)
+    delete previous.linksVersion
+    saveState(f.env, "default", previous)
+    vi.mocked(f.index.linkMessages)
+      .mockReset()
+      .mockResolvedValueOnce(0)
+      .mockRejectedValueOnce(new Error("synthetic link failure"))
+    await expect(sync(f.source, f.index, f.env, "default", 100)).rejects.toThrow("synthetic link failure")
+    const failed = readState(f.env, "default", principal)
+    expect(failed.linksVersion).toBeUndefined()
+    expect(failed.linkedThrough).toBe(previous.linkedThrough)
+    expect(failed.linksPending).toBe(true)
+    vi.mocked(f.index.linkMessages).mockReset().mockResolvedValue(0)
+    await sync(f.source, f.index, f.env, "default", 100)
+    expect(f.index.linkMessages).toHaveBeenNthCalledWith(
+      1,
+      expect.arrayContaining([{ fileId: "doc-a", reference: "document:doc-a" }]),
+    )
+    expect(readState(f.env, "default", principal).linksVersion).toBe(1)
+  })
 })

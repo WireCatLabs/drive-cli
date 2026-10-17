@@ -37,6 +37,7 @@ const State = v.object({
   store: v.optional(v.string()),
   linkedThrough: v.optional(v.string()),
   linksPending: v.optional(v.boolean()),
+  linksVersion: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   principal: v.string(),
   scope: v.string(),
   cursor: v.optional(v.string()),

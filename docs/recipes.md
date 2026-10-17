@@ -351,7 +351,8 @@ shared WireCat search, show its Google link, then find the stored conversations 
 ```
 
 Drive sync links imported documents to Google file URLs in messages already stored by the
-messenger tools. Later syncs also link newly stored messages when the document has not changed.
+messenger tools. Later syncs also link newly stored messages and document URLs added by edits to older stored messages,
+even when the document has not changed. Your messenger tool must first save the edited message locally.
 No messenger history is fetched and nothing is marked read. Links hidden behind formatted text
 without a visible Google URL are not detected.
 

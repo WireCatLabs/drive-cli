@@ -75,7 +75,12 @@ export type GoogleSource = DocumentSource<FileMetadata>
 export type IndexedDocument = IndexedSource<FileMetadata>
 export type WorkItem = SourceWork<FileMetadata>
 export type Skip = SourceSkip<FileMetadata>
-export type SyncState = SourceState<FileMetadata> & { store?: string; linkedThrough?: string; linksPending?: boolean }
+export type SyncState = SourceState<FileMetadata> & {
+  store?: string
+  linkedThrough?: string
+  linksPending?: boolean
+  linksVersion?: number
+}
 export interface DocumentIndex {
   registerProfile?(name: string, principal: string): Promise<void>
   linkMessages?(documents: { reference: string; fileId: string }[], since?: string): Promise<number>
