@@ -8,6 +8,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | --- | --- |
 | `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
 | Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
+| `google-api.disabled` | The OAuth project's owner must enable the requested API; see [API setup](#google-api-is-disabled). Reconnecting or granting write access does not enable it. |
 | Sign-in expired | Run `drive personal session start` again. Add `--client-file` only for your own application. External Testing grants usually expire after seven days. |
 | No keyring is available | Reconnect with the explicit `--credential-storage file` option if private-file storage fits your setup. |
 | Search is empty | Run `status`, check selected roots with `folders list`, then `sync`. Try a known word with `search --exact`. |
@@ -48,6 +49,25 @@ Publishing the application does not authorize your account or this computer. Run
 browser screen. With WireCat's included client, ordinary users do not repeat Google Cloud setup.
 A custom Desktop client remains an alternative. Workspace policy and Google scope verification
 can still restrict which accounts or permissions are available.
+
+## Google API is disabled
+
+The connection can be valid while an API is disabled in the application's Google Cloud project.
+For example, importing Sheets through Drive's XLSX export can work while live `sheets` commands
+fail. `google-api.disabled` identifies this application setup problem separately from file access
+or missing OAuth permissions. It does not tell you that a particular spreadsheet exists.
+
+With WireCat's included app, report the command and sanitized error to WireCat; users do not
+need to create their own app to fix WireCat's project configuration. With your own app, select
+its project in Google Cloud Console, open **APIs & Services → Library**, find the API and press
+**Enable**. For live Sheets operations, open the
+[Google Sheets API page](https://console.cloud.google.com/apis/library/sheets.googleapis.com).
+Check the project selector before enabling it. See Google's
+[API setup instructions](https://developers.google.com/workspace/guides/enable-apis).
+
+Allow the setting to propagate, then repeat a read such as `sheets info` against your selected
+spreadsheet. Use the same explicit profile. Enabling the API does not grant file access or a
+write permission, and this error alone is not a reason to reconnect with a broader grant.
 
 ## Offline content differs from Google
 

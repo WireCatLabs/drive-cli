@@ -7,13 +7,28 @@ export const googleError = (error: unknown): CliError => {
     name?: string
     status?: number
     code?: string | number
-    response?: { status?: number; data?: { error?: string | { errors?: { reason?: string }[] } } }
+    response?: { status?: number; data?: { error?: string | { errors?: { reason?: string }[]; details?: unknown } } }
   }
   if (value?.name === "AbortError" || value?.code === "ERR_CANCELED")
     return new CliError("cancelled", "Google operation was cancelled", { reason: "command.cancelled" })
   const status = value?.status ?? value?.response?.status
   const payload = value?.response?.data?.error
   const reason = typeof payload === "string" ? payload : payload?.errors?.[0]?.reason
+  const disabled =
+    typeof payload === "object" &&
+    payload !== null &&
+    Array.isArray(payload.details) &&
+    payload.details.some(
+      (detail: unknown) =>
+        detail !== null &&
+        typeof detail === "object" &&
+        "@type" in detail &&
+        detail["@type"] === "type.googleapis.com/google.rpc.ErrorInfo" &&
+        "domain" in detail &&
+        detail.domain === "googleapis.com" &&
+        "reason" in detail &&
+        detail.reason === "SERVICE_DISABLED",
+    )
   if (reason === "invalid_grant" || reason === "invalid_token")
     return new CliError("authentication_error", "Google sign-in is no longer valid — run drive session start again", {
       reason: "sign-in.expired",
@@ -25,6 +40,12 @@ export const googleError = (error: unknown): CliError => {
       {
         reason: "oauth-client.rejected",
       },
+    )
+  if (status === 403 && (reason === "accessNotConfigured" || disabled))
+    return new CliError(
+      "configuration_error",
+      "Google API is disabled for this OAuth project; its owner must enable it in Google Cloud API Library",
+      { reason: "google-api.disabled", status },
     )
   if (reason === "rateLimitExceeded" || reason === "userRateLimitExceeded")
     return new CliError("rate_limited", "Google rate limit reached; retry the command", {

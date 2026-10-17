@@ -34,6 +34,11 @@ const ENTRIES: Entry[] = [
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   ["file.not-file", "validation_error", "upload takes one file, not a folder"],
   ["file.unreadable", "validation_error", "the file to upload could not be read"],
+  [
+    "google-api.disabled",
+    "configuration_error",
+    "Google API is disabled for this OAuth project; its owner must enable it in Google Cloud API Library",
+  ],
   ["listing.too-large", "provider_error", "the listing is over its bound; the checkpoint was kept"],
   ["oauth-client.rejected", "configuration_error", "Google rejected the OAuth client"],
   ["offline.refused", "permission_error", "this command needs Google; --offline was given"],
