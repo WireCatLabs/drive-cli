@@ -104,6 +104,22 @@ try {
   )
   assert.equal(sheets.item.method, "sheets.spreadsheets.values.update")
   assert.equal(sheets.item.mutates, true)
+  const format = JSON.parse(
+    run([
+      "synthetic",
+      "--dry-run",
+      "sheets",
+      "format",
+      "synthetic-sheet",
+      "0",
+      "A1",
+      "--body",
+      '{"textFormat":{"bold":true}}',
+      "--json",
+    ]),
+  )
+  assert.equal(format.item.method, "sheets.spreadsheets.batchUpdate")
+  assert.equal(format.item.mutates, true)
   console.log(
     `Installed ${JSON.parse(readFileSync(join(root, "package.json"), "utf8")).name}: offline help/version/registry/error checks passed (${temp})`,
   )

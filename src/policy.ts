@@ -36,7 +36,7 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
 const defaults = Object.fromEntries(
   operations.filter((op) => op.effect === "destructive").map((op) => [`api.${op.id}`, "ask"]),
 ) as Record<string, Level>
-export const methodPolicyKeys = (method: string) => {
+export const methodPolicyKeys = (method: string, body?: Record<string, unknown>) => {
   const parts = method.split(".")
   const verb = parts.at(-1)
   const alias = method.startsWith("drive.files.")
@@ -50,7 +50,60 @@ export const methodPolicyKeys = (method: string) => {
           : method.startsWith("drive.")
             ? `${parts[1]}.${verb}`
             : undefined
-  return [`api.${method}`, ...(alias ? [alias] : [])]
+  const keys = [`api.${method}`, ...(alias ? [alias] : [])]
+  if (method === "sheets.spreadsheets.batchUpdate" && Array.isArray(body?.requests)) {
+    const object = (value: unknown): value is Record<string, unknown> =>
+      !!value && typeof value === "object" && !Array.isArray(value)
+    for (const request of body.requests) {
+      if (!object(request)) continue
+      if (request.addSheet || request.duplicateSheet) keys.push("sheets.create")
+      if (object(request.updateSheetProperties)) {
+        const update = request.updateSheetProperties
+        if (
+          (object(update.properties) && update.properties.title !== undefined) ||
+          String(update.fields)
+            .split(",")
+            .some((field) => field.trim() === "title" || field.trim() === "*")
+        )
+          keys.push("sheets.rename")
+        if (object(update.properties) && update.properties.gridProperties) keys.push("sheets.insert")
+      }
+      if (request.insertDimension || request.appendDimension || request.insertRange) keys.push("sheets.insert")
+      if (
+        request.repeatCell ||
+        request.updateCells ||
+        request.appendCells ||
+        request.updateBorders ||
+        request.addConditionalFormatRule ||
+        request.updateConditionalFormatRule ||
+        request.deleteConditionalFormatRule ||
+        request.addBanding ||
+        request.updateBanding ||
+        request.deleteBanding
+      )
+        keys.push("sheets.format")
+      if (
+        request.updateCells ||
+        request.appendCells ||
+        request.findReplace ||
+        request.pasteData ||
+        request.copyPaste ||
+        request.cutPaste ||
+        request.autoFill
+      )
+        keys.push("sheets.update")
+      if (request.pasteData || request.copyPaste || request.cutPaste || request.autoFill) keys.push("sheets.format")
+      if (
+        object(request.repeatCell) &&
+        (String(request.repeatCell.fields)
+          .split(",")
+          .some((field) => field.trim() === "*" || field.includes("userEnteredValue")) ||
+          (object(request.repeatCell.cell) && request.repeatCell.cell.userEnteredValue !== undefined))
+      )
+        keys.push("sheets.update")
+    }
+  }
+  return [...new Set(keys)]
 }
 export const checkPolicy = async (
   env: NodeJS.ProcessEnv,

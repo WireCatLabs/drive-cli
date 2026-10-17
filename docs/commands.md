@@ -2774,6 +2774,75 @@ drive <profile> api sheets-spreadsheets-values-update [options]
 
 read spreadsheet tabs and ranges, or change cells live in Google Sheets
 
+### `drive sheets create`
+
+create an empty tab inside an existing spreadsheet
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> sheets create <spreadsheet> <title>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `spreadsheet` | required | spreadsheet ID or Google Sheets URL. |
+| `title` | required | name of the new tab. |
+
+### `drive sheets rename`
+
+rename one tab while preserving its ID and other properties
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> sheets rename <spreadsheet> <sheet-id> <title>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `spreadsheet` | required | spreadsheet ID or Google Sheets URL. |
+| `sheet-id` | required | numeric tab ID from sheets info. |
+| `title` | required | new tab name. |
+
+### `drive sheets insert`
+
+insert bounded rows or columns before a zero-based index
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> sheets insert <spreadsheet> <sheet-id> <axis> <index> <count>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `spreadsheet` | required | spreadsheet ID or Google Sheets URL. |
+| `sheet-id` | required | numeric tab ID from sheets info. |
+| `axis` | required | rows or columns. |
+| `index` | required | zero-based index to insert before. |
+| `count` | required | number to insert, from 1 to 1000. |
+
+### `drive sheets format`
+
+change only supplied formatting fields in at most 10000 cells
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> sheets format <spreadsheet> <sheet-id> <range> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `spreadsheet` | required | spreadsheet ID or Google Sheets URL. |
+| `sheet-id` | required | numeric tab ID from sheets info. |
+| `range` | required | finite cells within that tab, such as A1:C4; no tab prefix. |
+
+| Option | What it does |
+|---|---|
+| `--body <json>` | supported CellFormat fields as JSON; values and formulas are refused. |
+
 ### `drive sheets info`
 
 list spreadsheet properties and tabs without downloading grid data

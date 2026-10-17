@@ -4,28 +4,10 @@ import { apiPlainJson, itemOf, parseApiJson } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { fileId } from "../config.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
+import { namedRectangle } from "../sheets-input.js"
 import type { RemoteCommands } from "./remote.js"
+import { installSheetsStructureCommands } from "./sheets-structure.js"
 
-// Friendly writes require a concrete tab and finite cell rectangle. Named/unbounded ranges
-// remain available through the generated API, where their broader semantics are explicit.
-const rectangle = (range: string) => {
-  const match = /^(?:'[^']*(?:''[^']*)*'|[^'!]+)!([A-Za-z]{1,3})([1-9]\d*)(?::([A-Za-z]{1,3})([1-9]\d*))?$/.exec(range)
-  const column = (text: string) => [...text.toUpperCase()].reduce((n, c) => n * 26 + c.charCodeAt(0) - 64, 0)
-  if (!match) throw new CliError("validation_error", "range must name a tab and finite cells, such as 'Budget!A1:C4'")
-  const firstColumn = column(match[1] as string)
-  const firstRow = Number(match[2])
-  const lastColumn = column(match[3] ?? (match[1] as string))
-  const lastRow = Number(match[4] ?? match[2])
-  if (
-    !Number.isSafeInteger(lastRow) ||
-    lastRow > 10000000 ||
-    lastColumn > 18278 ||
-    lastRow < firstRow ||
-    lastColumn < firstColumn
-  )
-    throw new CliError("validation_error", "range has invalid or reversed cell bounds")
-  return { rows: lastRow - firstRow + 1, columns: lastColumn - firstColumn + 1 }
-}
 const values = (text: string): unknown[][] => {
   const parsed = parseApiJson(text)
   const native: unknown = JSON.parse(text)
@@ -86,6 +68,7 @@ export const installSheetsCommands = (program: Command, { call, output }: Remote
   const group = annotate(program.command("sheets"), { effects: GOOGLE_READ }).description(
     "read spreadsheet tabs and ranges, or change cells live in Google Sheets",
   )
+  installSheetsStructureCommands(group, { call, output })
   const sheetArg = "spreadsheet ID or Google Sheets URL"
   examples(
     annotate(group.command("info"), { effects: GOOGLE_READ })
@@ -151,7 +134,7 @@ export const installSheetsCommands = (program: Command, { call, output }: Remote
           .default("raw"),
       )
       .action(async (id: string, range: string, args: { values: unknown[][]; input: string }) => {
-        const bounds = rectangle(range)
+        const bounds = namedRectangle(range)
         if (
           args.values.some((row) => row.length > bounds.columns) ||
           (name === "update" && args.values.length > bounds.rows)
@@ -182,7 +165,7 @@ export const installSheetsCommands = (program: Command, { call, output }: Remote
       .argument("<range>", "tab and finite A1 rectangle, such as Budget!A1:C4"),
     ["drive personal sheets clear SHEET_ID 'Budget!A2:C4'"],
   ).action(async (id: string, range: string) => {
-    rectangle(range)
+    namedRectangle(range)
     output(itemOf(await call("sheets.spreadsheets.values.clear", { spreadsheetId: fileId(id), range }, {})))
   })
 }

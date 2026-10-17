@@ -1,6 +1,6 @@
 import { CliError } from "@wirecat/cli-base"
 import type { ManifestOperation } from "@wirecat/cli-base/codegen"
-import { apiJson, checkApiBody, checkApiParameter } from "@wirecat/cli-core/cli"
+import { apiJson, apiPlainJson, checkApiBody, checkApiParameter, parseApiJson } from "@wirecat/cli-core/cli"
 import { operations } from "./generated/manifest.js"
 import { schemas } from "./generated/schemas.js"
 
@@ -44,4 +44,11 @@ export const validateRequest = (name: string, params: Record<string, unknown>, b
   checkApiBody(operation, body === undefined ? undefined : apiJson(body), schemas)
   if (params.alt === "media")
     throw new CliError("validation_error", "this API surface supports JSON; use document export for content")
+}
+
+export const jsonObject = (value: string): Record<string, unknown> => {
+  const parsed = apiPlainJson(parseApiJson(value))
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+    throw new CliError("validation_error", "use a JSON object")
+  return parsed as Record<string, unknown>
 }

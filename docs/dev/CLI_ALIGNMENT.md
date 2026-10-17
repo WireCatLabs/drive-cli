@@ -148,10 +148,16 @@ work and does not certify complete command-standard conformance.
 
 ## Native Sheets vocabulary
 
-Sheets uses the canonical `info`, `show`, `update`, `add` and `clear` verbs. `add` appends rows;
-`info` returns spreadsheet properties and tab metadata. Generated operations retain Google's names.
-The pinned cli-base vocabulary predates this domain. Six dated exceptions register `sheets` and
-its `--values` (value), `--input` (mode) and `--render` (output) roles until the shared vocabulary
-adopts them ([central vocabulary](https://github.com/WireCatLabs/cli-base/pull/178)). They do not
-introduce query filters or baseline entries. Remove these exceptions at
-the next compatible shared-vocabulary adoption; the existing baseline remains unchanged.
+Sheets uses `info`, `show`, `update`, `add`, `clear`, `create` and `rename` from the shared
+vocabulary. `add` appends rows; `create` adds a tab within an existing spreadsheet. Generated
+operations retain Google's names. Base 0.40.1 registers `sheets`, `--values` (value), `--input`
+(mode) and `--render` (output), so those six dated exceptions are removed. Two dated verb
+exceptions remain for `insert` and `format` until a published shared version includes
+[their vocabulary registration](https://github.com/WireCatLabs/cli-base/pull/182). The
+existing baseline files are unchanged.
+
+Friendly structure commands submit one `spreadsheets.batchUpdate` request. Rename masks only
+`title`; format constructs finite GridRange bounds and leaf masks under `userEnteredFormat`.
+Raw/generated batches check the corresponding friendly permission keys after body validation,
+before preview/credentials/provider dispatch. Broad cell batches consult both format/update
+keys when they can affect both. This retains the same guards across command paths.
