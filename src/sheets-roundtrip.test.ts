@@ -69,8 +69,10 @@ const setup = () => {
           return Response.json({ range, majorDimension: "ROWS", values })
         }
         if (clear) {
-          for (let row = firstRow; row <= lastRow; row++)
-            for (let column = firstColumn; column <= lastColumn; column++) if (grid[row]) grid[row][column] = undefined
+          for (let row = firstRow; row <= lastRow; row++) {
+            const target = grid[row]
+            if (target) for (let column = firstColumn; column <= lastColumn; column++) target[column] = undefined
+          }
           return Response.json({ spreadsheetId: "synthetic-sheet", clearedRange: range })
         }
         const rows = body?.values as (Cell["value"] | null)[][]
@@ -79,10 +81,11 @@ const setup = () => {
         if (append) expect(url.searchParams.get("insertDataOption")).toBe("INSERT_ROWS")
         const offset = append ? grid.length : firstRow
         for (const [index, row] of rows.entries()) {
-          grid[offset + index] ??= []
+          const target = grid[offset + index] ?? []
+          grid[offset + index] = target
           for (const [column, value] of row.entries()) {
             if (value === null) continue
-            grid[offset + index][firstColumn + column] =
+            target[firstColumn + column] =
               value === ""
                 ? undefined
                 : {
