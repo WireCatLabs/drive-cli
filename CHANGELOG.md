@@ -17,7 +17,7 @@
 
 ### Changed
 
-- Uses exact `@wirecat/cli-base` 0.40.1 with the existing compatible Core pin. Six Sheets naming
+- Uses exact `@wirecat/cli-base` 0.40.3 with the existing compatible Core pin. All Sheets naming
   exceptions are removed; the command lint baseline does not grow.
 
 - Uses `@wirecat/cli-core` 0.307.0.

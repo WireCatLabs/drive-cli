@@ -150,11 +150,9 @@ work and does not certify complete command-standard conformance.
 
 Sheets uses `info`, `show`, `update`, `add`, `clear`, `create` and `rename` from the shared
 vocabulary. `add` appends rows; `create` adds a tab within an existing spreadsheet. Generated
-operations retain Google's names. Base 0.40.1 registers `sheets`, `--values` (value), `--input`
-(mode) and `--render` (output), so those six dated exceptions are removed. Two dated verb
-exceptions remain for `insert` and `format` until a published shared version includes
-[their vocabulary registration](https://github.com/WireCatLabs/cli-base/pull/182). The
-existing baseline files are unchanged.
+operations retain Google's names. Base 0.40.3 registers `sheets`, `--values` (value), `--input`
+(mode) and `--render` (output). It also includes `insert` and `format`, so all Sheets vocabulary
+exceptions are removed. Existing baseline files are unchanged.
 
 Friendly structure commands submit one `spreadsheets.batchUpdate` request. Rename masks only
 `title`; format constructs finite GridRange bounds and leaf masks under `userEnteredFormat`.

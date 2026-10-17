@@ -370,8 +370,10 @@ and `--offline` refuses live Sheets actions. A write with `outcome_unknown` must
 Google before repeating it, especially an append that could insert duplicate rows. The CLI does
 not automatically retry these writes. Use `sync` to refresh an imported spreadsheet's local copy.
 
-For tab creation, formatting and multi-range operations, use the generated Sheets API commands
-in the [command reference](commands.md). Those requests use Google's JSON schemas and the same
+For bounded tab creation, insertion and formatting, follow
+[Organize tabs and format selected cells](#organize-tabs-and-format-selected-cells) below.
+For additional operations or multiple ranges in one request, use the generated Sheets API commands
+in the [command reference](commands.md). Generated requests use Google's JSON schemas and the same
 permission, offline and read-only guards. They do not have the friendly commands' finite-range
 or 10,000-cell checks. Raw `api call` writes also require `--allow-writes`. Generated repeated `--ranges` values are
 comma-separated; use a JSON array in raw `api call --params` when a tab name itself contains a comma.
