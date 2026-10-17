@@ -113,7 +113,7 @@ describe("pinned Google HTTP transport on confined loopback", () => {
   })
   it("removes the bearer when a redirect changes host", async () => {
     let received: string | undefined
-    const target = await listen("127.0.0.2", (request, response) => {
+    const target = await listen("localhost", (request, response) => {
       received = request.headers.authorization
       response.setHeader("content-type", "application/json").end('{"redirected":true}')
     })
