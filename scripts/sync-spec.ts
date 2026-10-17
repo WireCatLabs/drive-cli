@@ -6,6 +6,7 @@ const root = resolve(import.meta.dirname, "../spec/google")
 const sources = {
   drive: "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
   docs: "https://docs.googleapis.com/$discovery/rest?version=v1",
+  sheets: "https://sheets.googleapis.com/$discovery/rest?version=v4",
   driveactivity: "https://driveactivity.googleapis.com/$discovery/rest?version=v2",
 }
 const provenance: Record<string, unknown> = {}

@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- Live Sheets commands inspect tabs, read ranges or formulas, update finite ranges, append rows
+  and clear values. Writes require the explicit Drive write grant and reuse profile policy guards.
+  Values default to literals; formula parsing is opt-in. Enable Sheets API for these commands.
+- Generated commands now cover the committed Sheets v4 Discovery contract, including batch
+  operations and spreadsheet structure. POST-based lookup methods retain read-only effects;
+  some of those Google endpoints require the broader Drive grant even when they only read.
+
 ### Changed
 
 - Uses `@wirecat/cli-core` 0.307.0.

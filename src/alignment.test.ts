@@ -13,8 +13,8 @@ import { requestSchema } from "./schema.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("schema-generated Google contracts", () => {
-  it("keeps all 68 operations and validates required IDs, bounds, enums and recursive bodies", () => {
-    expect(operations).toHaveLength(68)
+  it("keeps all 85 operations and validates required IDs, bounds, enums and recursive bodies", () => {
+    expect(operations).toHaveLength(85)
     expect(() => validateRequest("drive.files.get", {})).toThrow("fileId")
     expect(() => validateRequest("drive.files.list", { pageSize: 1001 })).toThrow("1000")
     expect(() => validateRequest("drive.files.list", { alt: "invented" })).toThrow()

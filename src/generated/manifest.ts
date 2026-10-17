@@ -8767,4 +8767,2028 @@ export const operations: readonly ManifestOperation[] = [
       schema: "DriveactivityQueryDriveActivityResponse",
     },
   },
+  {
+    id: "sheets.spreadsheets.batchUpdate",
+    command: "sheets-spreadsheets-batch-update",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}:batchUpdate",
+    },
+    effect: "write",
+    summary:
+      "Applies one or more updates to the spreadsheet. Each request is validated before being applied. If any request is not valid then the entire request will fail and nothing will be applied. Some requests have replies to give you some information about how they are applied. The replies will mirror the requests. For example, if you applied 4 updates and the 3rd one had a reply, then the response will have 2 empty replies, the actual reply, and another empty reply, in that order. Due to the collaborative nature of spreadsheets, it is not guaranteed that the spreadsheet will reflect exactly your changes after this completes, however it is guaranteed that the updates in the request will be applied together atomically. Your changes may be altered with respect to collaborator changes. If there are no collaborators, the spreadsheet should reflect your changes.",
+    description:
+      "Applies one or more updates to the spreadsheet. Each request is validated before being applied. If any request is not valid then the entire request will fail and nothing will be applied. Some requests have replies to give you some information about how they are applied. The replies will mirror the requests. For example, if you applied 4 updates and the 3rd one had a reply, then the response will have 2 empty replies, the actual reply, and another empty reply, in that order. Due to the collaborative nature of spreadsheets, it is not guaranteed that the spreadsheet will reflect exactly your changes after this completes, however it is guaranteed that the updates in the request will be applied together atomically. Your changes may be altered with respect to collaborator changes. If there are no collaborators, the spreadsheet should reflect your changes.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The spreadsheet to apply the updates to.",
+        schema: {
+          description: "The spreadsheet to apply the updates to.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchUpdateSpreadsheetRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchUpdateSpreadsheetResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.create",
+    command: "sheets-spreadsheets-create",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets",
+    },
+    effect: "write",
+    summary: "Creates a spreadsheet, returning the newly created spreadsheet.",
+    description: "Creates a spreadsheet, returning the newly created spreadsheet.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsSpreadsheet",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsSpreadsheet",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.developerMetadata.get",
+    command: "sheets-spreadsheets-developer-metadata-get",
+    binding: {
+      kind: "http",
+      method: "GET",
+      path: "v4/spreadsheets/{spreadsheetId}/developerMetadata/{metadataId}",
+    },
+    effect: "read",
+    summary:
+      "Returns the developer metadata with the specified ID. The caller must specify the spreadsheet ID and the developer metadata's unique metadataId. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata).",
+    description:
+      "Returns the developer metadata with the specified ID. The caller must specify the spreadsheet ID and the developer metadata's unique metadataId. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata).",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "metadataId",
+        in: "path",
+        required: true,
+        description: "The ID of the developer metadata to retrieve.",
+        schema: {
+          description: "The ID of the developer metadata to retrieve.",
+          type: "integer",
+          format: "int32",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to retrieve metadata from.",
+        schema: {
+          description: "The ID of the spreadsheet to retrieve metadata from.",
+          type: "string",
+        },
+      },
+    ],
+    response: {
+      confidence: "contract",
+      schema: "SheetsDeveloperMetadata",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.developerMetadata.search",
+    command: "sheets-spreadsheets-developer-metadata-search",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/developerMetadata:search",
+    },
+    effect: "read",
+    summary:
+      "Returns all developer metadata matching the specified DataFilter. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). If the provided DataFilter represents a DeveloperMetadataLookup object, this will return all DeveloperMetadata entries selected by it. If the DataFilter represents a location in a spreadsheet, this will return all developer metadata associated with locations intersecting that region.",
+    description:
+      "Returns all developer metadata matching the specified DataFilter. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). If the provided DataFilter represents a DeveloperMetadataLookup object, this will return all DeveloperMetadata entries selected by it. If the DataFilter represents a location in a spreadsheet, this will return all developer metadata associated with locations intersecting that region.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to retrieve metadata from.",
+        schema: {
+          description: "The ID of the spreadsheet to retrieve metadata from.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsSearchDeveloperMetadataRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsSearchDeveloperMetadataResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.get",
+    command: "sheets-spreadsheets-get",
+    binding: {
+      kind: "http",
+      method: "GET",
+      path: "v4/spreadsheets/{spreadsheetId}",
+    },
+    effect: "read",
+    summary:
+      "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. By default, data within grids is not returned. You can include grid data in one of 2 ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP * Set the includeGridData URL parameter to true. If a field mask is set, the `includeGridData` parameter is ignored For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want. To retrieve only subsets of spreadsheet data, use the ranges URL parameter. Ranges are specified using [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell). You can define a single cell (for example, `A1`) or multiple cells (for example, `A1:D5`). You can also get cells from other sheets within the same spreadsheet (for example, `Sheet2!A1:C4`) or retrieve multiple ranges at once (for example, `?ranges=A1:D5&ranges=Sheet2!A1:C4`). Limiting the range returns only the portions of the spreadsheet that intersect the requested ranges.",
+    description:
+      "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. By default, data within grids is not returned. You can include grid data in one of 2 ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP * Set the includeGridData URL parameter to true. If a field mask is set, the `includeGridData` parameter is ignored For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want. To retrieve only subsets of spreadsheet data, use the ranges URL parameter. Ranges are specified using [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell). You can define a single cell (for example, `A1`) or multiple cells (for example, `A1:D5`). You can also get cells from other sheets within the same spreadsheet (for example, `Sheet2!A1:C4`) or retrieve multiple ranges at once (for example, `?ranges=A1:D5&ranges=Sheet2!A1:C4`). Limiting the range returns only the portions of the spreadsheet that intersect the requested ranges.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "commentsViewMode",
+        in: "query",
+        required: false,
+        description:
+          "The comments view mode to apply to the spreadsheet. This allows viewing the spreadsheet with comments omitted or included. If one is not specified, COMMENTS_VIEW_MODE_OMITTED is used.",
+        schema: {
+          description:
+            "The comments view mode to apply to the spreadsheet. This allows viewing the spreadsheet with comments omitted or included. If one is not specified, COMMENTS_VIEW_MODE_OMITTED is used.",
+          type: "string",
+          enum: [
+            "COMMENTS_VIEW_MODE_UNSPECIFIED",
+            "COMMENTS_VIEW_MODE_DEFAULT_FOR_CURRENT_ACCESS",
+            "COMMENTS_VIEW_MODE_OMITTED",
+            "COMMENTS_VIEW_MODE_INCLUDED",
+          ],
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The spreadsheet to request.",
+        schema: {
+          description: "The spreadsheet to request.",
+          type: "string",
+        },
+      },
+      {
+        name: "excludeTablesInBandedRanges",
+        in: "query",
+        required: false,
+        description: "True if tables should be excluded in the banded ranges. False if not set.",
+        schema: {
+          description: "True if tables should be excluded in the banded ranges. False if not set.",
+          type: "boolean",
+        },
+      },
+      {
+        name: "ranges",
+        in: "query",
+        required: false,
+        description: "The ranges to retrieve from the spreadsheet.",
+        schema: {
+          type: "array",
+          items: {
+            description: "The ranges to retrieve from the spreadsheet.",
+            type: "string",
+          },
+        },
+      },
+      {
+        name: "includeGridData",
+        in: "query",
+        required: false,
+        description:
+          "True if grid data should be returned. This parameter is ignored if a field mask was set in the request.",
+        schema: {
+          description:
+            "True if grid data should be returned. This parameter is ignored if a field mask was set in the request.",
+          type: "boolean",
+        },
+      },
+    ],
+    response: {
+      confidence: "contract",
+      schema: "SheetsSpreadsheet",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.getByDataFilter",
+    command: "sheets-spreadsheets-get-by-data-filter",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}:getByDataFilter",
+    },
+    effect: "read",
+    summary:
+      "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). This method differs from GetSpreadsheet in that it allows selecting which subsets of spreadsheet data to return by specifying a dataFilters parameter. Multiple DataFilters can be specified. Specifying one or more data filters returns the portions of the spreadsheet that intersect ranges matched by any of the filters. By default, data within grids is not returned. You can include grid data in one of two ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP. * Set the includeGridData parameter to `true`. If a field mask is set, the `includeGridData` parameter is ignored. For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want.",
+    description:
+      "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). This method differs from GetSpreadsheet in that it allows selecting which subsets of spreadsheet data to return by specifying a dataFilters parameter. Multiple DataFilters can be specified. Specifying one or more data filters returns the portions of the spreadsheet that intersect ranges matched by any of the filters. By default, data within grids is not returned. You can include grid data in one of two ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP. * Set the includeGridData parameter to `true`. If a field mask is set, the `includeGridData` parameter is ignored. For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The spreadsheet to request.",
+        schema: {
+          description: "The spreadsheet to request.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsGetSpreadsheetByDataFilterRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsSpreadsheet",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.sheets.copyTo",
+    command: "sheets-spreadsheets-sheets-copy-to",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/sheets/{sheetId}:copyTo",
+    },
+    effect: "write",
+    summary:
+      "Copies a single sheet from a spreadsheet to another spreadsheet. Returns the properties of the newly created sheet.",
+    description:
+      "Copies a single sheet from a spreadsheet to another spreadsheet. Returns the properties of the newly created sheet.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "sheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the sheet to copy.",
+        schema: {
+          description: "The ID of the sheet to copy.",
+          type: "integer",
+          format: "int32",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet containing the sheet to copy.",
+        schema: {
+          description: "The ID of the spreadsheet containing the sheet to copy.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsCopySheetToAnotherSpreadsheetRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsSheetProperties",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.append",
+    command: "sheets-spreadsheets-values-append",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values/{range}:append",
+    },
+    effect: "write",
+    summary:
+      'Appends values to a spreadsheet. The input range is used to search for existing data and find a "table" within that range. Values will be appended to the next row of the table, starting with the first column of the table. See the [guide](https://developers.google.com/workspace/sheets/api/guides/values#appending_values) and [sample code](https://developers.google.com/workspace/sheets/api/samples/writing#append_values) for specific details of how tables are detected and data is appended. The caller must specify the spreadsheet ID, range, and a valueInputOption. The `valueInputOption` only controls how the input data will be added to the sheet (column-wise or row-wise), it does not influence what cell the data starts being written to.',
+    description:
+      'Appends values to a spreadsheet. The input range is used to search for existing data and find a "table" within that range. Values will be appended to the next row of the table, starting with the first column of the table. See the [guide](https://developers.google.com/workspace/sheets/api/guides/values#appending_values) and [sample code](https://developers.google.com/workspace/sheets/api/samples/writing#append_values) for specific details of how tables are detected and data is appended. The caller must specify the spreadsheet ID, range, and a valueInputOption. The `valueInputOption` only controls how the input data will be added to the sheet (column-wise or row-wise), it does not influence what cell the data starts being written to.',
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "insertDataOption",
+        in: "query",
+        required: false,
+        description: "How the input data should be inserted.",
+        schema: {
+          description: "How the input data should be inserted.",
+          type: "string",
+          enum: ["OVERWRITE", "INSERT_ROWS"],
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+      {
+        name: "responseValueRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "Determines how values in the response should be rendered. The default render option is FORMATTED_VALUE.",
+        schema: {
+          description:
+            "Determines how values in the response should be rendered. The default render option is FORMATTED_VALUE.",
+          type: "string",
+          enum: ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+        },
+      },
+      {
+        name: "valueInputOption",
+        in: "query",
+        required: false,
+        description: "How the input data should be interpreted.",
+        schema: {
+          description: "How the input data should be interpreted.",
+          type: "string",
+          enum: ["INPUT_VALUE_OPTION_UNSPECIFIED", "RAW", "USER_ENTERED"],
+        },
+      },
+      {
+        name: "responseDateTimeRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "Determines how dates, times, and durations in the response should be rendered. This is ignored if response_value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+        schema: {
+          description:
+            "Determines how dates, times, and durations in the response should be rendered. This is ignored if response_value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+          type: "string",
+          enum: ["SERIAL_NUMBER", "FORMATTED_STRING"],
+        },
+      },
+      {
+        name: "range",
+        in: "path",
+        required: true,
+        description:
+          "The [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of a range to search for a logical table of data. Values are appended after the last row of the table.",
+        schema: {
+          description:
+            "The [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of a range to search for a logical table of data. Values are appended after the last row of the table.",
+          type: "string",
+        },
+      },
+      {
+        name: "includeValuesInResponse",
+        in: "query",
+        required: false,
+        description:
+          "Determines if the update response should include the values of the cells that were appended. By default, responses do not include the updated values.",
+        schema: {
+          description:
+            "Determines if the update response should include the values of the cells that were appended. By default, responses do not include the updated values.",
+          type: "boolean",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsValueRange",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsAppendValuesResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchClear",
+    command: "sheets-spreadsheets-values-batch-clear",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchClear",
+    },
+    effect: "write",
+    summary:
+      "Clears one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges. Only values are cleared -- all other properties of the cell (such as formatting and data validation) are kept.",
+    description:
+      "Clears one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges. Only values are cleared -- all other properties of the cell (such as formatting and data validation) are kept.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchClearValuesRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchClearValuesResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchClearByDataFilter",
+    command: "sheets-spreadsheets-values-batch-clear-by-data-filter",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchClearByDataFilter",
+    },
+    effect: "write",
+    summary:
+      "Clears one or more ranges of values from a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges matching any of the specified data filters will be cleared. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc.) are kept.",
+    description:
+      "Clears one or more ranges of values from a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges matching any of the specified data filters will be cleared. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc.) are kept.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchClearValuesByDataFilterRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchClearValuesByDataFilterResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchGet",
+    command: "sheets-spreadsheets-values-batch-get",
+    binding: {
+      kind: "http",
+      method: "GET",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchGet",
+    },
+    effect: "read",
+    summary:
+      "Returns one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges.",
+    description:
+      "Returns one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "valueRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "How values should be represented in the output. The default render option is ValueRenderOption.FORMATTED_VALUE.",
+        schema: {
+          description:
+            "How values should be represented in the output. The default render option is ValueRenderOption.FORMATTED_VALUE.",
+          type: "string",
+          enum: ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to retrieve data from.",
+        schema: {
+          description: "The ID of the spreadsheet to retrieve data from.",
+          type: "string",
+        },
+      },
+      {
+        name: "dateTimeRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "How dates, times, and durations should be represented in the output. This is ignored if value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+        schema: {
+          description:
+            "How dates, times, and durations should be represented in the output. This is ignored if value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+          type: "string",
+          enum: ["SERIAL_NUMBER", "FORMATTED_STRING"],
+        },
+      },
+      {
+        name: "majorDimension",
+        in: "query",
+        required: false,
+        description:
+          'The major dimension that results should use. For example, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`, then requesting `ranges=["A1:B2"],majorDimension=ROWS` returns `[[1,2],[3,4]]`, whereas requesting `ranges=["A1:B2"],majorDimension=COLUMNS` returns `[[1,3],[2,4]]`.',
+        schema: {
+          description:
+            'The major dimension that results should use. For example, if the spreadsheet data is: `A1=1,B1=2,A2=3,B2=4`, then requesting `ranges=["A1:B2"],majorDimension=ROWS` returns `[[1,2],[3,4]]`, whereas requesting `ranges=["A1:B2"],majorDimension=COLUMNS` returns `[[1,3],[2,4]]`.',
+          type: "string",
+          enum: ["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"],
+        },
+      },
+      {
+        name: "ranges",
+        in: "query",
+        required: false,
+        description:
+          "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the range to retrieve values from.",
+        schema: {
+          type: "array",
+          items: {
+            description:
+              "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the range to retrieve values from.",
+            type: "string",
+          },
+        },
+      },
+    ],
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchGetValuesResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchGetByDataFilter",
+    command: "sheets-spreadsheets-values-batch-get-by-data-filter",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchGetByDataFilter",
+    },
+    effect: "read",
+    summary:
+      "Returns one or more ranges of values that match the specified data filters. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges that match any of the data filters in the request will be returned.",
+    description:
+      "Returns one or more ranges of values that match the specified data filters. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges that match any of the data filters in the request will be returned.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to retrieve data from.",
+        schema: {
+          description: "The ID of the spreadsheet to retrieve data from.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchGetValuesByDataFilterRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchGetValuesByDataFilterResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchUpdate",
+    command: "sheets-spreadsheets-values-batch-update",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchUpdate",
+    },
+    effect: "write",
+    summary:
+      "Sets values in one or more ranges of a spreadsheet. The caller must specify the spreadsheet ID, a valueInputOption, and one or more ValueRanges.",
+    description:
+      "Sets values in one or more ranges of a spreadsheet. The caller must specify the spreadsheet ID, a valueInputOption, and one or more ValueRanges.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchUpdateValuesRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchUpdateValuesResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.batchUpdateByDataFilter",
+    command: "sheets-spreadsheets-values-batch-update-by-data-filter",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values:batchUpdateByDataFilter",
+    },
+    effect: "write",
+    summary:
+      "Sets values in one or more ranges of a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID, a valueInputOption, and one or more DataFilterValueRanges.",
+    description:
+      "Sets values in one or more ranges of a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID, a valueInputOption, and one or more DataFilterValueRanges.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsBatchUpdateValuesByDataFilterRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsBatchUpdateValuesByDataFilterResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.clear",
+    command: "sheets-spreadsheets-values-clear",
+    binding: {
+      kind: "http",
+      method: "POST",
+      path: "v4/spreadsheets/{spreadsheetId}/values/{range}:clear",
+    },
+    effect: "write",
+    summary:
+      "Clears values from a spreadsheet. The caller must specify the spreadsheet ID and range. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc..) are kept.",
+    description:
+      "Clears values from a spreadsheet. The caller must specify the spreadsheet ID and range. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc..) are kept.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+      {
+        name: "range",
+        in: "path",
+        required: true,
+        description:
+          "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the values to clear.",
+        schema: {
+          description:
+            "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the values to clear.",
+          type: "string",
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsClearValuesRequest",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsClearValuesResponse",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.get",
+    command: "sheets-spreadsheets-values-get",
+    binding: {
+      kind: "http",
+      method: "GET",
+      path: "v4/spreadsheets/{spreadsheetId}/values/{range}",
+    },
+    effect: "read",
+    summary: "Returns a range of values from a spreadsheet. The caller must specify the spreadsheet ID and a range.",
+    description:
+      "Returns a range of values from a spreadsheet. The caller must specify the spreadsheet ID and a range.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "range",
+        in: "path",
+        required: true,
+        description:
+          "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the range to retrieve values from.",
+        schema: {
+          description:
+            "The [A1 notation or R1C1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the range to retrieve values from.",
+          type: "string",
+        },
+      },
+      {
+        name: "majorDimension",
+        in: "query",
+        required: false,
+        description:
+          "The major dimension that results should use. For example, if the spreadsheet data in Sheet1 is: `A1=1,B1=2,A2=3,B2=4`, then requesting `range=Sheet1!A1:B2?majorDimension=ROWS` returns `[[1,2],[3,4]]`, whereas requesting `range=Sheet1!A1:B2?majorDimension=COLUMNS` returns `[[1,3],[2,4]]`.",
+        schema: {
+          description:
+            "The major dimension that results should use. For example, if the spreadsheet data in Sheet1 is: `A1=1,B1=2,A2=3,B2=4`, then requesting `range=Sheet1!A1:B2?majorDimension=ROWS` returns `[[1,2],[3,4]]`, whereas requesting `range=Sheet1!A1:B2?majorDimension=COLUMNS` returns `[[1,3],[2,4]]`.",
+          type: "string",
+          enum: ["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"],
+        },
+      },
+      {
+        name: "valueRenderOption",
+        in: "query",
+        required: false,
+        description: "How values should be represented in the output. The default render option is FORMATTED_VALUE.",
+        schema: {
+          description: "How values should be represented in the output. The default render option is FORMATTED_VALUE.",
+          type: "string",
+          enum: ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+        },
+      },
+      {
+        name: "dateTimeRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "How dates, times, and durations should be represented in the output. This is ignored if value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+        schema: {
+          description:
+            "How dates, times, and durations should be represented in the output. This is ignored if value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+          type: "string",
+          enum: ["SERIAL_NUMBER", "FORMATTED_STRING"],
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to retrieve data from.",
+        schema: {
+          description: "The ID of the spreadsheet to retrieve data from.",
+          type: "string",
+        },
+      },
+    ],
+    response: {
+      confidence: "contract",
+      schema: "SheetsValueRange",
+    },
+  },
+  {
+    id: "sheets.spreadsheets.values.update",
+    command: "sheets-spreadsheets-values-update",
+    binding: {
+      kind: "http",
+      method: "PUT",
+      path: "v4/spreadsheets/{spreadsheetId}/values/{range}",
+    },
+    effect: "write",
+    summary:
+      "Sets values in a range of a spreadsheet. The caller must specify the spreadsheet ID, range, and a valueInputOption.",
+    description:
+      "Sets values in a range of a spreadsheet. The caller must specify the spreadsheet ID, range, and a valueInputOption.",
+    tags: ["sheets"],
+    parameters: [
+      {
+        name: "$.xgafv",
+        in: "query",
+        required: false,
+        description: "V1 error format.",
+        schema: {
+          description: "V1 error format.",
+          type: "string",
+          enum: ["1", "2"],
+        },
+      },
+      {
+        name: "alt",
+        in: "query",
+        required: false,
+        description: "Data format for response.",
+        schema: {
+          description: "Data format for response.",
+          default: "json",
+          type: "string",
+          enum: ["json", "media", "proto"],
+        },
+      },
+      {
+        name: "fields",
+        in: "query",
+        required: false,
+        description: "Selector specifying which fields to include in a partial response.",
+        schema: {
+          description: "Selector specifying which fields to include in a partial response.",
+          type: "string",
+        },
+      },
+      {
+        name: "callback",
+        in: "query",
+        required: false,
+        description: "JSONP",
+        schema: {
+          description: "JSONP",
+          type: "string",
+        },
+      },
+      {
+        name: "quotaUser",
+        in: "query",
+        required: false,
+        description:
+          "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+        schema: {
+          description:
+            "Available to use for quota purposes for server-side applications. Can be any arbitrary string assigned to a user, but should not exceed 40 characters.",
+          type: "string",
+        },
+      },
+      {
+        name: "prettyPrint",
+        in: "query",
+        required: false,
+        description: "Returns response with indentations and line breaks.",
+        schema: {
+          description: "Returns response with indentations and line breaks.",
+          default: "true",
+          type: "boolean",
+        },
+      },
+      {
+        name: "valueInputOption",
+        in: "query",
+        required: false,
+        description: "How the input data should be interpreted.",
+        schema: {
+          description: "How the input data should be interpreted.",
+          type: "string",
+          enum: ["INPUT_VALUE_OPTION_UNSPECIFIED", "RAW", "USER_ENTERED"],
+        },
+      },
+      {
+        name: "includeValuesInResponse",
+        in: "query",
+        required: false,
+        description:
+          "Determines if the update response should include the values of the cells that were updated. By default, responses do not include the updated values. If the range to write was larger than the range actually written, the response includes all values in the requested range (excluding trailing empty rows and columns).",
+        schema: {
+          description:
+            "Determines if the update response should include the values of the cells that were updated. By default, responses do not include the updated values. If the range to write was larger than the range actually written, the response includes all values in the requested range (excluding trailing empty rows and columns).",
+          type: "boolean",
+        },
+      },
+      {
+        name: "responseDateTimeRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "Determines how dates, times, and durations in the response should be rendered. This is ignored if response_value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+        schema: {
+          description:
+            "Determines how dates, times, and durations in the response should be rendered. This is ignored if response_value_render_option is FORMATTED_VALUE. The default dateTime render option is SERIAL_NUMBER.",
+          type: "string",
+          enum: ["SERIAL_NUMBER", "FORMATTED_STRING"],
+        },
+      },
+      {
+        name: "spreadsheetId",
+        in: "path",
+        required: true,
+        description: "The ID of the spreadsheet to update.",
+        schema: {
+          description: "The ID of the spreadsheet to update.",
+          type: "string",
+        },
+      },
+      {
+        name: "range",
+        in: "path",
+        required: true,
+        description:
+          "The [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the values to update.",
+        schema: {
+          description:
+            "The [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell) of the values to update.",
+          type: "string",
+        },
+      },
+      {
+        name: "responseValueRenderOption",
+        in: "query",
+        required: false,
+        description:
+          "Determines how values in the response should be rendered. The default render option is FORMATTED_VALUE.",
+        schema: {
+          description:
+            "Determines how values in the response should be rendered. The default render option is FORMATTED_VALUE.",
+          type: "string",
+          enum: ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"],
+        },
+      },
+    ],
+    request: {
+      required: false,
+      confidence: "contract",
+      schema: "SheetsValueRange",
+    },
+    response: {
+      confidence: "contract",
+      schema: "SheetsUpdateValuesResponse",
+    },
+  },
 ]

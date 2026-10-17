@@ -190,10 +190,11 @@ Find each API, open its page and press **Enable**. Check them under **Enabled AP
 | --- | --- | --- |
 | [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) | Folders, files, exports, comments, revisions and permissions | Always |
 | [Google Docs API](https://console.cloud.google.com/apis/library/docs.googleapis.com) | Reading all Doc tabs and creating/editing native Docs | Always |
+| [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com) | Live tab/range reads and cell/formula updates | Optional live Sheets commands; not needed for XLSX-based import |
 | [Google Drive Activity API](https://console.cloud.google.com/apis/library/driveactivity.googleapis.com) | Actor/activity history | Optional `--grant activity`; enable it for the shared app's full feature set |
 
-Enabling an API makes it available to the project; it does not grant any user access. Sheets,
-Slides, People and Gmail APIs are not used by the current connector.
+Enabling an API makes it available to the project; it does not grant any user access. Sheets uses the same existing Drive read/write grants. Slides, People and Gmail APIs are not used
+by the current connector.
 
 ### 2. Configure the consent screen: Branding
 

@@ -13,7 +13,7 @@ For a click-by-click console walkthrough, use [installation](../installation.md#
 ## Create the application credentials
 
 1. Select a project in [Google Cloud Console](https://console.cloud.google.com/).
-2. Enable **Google Drive API**, **Google Docs API** and **Google Drive Activity API** in APIs & Services > Library.
+2. Enable **Google Drive API**, **Google Docs API**, **Google Sheets API** and **Google Drive Activity API** in APIs & Services > Library.
 3. Configure Google Auth platform > Branding with the application name and support details.
 4. For a personal Google account, choose External in Audience and add your account as a test
    user while the application is in Testing. Workspace-only applications can use Internal when
@@ -22,7 +22,8 @@ For a click-by-click console walkthrough, use [installation](../installation.md#
    Optional write actions use `https://www.googleapis.com/auth/drive`; activity history uses
    `https://www.googleapis.com/auth/drive.activity.readonly` and requires enabling Drive Activity API.
    Installed-app API methods use `https://www.googleapis.com/auth/drive.apps.readonly`.
-   Declare these only when enabling the corresponding product feature.
+   Declare scopes for every feature the shared app offers, including optional grants. Sheets commands
+   reuse Drive read/write grants; enabling Sheets API does not require a new OAuth scope.
 6. In Clients, select Create Client, choose **Desktop app**, and download its JSON.
 7. Keep that file outside the repository. Give the agent only its local path.
 

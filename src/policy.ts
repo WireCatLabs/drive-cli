@@ -43,11 +43,13 @@ export const methodPolicyKeys = (method: string) => {
     ? `files.${verb}`
     : method.startsWith("docs.documents.")
       ? `documents.${verb === "batchUpdate" ? "update" : verb}`
-      : method === "driveactivity.activity.query"
-        ? "documents.history"
-        : method.startsWith("drive.")
-          ? `${parts[1]}.${verb}`
-          : undefined
+      : method.startsWith("sheets.spreadsheets.")
+        ? `sheets.${method === "sheets.spreadsheets.get" ? "info" : method === "sheets.spreadsheets.values.get" ? "show" : verb === "append" ? "add" : verb}`
+        : method === "driveactivity.activity.query"
+          ? "documents.history"
+          : method.startsWith("drive.")
+            ? `${parts[1]}.${verb}`
+            : undefined
   return [`api.${method}`, ...(alias ? [alias] : [])]
 }
 export const checkPolicy = async (

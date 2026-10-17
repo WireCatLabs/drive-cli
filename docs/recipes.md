@@ -18,6 +18,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--yes` or confirmation | No |
 | Inspect comments or history | Yes | No automatic import | No |
 | Create or edit a Doc | Yes | Imported on the next sync | Yes |
+| Read or edit spreadsheet cells | Yes | Imported on the next sync | Only when explicitly changing cells |
 
 ## First searchable folder, without extra exports
 
@@ -312,3 +313,66 @@ tg personal chats documents list CHAT_ID
 Drive's own search includes the document's reference, Google URL and last Google edit time. The
 chat list shows the imported document title when its link has been connected. Empty results can
 mean that the relevant documents or messages have not been imported.
+
+## Read and change spreadsheet cells
+
+Use live Sheets commands when you need current cells or formulas. Importing a spreadsheet makes
+its saved text searchable; a live range read does not import it, and a live write reaches the
+local search index only after the next sync. Live commands require the Google Sheets API in the OAuth application project. For a user-owned
+application, [enable Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com)
+in that project; WireCat maintains the shared application configuration.
+
+```text prompt
+Use drive CLI with profile personal. Inspect the tabs in the spreadsheet I select, then read
+Budget!A1:C4. Show me the current values and formulas before suggesting a change. If I ask you to
+apply it, change only the agreed cells, show the returned range, and refresh the saved search copy.
+```
+
+Start with the read-only connection:
+
+```sh
+drive personal sheets info SHEET_ID --json
+drive personal sheets show SHEET_ID 'Budget!A1:C4' --json
+drive personal sheets show SHEET_ID 'Budget!C1:C4' --render formula --json
+```
+
+Replace `SHEET_ID` with the spreadsheet ID or its Google Sheets URL. A1 notation names a tab and
+cells: `Budget!A1:C4` selects columns A–C and rows 1–4. For a tab with spaces, pass
+`"'Quarter 1'!A1:C4"`. `--render unformatted` returns raw values; the default returns Google's
+formatted display values. Blank trailing rows and cells can be absent from the answer.
+
+To change cells, reconnect with an explicit write grant:
+
+```sh
+drive personal session start --grant write
+drive personal sheets update SHEET_ID 'Budget!A2:B2' --values '[["Travel",250]]' --json
+drive personal sheets update SHEET_ID 'Budget!C2' --input user-entered --values '[["=B2*1.2"]]' --json
+drive personal sheets add SHEET_ID 'Budget!A1:C20' --values '[["Supplies",40,48]]' --json
+drive personal sheets clear SHEET_ID 'Budget!A3:C3' --json
+```
+
+Updates interpret strings literally by default, including strings starting with `=`. Choose
+`--input user-entered` for formulas and Google's spreadsheet-locale number/date parsing. Send
+large identifiers as quoted strings. Values must be JSON rows of strings, finite numbers,
+booleans or `null`, with at most 10,000 supplied cells. `null` skips a cell; `""` clears its value.
+Update rows must fit the selected rectangle; omitted cells stay unchanged.
+
+Friendly write commands require a tab and finite cell rectangle. Append uses that rectangle to
+find Google's existing table, then inserts rows **after the detected table**; the appended rows
+can be outside the search rectangle. Check `updates.updated_range` and returned values rather
+than assuming the range is the insertion location. Clear removes values and formulas while
+retaining formatting. Updates/appends return changed values; use a subsequent read for an
+independent check. Other collaborators can edit the sheet between commands.
+
+`--dry-run` previews the method and range without contacting Google; `--read-only` refuses writes
+and `--offline` refuses live Sheets actions. A write with `outcome_unknown` must be checked in
+Google before repeating it, especially an append that could insert duplicate rows. The CLI does
+not automatically retry these writes. Use `sync` to refresh an imported spreadsheet's local copy.
+
+For tab creation, formatting and multi-range operations, use the generated Sheets API commands
+in the [command reference](commands.md). Those requests use Google's JSON schemas and the same
+permission, offline and read-only guards. They do not have the friendly commands' finite-range
+or 10,000-cell checks. Raw `api call` writes also require `--allow-writes`. Generated repeated `--ranges` values are
+comma-separated; use a JSON array in raw `api call --params` when a tab name itself contains a comma.
+Some POST-based lookup methods require the broader Drive grant even though their effect is a read;
+inspect the method contract and Google authorization requirements before reconnecting.

@@ -145,3 +145,13 @@ They use `--limit`/`--page`; filter flags are not introduced. Catalog/tree/depth
 registered in cli-base. The cli-base adoption records 56 pre-existing handwritten option-role
 violations in the baseline; catalog commands add none. This baseline records inherited naming
 work and does not certify complete command-standard conformance.
+
+## Native Sheets vocabulary
+
+Sheets uses the canonical `info`, `show`, `update`, `add` and `clear` verbs. `add` appends rows;
+`info` returns spreadsheet properties and tab metadata. Generated operations retain Google's names.
+The pinned cli-base vocabulary predates this domain. Six dated exceptions register `sheets` and
+its `--values` (value), `--input` (mode) and `--render` (output) roles until the shared vocabulary
+adopts them ([central vocabulary](https://github.com/WireCatLabs/cli-base/pull/178)). They do not
+introduce query filters or baseline entries. Remove these exceptions at
+the next compatible shared-vocabulary adoption; the existing baseline remains unchanged.

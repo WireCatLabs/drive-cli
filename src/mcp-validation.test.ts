@@ -36,6 +36,28 @@ describe("MCP validation through the SDK", () => {
         structuredContent: { item: { id: "fixture-file" }, meta: { run_id: expect.any(String) } },
       })
       expect(call).toHaveBeenCalledTimes(1)
+      const sheetsResult = await client.callTool({
+        name: "drive_sheets_update",
+        arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", values: "[[1,2]]" },
+      })
+      expect(sheetsResult).toMatchObject({
+        isError: true,
+        structuredContent: {
+          error: { code: "validation_error", message: expect.stringContaining("--values") },
+        },
+      })
+      const unknownSheetArgument = await client.callTool({
+        name: "drive_sheets_show",
+        arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", unknown: "DO_NOT_LOG_ARGUMENT" },
+      })
+      expect(unknownSheetArgument).toMatchObject({
+        isError: true,
+        structuredContent: {
+          error: { code: "validation_error", message: expect.stringContaining("unknown") },
+        },
+      })
+      expect(JSON.stringify(unknownSheetArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
+      expect(call).toHaveBeenCalledTimes(1)
       const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
       try {
         const rows = await store.agentActions.list({ tool: "drive_api_drive_files_get" })

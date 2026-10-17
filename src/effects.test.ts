@@ -12,6 +12,9 @@ describe("command data effects", () => {
     const commands = flatten(document.commands)
     const effects = (path: string) => commands.find((command) => command.path.join(" ") === path)?.effects
     for (const path of [
+      "sheets info",
+      "sheets show",
+      "api sheets-spreadsheets-get-by-data-filter",
       "files get",
       "files list",
       "documents get",

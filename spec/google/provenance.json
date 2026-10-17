@@ -22,5 +22,13 @@
     "version": "v2",
     "sourceSha256": "11979c5cc178246c02a25748e5b510b86bf398fe0fdc5ee42e86d8dc28e60390",
     "normalization": "Biome JSON formatting; source content unchanged"
+  },
+  "sheets": {
+    "source": "https://sheets.googleapis.com/$discovery/rest?version=v4",
+    "revision": "20261014",
+    "version": "v4",
+    "sha256": "fbb158d40bed9c1921e34afb43a78f6c2b0b0b82c5d911c8aa3b579ae7a9c3d0",
+    "sourceSha256": "30728c6962084309d79514c4fa261470bcbae36e3dc4080a49b0f94347555662",
+    "normalization": "JSON formatting; source content unchanged"
   }
 }
