@@ -32,8 +32,11 @@ Google OAuth application setup is independent of npm publication. The CLI includ
 Desktop app identity and accepts a custom `--client-file`. Packaging tests do not certify live
 Google conversion fidelity.
 
-Before publication, date the top version section in CHANGELOG.md and ensure it matches
-package.json through review. Create a GitHub environment named `npm` in
+Before publication, date the top version section in CHANGELOG.md as `## <version> — DD.MM.YYYY`
+([WC-DOC-14](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-14--changelogmd-has-one-section-per-version-newest-first-under-a-pending-section))
+and ensure it matches package.json through review. `bin/release` refuses another date format. The sections
+released up to 0.17.1 keep their `YYYY-MM-DD` dates, because a released section is never edited.
+Create a GitHub environment named `npm` in
 [repository Settings → Environments](https://github.com/WireCatLabs/drive-cli/settings/environments).
 Use the organization's npm publishing account with access to the `@wirecat` scope. If creating
 a new package, follow npm's
