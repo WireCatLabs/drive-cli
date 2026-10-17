@@ -5,19 +5,5 @@
     "reason": "Use Memo\u2019s existing facts reverse command and Core\u2019s facts.reverse transition: an accepted decision no longer holds without a replacement. Review when the shared decision vocabulary includes reverse.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-16"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "sheets insert",
-    "reason": "Insert bounded source rows or columns before an explicit index. Shared vocabulary registration is tracked in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "sheets format",
-    "reason": "Change only selected cell-format fields, not source values/formulas. Shared vocabulary registration is tracked in docs/dev/CLI_ALIGNMENT.md; no baseline entries added.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-17"
   }
 ]
