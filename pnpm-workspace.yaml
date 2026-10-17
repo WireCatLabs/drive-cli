@@ -11,7 +11,7 @@ minimumReleaseAgeExclude:
   - '@wirecat/cli-tasks@0.3.1'
   - '@wirecat/cli-messaging-onnx@1.0.1'
   - '@wirecat/cli-messaging-sqlite@1.0.1'
-  - '@wirecat/cli-testing@0.3.0 || 0.4.0'
+  - '@wirecat/cli-testing@0.3.0 || 0.4.0 || 0.5.2'
 
 # Limit these fixes to the documentation lint dependency chain.
 overrides:
