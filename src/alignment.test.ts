@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
-import { writes } from "@wirecat/cli-base/standards"
+import { type Effects, writes } from "@wirecat/cli-base/standards"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { operations, validateRequest } from "./api-contract.js"
@@ -195,6 +195,50 @@ describe("shared CLI policy and execution", () => {
       ["default", "--allow-dangerous", "api", "drive-files-delete", "--file-id", "doc-a"],
       { from: "user" },
     )
+  })
+  it("goes ahead over MCP with a write at level ask, and still refuses deny and read-only", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    config.defaults = { permissions: { "api.docs.documents.create": "ask" } }
+    writeConfig(f.env, config)
+    const request = vi.fn(async () => ({ id: "created" }))
+    const options = { env: f.env, api: { call: request } }
+    const create = mcpTools(createProgram, options, "default").find(
+      (tool) => tool.name === "drive_api_docs_documents_create",
+    )
+    if (!create) throw new Error("missing create tool")
+    const created = await invokeTool(createProgram, create, { body: '{"title":"synthetic"}' }, options, "default")
+    expect(created).not.toHaveProperty("isError")
+    expect(request).toHaveBeenCalledOnce()
+    expect(readFileSync(join(f.env.DRIVE_STATE_DIR as string, "sends/default.jsonl"), "utf8")).toContain(
+      "api.docs.documents.create",
+    )
+    request.mockClear()
+    const remove = mcpTools(createProgram, options, "default").find(
+      (tool) => tool.name === "drive_api_drive_files_delete",
+    )
+    if (!remove) throw new Error("missing delete tool")
+    expect(await invokeTool(createProgram, remove, { "file-id": "doc-a" }, options, "default")).not.toHaveProperty(
+      "isError",
+    )
+    expect(request).toHaveBeenCalledOnce()
+    request.mockClear()
+    expect(
+      await invokeTool(createProgram, create, { body: "{}" }, options, "default", { readOnly: true }),
+    ).toMatchObject({ isError: true })
+    config.defaults = { permissions: { "api.docs.documents.create": "deny" } }
+    writeConfig(f.env, config)
+    expect(await invokeTool(createProgram, create, { body: "{}" }, options, "default")).toMatchObject({
+      isError: true,
+    })
+    expect(request).not.toHaveBeenCalled()
+    const listed = captureStreams()
+    await createProgram({ env: f.env, streams: listed }).parseAsync(["default", "--read-only", "mcp", "--tools"], {
+      from: "user",
+    })
+    const offered = JSON.parse(listed.stdout.join("")).items as { effects: Effects }[]
+    expect(offered.length).toBeGreaterThan(0)
+    expect(offered.every(({ effects }) => !writes(effects))).toBe(true)
   })
   it("reports ambiguous Google writes without enabling retry", async () => {
     const auth = new OAuth2Client("fixture-client")

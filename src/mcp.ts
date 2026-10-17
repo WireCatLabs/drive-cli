@@ -176,7 +176,8 @@ export const invokeTool = async (
       await build({
         ...options,
         streams,
-        ask: async () => false,
+        // No one is at a terminal to answer: over MCP a write at level `ask` goes ahead.
+        ask: async () => true,
         readBody: () => {
           throw new CliError("permission_error", "MCP does not read files or stdin; supply JSON body text")
         },
