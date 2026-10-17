@@ -207,7 +207,10 @@ To avoid extra copies, search/read the cache and export only documents another t
 The database is shared with other WireCat tools. `DRIVE_STATE_DIR` controls snapshots
 and checkpoints; `MESSAGING_STORE` selects the database. `DRIVE_CACHE_DIR` does not relocate source
 snapshots. See [storage settings](configuration.md). Local text and vectors still take disk space
-when you avoid exports; indexing cannot retain search content with zero local storage.
+when you avoid exports; indexing cannot retain search content with zero local storage. When changing
+stores, [preview and copy the existing context](recipes.md#keep-notes-when-changing-databases) instead
+of dropping the old file. Copies retain structured document relationships and annotations; literal
+references written inside free text remain unchanged.
 
 <a id="add-local-context"></a>
 

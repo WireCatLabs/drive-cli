@@ -48,7 +48,7 @@ export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv,
             `the previous Drive database has annotations (${Object.entries(counts)
               .map(([key, count]) => `${key}: ${count}`)
               .join(", ")}); ` +
-              "it was retained. Set MESSAGING_STORE to that database to keep using its references; annotation transfer is required before switching stores",
+              `it was retained. Set MESSAGING_STORE to that database to keep using its references, or run drive ${name} status and drive ${name} store check with its previous database path to preview a copy before switching stores`,
             {
               reason: "store.annotations-present",
               annotation_counts: Object.entries(counts)

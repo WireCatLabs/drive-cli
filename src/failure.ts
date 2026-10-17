@@ -56,7 +56,7 @@ const ENTRIES: Entry[] = [
   [
     "store.annotations-present",
     "configuration_error",
-    "old store has annotations (at least {annotation_counts}); keep it through MESSAGING_STORE until transferred",
+    "old annotations remain (at least {annotation_counts}); use drive <profile> store check SOURCE_DB",
     ["annotation_counts"],
   ],
   [

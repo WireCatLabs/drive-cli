@@ -31,6 +31,8 @@ Commands:
                               finish an unfinished sync
   status                      show the last sync, imported documents and pending
                               work
+  store                       check and import this profile's previous document
+                              database
   documents                   read imported documents and Google Docs
   search [options] <query>    search imported documents by words, and by meaning
                               when indexed

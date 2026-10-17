@@ -166,6 +166,58 @@ messenger records, use the same `MESSAGING_STORE` override in every tool if you 
 share IDs. See [configuration](configuration.md) and
 [organize sources](https://wirecat.dev/en/docs/organize).
 
+## Keep notes when changing databases
+
+Copy an older Drive archive into your shared local store while retaining its tags, notes, memories,
+decisions and document links. The old database stays available. Google files are not changed.
+
+```text prompt
+Use drive CLI with profile personal to show its selected and checkpoint database paths.
+Preview copying the previous database's document context into my selected shared store.
+Show unresolved references before applying the reviewed fingerprint. Keep the original file,
+then verify my notes and offline document search in the selected store.
+```
+
+1. Run `drive personal status --json`. `store.selected` is the destination currently selected by
+   `MESSAGING_STORE` or WireCat's default. `store.checkpoint` is where the cached profile's references
+   belong. If you previously pointed `MESSAGING_STORE` at the old file, select your intended destination
+   before checking the copy. Use that same destination for both commands below.
+2. Preview the old file. Replace `SOURCE_DB` with its path:
+
+   ```sh
+   drive personal store check SOURCE_DB --offline --json
+   ```
+
+3. Read the counts and any `missing_bindings` or `conflicts`. If `ready` is true, copy the returned
+   `fingerprint` into the apply command:
+
+   ```sh
+   drive personal store import SOURCE_DB --fingerprint FINGERPRINT --offline --json
+   drive personal documents context DOC_ID --offline --json
+   drive personal search 'tag:YOUR_TAG' --exact --offline --json
+   ```
+
+Replace `DOC_ID` and `YOUR_TAG` with a copied document and a tag you used.
+Successful import reports `checkpoint_updated: true` and `source_retained: true`. Your profile now
+uses the selected store; document references are rewritten to their destination IDs. Notes keep
+revisions, memories keep their scope/status, and accepted decisions remain accepted. Matching display
+names never merge people. Other WireCat tools must select the same database to read these records.
+
+An unresolved project/task/link target needs an explicit destination reference. An optional JSON file
+can map source references to destination references, for example `{"project:1":"project:7"}`. Pass
+that file as the last positional argument to both `store check SOURCE_DB bindings.json` and
+`store import SOURCE_DB bindings.json --fingerprint FINGERPRINT`. Always review the new fingerprint.
+Contradictory identity, vocabulary or document-content decisions must be resolved before importing.
+
+If the copy was committed but saving the profile checkpoint failed, repeat `store check` and import
+its fresh fingerprint. `already_transferred: true` reuses the completed copy without duplicating it.
+Keep other writers away from the old store while switching. This is a snapshot copy, not ongoing
+synchronization. A source changed after completion is refused rather than overwriting destination
+edits. No files are removed. Larger transfers refuse above 1,000 document/annotation records or
+16 MiB; embeddings and cached pictures need explicit indexing again. See
+[store recovery](troubleshooting.md#the-store-upgrade-reports-existing-annotations) for missing caches
+or older schema versions.
+
 ## Remember a source-backed decision
 
 ```text prompt

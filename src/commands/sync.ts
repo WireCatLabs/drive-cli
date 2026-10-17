@@ -1,8 +1,11 @@
+import { existsSync } from "node:fs"
+import { join, resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, itemOf, LOCAL_READ } from "@wirecat/cli-core/cli"
+import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
-import { activeProfile } from "../config.js"
+import { activeProfile, paths } from "../config.js"
 import { MAX_ENTRIES } from "../google.js"
 import { skipJson } from "../model.js"
 import { examples } from "../registry.js"
@@ -47,9 +50,14 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
     const name = selected()
     const profile = activeProfile(env, name)
     const state = readState(env, name, profile.principal)
+    const legacyStore = join(paths(env).state, "drive.db")
     output(
       itemOf({
         profile: name,
+        store: {
+          selected: resolve(storePath(env)),
+          checkpoint: state.store ?? (existsSync(legacyStore) ? resolve(legacyStore) : null),
+        },
         selected_folders: profile.roots,
         documents: Object.keys(state.documents).length,
         pending: state.pending?.jobs.length ?? 0,
