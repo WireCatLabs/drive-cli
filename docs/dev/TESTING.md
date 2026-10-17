@@ -21,6 +21,12 @@ refusal. A socket guard blocks network access. Synthetic refresh-token cases che
 node-fetch against confined loopback listeners to check chunked-response limits and same-host
 and changed-host redirects. No live Google or production TLS/proxy behavior is certified.
 
+The Sheets roundtrip suite drives the normal command tree through the pinned SDK and auth
+transporter with a stateful, in-memory provider fixture and refused network sockets. Separate
+read requests check changed cells, unchanged neighbors, null/empty handling and append ranges.
+An apply-then-503 case checks that an uncertain append is not repeated. This fixture does not
+certify Google's formula calculation, table detection, formatting preservation or live behavior.
+
 Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE
 and WIRECAT_STATE_DIR. No owner's config, credential, database or model cache is used. Fixture
 directories stay available until cleanup is requested.
