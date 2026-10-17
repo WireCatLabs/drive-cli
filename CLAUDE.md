@@ -1,5 +1,8 @@
 # drive-cli — working rules
 
+The [WireCat CLI standards](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/README.md)
+apply here and win over this file; it keeps only drive's own rules.
+
 Read architecture and testing before changes. Google-specific sign-in, sources, native conversion and
 account-bound I/O live here. Reuse cli-base for credentials, paths, output, errors and
 command discovery; reuse cli-core's public store/services for indexing, search and embeddings.
@@ -33,10 +36,10 @@ hand-edit src/generated or generated command references. Refresh specs explicitl
 provenance and diff, then run generation and freshness checks. Friendly commands, raw dispatch
 and MCP must use the same validation and permission guards; MCP runs the CLI executor.
 
-Use a branch and isolated checkout. Commit hooks check staged Biome and secrets. Fast CI checks
-presets, lint, Markdown and bounded typechecking. Full validation adds tests, coverage, build,
-installed-package acceptance and Bun smoke. Publishing requires owner authorization. Visible
-changes get an Unreleased changelog entry. Keep cleanup separate from development work.
+Use a branch and isolated checkout. Hooks, pull request CI and full validation follow the handbook's
+[CI rules](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md);
+here `ci:quick` is `pnpm typecheck && pnpm lint:commands`. Publishing requires owner
+authorization. Visible changes get an Unreleased changelog entry. Keep cleanup separate from development work.
 
 Security audits of this repository follow the shared
 [security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing;

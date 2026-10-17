@@ -27,9 +27,12 @@ read requests check changed cells, unchanged neighbors, null/empty handling and 
 An apply-then-503 case checks that an uncertain append is not repeated. This fixture does not
 certify Google's formula calculation, table detection, formatting preservation or live behavior.
 
-Fixtures override DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE
-and WIRECAT_STATE_DIR. No owner's config, credential, database or model cache is used. Fixture
-directories stay available until cleanup is requested.
+`fixture()` in `src/testing.ts` makes a `drive-test-*` directory under the system temporary directory and
+points DRIVE_CONFIG_DIR, DRIVE_STATE_DIR, DRIVE_CACHE_DIR, MESSAGING_STORE and WIRECAT_STATE_DIR into it. No
+owner's config, credential, database or model cache is used. drive has no test sandbox yet, so nothing removes
+these directories after a run; the handbook rule
+[WC-TEST-1](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/testing.md#wc-test-1--point-every-path-a-test-could-write-at-a-temporary-directory)
+asks for a sandbox that does.
 
 The installed-package smoke test packs and installs the npm tarball, then invokes its bin with
 network/browser/keyring guards and invalid isolated config. Help, version and registry must work;
