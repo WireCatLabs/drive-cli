@@ -5,7 +5,7 @@ import { apiMethod, apiMethods, googleApi, validateApiParams } from "./google-ap
 import { ACTIVITY_SCOPE, checkAuthorization, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 
 describe("official SDK method surface", () => {
-  it("discovers read, write and destructive methods across the three official clients", () => {
+  it("discovers read, write and destructive methods across the four official clients", () => {
     expect(apiMethods().length).toBeGreaterThan(50)
     expect(apiMethod("docs.documents.batchUpdate")).toMatchObject({ mutates: true, scope: WRITE_SCOPE })
     expect(apiMethod("drive.files.delete")).toMatchObject({ destructive: true })

@@ -94,7 +94,7 @@ describe("api list", () => {
     expect(docs.items.length).toBeLessThan(all.items.length)
     expect(docs.items.every((method: { name: string }) => method.name.startsWith("docs."))).toBe(true)
     await expect(list("--service", "docs")).rejects.toMatchObject({ code: "validation_error" })
-    await expect(list("service:sheets")).rejects.toMatchObject({ code: "validation_error" })
+    await expect(list("service:unknown-service")).rejects.toMatchObject({ code: "validation_error" })
   })
 })
 

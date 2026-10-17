@@ -3014,6 +3014,2362 @@ export const DriveactivityOwner: v.GenericSchema<unknown, T.DriveactivityOwner> 
   drive: v.optional(v.lazy(() => DriveactivityDriveReference)),
 })
 
+export const SheetsPost: v.GenericSchema<unknown, T.SheetsPost> = v.looseObject({
+  assigneeEmail: v.optional(v.string()),
+  updateTime: v.optional(v.string()),
+  deleted: v.optional(v.boolean()),
+  postId: v.optional(v.string()),
+  commentAction: v.optional(
+    v.picklist(["COMMENT_ACTION_TYPE_UNSPECIFIED", "NO_COMMENT_ACTION_CHANGE", "RESOLVE", "REOPEN"]),
+  ),
+  author: v.optional(v.lazy(() => SheetsPostAuthor)),
+  fromImportedSpreadsheet: v.optional(v.boolean()),
+  fromCopiedSpreadsheet: v.optional(v.boolean()),
+  contentHtml: v.optional(v.string()),
+  createTime: v.optional(v.string()),
+  content: v.optional(v.string()),
+})
+
+export const SheetsAddTableRequest: v.GenericSchema<unknown, T.SheetsAddTableRequest> = v.looseObject({
+  table: v.optional(v.lazy(() => SheetsTable)),
+})
+
+export const SheetsAddSlicerResponse: v.GenericSchema<unknown, T.SheetsAddSlicerResponse> = v.looseObject({
+  slicer: v.optional(v.lazy(() => SheetsSlicer)),
+})
+
+export const SheetsDeleteDuplicatesResponse: v.GenericSchema<unknown, T.SheetsDeleteDuplicatesResponse> = v.looseObject(
+  {
+    duplicatesRemovedCount: v.optional(integer()),
+  },
+)
+
+export const SheetsTrimWhitespaceRequest: v.GenericSchema<unknown, T.SheetsTrimWhitespaceRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsBasicChartDomain: v.GenericSchema<unknown, T.SheetsBasicChartDomain> = v.looseObject({
+  reversed: v.optional(v.boolean()),
+  domain: v.optional(v.lazy(() => SheetsChartData)),
+})
+
+export const SheetsTextPosition: v.GenericSchema<unknown, T.SheetsTextPosition> = v.looseObject({
+  horizontalAlignment: v.optional(v.picklist(["HORIZONTAL_ALIGN_UNSPECIFIED", "LEFT", "CENTER", "RIGHT"])),
+})
+
+export const SheetsAppendDimensionRequest: v.GenericSchema<unknown, T.SheetsAppendDimensionRequest> = v.looseObject({
+  sheetId: v.optional(integer()),
+  length: v.optional(integer()),
+  dimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+})
+
+export const SheetsUpdateValuesResponse: v.GenericSchema<unknown, T.SheetsUpdateValuesResponse> = v.looseObject({
+  updatedColumns: v.optional(integer()),
+  spreadsheetId: v.optional(v.string()),
+  updatedCells: v.optional(integer()),
+  updatedRange: v.optional(v.string()),
+  updatedRows: v.optional(integer()),
+  updatedData: v.optional(v.lazy(() => SheetsValueRange)),
+})
+
+export const SheetsChartDateTimeRule: v.GenericSchema<unknown, T.SheetsChartDateTimeRule> = v.looseObject({
+  type: v.optional(
+    v.picklist([
+      "CHART_DATE_TIME_RULE_TYPE_UNSPECIFIED",
+      "SECOND",
+      "MINUTE",
+      "HOUR",
+      "HOUR_MINUTE",
+      "HOUR_MINUTE_AMPM",
+      "DAY_OF_WEEK",
+      "DAY_OF_YEAR",
+      "DAY_OF_MONTH",
+      "DAY_MONTH",
+      "MONTH",
+      "QUARTER",
+      "YEAR",
+      "YEAR_MONTH",
+      "YEAR_QUARTER",
+      "YEAR_MONTH_DAY",
+    ]),
+  ),
+})
+
+export const SheetsBooleanRule: v.GenericSchema<unknown, T.SheetsBooleanRule> = v.looseObject({
+  format: v.optional(v.lazy(() => SheetsCellFormat)),
+  condition: v.optional(v.lazy(() => SheetsBooleanCondition)),
+})
+
+export const SheetsMergeCellsRequest: v.GenericSchema<unknown, T.SheetsMergeCellsRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  mergeType: v.optional(v.picklist(["MERGE_ALL", "MERGE_COLUMNS", "MERGE_ROWS"])),
+})
+
+export const SheetsAddDataSourceResponse: v.GenericSchema<unknown, T.SheetsAddDataSourceResponse> = v.looseObject({
+  dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  dataSource: v.optional(v.lazy(() => SheetsDataSource)),
+})
+
+export const SheetsTextFormat: v.GenericSchema<unknown, T.SheetsTextFormat> = v.looseObject({
+  link: v.optional(v.lazy(() => SheetsLink)),
+  fontSize: v.optional(integer()),
+  foregroundColor: v.optional(v.lazy(() => SheetsColor)),
+  bold: v.optional(v.boolean()),
+  fontFamily: v.optional(v.string()),
+  italic: v.optional(v.boolean()),
+  underline: v.optional(v.boolean()),
+  foregroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  strikethrough: v.optional(v.boolean()),
+})
+
+export const SheetsWaterfallChartSpec: v.GenericSchema<unknown, T.SheetsWaterfallChartSpec> = v.looseObject({
+  hideConnectorLines: v.optional(v.boolean()),
+  firstValueIsTotal: v.optional(v.boolean()),
+  domain: v.optional(v.lazy(() => SheetsWaterfallChartDomain)),
+  stackedType: v.optional(v.picklist(["WATERFALL_STACKED_TYPE_UNSPECIFIED", "STACKED", "SEQUENTIAL"])),
+  connectorLineStyle: v.optional(v.lazy(() => SheetsLineStyle)),
+  totalDataLabel: v.optional(v.lazy(() => SheetsDataLabel)),
+  series: v.optional(v.array(v.lazy(() => SheetsWaterfallChartSeries))),
+})
+
+export const SheetsAddBandingRequest: v.GenericSchema<unknown, T.SheetsAddBandingRequest> = v.looseObject({
+  bandedRange: v.optional(v.lazy(() => SheetsBandedRange)),
+})
+
+export const SheetsBorder: v.GenericSchema<unknown, T.SheetsBorder> = v.looseObject({
+  colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  width: v.optional(integer()),
+  style: v.optional(
+    v.picklist(["STYLE_UNSPECIFIED", "DOTTED", "DASHED", "SOLID", "SOLID_MEDIUM", "SOLID_THICK", "NONE", "DOUBLE"]),
+  ),
+  color: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsDeveloperMetadataLocation: v.GenericSchema<unknown, T.SheetsDeveloperMetadataLocation> =
+  v.looseObject({
+    locationType: v.optional(
+      v.picklist(["DEVELOPER_METADATA_LOCATION_TYPE_UNSPECIFIED", "ROW", "COLUMN", "SHEET", "SPREADSHEET"]),
+    ),
+    sheetId: v.optional(integer()),
+    dimensionRange: v.optional(v.lazy(() => SheetsDimensionRange)),
+    spreadsheet: v.optional(v.boolean()),
+  })
+
+export const SheetsUpdateConditionalFormatRuleRequest: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateConditionalFormatRuleRequest
+> = v.looseObject({
+  sheetId: v.optional(integer()),
+  rule: v.optional(v.lazy(() => SheetsConditionalFormatRule)),
+  newIndex: v.optional(integer()),
+  index: v.optional(integer()),
+})
+
+export const SheetsOrgChartSpec: v.GenericSchema<unknown, T.SheetsOrgChartSpec> = v.looseObject({
+  tooltips: v.optional(v.lazy(() => SheetsChartData)),
+  nodeColor: v.optional(v.lazy(() => SheetsColor)),
+  labels: v.optional(v.lazy(() => SheetsChartData)),
+  nodeSize: v.optional(v.picklist(["ORG_CHART_LABEL_SIZE_UNSPECIFIED", "SMALL", "MEDIUM", "LARGE"])),
+  parentLabels: v.optional(v.lazy(() => SheetsChartData)),
+  selectedNodeColor: v.optional(v.lazy(() => SheetsColor)),
+  nodeColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  selectedNodeColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+})
+
+export const SheetsCopySheetToAnotherSpreadsheetRequest: v.GenericSchema<
+  unknown,
+  T.SheetsCopySheetToAnotherSpreadsheetRequest
+> = v.looseObject({
+  destinationSpreadsheetId: v.optional(v.string()),
+})
+
+export const SheetsValueRange: v.GenericSchema<unknown, T.SheetsValueRange> = v.looseObject({
+  values: v.optional(v.array(v.array(v.unknown()))),
+  range: v.optional(v.string()),
+  majorDimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+})
+
+export const SheetsCandlestickData: v.GenericSchema<unknown, T.SheetsCandlestickData> = v.looseObject({
+  closeSeries: v.optional(v.lazy(() => SheetsCandlestickSeries)),
+  highSeries: v.optional(v.lazy(() => SheetsCandlestickSeries)),
+  lowSeries: v.optional(v.lazy(() => SheetsCandlestickSeries)),
+  openSeries: v.optional(v.lazy(() => SheetsCandlestickSeries)),
+})
+
+export const SheetsDeveloperMetadataLookup: v.GenericSchema<unknown, T.SheetsDeveloperMetadataLookup> = v.looseObject({
+  metadataValue: v.optional(v.string()),
+  metadataKey: v.optional(v.string()),
+  locationType: v.optional(
+    v.picklist(["DEVELOPER_METADATA_LOCATION_TYPE_UNSPECIFIED", "ROW", "COLUMN", "SHEET", "SPREADSHEET"]),
+  ),
+  visibility: v.optional(v.picklist(["DEVELOPER_METADATA_VISIBILITY_UNSPECIFIED", "DOCUMENT", "PROJECT"])),
+  metadataId: v.optional(integer()),
+  metadataLocation: v.optional(v.lazy(() => SheetsDeveloperMetadataLocation)),
+  locationMatchingStrategy: v.optional(
+    v.picklist([
+      "DEVELOPER_METADATA_LOCATION_MATCHING_STRATEGY_UNSPECIFIED",
+      "EXACT_LOCATION",
+      "INTERSECTING_LOCATION",
+    ]),
+  ),
+})
+
+export const SheetsLookerDataSourceSpec: v.GenericSchema<unknown, T.SheetsLookerDataSourceSpec> = v.looseObject({
+  explore: v.optional(v.string()),
+  model: v.optional(v.string()),
+  instanceUri: v.optional(v.string()),
+})
+
+export const SheetsHistogramRule: v.GenericSchema<unknown, T.SheetsHistogramRule> = v.looseObject({
+  start: v.optional(number()),
+  end: v.optional(number()),
+  interval: v.optional(number()),
+})
+
+export const SheetsUnmergeCellsRequest: v.GenericSchema<unknown, T.SheetsUnmergeCellsRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsBatchClearValuesResponse: v.GenericSchema<unknown, T.SheetsBatchClearValuesResponse> = v.looseObject(
+  {
+    clearedRanges: v.optional(v.array(v.string())),
+    spreadsheetId: v.optional(v.string()),
+  },
+)
+
+export const SheetsCancelDataSourceRefreshResponse: v.GenericSchema<unknown, T.SheetsCancelDataSourceRefreshResponse> =
+  v.looseObject({
+    statuses: v.optional(v.array(v.lazy(() => SheetsCancelDataSourceRefreshStatus))),
+  })
+
+export const SheetsUpdateNamedRangeRequest: v.GenericSchema<unknown, T.SheetsUpdateNamedRangeRequest> = v.looseObject({
+  namedRange: v.optional(v.lazy(() => SheetsNamedRange)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsUpdateEmbeddedObjectBorderRequest: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateEmbeddedObjectBorderRequest
+> = v.looseObject({
+  border: v.optional(v.lazy(() => SheetsEmbeddedObjectBorder)),
+  fields: v.optional(v.string()),
+  objectId: v.optional(integer()),
+})
+
+export const SheetsUpdateDataSourceResponse: v.GenericSchema<unknown, T.SheetsUpdateDataSourceResponse> = v.looseObject(
+  {
+    dataSource: v.optional(v.lazy(() => SheetsDataSource)),
+    dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  },
+)
+
+export const SheetsBasicFilter: v.GenericSchema<unknown, T.SheetsBasicFilter> = v.looseObject({
+  filterSpecs: v.optional(v.array(v.lazy(() => SheetsFilterSpec))),
+  criteria: v.optional(
+    v.record(
+      v.string(),
+      v.lazy(() => SheetsFilterCriteria),
+    ),
+  ),
+  sortSpecs: v.optional(v.array(v.lazy(() => SheetsSortSpec))),
+  tableId: v.optional(v.string()),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsCellFormat: v.GenericSchema<unknown, T.SheetsCellFormat> = v.looseObject({
+  verticalAlignment: v.optional(v.picklist(["VERTICAL_ALIGN_UNSPECIFIED", "TOP", "MIDDLE", "BOTTOM"])),
+  textRotation: v.optional(v.lazy(() => SheetsTextRotation)),
+  hyperlinkDisplayType: v.optional(v.picklist(["HYPERLINK_DISPLAY_TYPE_UNSPECIFIED", "LINKED", "PLAIN_TEXT"])),
+  numberFormat: v.optional(v.lazy(() => SheetsNumberFormat)),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  backgroundColor: v.optional(v.lazy(() => SheetsColor)),
+  wrapStrategy: v.optional(v.picklist(["WRAP_STRATEGY_UNSPECIFIED", "OVERFLOW_CELL", "LEGACY_WRAP", "CLIP", "WRAP"])),
+  textDirection: v.optional(v.picklist(["TEXT_DIRECTION_UNSPECIFIED", "LEFT_TO_RIGHT", "RIGHT_TO_LEFT"])),
+  backgroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  horizontalAlignment: v.optional(v.picklist(["HORIZONTAL_ALIGN_UNSPECIFIED", "LEFT", "CENTER", "RIGHT"])),
+  padding: v.optional(v.lazy(() => SheetsPadding)),
+  borders: v.optional(v.lazy(() => SheetsBorders)),
+})
+
+export const SheetsConditionalFormatRule: v.GenericSchema<unknown, T.SheetsConditionalFormatRule> = v.looseObject({
+  gradientRule: v.optional(v.lazy(() => SheetsGradientRule)),
+  ranges: v.optional(v.array(v.lazy(() => SheetsGridRange))),
+  booleanRule: v.optional(v.lazy(() => SheetsBooleanRule)),
+})
+
+export const SheetsClearBasicFilterRequest: v.GenericSchema<unknown, T.SheetsClearBasicFilterRequest> = v.looseObject({
+  sheetId: v.optional(integer()),
+})
+
+export const SheetsEditors: v.GenericSchema<unknown, T.SheetsEditors> = v.looseObject({
+  domainUsersCanEdit: v.optional(v.boolean()),
+  groups: v.optional(v.array(v.string())),
+  users: v.optional(v.array(v.string())),
+})
+
+export const SheetsDataSourceRefreshMonthlySchedule: v.GenericSchema<
+  unknown,
+  T.SheetsDataSourceRefreshMonthlySchedule
+> = v.looseObject({
+  startTime: v.optional(v.lazy(() => SheetsTimeOfDay)),
+  daysOfMonth: v.optional(v.array(integer())),
+})
+
+export const SheetsRepeatCellRequest: v.GenericSchema<unknown, T.SheetsRepeatCellRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  fields: v.optional(v.string()),
+  cell: v.optional(v.lazy(() => SheetsCellData)),
+})
+
+export const SheetsWaterfallChartCustomSubtotal: v.GenericSchema<unknown, T.SheetsWaterfallChartCustomSubtotal> =
+  v.looseObject({
+    label: v.optional(v.string()),
+    dataIsSubtotal: v.optional(v.boolean()),
+    subtotalIndex: v.optional(integer()),
+  })
+
+export const SheetsSortSpec: v.GenericSchema<unknown, T.SheetsSortSpec> = v.looseObject({
+  foregroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  backgroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  dimensionIndex: v.optional(integer()),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  foregroundColor: v.optional(v.lazy(() => SheetsColor)),
+  sortOrder: v.optional(v.picklist(["SORT_ORDER_UNSPECIFIED", "ASCENDING", "DESCENDING"])),
+  backgroundColor: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsUpdateFilterViewRequest: v.GenericSchema<unknown, T.SheetsUpdateFilterViewRequest> = v.looseObject({
+  filter: v.optional(v.lazy(() => SheetsFilterView)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsManualRule: v.GenericSchema<unknown, T.SheetsManualRule> = v.looseObject({
+  groups: v.optional(v.array(v.lazy(() => SheetsManualRuleGroup))),
+})
+
+export const SheetsChip: v.GenericSchema<unknown, T.SheetsChip> = v.looseObject({
+  personProperties: v.optional(v.lazy(() => SheetsPersonProperties)),
+  richLinkProperties: v.optional(v.lazy(() => SheetsRichLinkProperties)),
+})
+
+export const SheetsDeleteDimensionRequest: v.GenericSchema<unknown, T.SheetsDeleteDimensionRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsDimensionRange)),
+})
+
+export const SheetsDeleteDuplicatesRequest: v.GenericSchema<unknown, T.SheetsDeleteDuplicatesRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  comparisonColumns: v.optional(v.array(v.lazy(() => SheetsDimensionRange))),
+})
+
+export const SheetsGridProperties: v.GenericSchema<unknown, T.SheetsGridProperties> = v.looseObject({
+  frozenRowCount: v.optional(integer()),
+  rowGroupControlAfter: v.optional(v.boolean()),
+  frozenColumnCount: v.optional(integer()),
+  rowCount: v.optional(integer()),
+  columnCount: v.optional(integer()),
+  hideGridlines: v.optional(v.boolean()),
+  columnGroupControlAfter: v.optional(v.boolean()),
+})
+
+export const SheetsRowData: v.GenericSchema<unknown, T.SheetsRowData> = v.looseObject({
+  values: v.optional(v.array(v.lazy(() => SheetsCellData))),
+})
+
+export const SheetsDeleteDimensionGroupRequest: v.GenericSchema<unknown, T.SheetsDeleteDimensionGroupRequest> =
+  v.looseObject({
+    range: v.optional(v.lazy(() => SheetsDimensionRange)),
+  })
+
+export const SheetsManualRuleGroup: v.GenericSchema<unknown, T.SheetsManualRuleGroup> = v.looseObject({
+  groupName: v.optional(v.lazy(() => SheetsExtendedValue)),
+  items: v.optional(v.array(v.lazy(() => SheetsExtendedValue))),
+})
+
+export const SheetsPivotGroupRule: v.GenericSchema<unknown, T.SheetsPivotGroupRule> = v.looseObject({
+  dateTimeRule: v.optional(v.lazy(() => SheetsDateTimeRule)),
+  histogramRule: v.optional(v.lazy(() => SheetsHistogramRule)),
+  manualRule: v.optional(v.lazy(() => SheetsManualRule)),
+})
+
+export const SheetsPivotGroupSortValueBucket: v.GenericSchema<unknown, T.SheetsPivotGroupSortValueBucket> =
+  v.looseObject({
+    valuesIndex: v.optional(integer()),
+    buckets: v.optional(v.array(v.lazy(() => SheetsExtendedValue))),
+  })
+
+export const SheetsBubbleChartSpec: v.GenericSchema<unknown, T.SheetsBubbleChartSpec> = v.looseObject({
+  bubbleBorderColor: v.optional(v.lazy(() => SheetsColor)),
+  bubbleSizes: v.optional(v.lazy(() => SheetsChartData)),
+  series: v.optional(v.lazy(() => SheetsChartData)),
+  bubbleBorderColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  bubbleOpacity: v.optional(number()),
+  bubbleMaxRadiusSize: v.optional(integer()),
+  bubbleLabels: v.optional(v.lazy(() => SheetsChartData)),
+  domain: v.optional(v.lazy(() => SheetsChartData)),
+  legendPosition: v.optional(
+    v.picklist([
+      "BUBBLE_CHART_LEGEND_POSITION_UNSPECIFIED",
+      "BOTTOM_LEGEND",
+      "LEFT_LEGEND",
+      "RIGHT_LEGEND",
+      "TOP_LEGEND",
+      "NO_LEGEND",
+      "INSIDE_LEGEND",
+    ]),
+  ),
+  groupIds: v.optional(v.lazy(() => SheetsChartData)),
+  bubbleTextStyle: v.optional(v.lazy(() => SheetsTextFormat)),
+  bubbleMinRadiusSize: v.optional(integer()),
+})
+
+export const SheetsPasteDataRequest: v.GenericSchema<unknown, T.SheetsPasteDataRequest> = v.looseObject({
+  coordinate: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  html: v.optional(v.boolean()),
+  delimiter: v.optional(v.string()),
+  data: v.optional(v.string()),
+  type: v.optional(
+    v.picklist([
+      "PASTE_NORMAL",
+      "PASTE_VALUES",
+      "PASTE_FORMAT",
+      "PASTE_NO_BORDERS",
+      "PASTE_FORMULA",
+      "PASTE_DATA_VALIDATION",
+      "PASTE_CONDITIONAL_FORMATTING",
+    ]),
+  ),
+})
+
+export const SheetsAddDimensionGroupResponse: v.GenericSchema<unknown, T.SheetsAddDimensionGroupResponse> =
+  v.looseObject({
+    dimensionGroups: v.optional(v.array(v.lazy(() => SheetsDimensionGroup))),
+  })
+
+export const SheetsCandlestickDomain: v.GenericSchema<unknown, T.SheetsCandlestickDomain> = v.looseObject({
+  data: v.optional(v.lazy(() => SheetsChartData)),
+  reversed: v.optional(v.boolean()),
+})
+
+export const SheetsGridData: v.GenericSchema<unknown, T.SheetsGridData> = v.looseObject({
+  columnMetadata: v.optional(v.array(v.lazy(() => SheetsDimensionProperties))),
+  rowData: v.optional(v.array(v.lazy(() => SheetsRowData))),
+  rowMetadata: v.optional(v.array(v.lazy(() => SheetsDimensionProperties))),
+  startRow: v.optional(integer()),
+  startColumn: v.optional(integer()),
+})
+
+export const SheetsUpdateBordersRequest: v.GenericSchema<unknown, T.SheetsUpdateBordersRequest> = v.looseObject({
+  bottom: v.optional(v.lazy(() => SheetsBorder)),
+  left: v.optional(v.lazy(() => SheetsBorder)),
+  top: v.optional(v.lazy(() => SheetsBorder)),
+  innerVertical: v.optional(v.lazy(() => SheetsBorder)),
+  innerHorizontal: v.optional(v.lazy(() => SheetsBorder)),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  right: v.optional(v.lazy(() => SheetsBorder)),
+})
+
+export const SheetsSheet: v.GenericSchema<unknown, T.SheetsSheet> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSheetProperties)),
+  merges: v.optional(v.array(v.lazy(() => SheetsGridRange))),
+  data: v.optional(v.array(v.lazy(() => SheetsGridData))),
+  protectedRanges: v.optional(v.array(v.lazy(() => SheetsProtectedRange))),
+  commentAnchors: v.optional(v.array(v.lazy(() => SheetsCommentAnchor))),
+  charts: v.optional(v.array(v.lazy(() => SheetsEmbeddedChart))),
+  bandedRanges: v.optional(v.array(v.lazy(() => SheetsBandedRange))),
+  tables: v.optional(v.array(v.lazy(() => SheetsTable))),
+  developerMetadata: v.optional(v.array(v.lazy(() => SheetsDeveloperMetadata))),
+  basicFilter: v.optional(v.lazy(() => SheetsBasicFilter)),
+  slicers: v.optional(v.array(v.lazy(() => SheetsSlicer))),
+  conditionalFormats: v.optional(v.array(v.lazy(() => SheetsConditionalFormatRule))),
+  rowGroups: v.optional(v.array(v.lazy(() => SheetsDimensionGroup))),
+  filterViews: v.optional(v.array(v.lazy(() => SheetsFilterView))),
+  columnGroups: v.optional(v.array(v.lazy(() => SheetsDimensionGroup))),
+})
+
+export const SheetsBatchGetValuesResponse: v.GenericSchema<unknown, T.SheetsBatchGetValuesResponse> = v.looseObject({
+  spreadsheetId: v.optional(v.string()),
+  valueRanges: v.optional(v.array(v.lazy(() => SheetsValueRange))),
+})
+
+export const SheetsEmbeddedObjectPosition: v.GenericSchema<unknown, T.SheetsEmbeddedObjectPosition> = v.looseObject({
+  newSheet: v.optional(v.boolean()),
+  sheetId: v.optional(integer()),
+  overlayPosition: v.optional(v.lazy(() => SheetsOverlayPosition)),
+})
+
+export const SheetsPivotGroupValueMetadata: v.GenericSchema<unknown, T.SheetsPivotGroupValueMetadata> = v.looseObject({
+  value: v.optional(v.lazy(() => SheetsExtendedValue)),
+  collapsed: v.optional(v.boolean()),
+})
+
+export const SheetsCutPasteRequest: v.GenericSchema<unknown, T.SheetsCutPasteRequest> = v.looseObject({
+  pasteType: v.optional(
+    v.picklist([
+      "PASTE_NORMAL",
+      "PASTE_VALUES",
+      "PASTE_FORMAT",
+      "PASTE_NO_BORDERS",
+      "PASTE_FORMULA",
+      "PASTE_DATA_VALIDATION",
+      "PASTE_CONDITIONAL_FORMATTING",
+    ]),
+  ),
+  destination: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  source: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsTrimWhitespaceResponse: v.GenericSchema<unknown, T.SheetsTrimWhitespaceResponse> = v.looseObject({
+  cellsChangedCount: v.optional(integer()),
+})
+
+export const SheetsDuplicateFilterViewResponse: v.GenericSchema<unknown, T.SheetsDuplicateFilterViewResponse> =
+  v.looseObject({
+    filter: v.optional(v.lazy(() => SheetsFilterView)),
+  })
+
+export const SheetsRefreshCancellationStatus: v.GenericSchema<unknown, T.SheetsRefreshCancellationStatus> =
+  v.looseObject({
+    state: v.optional(v.picklist(["REFRESH_CANCELLATION_STATE_UNSPECIFIED", "CANCEL_SUCCEEDED", "CANCEL_FAILED"])),
+    errorCode: v.optional(
+      v.picklist([
+        "REFRESH_CANCELLATION_ERROR_CODE_UNSPECIFIED",
+        "EXECUTION_NOT_FOUND",
+        "CANCEL_PERMISSION_DENIED",
+        "QUERY_EXECUTION_COMPLETED",
+        "CONCURRENT_CANCELLATION",
+        "CANCEL_OTHER_ERROR",
+      ]),
+    ),
+  })
+
+export const SheetsBooleanCondition: v.GenericSchema<unknown, T.SheetsBooleanCondition> = v.looseObject({
+  values: v.optional(v.array(v.lazy(() => SheetsConditionValue))),
+  type: v.optional(
+    v.picklist([
+      "CONDITION_TYPE_UNSPECIFIED",
+      "NUMBER_GREATER",
+      "NUMBER_GREATER_THAN_EQ",
+      "NUMBER_LESS",
+      "NUMBER_LESS_THAN_EQ",
+      "NUMBER_EQ",
+      "NUMBER_NOT_EQ",
+      "NUMBER_BETWEEN",
+      "NUMBER_NOT_BETWEEN",
+      "TEXT_CONTAINS",
+      "TEXT_NOT_CONTAINS",
+      "TEXT_STARTS_WITH",
+      "TEXT_ENDS_WITH",
+      "TEXT_EQ",
+      "TEXT_IS_EMAIL",
+      "TEXT_IS_URL",
+      "DATE_EQ",
+      "DATE_BEFORE",
+      "DATE_AFTER",
+      "DATE_ON_OR_BEFORE",
+      "DATE_ON_OR_AFTER",
+      "DATE_BETWEEN",
+      "DATE_NOT_BETWEEN",
+      "DATE_IS_VALID",
+      "ONE_OF_RANGE",
+      "ONE_OF_LIST",
+      "BLANK",
+      "NOT_BLANK",
+      "CUSTOM_FORMULA",
+      "BOOLEAN",
+      "TEXT_NOT_EQ",
+      "DATE_NOT_EQ",
+      "FILTER_EXPRESSION",
+    ]),
+  ),
+})
+
+export const SheetsBatchClearValuesByDataFilterResponse: v.GenericSchema<
+  unknown,
+  T.SheetsBatchClearValuesByDataFilterResponse
+> = v.looseObject({
+  spreadsheetId: v.optional(v.string()),
+  clearedRanges: v.optional(v.array(v.string())),
+})
+
+export const SheetsDataSourceColumnReference: v.GenericSchema<unknown, T.SheetsDataSourceColumnReference> =
+  v.looseObject({
+    name: v.optional(v.string()),
+  })
+
+export const SheetsCellData: v.GenericSchema<unknown, T.SheetsCellData> = v.looseObject({
+  hyperlink: v.optional(v.string()),
+  formattedValue: v.optional(v.string()),
+  userEnteredValue: v.optional(v.lazy(() => SheetsExtendedValue)),
+  textFormatRuns: v.optional(v.array(v.lazy(() => SheetsTextFormatRun))),
+  pivotTable: v.optional(v.lazy(() => SheetsPivotTable)),
+  userEnteredFormat: v.optional(v.lazy(() => SheetsCellFormat)),
+  effectiveFormat: v.optional(v.lazy(() => SheetsCellFormat)),
+  dataSourceFormula: v.optional(v.lazy(() => SheetsDataSourceFormula)),
+  dataSourceTable: v.optional(v.lazy(() => SheetsDataSourceTable)),
+  effectiveValue: v.optional(v.lazy(() => SheetsExtendedValue)),
+  dataValidation: v.optional(v.lazy(() => SheetsDataValidationRule)),
+  chipRuns: v.optional(v.array(v.lazy(() => SheetsChipRun))),
+  note: v.optional(v.string()),
+})
+
+export const SheetsNumberFormat: v.GenericSchema<unknown, T.SheetsNumberFormat> = v.looseObject({
+  type: v.optional(
+    v.picklist([
+      "NUMBER_FORMAT_TYPE_UNSPECIFIED",
+      "TEXT",
+      "NUMBER",
+      "PERCENT",
+      "CURRENCY",
+      "DATE",
+      "TIME",
+      "DATE_TIME",
+      "SCIENTIFIC",
+    ]),
+  ),
+  pattern: v.optional(v.string()),
+})
+
+export const SheetsPostAuthor: v.GenericSchema<unknown, T.SheetsPostAuthor> = v.looseObject({
+  user: v.optional(v.string()),
+  displayName: v.optional(v.string()),
+  anonymous: v.optional(v.boolean()),
+  me: v.optional(v.boolean()),
+})
+
+export const SheetsAddDataSourceRequest: v.GenericSchema<unknown, T.SheetsAddDataSourceRequest> = v.looseObject({
+  dataSource: v.optional(v.lazy(() => SheetsDataSource)),
+})
+
+export const SheetsDeleteCommentRequest: v.GenericSchema<unknown, T.SheetsDeleteCommentRequest> = v.looseObject({
+  commentId: v.optional(v.string()),
+})
+
+export const SheetsColorStyle: v.GenericSchema<unknown, T.SheetsColorStyle> = v.looseObject({
+  rgbColor: v.optional(v.lazy(() => SheetsColor)),
+  themeColor: v.optional(
+    v.picklist([
+      "THEME_COLOR_TYPE_UNSPECIFIED",
+      "TEXT",
+      "BACKGROUND",
+      "ACCENT1",
+      "ACCENT2",
+      "ACCENT3",
+      "ACCENT4",
+      "ACCENT5",
+      "ACCENT6",
+      "LINK",
+    ]),
+  ),
+})
+
+export const SheetsDataSourceRefreshWeeklySchedule: v.GenericSchema<unknown, T.SheetsDataSourceRefreshWeeklySchedule> =
+  v.looseObject({
+    daysOfWeek: v.optional(
+      v.array(
+        v.picklist([
+          "DAY_OF_WEEK_UNSPECIFIED",
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+          "SUNDAY",
+        ]),
+      ),
+    ),
+    startTime: v.optional(v.lazy(() => SheetsTimeOfDay)),
+  })
+
+export const SheetsFilterSpec: v.GenericSchema<unknown, T.SheetsFilterSpec> = v.looseObject({
+  columnIndex: v.optional(integer()),
+  filterCriteria: v.optional(v.lazy(() => SheetsFilterCriteria)),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+})
+
+export const SheetsUpdateSlicerSpecRequest: v.GenericSchema<unknown, T.SheetsUpdateSlicerSpecRequest> = v.looseObject({
+  slicerId: v.optional(integer()),
+  spec: v.optional(v.lazy(() => SheetsSlicerSpec)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsEmbeddedObjectBorder: v.GenericSchema<unknown, T.SheetsEmbeddedObjectBorder> = v.looseObject({
+  color: v.optional(v.lazy(() => SheetsColor)),
+  colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+})
+
+export const SheetsPadding: v.GenericSchema<unknown, T.SheetsPadding> = v.looseObject({
+  bottom: v.optional(integer()),
+  top: v.optional(integer()),
+  left: v.optional(integer()),
+  right: v.optional(integer()),
+})
+
+export const SheetsGetSpreadsheetByDataFilterRequest: v.GenericSchema<
+  unknown,
+  T.SheetsGetSpreadsheetByDataFilterRequest
+> = v.looseObject({
+  dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+  excludeTablesInBandedRanges: v.optional(v.boolean()),
+  commentsViewMode: v.optional(
+    v.picklist([
+      "COMMENTS_VIEW_MODE_UNSPECIFIED",
+      "COMMENTS_VIEW_MODE_DEFAULT_FOR_CURRENT_ACCESS",
+      "COMMENTS_VIEW_MODE_OMITTED",
+      "COMMENTS_VIEW_MODE_INCLUDED",
+    ]),
+  ),
+  includeGridData: v.optional(v.boolean()),
+})
+
+export const SheetsDeleteDimensionGroupResponse: v.GenericSchema<unknown, T.SheetsDeleteDimensionGroupResponse> =
+  v.looseObject({
+    dimensionGroups: v.optional(v.array(v.lazy(() => SheetsDimensionGroup))),
+  })
+
+export const SheetsTextRotation: v.GenericSchema<unknown, T.SheetsTextRotation> = v.looseObject({
+  angle: v.optional(integer()),
+  vertical: v.optional(v.boolean()),
+})
+
+export const SheetsDeleteSheetRequest: v.GenericSchema<unknown, T.SheetsDeleteSheetRequest> = v.looseObject({
+  sheetId: v.optional(integer()),
+})
+
+export const SheetsWaterfallChartDomain: v.GenericSchema<unknown, T.SheetsWaterfallChartDomain> = v.looseObject({
+  data: v.optional(v.lazy(() => SheetsChartData)),
+  reversed: v.optional(v.boolean()),
+})
+
+export const SheetsMatchedDeveloperMetadata: v.GenericSchema<unknown, T.SheetsMatchedDeveloperMetadata> = v.looseObject(
+  {
+    developerMetadata: v.optional(v.lazy(() => SheetsDeveloperMetadata)),
+    dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+  },
+)
+
+export const SheetsBigQueryDataSourceSpec: v.GenericSchema<unknown, T.SheetsBigQueryDataSourceSpec> = v.looseObject({
+  querySpec: v.optional(v.lazy(() => SheetsBigQueryQuerySpec)),
+  projectId: v.optional(v.string()),
+  tableSpec: v.optional(v.lazy(() => SheetsBigQueryTableSpec)),
+})
+
+export const SheetsDataExecutionStatus: v.GenericSchema<unknown, T.SheetsDataExecutionStatus> = v.looseObject({
+  errorCode: v.optional(
+    v.picklist([
+      "DATA_EXECUTION_ERROR_CODE_UNSPECIFIED",
+      "TIMED_OUT",
+      "TOO_MANY_ROWS",
+      "TOO_MANY_COLUMNS",
+      "TOO_MANY_CELLS",
+      "ENGINE",
+      "PARAMETER_INVALID",
+      "UNSUPPORTED_DATA_TYPE",
+      "DUPLICATE_COLUMN_NAMES",
+      "INTERRUPTED",
+      "CONCURRENT_QUERY",
+      "OTHER",
+      "TOO_MANY_CHARS_PER_CELL",
+      "DATA_NOT_FOUND",
+      "PERMISSION_DENIED",
+      "MISSING_COLUMN_ALIAS",
+      "OBJECT_NOT_FOUND",
+      "OBJECT_IN_ERROR_STATE",
+      "OBJECT_SPEC_INVALID",
+      "DATA_EXECUTION_CANCELLED",
+    ]),
+  ),
+  lastRefreshTime: v.optional(v.string()),
+  state: v.optional(
+    v.picklist(["DATA_EXECUTION_STATE_UNSPECIFIED", "NOT_STARTED", "RUNNING", "CANCELLING", "SUCCEEDED", "FAILED"]),
+  ),
+  errorMessage: v.optional(v.string()),
+})
+
+export const SheetsAddNamedRangeResponse: v.GenericSchema<unknown, T.SheetsAddNamedRangeResponse> = v.looseObject({
+  namedRange: v.optional(v.lazy(() => SheetsNamedRange)),
+})
+
+export const SheetsUpdateEmbeddedObjectPositionResponse: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateEmbeddedObjectPositionResponse
+> = v.looseObject({
+  position: v.optional(v.lazy(() => SheetsEmbeddedObjectPosition)),
+})
+
+export const SheetsGradientRule: v.GenericSchema<unknown, T.SheetsGradientRule> = v.looseObject({
+  midpoint: v.optional(v.lazy(() => SheetsInterpolationPoint)),
+  minpoint: v.optional(v.lazy(() => SheetsInterpolationPoint)),
+  maxpoint: v.optional(v.lazy(() => SheetsInterpolationPoint)),
+})
+
+export const SheetsDeleteProtectedRangeRequest: v.GenericSchema<unknown, T.SheetsDeleteProtectedRangeRequest> =
+  v.looseObject({
+    protectedRangeId: v.optional(integer()),
+  })
+
+export const SheetsTableRowsProperties: v.GenericSchema<unknown, T.SheetsTableRowsProperties> = v.looseObject({
+  headerColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  footerColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  secondBandColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  firstBandColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+})
+
+export const SheetsBatchUpdateValuesByDataFilterResponse: v.GenericSchema<
+  unknown,
+  T.SheetsBatchUpdateValuesByDataFilterResponse
+> = v.looseObject({
+  spreadsheetId: v.optional(v.string()),
+  totalUpdatedCells: v.optional(integer()),
+  responses: v.optional(v.array(v.lazy(() => SheetsUpdateValuesByDataFilterResponse))),
+  totalUpdatedSheets: v.optional(integer()),
+  totalUpdatedRows: v.optional(integer()),
+  totalUpdatedColumns: v.optional(integer()),
+})
+
+export const SheetsWaterfallChartSeries: v.GenericSchema<unknown, T.SheetsWaterfallChartSeries> = v.looseObject({
+  positiveColumnsStyle: v.optional(v.lazy(() => SheetsWaterfallChartColumnStyle)),
+  negativeColumnsStyle: v.optional(v.lazy(() => SheetsWaterfallChartColumnStyle)),
+  dataLabel: v.optional(v.lazy(() => SheetsDataLabel)),
+  customSubtotals: v.optional(v.array(v.lazy(() => SheetsWaterfallChartCustomSubtotal))),
+  data: v.optional(v.lazy(() => SheetsChartData)),
+  hideTrailingSubtotal: v.optional(v.boolean()),
+  subtotalColumnsStyle: v.optional(v.lazy(() => SheetsWaterfallChartColumnStyle)),
+})
+
+export const SheetsBatchClearValuesRequest: v.GenericSchema<unknown, T.SheetsBatchClearValuesRequest> = v.looseObject({
+  ranges: v.optional(v.array(v.string())),
+})
+
+export const SheetsDataSourceObjectReferences: v.GenericSchema<unknown, T.SheetsDataSourceObjectReferences> =
+  v.looseObject({
+    references: v.optional(v.array(v.lazy(() => SheetsDataSourceObjectReference))),
+  })
+
+export const SheetsRichLinkProperties: v.GenericSchema<unknown, T.SheetsRichLinkProperties> = v.looseObject({
+  uri: v.optional(v.string()),
+  mimeType: v.optional(v.string()),
+})
+
+export const SheetsCommentThread: v.GenericSchema<unknown, T.SheetsCommentThread> = v.looseObject({
+  replies: v.optional(v.array(v.lazy(() => SheetsPost))),
+  anchorId: v.optional(v.string()),
+  status: v.optional(v.picklist(["STATUS_UNSPECIFIED", "OPEN", "RESOLVED"])),
+  commentId: v.optional(v.string()),
+  headPost: v.optional(v.lazy(() => SheetsPost)),
+  plainTextQuote: v.optional(v.string()),
+})
+
+export const SheetsChartGroupRule: v.GenericSchema<unknown, T.SheetsChartGroupRule> = v.looseObject({
+  dateTimeRule: v.optional(v.lazy(() => SheetsChartDateTimeRule)),
+  histogramRule: v.optional(v.lazy(() => SheetsChartHistogramRule)),
+})
+
+export const SheetsIterativeCalculationSettings: v.GenericSchema<unknown, T.SheetsIterativeCalculationSettings> =
+  v.looseObject({
+    maxIterations: v.optional(integer()),
+    convergenceThreshold: v.optional(number()),
+  })
+
+export const SheetsInsertRangeRequest: v.GenericSchema<unknown, T.SheetsInsertRangeRequest> = v.looseObject({
+  shiftDimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsDeleteCommentReplyRequest: v.GenericSchema<unknown, T.SheetsDeleteCommentReplyRequest> =
+  v.looseObject({
+    commentId: v.optional(v.string()),
+    postId: v.optional(v.string()),
+  })
+
+export const SheetsBatchUpdateValuesResponse: v.GenericSchema<unknown, T.SheetsBatchUpdateValuesResponse> =
+  v.looseObject({
+    totalUpdatedColumns: v.optional(integer()),
+    totalUpdatedCells: v.optional(integer()),
+    spreadsheetId: v.optional(v.string()),
+    totalUpdatedSheets: v.optional(integer()),
+    responses: v.optional(v.array(v.lazy(() => SheetsUpdateValuesResponse))),
+    totalUpdatedRows: v.optional(integer()),
+  })
+
+export const SheetsDataSourceColumn: v.GenericSchema<unknown, T.SheetsDataSourceColumn> = v.looseObject({
+  reference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  formula: v.optional(v.string()),
+})
+
+export const SheetsBatchUpdateSpreadsheetResponse: v.GenericSchema<unknown, T.SheetsBatchUpdateSpreadsheetResponse> =
+  v.looseObject({
+    spreadsheetId: v.optional(v.string()),
+    updatedSpreadsheet: v.optional(v.lazy(() => SheetsSpreadsheet)),
+    replies: v.optional(v.array(v.lazy(() => SheetsResponse))),
+    commentUpdateState: v.optional(
+      v.picklist([
+        "COMMENT_UPDATE_STATE_UNSPECIFIED",
+        "NO_UPDATES_REQUESTED",
+        "ALL_SAVED",
+        "ALL_FAILED_UNKNOWN_REASON",
+      ]),
+    ),
+  })
+
+export const SheetsPivotFilterSpec: v.GenericSchema<unknown, T.SheetsPivotFilterSpec> = v.looseObject({
+  filterCriteria: v.optional(v.lazy(() => SheetsPivotFilterCriteria)),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  columnOffsetIndex: v.optional(integer()),
+})
+
+export const SheetsAddChartRequest: v.GenericSchema<unknown, T.SheetsAddChartRequest> = v.looseObject({
+  chart: v.optional(v.lazy(() => SheetsEmbeddedChart)),
+})
+
+export const SheetsFilterView: v.GenericSchema<unknown, T.SheetsFilterView> = v.looseObject({
+  criteria: v.optional(
+    v.record(
+      v.string(),
+      v.lazy(() => SheetsFilterCriteria),
+    ),
+  ),
+  sortSpecs: v.optional(v.array(v.lazy(() => SheetsSortSpec))),
+  filterSpecs: v.optional(v.array(v.lazy(() => SheetsFilterSpec))),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  filterViewId: v.optional(integer()),
+  tableId: v.optional(v.string()),
+  title: v.optional(v.string()),
+  namedRangeId: v.optional(v.string()),
+})
+
+export const SheetsDataFilterValueRange: v.GenericSchema<unknown, T.SheetsDataFilterValueRange> = v.looseObject({
+  majorDimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+  dataFilter: v.optional(v.lazy(() => SheetsDataFilter)),
+  values: v.optional(v.array(v.array(v.unknown()))),
+})
+
+export const SheetsResponse: v.GenericSchema<unknown, T.SheetsResponse> = v.looseObject({
+  deleteDuplicates: v.optional(v.lazy(() => SheetsDeleteDuplicatesResponse)),
+  updateDataSource: v.optional(v.lazy(() => SheetsUpdateDataSourceResponse)),
+  addNamedRange: v.optional(v.lazy(() => SheetsAddNamedRangeResponse)),
+  cancelDataSourceRefresh: v.optional(v.lazy(() => SheetsCancelDataSourceRefreshResponse)),
+  trimWhitespace: v.optional(v.lazy(() => SheetsTrimWhitespaceResponse)),
+  updateDeveloperMetadata: v.optional(v.lazy(() => SheetsUpdateDeveloperMetadataResponse)),
+  addCommentReply: v.optional(v.lazy(() => SheetsAddCommentReplyResponse)),
+  addFilterView: v.optional(v.lazy(() => SheetsAddFilterViewResponse)),
+  duplicateSheet: v.optional(v.lazy(() => SheetsDuplicateSheetResponse)),
+  createDeveloperMetadata: v.optional(v.lazy(() => SheetsCreateDeveloperMetadataResponse)),
+  insertComment: v.optional(v.lazy(() => SheetsInsertCommentResponse)),
+  deleteDeveloperMetadata: v.optional(v.lazy(() => SheetsDeleteDeveloperMetadataResponse)),
+  findReplace: v.optional(v.lazy(() => SheetsFindReplaceResponse)),
+  addDimensionGroup: v.optional(v.lazy(() => SheetsAddDimensionGroupResponse)),
+  refreshDataSource: v.optional(v.lazy(() => SheetsRefreshDataSourceResponse)),
+  deleteDimensionGroup: v.optional(v.lazy(() => SheetsDeleteDimensionGroupResponse)),
+  updateConditionalFormatRule: v.optional(v.lazy(() => SheetsUpdateConditionalFormatRuleResponse)),
+  addChart: v.optional(v.lazy(() => SheetsAddChartResponse)),
+  updateEmbeddedObjectPosition: v.optional(v.lazy(() => SheetsUpdateEmbeddedObjectPositionResponse)),
+  deleteConditionalFormatRule: v.optional(v.lazy(() => SheetsDeleteConditionalFormatRuleResponse)),
+  addDataSource: v.optional(v.lazy(() => SheetsAddDataSourceResponse)),
+  addTable: v.optional(v.lazy(() => SheetsAddTableResponse)),
+  addSlicer: v.optional(v.lazy(() => SheetsAddSlicerResponse)),
+  addProtectedRange: v.optional(v.lazy(() => SheetsAddProtectedRangeResponse)),
+  addBanding: v.optional(v.lazy(() => SheetsAddBandingResponse)),
+  duplicateFilterView: v.optional(v.lazy(() => SheetsDuplicateFilterViewResponse)),
+  addSheet: v.optional(v.lazy(() => SheetsAddSheetResponse)),
+})
+
+export const SheetsAddChartResponse: v.GenericSchema<unknown, T.SheetsAddChartResponse> = v.looseObject({
+  chart: v.optional(v.lazy(() => SheetsEmbeddedChart)),
+})
+
+export const SheetsDuplicateFilterViewRequest: v.GenericSchema<unknown, T.SheetsDuplicateFilterViewRequest> =
+  v.looseObject({
+    filterId: v.optional(integer()),
+  })
+
+export const SheetsKeyValueFormat: v.GenericSchema<unknown, T.SheetsKeyValueFormat> = v.looseObject({
+  position: v.optional(v.lazy(() => SheetsTextPosition)),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+})
+
+export const SheetsPersonProperties: v.GenericSchema<unknown, T.SheetsPersonProperties> = v.looseObject({
+  email: v.optional(v.string()),
+  displayFormat: v.optional(
+    v.picklist(["DISPLAY_FORMAT_UNSPECIFIED", "DEFAULT", "LAST_NAME_COMMA_FIRST_NAME", "EMAIL"]),
+  ),
+})
+
+export const SheetsUpdateDeveloperMetadataRequest: v.GenericSchema<unknown, T.SheetsUpdateDeveloperMetadataRequest> =
+  v.looseObject({
+    dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+    developerMetadata: v.optional(v.lazy(() => SheetsDeveloperMetadata)),
+    fields: v.optional(v.string()),
+  })
+
+export const SheetsRefreshDataSourceResponse: v.GenericSchema<unknown, T.SheetsRefreshDataSourceResponse> =
+  v.looseObject({
+    statuses: v.optional(v.array(v.lazy(() => SheetsRefreshDataSourceObjectExecutionStatus))),
+  })
+
+export const SheetsInsertCommentRequest: v.GenericSchema<unknown, T.SheetsInsertCommentRequest> = v.looseObject({
+  assigneeEmailAddress: v.optional(v.string()),
+  coordinate: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  content: v.optional(v.string()),
+})
+
+export const SheetsDuplicateSheetResponse: v.GenericSchema<unknown, T.SheetsDuplicateSheetResponse> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSheetProperties)),
+})
+
+export const SheetsScorecardChartSpec: v.GenericSchema<unknown, T.SheetsScorecardChartSpec> = v.looseObject({
+  numberFormatSource: v.optional(v.picklist(["CHART_NUMBER_FORMAT_SOURCE_UNDEFINED", "FROM_DATA", "CUSTOM"])),
+  baselineValueFormat: v.optional(v.lazy(() => SheetsBaselineValueFormat)),
+  customFormatOptions: v.optional(v.lazy(() => SheetsChartCustomNumberFormatOptions)),
+  aggregateType: v.optional(
+    v.picklist(["CHART_AGGREGATE_TYPE_UNSPECIFIED", "AVERAGE", "COUNT", "MAX", "MEDIAN", "MIN", "SUM"]),
+  ),
+  keyValueData: v.optional(v.lazy(() => SheetsChartData)),
+  keyValueFormat: v.optional(v.lazy(() => SheetsKeyValueFormat)),
+  scaleFactor: v.optional(number()),
+  baselineValueData: v.optional(v.lazy(() => SheetsChartData)),
+})
+
+export const SheetsDeleteDataSourceRequest: v.GenericSchema<unknown, T.SheetsDeleteDataSourceRequest> = v.looseObject({
+  dataSourceId: v.optional(v.string()),
+})
+
+export const SheetsInterpolationPoint: v.GenericSchema<unknown, T.SheetsInterpolationPoint> = v.looseObject({
+  type: v.optional(
+    v.picklist(["INTERPOLATION_POINT_TYPE_UNSPECIFIED", "MIN", "MAX", "NUMBER", "PERCENT", "PERCENTILE"]),
+  ),
+  colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  color: v.optional(v.lazy(() => SheetsColor)),
+  value: v.optional(v.string()),
+})
+
+export const SheetsDeveloperMetadata: v.GenericSchema<unknown, T.SheetsDeveloperMetadata> = v.looseObject({
+  metadataKey: v.optional(v.string()),
+  metadataId: v.optional(integer()),
+  visibility: v.optional(v.picklist(["DEVELOPER_METADATA_VISIBILITY_UNSPECIFIED", "DOCUMENT", "PROJECT"])),
+  metadataValue: v.optional(v.string()),
+  location: v.optional(v.lazy(() => SheetsDeveloperMetadataLocation)),
+})
+
+export const SheetsAddSlicerRequest: v.GenericSchema<unknown, T.SheetsAddSlicerRequest> = v.looseObject({
+  slicer: v.optional(v.lazy(() => SheetsSlicer)),
+})
+
+export const SheetsAddBandingResponse: v.GenericSchema<unknown, T.SheetsAddBandingResponse> = v.looseObject({
+  bandedRange: v.optional(v.lazy(() => SheetsBandedRange)),
+})
+
+export const SheetsTableColumnProperties: v.GenericSchema<unknown, T.SheetsTableColumnProperties> = v.looseObject({
+  columnName: v.optional(v.string()),
+  columnIndex: v.optional(integer()),
+  dataValidationRule: v.optional(v.lazy(() => SheetsTableColumnDataValidationRule)),
+  columnType: v.optional(
+    v.picklist([
+      "COLUMN_TYPE_UNSPECIFIED",
+      "DOUBLE",
+      "CURRENCY",
+      "PERCENT",
+      "DATE",
+      "TIME",
+      "DATE_TIME",
+      "TEXT",
+      "BOOLEAN",
+      "DROPDOWN",
+      "FILES_CHIP",
+      "PEOPLE_CHIP",
+      "FINANCE_CHIP",
+      "PLACE_CHIP",
+      "RATINGS_CHIP",
+    ]),
+  ),
+})
+
+export const SheetsChartSpec: v.GenericSchema<unknown, T.SheetsChartSpec> = v.looseObject({
+  dataSourceChartProperties: v.optional(v.lazy(() => SheetsDataSourceChartProperties)),
+  candlestickChart: v.optional(v.lazy(() => SheetsCandlestickChartSpec)),
+  histogramChart: v.optional(v.lazy(() => SheetsHistogramChartSpec)),
+  sortSpecs: v.optional(v.array(v.lazy(() => SheetsSortSpec))),
+  bubbleChart: v.optional(v.lazy(() => SheetsBubbleChartSpec)),
+  titleTextPosition: v.optional(v.lazy(() => SheetsTextPosition)),
+  orgChart: v.optional(v.lazy(() => SheetsOrgChartSpec)),
+  basicChart: v.optional(v.lazy(() => SheetsBasicChartSpec)),
+  subtitle: v.optional(v.string()),
+  maximized: v.optional(v.boolean()),
+  pieChart: v.optional(v.lazy(() => SheetsPieChartSpec)),
+  waterfallChart: v.optional(v.lazy(() => SheetsWaterfallChartSpec)),
+  titleTextFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  subtitleTextPosition: v.optional(v.lazy(() => SheetsTextPosition)),
+  title: v.optional(v.string()),
+  scorecardChart: v.optional(v.lazy(() => SheetsScorecardChartSpec)),
+  backgroundColor: v.optional(v.lazy(() => SheetsColor)),
+  filterSpecs: v.optional(v.array(v.lazy(() => SheetsFilterSpec))),
+  hiddenDimensionStrategy: v.optional(
+    v.picklist([
+      "CHART_HIDDEN_DIMENSION_STRATEGY_UNSPECIFIED",
+      "SKIP_HIDDEN_ROWS_AND_COLUMNS",
+      "SKIP_HIDDEN_ROWS",
+      "SKIP_HIDDEN_COLUMNS",
+      "SHOW_ALL",
+    ]),
+  ),
+  altText: v.optional(v.string()),
+  fontName: v.optional(v.string()),
+  backgroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  subtitleTextFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  treemapChart: v.optional(v.lazy(() => SheetsTreemapChartSpec)),
+})
+
+export const SheetsTextToColumnsRequest: v.GenericSchema<unknown, T.SheetsTextToColumnsRequest> = v.looseObject({
+  delimiterType: v.optional(
+    v.picklist(["DELIMITER_TYPE_UNSPECIFIED", "COMMA", "SEMICOLON", "PERIOD", "SPACE", "CUSTOM", "AUTODETECT"]),
+  ),
+  source: v.optional(v.lazy(() => SheetsGridRange)),
+  delimiter: v.optional(v.string()),
+})
+
+export const SheetsDataSourceFormula: v.GenericSchema<unknown, T.SheetsDataSourceFormula> = v.looseObject({
+  dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  dataSourceId: v.optional(v.string()),
+})
+
+export const SheetsTextFormatRun: v.GenericSchema<unknown, T.SheetsTextFormatRun> = v.looseObject({
+  format: v.optional(v.lazy(() => SheetsTextFormat)),
+  startIndex: v.optional(integer()),
+})
+
+export const SheetsBasicChartSeries: v.GenericSchema<unknown, T.SheetsBasicChartSeries> = v.looseObject({
+  targetAxis: v.optional(
+    v.picklist(["BASIC_CHART_AXIS_POSITION_UNSPECIFIED", "BOTTOM_AXIS", "LEFT_AXIS", "RIGHT_AXIS"]),
+  ),
+  series: v.optional(v.lazy(() => SheetsChartData)),
+  lineStyle: v.optional(v.lazy(() => SheetsLineStyle)),
+  colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  styleOverrides: v.optional(v.array(v.lazy(() => SheetsBasicSeriesDataPointStyleOverride))),
+  color: v.optional(v.lazy(() => SheetsColor)),
+  dataLabel: v.optional(v.lazy(() => SheetsDataLabel)),
+  pointStyle: v.optional(v.lazy(() => SheetsPointStyle)),
+  type: v.optional(
+    v.picklist(["BASIC_CHART_TYPE_UNSPECIFIED", "BAR", "LINE", "AREA", "COLUMN", "SCATTER", "COMBO", "STEPPED_AREA"]),
+  ),
+})
+
+export const SheetsSortRangeRequest: v.GenericSchema<unknown, T.SheetsSortRangeRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  sortSpecs: v.optional(v.array(v.lazy(() => SheetsSortSpec))),
+})
+
+export const SheetsPivotTable: v.GenericSchema<unknown, T.SheetsPivotTable> = v.looseObject({
+  criteria: v.optional(
+    v.record(
+      v.string(),
+      v.lazy(() => SheetsPivotFilterCriteria),
+    ),
+  ),
+  dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  source: v.optional(v.lazy(() => SheetsGridRange)),
+  values: v.optional(v.array(v.lazy(() => SheetsPivotValue))),
+  dataSourceId: v.optional(v.string()),
+  rows: v.optional(v.array(v.lazy(() => SheetsPivotGroup))),
+  filterSpecs: v.optional(v.array(v.lazy(() => SheetsPivotFilterSpec))),
+  valueLayout: v.optional(v.picklist(["HORIZONTAL", "VERTICAL"])),
+  columns: v.optional(v.array(v.lazy(() => SheetsPivotGroup))),
+})
+
+export const SheetsUpdateCellsRequest: v.GenericSchema<unknown, T.SheetsUpdateCellsRequest> = v.looseObject({
+  start: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  fields: v.optional(v.string()),
+  rows: v.optional(v.array(v.lazy(() => SheetsRowData))),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsRefreshDataSourceObjectExecutionStatus: v.GenericSchema<
+  unknown,
+  T.SheetsRefreshDataSourceObjectExecutionStatus
+> = v.looseObject({
+  dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  reference: v.optional(v.lazy(() => SheetsDataSourceObjectReference)),
+})
+
+export const SheetsSetBasicFilterRequest: v.GenericSchema<unknown, T.SheetsSetBasicFilterRequest> = v.looseObject({
+  filter: v.optional(v.lazy(() => SheetsBasicFilter)),
+})
+
+export const SheetsBigQueryQuerySpec: v.GenericSchema<unknown, T.SheetsBigQueryQuerySpec> = v.looseObject({
+  rawQuery: v.optional(v.string()),
+})
+
+export const SheetsDataSourceRefreshSchedule: v.GenericSchema<unknown, T.SheetsDataSourceRefreshSchedule> =
+  v.looseObject({
+    dailySchedule: v.optional(v.lazy(() => SheetsDataSourceRefreshDailySchedule)),
+    weeklySchedule: v.optional(v.lazy(() => SheetsDataSourceRefreshWeeklySchedule)),
+    nextRun: v.optional(v.lazy(() => SheetsInterval)),
+    enabled: v.optional(v.boolean()),
+    refreshScope: v.optional(v.picklist(["DATA_SOURCE_REFRESH_SCOPE_UNSPECIFIED", "ALL_DATA_SOURCES"])),
+    monthlySchedule: v.optional(v.lazy(() => SheetsDataSourceRefreshMonthlySchedule)),
+  })
+
+export const SheetsLineStyle: v.GenericSchema<unknown, T.SheetsLineStyle> = v.looseObject({
+  width: v.optional(integer()),
+  type: v.optional(
+    v.picklist([
+      "LINE_DASH_TYPE_UNSPECIFIED",
+      "INVISIBLE",
+      "CUSTOM",
+      "SOLID",
+      "DOTTED",
+      "MEDIUM_DASHED",
+      "MEDIUM_DASHED_DOTTED",
+      "LONG_DASHED",
+      "LONG_DASHED_DOTTED",
+    ]),
+  ),
+})
+
+export const SheetsSlicerSpec: v.GenericSchema<unknown, T.SheetsSlicerSpec> = v.looseObject({
+  filterCriteria: v.optional(v.lazy(() => SheetsFilterCriteria)),
+  title: v.optional(v.string()),
+  backgroundColor: v.optional(v.lazy(() => SheetsColor)),
+  applyToPivotTables: v.optional(v.boolean()),
+  columnIndex: v.optional(integer()),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  dataRange: v.optional(v.lazy(() => SheetsGridRange)),
+  backgroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  horizontalAlignment: v.optional(v.picklist(["HORIZONTAL_ALIGN_UNSPECIFIED", "LEFT", "CENTER", "RIGHT"])),
+})
+
+export const SheetsAddFilterViewResponse: v.GenericSchema<unknown, T.SheetsAddFilterViewResponse> = v.looseObject({
+  filter: v.optional(v.lazy(() => SheetsFilterView)),
+})
+
+export const SheetsRequest: v.GenericSchema<unknown, T.SheetsRequest> = v.looseObject({
+  duplicateFilterView: v.optional(v.lazy(() => SheetsDuplicateFilterViewRequest)),
+  insertDimension: v.optional(v.lazy(() => SheetsInsertDimensionRequest)),
+  updateDimensionProperties: v.optional(v.lazy(() => SheetsUpdateDimensionPropertiesRequest)),
+  appendCells: v.optional(v.lazy(() => SheetsAppendCellsRequest)),
+  cancelDataSourceRefresh: v.optional(v.lazy(() => SheetsCancelDataSourceRefreshRequest)),
+  updateDeveloperMetadata: v.optional(v.lazy(() => SheetsUpdateDeveloperMetadataRequest)),
+  updateFilterView: v.optional(v.lazy(() => SheetsUpdateFilterViewRequest)),
+  deleteDimensionGroup: v.optional(v.lazy(() => SheetsDeleteDimensionGroupRequest)),
+  updateEmbeddedObjectPosition: v.optional(v.lazy(() => SheetsUpdateEmbeddedObjectPositionRequest)),
+  autoFill: v.optional(v.lazy(() => SheetsAutoFillRequest)),
+  autoResizeDimensions: v.optional(v.lazy(() => SheetsAutoResizeDimensionsRequest)),
+  addCommentReply: v.optional(v.lazy(() => SheetsAddCommentReplyRequest)),
+  deleteDataSource: v.optional(v.lazy(() => SheetsDeleteDataSourceRequest)),
+  deleteBanding: v.optional(v.lazy(() => SheetsDeleteBandingRequest)),
+  updateCommentPost: v.optional(v.lazy(() => SheetsUpdateCommentPostRequest)),
+  addBanding: v.optional(v.lazy(() => SheetsAddBandingRequest)),
+  randomizeRange: v.optional(v.lazy(() => SheetsRandomizeRangeRequest)),
+  addDimensionGroup: v.optional(v.lazy(() => SheetsAddDimensionGroupRequest)),
+  pasteData: v.optional(v.lazy(() => SheetsPasteDataRequest)),
+  createDeveloperMetadata: v.optional(v.lazy(() => SheetsCreateDeveloperMetadataRequest)),
+  updateTable: v.optional(v.lazy(() => SheetsUpdateTableRequest)),
+  setDataValidation: v.optional(v.lazy(() => SheetsSetDataValidationRequest)),
+  updateDimensionGroup: v.optional(v.lazy(() => SheetsUpdateDimensionGroupRequest)),
+  repeatCell: v.optional(v.lazy(() => SheetsRepeatCellRequest)),
+  deleteProtectedRange: v.optional(v.lazy(() => SheetsDeleteProtectedRangeRequest)),
+  updateEmbeddedObjectBorder: v.optional(v.lazy(() => SheetsUpdateEmbeddedObjectBorderRequest)),
+  updateSpreadsheetProperties: v.optional(v.lazy(() => SheetsUpdateSpreadsheetPropertiesRequest)),
+  deleteNamedRange: v.optional(v.lazy(() => SheetsDeleteNamedRangeRequest)),
+  insertComment: v.optional(v.lazy(() => SheetsInsertCommentRequest)),
+  addFilterView: v.optional(v.lazy(() => SheetsAddFilterViewRequest)),
+  duplicateSheet: v.optional(v.lazy(() => SheetsDuplicateSheetRequest)),
+  addSheet: v.optional(v.lazy(() => SheetsAddSheetRequest)),
+  trimWhitespace: v.optional(v.lazy(() => SheetsTrimWhitespaceRequest)),
+  copyPaste: v.optional(v.lazy(() => SheetsCopyPasteRequest)),
+  addProtectedRange: v.optional(v.lazy(() => SheetsAddProtectedRangeRequest)),
+  clearBasicFilter: v.optional(v.lazy(() => SheetsClearBasicFilterRequest)),
+  deleteDimension: v.optional(v.lazy(() => SheetsDeleteDimensionRequest)),
+  updateBanding: v.optional(v.lazy(() => SheetsUpdateBandingRequest)),
+  updateConditionalFormatRule: v.optional(v.lazy(() => SheetsUpdateConditionalFormatRuleRequest)),
+  updateDataSource: v.optional(v.lazy(() => SheetsUpdateDataSourceRequest)),
+  addNamedRange: v.optional(v.lazy(() => SheetsAddNamedRangeRequest)),
+  setBasicFilter: v.optional(v.lazy(() => SheetsSetBasicFilterRequest)),
+  addChart: v.optional(v.lazy(() => SheetsAddChartRequest)),
+  deleteSheet: v.optional(v.lazy(() => SheetsDeleteSheetRequest)),
+  addConditionalFormatRule: v.optional(v.lazy(() => SheetsAddConditionalFormatRuleRequest)),
+  sortRange: v.optional(v.lazy(() => SheetsSortRangeRequest)),
+  updateChartSpec: v.optional(v.lazy(() => SheetsUpdateChartSpecRequest)),
+  updateCells: v.optional(v.lazy(() => SheetsUpdateCellsRequest)),
+  addDataSource: v.optional(v.lazy(() => SheetsAddDataSourceRequest)),
+  updateSlicerSpec: v.optional(v.lazy(() => SheetsUpdateSlicerSpecRequest)),
+  updateBorders: v.optional(v.lazy(() => SheetsUpdateBordersRequest)),
+  refreshDataSource: v.optional(v.lazy(() => SheetsRefreshDataSourceRequest)),
+  unmergeCells: v.optional(v.lazy(() => SheetsUnmergeCellsRequest)),
+  deleteDeveloperMetadata: v.optional(v.lazy(() => SheetsDeleteDeveloperMetadataRequest)),
+  moveDimension: v.optional(v.lazy(() => SheetsMoveDimensionRequest)),
+  appendDimension: v.optional(v.lazy(() => SheetsAppendDimensionRequest)),
+  insertRange: v.optional(v.lazy(() => SheetsInsertRangeRequest)),
+  addTable: v.optional(v.lazy(() => SheetsAddTableRequest)),
+  updateSheetProperties: v.optional(v.lazy(() => SheetsUpdateSheetPropertiesRequest)),
+  findReplace: v.optional(v.lazy(() => SheetsFindReplaceRequest)),
+  textToColumns: v.optional(v.lazy(() => SheetsTextToColumnsRequest)),
+  updateNamedRange: v.optional(v.lazy(() => SheetsUpdateNamedRangeRequest)),
+  deleteRange: v.optional(v.lazy(() => SheetsDeleteRangeRequest)),
+  deleteComment: v.optional(v.lazy(() => SheetsDeleteCommentRequest)),
+  mergeCells: v.optional(v.lazy(() => SheetsMergeCellsRequest)),
+  deleteFilterView: v.optional(v.lazy(() => SheetsDeleteFilterViewRequest)),
+  deleteConditionalFormatRule: v.optional(v.lazy(() => SheetsDeleteConditionalFormatRuleRequest)),
+  deleteCommentReply: v.optional(v.lazy(() => SheetsDeleteCommentReplyRequest)),
+  updateProtectedRange: v.optional(v.lazy(() => SheetsUpdateProtectedRangeRequest)),
+  deleteDuplicates: v.optional(v.lazy(() => SheetsDeleteDuplicatesRequest)),
+  deleteEmbeddedObject: v.optional(v.lazy(() => SheetsDeleteEmbeddedObjectRequest)),
+  deleteTable: v.optional(v.lazy(() => SheetsDeleteTableRequest)),
+  cutPaste: v.optional(v.lazy(() => SheetsCutPasteRequest)),
+  addSlicer: v.optional(v.lazy(() => SheetsAddSlicerRequest)),
+})
+
+export const SheetsSourceAndDestination: v.GenericSchema<unknown, T.SheetsSourceAndDestination> = v.looseObject({
+  fillLength: v.optional(integer()),
+  source: v.optional(v.lazy(() => SheetsGridRange)),
+  dimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+})
+
+export const SheetsGridCoordinate: v.GenericSchema<unknown, T.SheetsGridCoordinate> = v.looseObject({
+  columnIndex: v.optional(integer()),
+  sheetId: v.optional(integer()),
+  rowIndex: v.optional(integer()),
+})
+
+export const SheetsAddNamedRangeRequest: v.GenericSchema<unknown, T.SheetsAddNamedRangeRequest> = v.looseObject({
+  namedRange: v.optional(v.lazy(() => SheetsNamedRange)),
+})
+
+export const SheetsDataSourceChartProperties: v.GenericSchema<unknown, T.SheetsDataSourceChartProperties> =
+  v.looseObject({
+    dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+    dataSourceId: v.optional(v.string()),
+  })
+
+export const SheetsBigQueryTableSpec: v.GenericSchema<unknown, T.SheetsBigQueryTableSpec> = v.looseObject({
+  datasetId: v.optional(v.string()),
+  tableProjectId: v.optional(v.string()),
+  tableId: v.optional(v.string()),
+})
+
+export const SheetsUpdateChartSpecRequest: v.GenericSchema<unknown, T.SheetsUpdateChartSpecRequest> = v.looseObject({
+  spec: v.optional(v.lazy(() => SheetsChartSpec)),
+  chartId: v.optional(integer()),
+})
+
+export const SheetsAddSheetRequest: v.GenericSchema<unknown, T.SheetsAddSheetRequest> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSheetProperties)),
+})
+
+export const SheetsDimensionProperties: v.GenericSchema<unknown, T.SheetsDimensionProperties> = v.looseObject({
+  developerMetadata: v.optional(v.array(v.lazy(() => SheetsDeveloperMetadata))),
+  hiddenByUser: v.optional(v.boolean()),
+  pixelSize: v.optional(integer()),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  hiddenByFilter: v.optional(v.boolean()),
+})
+
+export const SheetsBasicChartSpec: v.GenericSchema<unknown, T.SheetsBasicChartSpec> = v.looseObject({
+  domains: v.optional(v.array(v.lazy(() => SheetsBasicChartDomain))),
+  compareMode: v.optional(v.picklist(["BASIC_CHART_COMPARE_MODE_UNSPECIFIED", "DATUM", "CATEGORY"])),
+  totalDataLabel: v.optional(v.lazy(() => SheetsDataLabel)),
+  axis: v.optional(v.array(v.lazy(() => SheetsBasicChartAxis))),
+  chartType: v.optional(
+    v.picklist(["BASIC_CHART_TYPE_UNSPECIFIED", "BAR", "LINE", "AREA", "COLUMN", "SCATTER", "COMBO", "STEPPED_AREA"]),
+  ),
+  headerCount: v.optional(integer()),
+  legendPosition: v.optional(
+    v.picklist([
+      "BASIC_CHART_LEGEND_POSITION_UNSPECIFIED",
+      "BOTTOM_LEGEND",
+      "LEFT_LEGEND",
+      "RIGHT_LEGEND",
+      "TOP_LEGEND",
+      "NO_LEGEND",
+    ]),
+  ),
+  threeDimensional: v.optional(v.boolean()),
+  stackedType: v.optional(
+    v.picklist(["BASIC_CHART_STACKED_TYPE_UNSPECIFIED", "NOT_STACKED", "STACKED", "PERCENT_STACKED"]),
+  ),
+  interpolateNulls: v.optional(v.boolean()),
+  lineSmoothing: v.optional(v.boolean()),
+  series: v.optional(v.array(v.lazy(() => SheetsBasicChartSeries))),
+})
+
+export const SheetsRefreshDataSourceRequest: v.GenericSchema<unknown, T.SheetsRefreshDataSourceRequest> = v.looseObject(
+  {
+    dataSourceId: v.optional(v.string()),
+    references: v.optional(v.lazy(() => SheetsDataSourceObjectReferences)),
+    isAll: v.optional(v.boolean()),
+    force: v.optional(v.boolean()),
+  },
+)
+
+export const SheetsChartHistogramRule: v.GenericSchema<unknown, T.SheetsChartHistogramRule> = v.looseObject({
+  minValue: v.optional(number()),
+  maxValue: v.optional(number()),
+  intervalSize: v.optional(number()),
+})
+
+export const SheetsUpdateProtectedRangeRequest: v.GenericSchema<unknown, T.SheetsUpdateProtectedRangeRequest> =
+  v.looseObject({
+    protectedRange: v.optional(v.lazy(() => SheetsProtectedRange)),
+    fields: v.optional(v.string()),
+  })
+
+export const SheetsErrorValue: v.GenericSchema<unknown, T.SheetsErrorValue> = v.looseObject({
+  message: v.optional(v.string()),
+  type: v.optional(
+    v.picklist([
+      "ERROR_TYPE_UNSPECIFIED",
+      "ERROR",
+      "NULL_VALUE",
+      "DIVIDE_BY_ZERO",
+      "VALUE",
+      "REF",
+      "NAME",
+      "NUM",
+      "N_A",
+      "LOADING",
+    ]),
+  ),
+})
+
+export const SheetsAddCommentReplyRequest: v.GenericSchema<unknown, T.SheetsAddCommentReplyRequest> = v.looseObject({
+  commentId: v.optional(v.string()),
+  post: v.optional(v.lazy(() => SheetsPost)),
+})
+
+export const SheetsSlicer: v.GenericSchema<unknown, T.SheetsSlicer> = v.looseObject({
+  spec: v.optional(v.lazy(() => SheetsSlicerSpec)),
+  slicerId: v.optional(integer()),
+  position: v.optional(v.lazy(() => SheetsEmbeddedObjectPosition)),
+})
+
+export const SheetsOverlayPosition: v.GenericSchema<unknown, T.SheetsOverlayPosition> = v.looseObject({
+  heightPixels: v.optional(integer()),
+  anchorCell: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  offsetYPixels: v.optional(integer()),
+  widthPixels: v.optional(integer()),
+  offsetXPixels: v.optional(integer()),
+})
+
+export const SheetsSearchDeveloperMetadataResponse: v.GenericSchema<unknown, T.SheetsSearchDeveloperMetadataResponse> =
+  v.looseObject({
+    matchedDeveloperMetadata: v.optional(v.array(v.lazy(() => SheetsMatchedDeveloperMetadata))),
+  })
+
+export const SheetsDeleteDeveloperMetadataRequest: v.GenericSchema<unknown, T.SheetsDeleteDeveloperMetadataRequest> =
+  v.looseObject({
+    dataFilter: v.optional(v.lazy(() => SheetsDataFilter)),
+  })
+
+export const SheetsChartData: v.GenericSchema<unknown, T.SheetsChartData> = v.looseObject({
+  sourceRange: v.optional(v.lazy(() => SheetsChartSourceRange)),
+  groupRule: v.optional(v.lazy(() => SheetsChartGroupRule)),
+  aggregateType: v.optional(
+    v.picklist(["CHART_AGGREGATE_TYPE_UNSPECIFIED", "AVERAGE", "COUNT", "MAX", "MEDIAN", "MIN", "SUM"]),
+  ),
+  columnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+})
+
+export const SheetsBatchUpdateValuesRequest: v.GenericSchema<unknown, T.SheetsBatchUpdateValuesRequest> = v.looseObject(
+  {
+    responseDateTimeRenderOption: v.optional(v.picklist(["SERIAL_NUMBER", "FORMATTED_STRING"])),
+    valueInputOption: v.optional(v.picklist(["INPUT_VALUE_OPTION_UNSPECIFIED", "RAW", "USER_ENTERED"])),
+    data: v.optional(v.array(v.lazy(() => SheetsValueRange))),
+    responseValueRenderOption: v.optional(v.picklist(["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"])),
+    includeValuesInResponse: v.optional(v.boolean()),
+  },
+)
+
+export const SheetsCopyPasteRequest: v.GenericSchema<unknown, T.SheetsCopyPasteRequest> = v.looseObject({
+  destination: v.optional(v.lazy(() => SheetsGridRange)),
+  pasteType: v.optional(
+    v.picklist([
+      "PASTE_NORMAL",
+      "PASTE_VALUES",
+      "PASTE_FORMAT",
+      "PASTE_NO_BORDERS",
+      "PASTE_FORMULA",
+      "PASTE_DATA_VALIDATION",
+      "PASTE_CONDITIONAL_FORMATTING",
+    ]),
+  ),
+  pasteOrientation: v.optional(v.picklist(["NORMAL", "TRANSPOSE"])),
+  source: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsProtectedRange: v.GenericSchema<unknown, T.SheetsProtectedRange> = v.looseObject({
+  description: v.optional(v.string()),
+  namedRangeId: v.optional(v.string()),
+  unprotectedRanges: v.optional(v.array(v.lazy(() => SheetsGridRange))),
+  editors: v.optional(v.lazy(() => SheetsEditors)),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  warningOnly: v.optional(v.boolean()),
+  tableId: v.optional(v.string()),
+  requestingUserCanEdit: v.optional(v.boolean()),
+  protectedRangeId: v.optional(integer()),
+})
+
+export const SheetsHistogramSeries: v.GenericSchema<unknown, T.SheetsHistogramSeries> = v.looseObject({
+  barColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  data: v.optional(v.lazy(() => SheetsChartData)),
+  barColor: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsUpdateTableRequest: v.GenericSchema<unknown, T.SheetsUpdateTableRequest> = v.looseObject({
+  table: v.optional(v.lazy(() => SheetsTable)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsPieChartSpec: v.GenericSchema<unknown, T.SheetsPieChartSpec> = v.looseObject({
+  legendPosition: v.optional(
+    v.picklist([
+      "PIE_CHART_LEGEND_POSITION_UNSPECIFIED",
+      "BOTTOM_LEGEND",
+      "LEFT_LEGEND",
+      "RIGHT_LEGEND",
+      "TOP_LEGEND",
+      "NO_LEGEND",
+      "LABELED_LEGEND",
+    ]),
+  ),
+  threeDimensional: v.optional(v.boolean()),
+  series: v.optional(v.lazy(() => SheetsChartData)),
+  pieHole: v.optional(number()),
+  domain: v.optional(v.lazy(() => SheetsChartData)),
+})
+
+export const SheetsCreateDeveloperMetadataResponse: v.GenericSchema<unknown, T.SheetsCreateDeveloperMetadataResponse> =
+  v.looseObject({
+    developerMetadata: v.optional(v.lazy(() => SheetsDeveloperMetadata)),
+  })
+
+export const SheetsSpreadsheetTheme: v.GenericSchema<unknown, T.SheetsSpreadsheetTheme> = v.looseObject({
+  primaryFontFamily: v.optional(v.string()),
+  themeColors: v.optional(v.array(v.lazy(() => SheetsThemeColorPair))),
+})
+
+export const SheetsAddTableResponse: v.GenericSchema<unknown, T.SheetsAddTableResponse> = v.looseObject({
+  table: v.optional(v.lazy(() => SheetsTable)),
+})
+
+export const SheetsDataSource: v.GenericSchema<unknown, T.SheetsDataSource> = v.looseObject({
+  dataSourceId: v.optional(v.string()),
+  spec: v.optional(v.lazy(() => SheetsDataSourceSpec)),
+  calculatedColumns: v.optional(v.array(v.lazy(() => SheetsDataSourceColumn))),
+  sheetId: v.optional(integer()),
+})
+
+export const SheetsDimensionRange: v.GenericSchema<unknown, T.SheetsDimensionRange> = v.looseObject({
+  dimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+  sheetId: v.optional(integer()),
+  endIndex: v.optional(integer()),
+  startIndex: v.optional(integer()),
+})
+
+export const SheetsThemeColorPair: v.GenericSchema<unknown, T.SheetsThemeColorPair> = v.looseObject({
+  colorType: v.optional(
+    v.picklist([
+      "THEME_COLOR_TYPE_UNSPECIFIED",
+      "TEXT",
+      "BACKGROUND",
+      "ACCENT1",
+      "ACCENT2",
+      "ACCENT3",
+      "ACCENT4",
+      "ACCENT5",
+      "ACCENT6",
+      "LINK",
+    ]),
+  ),
+  color: v.optional(v.lazy(() => SheetsColorStyle)),
+})
+
+export const SheetsDataLabel: v.GenericSchema<unknown, T.SheetsDataLabel> = v.looseObject({
+  type: v.optional(v.picklist(["DATA_LABEL_TYPE_UNSPECIFIED", "NONE", "DATA", "CUSTOM"])),
+  customLabelData: v.optional(v.lazy(() => SheetsChartData)),
+  placement: v.optional(
+    v.picklist([
+      "DATA_LABEL_PLACEMENT_UNSPECIFIED",
+      "CENTER",
+      "LEFT",
+      "RIGHT",
+      "ABOVE",
+      "BELOW",
+      "INSIDE_END",
+      "INSIDE_BASE",
+      "OUTSIDE_END",
+    ]),
+  ),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+})
+
+export const SheetsTimeOfDay: v.GenericSchema<unknown, T.SheetsTimeOfDay> = v.looseObject({
+  seconds: v.optional(integer()),
+  nanos: v.optional(integer()),
+  hours: v.optional(integer()),
+  minutes: v.optional(integer()),
+})
+
+export const SheetsChartAxisViewWindowOptions: v.GenericSchema<unknown, T.SheetsChartAxisViewWindowOptions> =
+  v.looseObject({
+    viewWindowMax: v.optional(number()),
+    viewWindowMode: v.optional(
+      v.picklist(["DEFAULT_VIEW_WINDOW_MODE", "VIEW_WINDOW_MODE_UNSUPPORTED", "EXPLICIT", "PRETTY"]),
+    ),
+    viewWindowMin: v.optional(number()),
+  })
+
+export const SheetsInsertDimensionRequest: v.GenericSchema<unknown, T.SheetsInsertDimensionRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsDimensionRange)),
+  inheritFromBefore: v.optional(v.boolean()),
+})
+
+export const SheetsSpreadsheet: v.GenericSchema<unknown, T.SheetsSpreadsheet> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSpreadsheetProperties)),
+  comments: v.optional(v.array(v.lazy(() => SheetsCommentThread))),
+  namedRanges: v.optional(v.array(v.lazy(() => SheetsNamedRange))),
+  developerMetadata: v.optional(v.array(v.lazy(() => SheetsDeveloperMetadata))),
+  dataSources: v.optional(v.array(v.lazy(() => SheetsDataSource))),
+  sheets: v.optional(v.array(v.lazy(() => SheetsSheet))),
+  spreadsheetUrl: v.optional(v.string()),
+  dataSourceSchedules: v.optional(v.array(v.lazy(() => SheetsDataSourceRefreshSchedule))),
+  spreadsheetId: v.optional(v.string()),
+  commentsViewMode: v.optional(
+    v.picklist([
+      "COMMENTS_VIEW_MODE_UNSPECIFIED",
+      "COMMENTS_VIEW_MODE_DEFAULT_FOR_CURRENT_ACCESS",
+      "COMMENTS_VIEW_MODE_OMITTED",
+      "COMMENTS_VIEW_MODE_INCLUDED",
+    ]),
+  ),
+})
+
+export const SheetsTreemapChartColorScale: v.GenericSchema<unknown, T.SheetsTreemapChartColorScale> = v.looseObject({
+  noDataColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  maxValueColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  midValueColor: v.optional(v.lazy(() => SheetsColor)),
+  noDataColor: v.optional(v.lazy(() => SheetsColor)),
+  minValueColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  minValueColor: v.optional(v.lazy(() => SheetsColor)),
+  midValueColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  maxValueColor: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsChartSourceRange: v.GenericSchema<unknown, T.SheetsChartSourceRange> = v.looseObject({
+  sources: v.optional(v.array(v.lazy(() => SheetsGridRange))),
+})
+
+export const SheetsCandlestickSeries: v.GenericSchema<unknown, T.SheetsCandlestickSeries> = v.looseObject({
+  data: v.optional(v.lazy(() => SheetsChartData)),
+})
+
+export const SheetsDataValidationRule: v.GenericSchema<unknown, T.SheetsDataValidationRule> = v.looseObject({
+  condition: v.optional(v.lazy(() => SheetsBooleanCondition)),
+  inputMessage: v.optional(v.string()),
+  showCustomUi: v.optional(v.boolean()),
+  strict: v.optional(v.boolean()),
+})
+
+export const SheetsUpdateSpreadsheetPropertiesRequest: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateSpreadsheetPropertiesRequest
+> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSpreadsheetProperties)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsCandlestickChartSpec: v.GenericSchema<unknown, T.SheetsCandlestickChartSpec> = v.looseObject({
+  data: v.optional(v.array(v.lazy(() => SheetsCandlestickData))),
+  domain: v.optional(v.lazy(() => SheetsCandlestickDomain)),
+})
+
+export const SheetsBatchUpdateSpreadsheetRequest: v.GenericSchema<unknown, T.SheetsBatchUpdateSpreadsheetRequest> =
+  v.looseObject({
+    requests: v.optional(v.array(v.lazy(() => SheetsRequest))),
+    includeSpreadsheetInResponse: v.optional(v.boolean()),
+    responseIncludeGridData: v.optional(v.boolean()),
+    responseRanges: v.optional(v.array(v.string())),
+    commentsViewMode: v.optional(
+      v.picklist([
+        "COMMENTS_VIEW_MODE_UNSPECIFIED",
+        "COMMENTS_VIEW_MODE_DEFAULT_FOR_CURRENT_ACCESS",
+        "COMMENTS_VIEW_MODE_OMITTED",
+        "COMMENTS_VIEW_MODE_INCLUDED",
+      ]),
+    ),
+  })
+
+export const SheetsAppendValuesResponse: v.GenericSchema<unknown, T.SheetsAppendValuesResponse> = v.looseObject({
+  updates: v.optional(v.lazy(() => SheetsUpdateValuesResponse)),
+  tableRange: v.optional(v.string()),
+  spreadsheetId: v.optional(v.string()),
+})
+
+export const SheetsSpreadsheetProperties: v.GenericSchema<unknown, T.SheetsSpreadsheetProperties> = v.looseObject({
+  locale: v.optional(v.string()),
+  timeZone: v.optional(v.string()),
+  title: v.optional(v.string()),
+  defaultFormat: v.optional(v.lazy(() => SheetsCellFormat)),
+  autoRecalc: v.optional(v.picklist(["RECALCULATION_INTERVAL_UNSPECIFIED", "ON_CHANGE", "MINUTE", "HOUR"])),
+  importFunctionsExternalUrlAccessAllowed: v.optional(v.boolean()),
+  iterativeCalculationSettings: v.optional(v.lazy(() => SheetsIterativeCalculationSettings)),
+  spreadsheetTheme: v.optional(v.lazy(() => SheetsSpreadsheetTheme)),
+})
+
+export const SheetsDataSourceTable: v.GenericSchema<unknown, T.SheetsDataSourceTable> = v.looseObject({
+  dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  columnSelectionType: v.optional(
+    v.picklist(["DATA_SOURCE_TABLE_COLUMN_SELECTION_TYPE_UNSPECIFIED", "SELECTED", "SYNC_ALL"]),
+  ),
+  columns: v.optional(v.array(v.lazy(() => SheetsDataSourceColumnReference))),
+  filterSpecs: v.optional(v.array(v.lazy(() => SheetsFilterSpec))),
+  dataSourceId: v.optional(v.string()),
+  sortSpecs: v.optional(v.array(v.lazy(() => SheetsSortSpec))),
+  rowLimit: v.optional(integer()),
+})
+
+export const SheetsDateTimeRule: v.GenericSchema<unknown, T.SheetsDateTimeRule> = v.looseObject({
+  type: v.optional(
+    v.picklist([
+      "DATE_TIME_RULE_TYPE_UNSPECIFIED",
+      "SECOND",
+      "MINUTE",
+      "HOUR",
+      "HOUR_MINUTE",
+      "HOUR_MINUTE_AMPM",
+      "DAY_OF_WEEK",
+      "DAY_OF_YEAR",
+      "DAY_OF_MONTH",
+      "DAY_MONTH",
+      "MONTH",
+      "QUARTER",
+      "YEAR",
+      "YEAR_MONTH",
+      "YEAR_QUARTER",
+      "YEAR_MONTH_DAY",
+    ]),
+  ),
+})
+
+export const SheetsDataSourceSheetDimensionRange: v.GenericSchema<unknown, T.SheetsDataSourceSheetDimensionRange> =
+  v.looseObject({
+    sheetId: v.optional(integer()),
+    columnReferences: v.optional(v.array(v.lazy(() => SheetsDataSourceColumnReference))),
+  })
+
+export const SheetsBatchUpdateValuesByDataFilterRequest: v.GenericSchema<
+  unknown,
+  T.SheetsBatchUpdateValuesByDataFilterRequest
+> = v.looseObject({
+  responseDateTimeRenderOption: v.optional(v.picklist(["SERIAL_NUMBER", "FORMATTED_STRING"])),
+  valueInputOption: v.optional(v.picklist(["INPUT_VALUE_OPTION_UNSPECIFIED", "RAW", "USER_ENTERED"])),
+  data: v.optional(v.array(v.lazy(() => SheetsDataFilterValueRange))),
+  includeValuesInResponse: v.optional(v.boolean()),
+  responseValueRenderOption: v.optional(v.picklist(["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"])),
+})
+
+export const SheetsMoveDimensionRequest: v.GenericSchema<unknown, T.SheetsMoveDimensionRequest> = v.looseObject({
+  destinationIndex: v.optional(integer()),
+  source: v.optional(v.lazy(() => SheetsDimensionRange)),
+})
+
+export const SheetsDuplicateSheetRequest: v.GenericSchema<unknown, T.SheetsDuplicateSheetRequest> = v.looseObject({
+  newSheetName: v.optional(v.string()),
+  insertSheetIndex: v.optional(integer()),
+  sourceSheetId: v.optional(integer()),
+  newSheetId: v.optional(integer()),
+})
+
+export const SheetsTable: v.GenericSchema<unknown, T.SheetsTable> = v.looseObject({
+  columnProperties: v.optional(v.array(v.lazy(() => SheetsTableColumnProperties))),
+  tableId: v.optional(v.string()),
+  rowsProperties: v.optional(v.lazy(() => SheetsTableRowsProperties)),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  name: v.optional(v.string()),
+})
+
+export const SheetsPivotGroupLimit: v.GenericSchema<unknown, T.SheetsPivotGroupLimit> = v.looseObject({
+  countLimit: v.optional(integer()),
+  applyOrder: v.optional(integer()),
+})
+
+export const SheetsUpdateDimensionGroupRequest: v.GenericSchema<unknown, T.SheetsUpdateDimensionGroupRequest> =
+  v.looseObject({
+    fields: v.optional(v.string()),
+    dimensionGroup: v.optional(v.lazy(() => SheetsDimensionGroup)),
+  })
+
+export const SheetsLink: v.GenericSchema<unknown, T.SheetsLink> = v.looseObject({
+  uri: v.optional(v.string()),
+})
+
+export const SheetsAddProtectedRangeRequest: v.GenericSchema<unknown, T.SheetsAddProtectedRangeRequest> = v.looseObject(
+  {
+    protectedRange: v.optional(v.lazy(() => SheetsProtectedRange)),
+  },
+)
+
+export const SheetsUpdateCommentPostRequest: v.GenericSchema<unknown, T.SheetsUpdateCommentPostRequest> = v.looseObject(
+  {
+    content: v.optional(v.string()),
+    commentId: v.optional(v.string()),
+    postId: v.optional(v.string()),
+  },
+)
+
+export const SheetsAddCommentReplyResponse: v.GenericSchema<unknown, T.SheetsAddCommentReplyResponse> = v.looseObject({
+  post: v.optional(v.lazy(() => SheetsPost)),
+})
+
+export const SheetsDeleteRangeRequest: v.GenericSchema<unknown, T.SheetsDeleteRangeRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  shiftDimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+})
+
+export const SheetsAddConditionalFormatRuleRequest: v.GenericSchema<unknown, T.SheetsAddConditionalFormatRuleRequest> =
+  v.looseObject({
+    index: v.optional(integer()),
+    rule: v.optional(v.lazy(() => SheetsConditionalFormatRule)),
+  })
+
+export const SheetsUpdateValuesByDataFilterResponse: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateValuesByDataFilterResponse
+> = v.looseObject({
+  dataFilter: v.optional(v.lazy(() => SheetsDataFilter)),
+  updatedColumns: v.optional(integer()),
+  updatedRange: v.optional(v.string()),
+  updatedRows: v.optional(integer()),
+  updatedData: v.optional(v.lazy(() => SheetsValueRange)),
+  updatedCells: v.optional(integer()),
+})
+
+export const SheetsDeleteConditionalFormatRuleRequest: v.GenericSchema<
+  unknown,
+  T.SheetsDeleteConditionalFormatRuleRequest
+> = v.looseObject({
+  index: v.optional(integer()),
+  sheetId: v.optional(integer()),
+})
+
+export const SheetsChipRun: v.GenericSchema<unknown, T.SheetsChipRun> = v.looseObject({
+  chip: v.optional(v.lazy(() => SheetsChip)),
+  startIndex: v.optional(integer()),
+})
+
+export const SheetsConditionValue: v.GenericSchema<unknown, T.SheetsConditionValue> = v.looseObject({
+  userEnteredValue: v.optional(v.string()),
+  relativeDate: v.optional(
+    v.picklist(["RELATIVE_DATE_UNSPECIFIED", "PAST_YEAR", "PAST_MONTH", "PAST_WEEK", "YESTERDAY", "TODAY", "TOMORROW"]),
+  ),
+})
+
+export const SheetsBatchGetValuesByDataFilterResponse: v.GenericSchema<
+  unknown,
+  T.SheetsBatchGetValuesByDataFilterResponse
+> = v.looseObject({
+  spreadsheetId: v.optional(v.string()),
+  valueRanges: v.optional(v.array(v.lazy(() => SheetsMatchedValueRange))),
+})
+
+export const SheetsPivotFilterCriteria: v.GenericSchema<unknown, T.SheetsPivotFilterCriteria> = v.looseObject({
+  visibleValues: v.optional(v.array(v.string())),
+  condition: v.optional(v.lazy(() => SheetsBooleanCondition)),
+  visibleByDefault: v.optional(v.boolean()),
+})
+
+export const SheetsDataSourceParameter: v.GenericSchema<unknown, T.SheetsDataSourceParameter> = v.looseObject({
+  namedRangeId: v.optional(v.string()),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  name: v.optional(v.string()),
+})
+
+export const SheetsClearValuesRequest: v.GenericSchema<unknown, T.SheetsClearValuesRequest> = v.looseObject({})
+
+export const SheetsTreemapChartSpec: v.GenericSchema<unknown, T.SheetsTreemapChartSpec> = v.looseObject({
+  hideTooltips: v.optional(v.boolean()),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  colorScale: v.optional(v.lazy(() => SheetsTreemapChartColorScale)),
+  headerColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  levels: v.optional(integer()),
+  parentLabels: v.optional(v.lazy(() => SheetsChartData)),
+  labels: v.optional(v.lazy(() => SheetsChartData)),
+  minValue: v.optional(number()),
+  hintedLevels: v.optional(integer()),
+  sizeData: v.optional(v.lazy(() => SheetsChartData)),
+  colorData: v.optional(v.lazy(() => SheetsChartData)),
+  maxValue: v.optional(number()),
+  headerColor: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsFilterCriteria: v.GenericSchema<unknown, T.SheetsFilterCriteria> = v.looseObject({
+  visibleForegroundColor: v.optional(v.lazy(() => SheetsColor)),
+  visibleBackgroundColor: v.optional(v.lazy(() => SheetsColor)),
+  visibleBackgroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  hiddenValues: v.optional(v.array(v.string())),
+  visibleForegroundColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  condition: v.optional(v.lazy(() => SheetsBooleanCondition)),
+})
+
+export const SheetsEmbeddedChart: v.GenericSchema<unknown, T.SheetsEmbeddedChart> = v.looseObject({
+  chartId: v.optional(integer()),
+  spec: v.optional(v.lazy(() => SheetsChartSpec)),
+  border: v.optional(v.lazy(() => SheetsEmbeddedObjectBorder)),
+  position: v.optional(v.lazy(() => SheetsEmbeddedObjectPosition)),
+})
+
+export const SheetsColor: v.GenericSchema<unknown, T.SheetsColor> = v.looseObject({
+  green: v.optional(number()),
+  blue: v.optional(number()),
+  alpha: v.optional(number()),
+  red: v.optional(number()),
+})
+
+export const SheetsCancelDataSourceRefreshRequest: v.GenericSchema<unknown, T.SheetsCancelDataSourceRefreshRequest> =
+  v.looseObject({
+    references: v.optional(v.lazy(() => SheetsDataSourceObjectReferences)),
+    dataSourceId: v.optional(v.string()),
+    isAll: v.optional(v.boolean()),
+  })
+
+export const SheetsDeleteFilterViewRequest: v.GenericSchema<unknown, T.SheetsDeleteFilterViewRequest> = v.looseObject({
+  filterId: v.optional(integer()),
+})
+
+export const SheetsDataSourceSheetProperties: v.GenericSchema<unknown, T.SheetsDataSourceSheetProperties> =
+  v.looseObject({
+    columns: v.optional(v.array(v.lazy(() => SheetsDataSourceColumn))),
+    dataSourceId: v.optional(v.string()),
+    dataExecutionStatus: v.optional(v.lazy(() => SheetsDataExecutionStatus)),
+  })
+
+export const SheetsAddProtectedRangeResponse: v.GenericSchema<unknown, T.SheetsAddProtectedRangeResponse> =
+  v.looseObject({
+    protectedRange: v.optional(v.lazy(() => SheetsProtectedRange)),
+  })
+
+export const SheetsBatchClearValuesByDataFilterRequest: v.GenericSchema<
+  unknown,
+  T.SheetsBatchClearValuesByDataFilterRequest
+> = v.looseObject({
+  dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+})
+
+export const SheetsBorders: v.GenericSchema<unknown, T.SheetsBorders> = v.looseObject({
+  left: v.optional(v.lazy(() => SheetsBorder)),
+  right: v.optional(v.lazy(() => SheetsBorder)),
+  top: v.optional(v.lazy(() => SheetsBorder)),
+  bottom: v.optional(v.lazy(() => SheetsBorder)),
+})
+
+export const SheetsSearchDeveloperMetadataRequest: v.GenericSchema<unknown, T.SheetsSearchDeveloperMetadataRequest> =
+  v.looseObject({
+    dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+  })
+
+export const SheetsClearValuesResponse: v.GenericSchema<unknown, T.SheetsClearValuesResponse> = v.looseObject({
+  clearedRange: v.optional(v.string()),
+  spreadsheetId: v.optional(v.string()),
+})
+
+export const SheetsPivotGroup: v.GenericSchema<unknown, T.SheetsPivotGroup> = v.looseObject({
+  repeatHeadings: v.optional(v.boolean()),
+  groupRule: v.optional(v.lazy(() => SheetsPivotGroupRule)),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  showTotals: v.optional(v.boolean()),
+  sourceColumnOffset: v.optional(integer()),
+  groupLimit: v.optional(v.lazy(() => SheetsPivotGroupLimit)),
+  valueBucket: v.optional(v.lazy(() => SheetsPivotGroupSortValueBucket)),
+  label: v.optional(v.string()),
+  sortOrder: v.optional(v.picklist(["SORT_ORDER_UNSPECIFIED", "ASCENDING", "DESCENDING"])),
+  valueMetadata: v.optional(v.array(v.lazy(() => SheetsPivotGroupValueMetadata))),
+})
+
+export const SheetsGridRange: v.GenericSchema<unknown, T.SheetsGridRange> = v.looseObject({
+  sheetId: v.optional(integer()),
+  endColumnIndex: v.optional(integer()),
+  endRowIndex: v.optional(integer()),
+  startRowIndex: v.optional(integer()),
+  startColumnIndex: v.optional(integer()),
+})
+
+export const SheetsInterval: v.GenericSchema<unknown, T.SheetsInterval> = v.looseObject({
+  endTime: v.optional(v.string()),
+  startTime: v.optional(v.string()),
+})
+
+export const SheetsAutoResizeDimensionsRequest: v.GenericSchema<unknown, T.SheetsAutoResizeDimensionsRequest> =
+  v.looseObject({
+    dimensions: v.optional(v.lazy(() => SheetsDimensionRange)),
+    dataSourceSheetDimensions: v.optional(v.lazy(() => SheetsDataSourceSheetDimensionRange)),
+  })
+
+export const SheetsDataSourceObjectReference: v.GenericSchema<unknown, T.SheetsDataSourceObjectReference> =
+  v.looseObject({
+    dataSourceTableAnchorCell: v.optional(v.lazy(() => SheetsGridCoordinate)),
+    chartId: v.optional(integer()),
+    sheetId: v.optional(v.string()),
+    dataSourcePivotTableAnchorCell: v.optional(v.lazy(() => SheetsGridCoordinate)),
+    dataSourceFormulaCell: v.optional(v.lazy(() => SheetsGridCoordinate)),
+  })
+
+export const SheetsAddSheetResponse: v.GenericSchema<unknown, T.SheetsAddSheetResponse> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsSheetProperties)),
+})
+
+export const SheetsUpdateDimensionPropertiesRequest: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateDimensionPropertiesRequest
+> = v.looseObject({
+  properties: v.optional(v.lazy(() => SheetsDimensionProperties)),
+  fields: v.optional(v.string()),
+  range: v.optional(v.lazy(() => SheetsDimensionRange)),
+  dataSourceSheetRange: v.optional(v.lazy(() => SheetsDataSourceSheetDimensionRange)),
+})
+
+export const SheetsChartCustomNumberFormatOptions: v.GenericSchema<unknown, T.SheetsChartCustomNumberFormatOptions> =
+  v.looseObject({
+    prefix: v.optional(v.string()),
+    suffix: v.optional(v.string()),
+  })
+
+export const SheetsUpdateDeveloperMetadataResponse: v.GenericSchema<unknown, T.SheetsUpdateDeveloperMetadataResponse> =
+  v.looseObject({
+    developerMetadata: v.optional(v.array(v.lazy(() => SheetsDeveloperMetadata))),
+  })
+
+export const SheetsDeleteConditionalFormatRuleResponse: v.GenericSchema<
+  unknown,
+  T.SheetsDeleteConditionalFormatRuleResponse
+> = v.looseObject({
+  rule: v.optional(v.lazy(() => SheetsConditionalFormatRule)),
+})
+
+export const SheetsUpdateConditionalFormatRuleResponse: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateConditionalFormatRuleResponse
+> = v.looseObject({
+  oldIndex: v.optional(integer()),
+  newIndex: v.optional(integer()),
+  oldRule: v.optional(v.lazy(() => SheetsConditionalFormatRule)),
+  newRule: v.optional(v.lazy(() => SheetsConditionalFormatRule)),
+})
+
+export const SheetsHistogramChartSpec: v.GenericSchema<unknown, T.SheetsHistogramChartSpec> = v.looseObject({
+  outlierPercentile: v.optional(number()),
+  series: v.optional(v.array(v.lazy(() => SheetsHistogramSeries))),
+  showItemDividers: v.optional(v.boolean()),
+  bucketSize: v.optional(number()),
+  legendPosition: v.optional(
+    v.picklist([
+      "HISTOGRAM_CHART_LEGEND_POSITION_UNSPECIFIED",
+      "BOTTOM_LEGEND",
+      "LEFT_LEGEND",
+      "RIGHT_LEGEND",
+      "TOP_LEGEND",
+      "NO_LEGEND",
+      "INSIDE_LEGEND",
+    ]),
+  ),
+})
+
+export const SheetsDeleteEmbeddedObjectRequest: v.GenericSchema<unknown, T.SheetsDeleteEmbeddedObjectRequest> =
+  v.looseObject({
+    objectId: v.optional(integer()),
+  })
+
+export const SheetsDimensionGroup: v.GenericSchema<unknown, T.SheetsDimensionGroup> = v.looseObject({
+  collapsed: v.optional(v.boolean()),
+  range: v.optional(v.lazy(() => SheetsDimensionRange)),
+  depth: v.optional(integer()),
+})
+
+export const SheetsFindReplaceResponse: v.GenericSchema<unknown, T.SheetsFindReplaceResponse> = v.looseObject({
+  rowsChanged: v.optional(integer()),
+  sheetsChanged: v.optional(integer()),
+  formulasChanged: v.optional(integer()),
+  occurrencesChanged: v.optional(integer()),
+  valuesChanged: v.optional(integer()),
+})
+
+export const SheetsWaterfallChartColumnStyle: v.GenericSchema<unknown, T.SheetsWaterfallChartColumnStyle> =
+  v.looseObject({
+    label: v.optional(v.string()),
+    color: v.optional(v.lazy(() => SheetsColor)),
+    colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  })
+
+export const SheetsAddDimensionGroupRequest: v.GenericSchema<unknown, T.SheetsAddDimensionGroupRequest> = v.looseObject(
+  {
+    range: v.optional(v.lazy(() => SheetsDimensionRange)),
+  },
+)
+
+export const SheetsUpdateBandingRequest: v.GenericSchema<unknown, T.SheetsUpdateBandingRequest> = v.looseObject({
+  fields: v.optional(v.string()),
+  bandedRange: v.optional(v.lazy(() => SheetsBandedRange)),
+})
+
+export const SheetsDataSourceRefreshDailySchedule: v.GenericSchema<unknown, T.SheetsDataSourceRefreshDailySchedule> =
+  v.looseObject({
+    startTime: v.optional(v.lazy(() => SheetsTimeOfDay)),
+  })
+
+export const SheetsPointStyle: v.GenericSchema<unknown, T.SheetsPointStyle> = v.looseObject({
+  size: v.optional(number()),
+  shape: v.optional(
+    v.picklist([
+      "POINT_SHAPE_UNSPECIFIED",
+      "CIRCLE",
+      "DIAMOND",
+      "HEXAGON",
+      "PENTAGON",
+      "SQUARE",
+      "STAR",
+      "TRIANGLE",
+      "X_MARK",
+    ]),
+  ),
+})
+
+export const SheetsDeleteTableRequest: v.GenericSchema<unknown, T.SheetsDeleteTableRequest> = v.looseObject({
+  tableId: v.optional(v.string()),
+})
+
+export const SheetsDeleteDeveloperMetadataResponse: v.GenericSchema<unknown, T.SheetsDeleteDeveloperMetadataResponse> =
+  v.looseObject({
+    deletedDeveloperMetadata: v.optional(v.array(v.lazy(() => SheetsDeveloperMetadata))),
+  })
+
+export const SheetsDeleteNamedRangeRequest: v.GenericSchema<unknown, T.SheetsDeleteNamedRangeRequest> = v.looseObject({
+  namedRangeId: v.optional(v.string()),
+})
+
+export const SheetsBaselineValueFormat: v.GenericSchema<unknown, T.SheetsBaselineValueFormat> = v.looseObject({
+  comparisonType: v.optional(v.picklist(["COMPARISON_TYPE_UNDEFINED", "ABSOLUTE_DIFFERENCE", "PERCENTAGE_DIFFERENCE"])),
+  negativeColor: v.optional(v.lazy(() => SheetsColor)),
+  description: v.optional(v.string()),
+  position: v.optional(v.lazy(() => SheetsTextPosition)),
+  textFormat: v.optional(v.lazy(() => SheetsTextFormat)),
+  positiveColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  negativeColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  positiveColor: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsAutoFillRequest: v.GenericSchema<unknown, T.SheetsAutoFillRequest> = v.looseObject({
+  sourceAndDestination: v.optional(v.lazy(() => SheetsSourceAndDestination)),
+  useAlternateSeries: v.optional(v.boolean()),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsSheetProperties: v.GenericSchema<unknown, T.SheetsSheetProperties> = v.looseObject({
+  title: v.optional(v.string()),
+  rightToLeft: v.optional(v.boolean()),
+  hidden: v.optional(v.boolean()),
+  sheetId: v.optional(integer()),
+  gridProperties: v.optional(v.lazy(() => SheetsGridProperties)),
+  dataSourceSheetProperties: v.optional(v.lazy(() => SheetsDataSourceSheetProperties)),
+  index: v.optional(integer()),
+  tabColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  tabColor: v.optional(v.lazy(() => SheetsColor)),
+  sheetType: v.optional(v.picklist(["SHEET_TYPE_UNSPECIFIED", "GRID", "OBJECT", "DATA_SOURCE"])),
+})
+
+export const SheetsBandedRange: v.GenericSchema<unknown, T.SheetsBandedRange> = v.looseObject({
+  bandedRangeReference: v.optional(v.string()),
+  columnProperties: v.optional(v.lazy(() => SheetsBandingProperties)),
+  rowProperties: v.optional(v.lazy(() => SheetsBandingProperties)),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  bandedRangeId: v.optional(integer()),
+})
+
+export const SheetsNamedRange: v.GenericSchema<unknown, T.SheetsNamedRange> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  name: v.optional(v.string()),
+  namedRangeId: v.optional(v.string()),
+})
+
+export const SheetsBasicSeriesDataPointStyleOverride: v.GenericSchema<
+  unknown,
+  T.SheetsBasicSeriesDataPointStyleOverride
+> = v.looseObject({
+  index: v.optional(integer()),
+  pointStyle: v.optional(v.lazy(() => SheetsPointStyle)),
+  colorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  color: v.optional(v.lazy(() => SheetsColor)),
+})
+
+export const SheetsRandomizeRangeRequest: v.GenericSchema<unknown, T.SheetsRandomizeRangeRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsAppendCellsRequest: v.GenericSchema<unknown, T.SheetsAppendCellsRequest> = v.looseObject({
+  sheetId: v.optional(integer()),
+  tableId: v.optional(v.string()),
+  rows: v.optional(v.array(v.lazy(() => SheetsRowData))),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsBandingProperties: v.GenericSchema<unknown, T.SheetsBandingProperties> = v.looseObject({
+  footerColor: v.optional(v.lazy(() => SheetsColor)),
+  firstBandColor: v.optional(v.lazy(() => SheetsColor)),
+  firstBandColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  secondBandColor: v.optional(v.lazy(() => SheetsColor)),
+  headerColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  footerColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+  headerColor: v.optional(v.lazy(() => SheetsColor)),
+  secondBandColorStyle: v.optional(v.lazy(() => SheetsColorStyle)),
+})
+
+export const SheetsDeleteBandingRequest: v.GenericSchema<unknown, T.SheetsDeleteBandingRequest> = v.looseObject({
+  bandedRangeId: v.optional(integer()),
+})
+
+export const SheetsPivotValue: v.GenericSchema<unknown, T.SheetsPivotValue> = v.looseObject({
+  formula: v.optional(v.string()),
+  calculatedDisplayType: v.optional(
+    v.picklist([
+      "PIVOT_VALUE_CALCULATED_DISPLAY_TYPE_UNSPECIFIED",
+      "PERCENT_OF_ROW_TOTAL",
+      "PERCENT_OF_COLUMN_TOTAL",
+      "PERCENT_OF_GRAND_TOTAL",
+    ]),
+  ),
+  dataSourceColumnReference: v.optional(v.lazy(() => SheetsDataSourceColumnReference)),
+  summarizeFunction: v.optional(
+    v.picklist([
+      "PIVOT_STANDARD_VALUE_FUNCTION_UNSPECIFIED",
+      "SUM",
+      "COUNTA",
+      "COUNT",
+      "COUNTUNIQUE",
+      "AVERAGE",
+      "MAX",
+      "MIN",
+      "MEDIAN",
+      "PRODUCT",
+      "STDEV",
+      "STDEVP",
+      "VAR",
+      "VARP",
+      "CUSTOM",
+      "NONE",
+    ]),
+  ),
+  sourceColumnOffset: v.optional(integer()),
+  name: v.optional(v.string()),
+})
+
+export const SheetsTableColumnDataValidationRule: v.GenericSchema<unknown, T.SheetsTableColumnDataValidationRule> =
+  v.looseObject({
+    condition: v.optional(v.lazy(() => SheetsBooleanCondition)),
+  })
+
+export const SheetsBatchGetValuesByDataFilterRequest: v.GenericSchema<
+  unknown,
+  T.SheetsBatchGetValuesByDataFilterRequest
+> = v.looseObject({
+  valueRenderOption: v.optional(v.picklist(["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"])),
+  dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+  majorDimension: v.optional(v.picklist(["DIMENSION_UNSPECIFIED", "ROWS", "COLUMNS"])),
+  dateTimeRenderOption: v.optional(v.picklist(["SERIAL_NUMBER", "FORMATTED_STRING"])),
+})
+
+export const SheetsExtendedValue: v.GenericSchema<unknown, T.SheetsExtendedValue> = v.looseObject({
+  errorValue: v.optional(v.lazy(() => SheetsErrorValue)),
+  boolValue: v.optional(v.boolean()),
+  stringValue: v.optional(v.string()),
+  formulaValue: v.optional(v.string()),
+  numberValue: v.optional(number()),
+})
+
+export const SheetsUpdateSheetPropertiesRequest: v.GenericSchema<unknown, T.SheetsUpdateSheetPropertiesRequest> =
+  v.looseObject({
+    properties: v.optional(v.lazy(() => SheetsSheetProperties)),
+    fields: v.optional(v.string()),
+  })
+
+export const SheetsUpdateEmbeddedObjectPositionRequest: v.GenericSchema<
+  unknown,
+  T.SheetsUpdateEmbeddedObjectPositionRequest
+> = v.looseObject({
+  objectId: v.optional(integer()),
+  newPosition: v.optional(v.lazy(() => SheetsEmbeddedObjectPosition)),
+  fields: v.optional(v.string()),
+})
+
+export const SheetsUpdateDataSourceRequest: v.GenericSchema<unknown, T.SheetsUpdateDataSourceRequest> = v.looseObject({
+  fields: v.optional(v.string()),
+  dataSource: v.optional(v.lazy(() => SheetsDataSource)),
+})
+
+export const SheetsFindReplaceRequest: v.GenericSchema<unknown, T.SheetsFindReplaceRequest> = v.looseObject({
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+  matchCase: v.optional(v.boolean()),
+  find: v.optional(v.string()),
+  allSheets: v.optional(v.boolean()),
+  includeFormulas: v.optional(v.boolean()),
+  replacement: v.optional(v.string()),
+  searchByRegex: v.optional(v.boolean()),
+  sheetId: v.optional(integer()),
+  matchEntireCell: v.optional(v.boolean()),
+})
+
+export const SheetsDataFilter: v.GenericSchema<unknown, T.SheetsDataFilter> = v.looseObject({
+  a1Range: v.optional(v.string()),
+  gridRange: v.optional(v.lazy(() => SheetsGridRange)),
+  developerMetadataLookup: v.optional(v.lazy(() => SheetsDeveloperMetadataLookup)),
+})
+
+export const SheetsSetDataValidationRequest: v.GenericSchema<unknown, T.SheetsSetDataValidationRequest> = v.looseObject(
+  {
+    range: v.optional(v.lazy(() => SheetsGridRange)),
+    rule: v.optional(v.lazy(() => SheetsDataValidationRule)),
+    filteredRowsIncluded: v.optional(v.boolean()),
+  },
+)
+
+export const SheetsCommentAnchor: v.GenericSchema<unknown, T.SheetsCommentAnchor> = v.looseObject({
+  anchorId: v.optional(v.string()),
+  range: v.optional(v.lazy(() => SheetsGridRange)),
+})
+
+export const SheetsBasicChartAxis: v.GenericSchema<unknown, T.SheetsBasicChartAxis> = v.looseObject({
+  viewWindowOptions: v.optional(v.lazy(() => SheetsChartAxisViewWindowOptions)),
+  title: v.optional(v.string()),
+  titleTextPosition: v.optional(v.lazy(() => SheetsTextPosition)),
+  format: v.optional(v.lazy(() => SheetsTextFormat)),
+  position: v.optional(v.picklist(["BASIC_CHART_AXIS_POSITION_UNSPECIFIED", "BOTTOM_AXIS", "LEFT_AXIS", "RIGHT_AXIS"])),
+})
+
+export const SheetsCreateDeveloperMetadataRequest: v.GenericSchema<unknown, T.SheetsCreateDeveloperMetadataRequest> =
+  v.looseObject({
+    developerMetadata: v.optional(v.lazy(() => SheetsDeveloperMetadata)),
+  })
+
+export const SheetsInsertCommentResponse: v.GenericSchema<unknown, T.SheetsInsertCommentResponse> = v.looseObject({
+  commentThread: v.optional(v.lazy(() => SheetsCommentThread)),
+})
+
+export const SheetsDataSourceSpec: v.GenericSchema<unknown, T.SheetsDataSourceSpec> = v.looseObject({
+  parameters: v.optional(v.array(v.lazy(() => SheetsDataSourceParameter))),
+  bigQuery: v.optional(v.lazy(() => SheetsBigQueryDataSourceSpec)),
+  looker: v.optional(v.lazy(() => SheetsLookerDataSourceSpec)),
+})
+
+export const SheetsCancelDataSourceRefreshStatus: v.GenericSchema<unknown, T.SheetsCancelDataSourceRefreshStatus> =
+  v.looseObject({
+    refreshCancellationStatus: v.optional(v.lazy(() => SheetsRefreshCancellationStatus)),
+    reference: v.optional(v.lazy(() => SheetsDataSourceObjectReference)),
+  })
+
+export const SheetsMatchedValueRange: v.GenericSchema<unknown, T.SheetsMatchedValueRange> = v.looseObject({
+  valueRange: v.optional(v.lazy(() => SheetsValueRange)),
+  dataFilters: v.optional(v.array(v.lazy(() => SheetsDataFilter))),
+})
+
+export const SheetsAddFilterViewRequest: v.GenericSchema<unknown, T.SheetsAddFilterViewRequest> = v.looseObject({
+  filter: v.optional(v.lazy(() => SheetsFilterView)),
+})
+
 export const schemas = {
   DriveOperation,
   DrivePermission,
@@ -3337,4 +5693,277 @@ export const schemas = {
   DriveactivityCopy,
   DriveactivityDate,
   DriveactivityOwner,
+  SheetsPost,
+  SheetsAddTableRequest,
+  SheetsAddSlicerResponse,
+  SheetsDeleteDuplicatesResponse,
+  SheetsTrimWhitespaceRequest,
+  SheetsBasicChartDomain,
+  SheetsTextPosition,
+  SheetsAppendDimensionRequest,
+  SheetsUpdateValuesResponse,
+  SheetsChartDateTimeRule,
+  SheetsBooleanRule,
+  SheetsMergeCellsRequest,
+  SheetsAddDataSourceResponse,
+  SheetsTextFormat,
+  SheetsWaterfallChartSpec,
+  SheetsAddBandingRequest,
+  SheetsBorder,
+  SheetsDeveloperMetadataLocation,
+  SheetsUpdateConditionalFormatRuleRequest,
+  SheetsOrgChartSpec,
+  SheetsCopySheetToAnotherSpreadsheetRequest,
+  SheetsValueRange,
+  SheetsCandlestickData,
+  SheetsDeveloperMetadataLookup,
+  SheetsLookerDataSourceSpec,
+  SheetsHistogramRule,
+  SheetsUnmergeCellsRequest,
+  SheetsBatchClearValuesResponse,
+  SheetsCancelDataSourceRefreshResponse,
+  SheetsUpdateNamedRangeRequest,
+  SheetsUpdateEmbeddedObjectBorderRequest,
+  SheetsUpdateDataSourceResponse,
+  SheetsBasicFilter,
+  SheetsCellFormat,
+  SheetsConditionalFormatRule,
+  SheetsClearBasicFilterRequest,
+  SheetsEditors,
+  SheetsDataSourceRefreshMonthlySchedule,
+  SheetsRepeatCellRequest,
+  SheetsWaterfallChartCustomSubtotal,
+  SheetsSortSpec,
+  SheetsUpdateFilterViewRequest,
+  SheetsManualRule,
+  SheetsChip,
+  SheetsDeleteDimensionRequest,
+  SheetsDeleteDuplicatesRequest,
+  SheetsGridProperties,
+  SheetsRowData,
+  SheetsDeleteDimensionGroupRequest,
+  SheetsManualRuleGroup,
+  SheetsPivotGroupRule,
+  SheetsPivotGroupSortValueBucket,
+  SheetsBubbleChartSpec,
+  SheetsPasteDataRequest,
+  SheetsAddDimensionGroupResponse,
+  SheetsCandlestickDomain,
+  SheetsGridData,
+  SheetsUpdateBordersRequest,
+  SheetsSheet,
+  SheetsBatchGetValuesResponse,
+  SheetsEmbeddedObjectPosition,
+  SheetsPivotGroupValueMetadata,
+  SheetsCutPasteRequest,
+  SheetsTrimWhitespaceResponse,
+  SheetsDuplicateFilterViewResponse,
+  SheetsRefreshCancellationStatus,
+  SheetsBooleanCondition,
+  SheetsBatchClearValuesByDataFilterResponse,
+  SheetsDataSourceColumnReference,
+  SheetsCellData,
+  SheetsNumberFormat,
+  SheetsPostAuthor,
+  SheetsAddDataSourceRequest,
+  SheetsDeleteCommentRequest,
+  SheetsColorStyle,
+  SheetsDataSourceRefreshWeeklySchedule,
+  SheetsFilterSpec,
+  SheetsUpdateSlicerSpecRequest,
+  SheetsEmbeddedObjectBorder,
+  SheetsPadding,
+  SheetsGetSpreadsheetByDataFilterRequest,
+  SheetsDeleteDimensionGroupResponse,
+  SheetsTextRotation,
+  SheetsDeleteSheetRequest,
+  SheetsWaterfallChartDomain,
+  SheetsMatchedDeveloperMetadata,
+  SheetsBigQueryDataSourceSpec,
+  SheetsDataExecutionStatus,
+  SheetsAddNamedRangeResponse,
+  SheetsUpdateEmbeddedObjectPositionResponse,
+  SheetsGradientRule,
+  SheetsDeleteProtectedRangeRequest,
+  SheetsTableRowsProperties,
+  SheetsBatchUpdateValuesByDataFilterResponse,
+  SheetsWaterfallChartSeries,
+  SheetsBatchClearValuesRequest,
+  SheetsDataSourceObjectReferences,
+  SheetsRichLinkProperties,
+  SheetsCommentThread,
+  SheetsChartGroupRule,
+  SheetsIterativeCalculationSettings,
+  SheetsInsertRangeRequest,
+  SheetsDeleteCommentReplyRequest,
+  SheetsBatchUpdateValuesResponse,
+  SheetsDataSourceColumn,
+  SheetsBatchUpdateSpreadsheetResponse,
+  SheetsPivotFilterSpec,
+  SheetsAddChartRequest,
+  SheetsFilterView,
+  SheetsDataFilterValueRange,
+  SheetsResponse,
+  SheetsAddChartResponse,
+  SheetsDuplicateFilterViewRequest,
+  SheetsKeyValueFormat,
+  SheetsPersonProperties,
+  SheetsUpdateDeveloperMetadataRequest,
+  SheetsRefreshDataSourceResponse,
+  SheetsInsertCommentRequest,
+  SheetsDuplicateSheetResponse,
+  SheetsScorecardChartSpec,
+  SheetsDeleteDataSourceRequest,
+  SheetsInterpolationPoint,
+  SheetsDeveloperMetadata,
+  SheetsAddSlicerRequest,
+  SheetsAddBandingResponse,
+  SheetsTableColumnProperties,
+  SheetsChartSpec,
+  SheetsTextToColumnsRequest,
+  SheetsDataSourceFormula,
+  SheetsTextFormatRun,
+  SheetsBasicChartSeries,
+  SheetsSortRangeRequest,
+  SheetsPivotTable,
+  SheetsUpdateCellsRequest,
+  SheetsRefreshDataSourceObjectExecutionStatus,
+  SheetsSetBasicFilterRequest,
+  SheetsBigQueryQuerySpec,
+  SheetsDataSourceRefreshSchedule,
+  SheetsLineStyle,
+  SheetsSlicerSpec,
+  SheetsAddFilterViewResponse,
+  SheetsRequest,
+  SheetsSourceAndDestination,
+  SheetsGridCoordinate,
+  SheetsAddNamedRangeRequest,
+  SheetsDataSourceChartProperties,
+  SheetsBigQueryTableSpec,
+  SheetsUpdateChartSpecRequest,
+  SheetsAddSheetRequest,
+  SheetsDimensionProperties,
+  SheetsBasicChartSpec,
+  SheetsRefreshDataSourceRequest,
+  SheetsChartHistogramRule,
+  SheetsUpdateProtectedRangeRequest,
+  SheetsErrorValue,
+  SheetsAddCommentReplyRequest,
+  SheetsSlicer,
+  SheetsOverlayPosition,
+  SheetsSearchDeveloperMetadataResponse,
+  SheetsDeleteDeveloperMetadataRequest,
+  SheetsChartData,
+  SheetsBatchUpdateValuesRequest,
+  SheetsCopyPasteRequest,
+  SheetsProtectedRange,
+  SheetsHistogramSeries,
+  SheetsUpdateTableRequest,
+  SheetsPieChartSpec,
+  SheetsCreateDeveloperMetadataResponse,
+  SheetsSpreadsheetTheme,
+  SheetsAddTableResponse,
+  SheetsDataSource,
+  SheetsDimensionRange,
+  SheetsThemeColorPair,
+  SheetsDataLabel,
+  SheetsTimeOfDay,
+  SheetsChartAxisViewWindowOptions,
+  SheetsInsertDimensionRequest,
+  SheetsSpreadsheet,
+  SheetsTreemapChartColorScale,
+  SheetsChartSourceRange,
+  SheetsCandlestickSeries,
+  SheetsDataValidationRule,
+  SheetsUpdateSpreadsheetPropertiesRequest,
+  SheetsCandlestickChartSpec,
+  SheetsBatchUpdateSpreadsheetRequest,
+  SheetsAppendValuesResponse,
+  SheetsSpreadsheetProperties,
+  SheetsDataSourceTable,
+  SheetsDateTimeRule,
+  SheetsDataSourceSheetDimensionRange,
+  SheetsBatchUpdateValuesByDataFilterRequest,
+  SheetsMoveDimensionRequest,
+  SheetsDuplicateSheetRequest,
+  SheetsTable,
+  SheetsPivotGroupLimit,
+  SheetsUpdateDimensionGroupRequest,
+  SheetsLink,
+  SheetsAddProtectedRangeRequest,
+  SheetsUpdateCommentPostRequest,
+  SheetsAddCommentReplyResponse,
+  SheetsDeleteRangeRequest,
+  SheetsAddConditionalFormatRuleRequest,
+  SheetsUpdateValuesByDataFilterResponse,
+  SheetsDeleteConditionalFormatRuleRequest,
+  SheetsChipRun,
+  SheetsConditionValue,
+  SheetsBatchGetValuesByDataFilterResponse,
+  SheetsPivotFilterCriteria,
+  SheetsDataSourceParameter,
+  SheetsClearValuesRequest,
+  SheetsTreemapChartSpec,
+  SheetsFilterCriteria,
+  SheetsEmbeddedChart,
+  SheetsColor,
+  SheetsCancelDataSourceRefreshRequest,
+  SheetsDeleteFilterViewRequest,
+  SheetsDataSourceSheetProperties,
+  SheetsAddProtectedRangeResponse,
+  SheetsBatchClearValuesByDataFilterRequest,
+  SheetsBorders,
+  SheetsSearchDeveloperMetadataRequest,
+  SheetsClearValuesResponse,
+  SheetsPivotGroup,
+  SheetsGridRange,
+  SheetsInterval,
+  SheetsAutoResizeDimensionsRequest,
+  SheetsDataSourceObjectReference,
+  SheetsAddSheetResponse,
+  SheetsUpdateDimensionPropertiesRequest,
+  SheetsChartCustomNumberFormatOptions,
+  SheetsUpdateDeveloperMetadataResponse,
+  SheetsDeleteConditionalFormatRuleResponse,
+  SheetsUpdateConditionalFormatRuleResponse,
+  SheetsHistogramChartSpec,
+  SheetsDeleteEmbeddedObjectRequest,
+  SheetsDimensionGroup,
+  SheetsFindReplaceResponse,
+  SheetsWaterfallChartColumnStyle,
+  SheetsAddDimensionGroupRequest,
+  SheetsUpdateBandingRequest,
+  SheetsDataSourceRefreshDailySchedule,
+  SheetsPointStyle,
+  SheetsDeleteTableRequest,
+  SheetsDeleteDeveloperMetadataResponse,
+  SheetsDeleteNamedRangeRequest,
+  SheetsBaselineValueFormat,
+  SheetsAutoFillRequest,
+  SheetsSheetProperties,
+  SheetsBandedRange,
+  SheetsNamedRange,
+  SheetsBasicSeriesDataPointStyleOverride,
+  SheetsRandomizeRangeRequest,
+  SheetsAppendCellsRequest,
+  SheetsBandingProperties,
+  SheetsDeleteBandingRequest,
+  SheetsPivotValue,
+  SheetsTableColumnDataValidationRule,
+  SheetsBatchGetValuesByDataFilterRequest,
+  SheetsExtendedValue,
+  SheetsUpdateSheetPropertiesRequest,
+  SheetsUpdateEmbeddedObjectPositionRequest,
+  SheetsUpdateDataSourceRequest,
+  SheetsFindReplaceRequest,
+  SheetsDataFilter,
+  SheetsSetDataValidationRequest,
+  SheetsCommentAnchor,
+  SheetsBasicChartAxis,
+  SheetsCreateDeveloperMetadataRequest,
+  SheetsInsertCommentResponse,
+  SheetsDataSourceSpec,
+  SheetsCancelDataSourceRefreshStatus,
+  SheetsMatchedValueRange,
+  SheetsAddFilterViewRequest,
 } as const

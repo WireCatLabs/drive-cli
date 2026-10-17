@@ -1,6 +1,7 @@
 import { docs } from "@googleapis/docs"
 import { drive } from "@googleapis/drive"
 import { driveactivity } from "@googleapis/driveactivity"
+import { sheets } from "@googleapis/sheets"
 import { CliError } from "@wirecat/cli-base"
 import type { OAuth2Client } from "google-auth-library"
 import { operations, validateRequest } from "./api-contract.js"
@@ -21,6 +22,7 @@ export interface GoogleApi {
 const roots = (auth?: OAuth2Client) => ({
   drive: drive({ version: "v3", ...(auth ? { auth } : {}) }),
   docs: docs({ version: "v1", ...(auth ? { auth } : {}) }),
+  sheets: sheets({ version: "v4", ...(auth ? { auth } : {}) }),
   driveactivity: driveactivity({ version: "v2", ...(auth ? { auth } : {}) }),
 })
 type Resource = Record<string, unknown>
@@ -72,11 +74,17 @@ export const validateApiParams = (params: Record<string, unknown>): void => {
     !params ||
     typeof params !== "object" ||
     Array.isArray(params) ||
-    Object.entries(params).some(([key, value]) => forbidden.has(key) || (value !== null && typeof value === "object"))
+    Object.entries(params).some(
+      ([key, value]) =>
+        forbidden.has(key) ||
+        (Array.isArray(value)
+          ? value.some((item) => item !== null && typeof item === "object")
+          : value !== null && typeof value === "object"),
+    )
   )
     throw new CliError(
       "validation_error",
-      "API parameters must be scalar values and cannot override authentication or transport",
+      "API parameters must be scalar values or scalar arrays and cannot override authentication or transport",
     )
 }
 export const googleApi = (auth: OAuth2Client): GoogleApi => {
@@ -88,6 +96,18 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
       if (body !== undefined && (!body || typeof body !== "object" || Array.isArray(body)))
         throw new CliError("validation_error", "API request body must be a JSON object")
       validateRequest(name, params, body)
+      const arrayParameters = new Set(
+        operations
+          .find((operation) => operation.id === name)
+          ?.parameters.filter((parameter) => parameter.schema.type === "array")
+          .map((parameter) => parameter.name),
+      )
+      const sdkParams = Object.fromEntries(
+        Object.entries(params).map(([key, value]) => [
+          key,
+          arrayParameters.has(key) && typeof value === "string" ? value.split(",").map((item) => item.trim()) : value,
+        ]),
+      )
       const parts = name.split(".")
       let resource: Resource = api as unknown as Resource
       for (const part of parts.slice(0, -1)) resource = resource[part] as Resource
@@ -98,7 +118,7 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
       try {
         const response = await method.call(
           resource,
-          { ...params, ...(body ? { requestBody: body } : {}) },
+          { ...sdkParams, ...(body ? { requestBody: body } : {}) },
           {
             timeout: 30000,
             maxContentLength: 50 * 1024 * 1024,

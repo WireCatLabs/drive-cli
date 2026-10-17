@@ -45,8 +45,10 @@ Commands:
                               stay proposed until confirmed
   identities                  the Google accounts seen on a document, and the
                               people they belong to
-  api                         discover and call the official Drive, Docs and
-                              Activity API methods
+  api                         discover and call the official Drive, Docs, Sheets
+                              and Activity API methods
+  sheets                      read spreadsheet tabs and ranges, or change cells
+                              live in Google Sheets
   files                       read and change files in Google Drive; nothing is
                               imported
   comments                    read the comments of a file in Google Drive

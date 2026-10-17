@@ -1309,6 +1309,285 @@
   {
     "annotations": {
       "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "metadata-id": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        }
+      },
+      "required": ["metadata-id", "spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_developer_metadata_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_developer_metadata_search"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "comments-view-mode": {
+          "type": "string"
+        },
+        "exclude-tables-in-banded-ranges": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "include-grid-data": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "ranges": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_get_by_data_filter"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "date-time-render-option": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "major-dimension": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "ranges": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        },
+        "value-render-option": {
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_values_batch_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_values_batch_get_by_data_filter"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "alt": {
+          "type": "string"
+        },
+        "callback": {
+          "type": "string"
+        },
+        "date-time-render-option": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "string"
+        },
+        "major-dimension": {
+          "type": "string"
+        },
+        "pretty-print": {
+          "type": "string"
+        },
+        "quota-user": {
+          "type": "string"
+        },
+        "range": {
+          "type": "string"
+        },
+        "spreadsheet-id": {
+          "type": "string"
+        },
+        "value-render-option": {
+          "type": "string"
+        }
+      },
+      "required": ["range", "spreadsheet-id"],
+      "type": "object"
+    },
+    "name": "drive_api_sheets_spreadsheets_values_get"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
       "openWorldHint": false,
       "readOnlyHint": true
     },
@@ -2046,6 +2325,52 @@
       "type": "object"
     },
     "name": "drive_shared_drives"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "spreadsheet": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet"],
+      "type": "object"
+    },
+    "name": "drive_sheets_info"
+  },
+  {
+    "annotations": {
+      "destructiveHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "range": {
+          "maxLength": 100000,
+          "type": "string"
+        },
+        "render": {
+          "enum": ["formatted", "unformatted", "formula"],
+          "type": "string"
+        },
+        "spreadsheet": {
+          "maxLength": 100000,
+          "type": "string"
+        }
+      },
+      "required": ["spreadsheet", "range"],
+      "type": "object"
+    },
+    "name": "drive_sheets_show"
   },
   {
     "annotations": {

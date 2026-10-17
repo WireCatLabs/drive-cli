@@ -149,6 +149,14 @@ export const adaptDiscovery = (
             let effect: Effect =
               method === "GET" || method === "HEAD" ? "read" : method === "DELETE" ? "destructive" : "write"
             if (raw.id === "driveactivity.activity.query" || raw.id === "drive.files.download") effect = "read"
+            if (
+              [
+                "sheets.spreadsheets.getByDataFilter",
+                "sheets.spreadsheets.values.batchGetByDataFilter",
+                "sheets.spreadsheets.developerMetadata.search",
+              ].includes(raw.id)
+            )
+              effect = "read"
             if (raw.id === "drive.files.emptyTrash") effect = "destructive"
             metadata.scopes[raw.id] = Array.isArray(raw.scopes) ? raw.scopes.map(String) : []
             const common = object(source.parameters) ? source.parameters : {}

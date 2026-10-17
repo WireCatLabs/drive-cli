@@ -25,11 +25,12 @@ import { apiMethods, validateApiParams } from "../google-api.js"
 import { allOf } from "../output.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
 import { requestSchema } from "../schema.js"
+import { installSheetsCommands } from "./sheets.js"
 
 const API_METHOD_QUERY = {
   entity: "api_method",
   backend: "native",
-  fields: [termField("service", "enum", "service:docs", { values: ["drive", "docs", "driveactivity"] })],
+  fields: [termField("service", "enum", "service:docs", { values: ["drive", "docs", "driveactivity", "sheets"] })],
 } as const satisfies QueryRegistry
 
 export const jsonObject = (value: string): Record<string, unknown> => {
@@ -75,7 +76,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       .option("--cursor <cursor>", "continue from page.next_cursor of the previous answer")
   const fileArgument = "file id or Google Drive URL"
   const api = annotate(program.command("api"), { effects: LOCAL_READ }).description(
-    "discover and call the official Drive, Docs and Activity API methods",
+    "discover and call the official Drive, Docs, Sheets and Activity API methods",
   )
   withQuery(
     examples(
@@ -128,6 +129,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ),
   })
   for (const child of generated.commands) api.addCommand(child)
+  installSheetsCommands(program, helpers)
   const files = annotate(program.command("files"), { effects: GOOGLE_READ }).description(
     "read and change files in Google Drive; nothing is imported",
   )

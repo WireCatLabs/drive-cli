@@ -80,6 +80,9 @@ try {
   for (const [command, operation, remote] of [
     ["drive-files-get", "drive.files.get", "read"],
     ["drive-files-create", "drive.files.create", "write"],
+    ["sheets-spreadsheets-get", "sheets.spreadsheets.get", "read"],
+    ["sheets-spreadsheets-get-by-data-filter", "sheets.spreadsheets.getByDataFilter", "read"],
+    ["sheets-spreadsheets-values-update", "sheets.spreadsheets.values.update", "write"],
   ] as const) {
     const generated = JSON.parse(run(["commands", "api", command, "--json"]))
     assert.equal(generated.commands.length, 1)
@@ -95,6 +98,12 @@ try {
     assert.equal(JSON.parse(String((error as { stderr?: unknown }).stderr).trim()).error.code, "configuration_error")
   }
   assert.ok(failed)
+  writeFileSync(join(config, "config.json"), JSON.stringify({ profiles: {} }))
+  const sheets = JSON.parse(
+    run(["synthetic", "--dry-run", "sheets", "update", "synthetic-sheet", "Budget!A1", "--values", "[[1]]", "--json"]),
+  )
+  assert.equal(sheets.item.method, "sheets.spreadsheets.values.update")
+  assert.equal(sheets.item.mutates, true)
   console.log(
     `Installed ${JSON.parse(readFileSync(join(root, "package.json"), "utf8")).name}: offline help/version/registry/error checks passed (${temp})`,
   )

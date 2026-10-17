@@ -26,6 +26,8 @@ export const validateRequest = (name: string, params: Record<string, unknown>, b
       continue
     }
     const node = parameter.schema
+    if (Array.isArray(value) && node.type !== "array")
+      throw new CliError("validation_error", `API parameter ${parameter.name} does not accept an array`)
     const raw = Array.isArray(value) ? value.join(",") : String(value)
     const problem = checkApiParameter(parameter.name, node, raw, schemas)
     if (problem) throw new CliError("validation_error", problem)
