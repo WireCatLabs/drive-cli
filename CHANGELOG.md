@@ -29,6 +29,10 @@
 
 ### Fixed
 
+- A disabled Google API reports `google-api.disabled` with an application-setup remedy instead
+  of a generic permissions error. No provider messages, activation links or project identifiers
+  are included; troubleshooting separates API enablement from account grants and file access.
+
 - `commands --json` now lists `mcp` as a persistent command that writes to Google and on this machine
   (`effects: { remote: "write", local: "write" }`, `lifetime: "persistent"`), instead of a local read: the
   server it starts runs drive's writing commands. No other command changes.
