@@ -327,6 +327,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     selected()
     if (["commands", "complete", "config show", "config set", "session list"].includes(words)) return
     const flags = policyFlags()
+    // The server writes only through its tools, and each tool call runs this same check with these flags.
+    if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
     const metadata = metaOf(action)
     const rawMethod = words === "api call" ? action.args[0] : undefined
     const method = metadata.api_operation ?? rawMethod

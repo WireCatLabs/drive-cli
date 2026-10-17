@@ -1,5 +1,5 @@
 import { annotate } from "@wirecat/cli-base/commands"
-import { LOCAL_READ } from "@wirecat/cli-core/cli"
+import { REMOTE_WRITE } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { allOf } from "../output.js"
 import { examples } from "../registry.js"
@@ -11,7 +11,7 @@ export const installMcpCommand = (
   createProgram: (options: ProgramOptions) => Command,
 ) => {
   examples(
-    annotate(program.command("mcp"), { effects: LOCAL_READ }).description(
+    annotate(program.command("mcp"), { effects: REMOTE_WRITE, lifetime: "persistent" }).description(
       "serve drive's commands to an agent over MCP on stdio",
     ),
     ["drive personal mcp", "drive personal mcp --tools"],

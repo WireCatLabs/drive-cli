@@ -3265,6 +3265,8 @@ drive <profile> models set [options]
 
 serve drive's commands to an agent over MCP on stdio
 
+This command can change Google data or send data to the configured model.
+
 ```sh
 drive <profile> mcp [options]
 ```

@@ -22,6 +22,17 @@
 
 - Uses `@wirecat/cli-core` 0.307.0.
 
+- **Over MCP, a write whose permission level is `ask` now goes ahead** instead of failing with
+  `confirmation_required`, as in tg and max: no one is at a terminal to answer, and MCP shows no approval
+  forms. This includes deletions, whose built-in level is `ask`. The read-only lock, `deny` and the send journal still
+  apply. If you relied on `ask` to keep an agent from writing, set that permission to `deny` or `readonly`.
+
+### Fixed
+
+- `commands --json` now lists `mcp` as a persistent command that writes to Google and on this machine
+  (`effects: { remote: "write", local: "write" }`, `lifetime: "persistent"`), instead of a local read: the
+  server it starts runs drive's writing commands. No other command changes.
+
 ## 0.15.1 — 2026-10-17
 
 ### Fixed
