@@ -32,8 +32,8 @@ npm view "@wirecat/drive-cli@$version" version --prefer-online >/dev/null 2>&1 |
 rerun_if_changed "$@"
 top=$(sed -n '/^## /{p;q;}' CHANGELOG.md)
 case "$top" in
-  "## $version — "*) ;;
-  *) echo "date the top changelog section for $version before releasing" >&2; exit 1 ;;
+  "## $version — "[0-9][0-9].[0-9][0-9].[0-9][0-9][0-9][0-9]) ;;
+  *) echo "date the top changelog section as \"## $version — DD.MM.YYYY\" before releasing" >&2; exit 1 ;;
 esac
 if npm view "@wirecat/drive-cli@$version" version --prefer-online >/dev/null 2>&1; then
   echo "$version is already published; prepare a new version in a pull request" >&2
