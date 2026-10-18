@@ -144,7 +144,7 @@ describe("document knowledge commands", () => {
     await expect(call("documents", "list", "--json=subject")).rejects.toMatchObject({
       details: { reason: "output.unknown-field" },
     })
-    await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/query/)
+    await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/unknown option '--tag'/)
     await expect(call("documents", "list", "kind:file")).rejects.toThrow(/kind/)
   })
   it("pages and limits the local lists, and takes the global options", async () => {

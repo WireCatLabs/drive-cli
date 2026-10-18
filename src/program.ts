@@ -369,7 +369,12 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   program.parseAsync = async (argv = process.argv, settings) => {
     const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
     const args = settings?.from === "user" ? argv : argv.slice(2)
-    const profiled = liftProfile([...args], commandWords(program))
+    const valued = new Set(
+      program.options
+        .filter((option) => option.required)
+        .flatMap((option) => [option.long, option.short].filter((flag) => flag !== undefined)),
+    )
+    const profiled = liftProfile([...args], commandWords(program), valued)
     const requested = liftJson(profiled.rest, (words) => commandIn(program, words), providerJsonFields)
     fields = requested.fields
     const lifted = { ...profiled, rest: requested.argv }

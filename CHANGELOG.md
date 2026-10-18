@@ -8,9 +8,14 @@
   and shows its arguments, `drive_read` and `drive_write` run it as `{ command, arguments }` — the model tg and max
   use. Commands, arguments, permissions and the audit record are unchanged; `drive_write` is not offered when the
   profile allows no writes. `mcp --tools` lists commands by `command` instead of tool `name`.
+- **A list query refuses a word that starts with `--`** as an unknown option, with a suggestion
+  (`documents list --tag budget` → "unknown option '--tag' (Did you mean --page?)"), instead of reading it as query
+  text. It comes with cli-core 0.345.0.
 
 ### Fixed
 
+- The profile may follow a global option that takes a value: `drive --timeout 30s personal status` reads `personal`
+  as the profile, not `30s`.
 - A search that finds nothing before anything is imported says so in `not_imported`: no folder is selected, or no
   sync has run yet. An empty answer read as "no such document".
 - `session start` checks that the keyring can be used before it shows the Google sign-in, so a computer without one
