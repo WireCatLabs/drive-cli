@@ -72,7 +72,9 @@ describe("document knowledge lists filter in the store's query", () => {
       ["memories", "search", "DOC", "reviews", "--scope", "work"],
       ["memories", "search", "DOC", "scope:work"],
     ])
-      await expect(run(...args), args.join(" ")).rejects.toMatchObject({ code: "validation_error" })
+      await expect(run(...args), args.join(" ")).rejects.toMatchObject({
+        code: expect.stringMatching(/^(validation_error|commander\.unknownOption)$/),
+      })
     expect(store.facts.list).not.toHaveBeenCalled()
     expect(store.memories.list).not.toHaveBeenCalled()
     expect(store.memories.search).not.toHaveBeenCalled()
@@ -93,7 +95,7 @@ describe("api list", () => {
     expect(docs.items.length).toBeGreaterThan(0)
     expect(docs.items.length).toBeLessThan(all.items.length)
     expect(docs.items.every((method: { name: string }) => method.name.startsWith("docs."))).toBe(true)
-    await expect(list("--service", "docs")).rejects.toMatchObject({ code: "validation_error" })
+    await expect(list("--service", "docs")).rejects.toMatchObject({ code: "commander.unknownOption" })
     await expect(list("service:unknown-service")).rejects.toMatchObject({ code: "validation_error" })
   })
 })

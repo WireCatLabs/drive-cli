@@ -2,8 +2,20 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **`drive mcp` serves three tools in place of one per command (161 before)**: `drive_tools_search` finds a command
+  and shows its arguments, `drive_read` and `drive_write` run it as `{ command, arguments }` — the model tg and max
+  use. Commands, arguments, permissions and the audit record are unchanged; `drive_write` is not offered when the
+  profile allows no writes. `mcp --tools` lists commands by `command` instead of tool `name`.
+- **A list query refuses a word that starts with `--`** as an unknown option, with a suggestion
+  (`documents list --tag budget` → "unknown option '--tag' (Did you mean --page?)"), instead of reading it as query
+  text. It comes with cli-core 0.345.0.
+
 ### Fixed
 
+- The profile may follow a global option that takes a value: `drive --timeout 30s personal status` reads `personal`
+  as the profile, not `30s`.
 - A search that finds nothing before anything is imported says so in `not_imported`: no folder is selected, or no
   sync has run yet. An empty answer read as "no such document".
 - `session start` checks that the keyring can be used before it shows the Google sign-in, so a computer without one
@@ -11,7 +23,6 @@
 - `drive complete --help` prints the help instead of "choose a supported shell".
 - The advice for a missing search model names a command that works as written: `npx -y @wirecat/tg-cli local models
   text download e5-small`. The old `tg models text download e5-small` fails without a profile.
-
 - `drive mcp` no longer offers tools the Google sign-in cannot run: changing Google files needs `--grant write`,
   Drive Activity needs `activity`, Drive apps need `apps`. They used to be listed and fail when called. `memories
   extract`, which sends a document to the model and changes no Google file, stays offered without `--grant write`.

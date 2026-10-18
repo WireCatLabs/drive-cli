@@ -84,11 +84,12 @@ drive personal --read-only mcp
 
 Completion uses cli-base's registry and suggestion engine plus the same shell-script library as
 MAX. It does not load Google credentials, open a store or fetch names over the network.
-MCP stdio uses the protocol SDK pinned in package.json. Tool names and input flags come from the command tree;
-tool calls construct argv and run the same CLI, so schemas, profile selection and policies cannot
-drift into a second executor. Input is untrusted: positional values follow the end-of-options
-delimiter and a client cannot supply policy overrides. Denied/write-disabled tools are hidden and
-every call rechecks current policy. Sign-in/config changes, arbitrary export paths, body files,
+MCP stdio uses the protocol SDK pinned in package.json and serves cli-core's three tools, as tg and
+max do: `drive_tools_search`, `drive_read` and `drive_write` (`registerCommands`). The commands they
+find and their input flags come from the command tree; a call constructs argv and runs the same CLI,
+so schemas, profile selection and policies cannot drift into a second executor. Input is untrusted: positional values follow the end-of-options
+delimiter and a client cannot supply policy overrides. Denied/write-disabled commands are hidden, and
+so are commands whose Google scope the sign-in lacks; every call rechecks current policy. Sign-in/config changes, arbitrary export paths, body files,
 stdin reads and untyped raw API dispatch are excluded from the agent surface.
 
 ## Checks and compatibility
@@ -126,8 +127,9 @@ Node and Bun. Fixtures use no owner sessions, data, models or network. Google br
 real requests and real-model quality require separate live validation; application availability
 does not establish content fidelity.
 
-Differences that remain: this CLI has Google-specific profile/state configuration and a thin
-registry-to-MCP adapter because shared messenger/bot factories require messenger capabilities.
+Differences that remain: this CLI has Google-specific profile/state configuration and its own
+command catalogue for MCP, because the shared messenger/bot factories require messenger capabilities;
+only the three-tool surface is shared.
 There is no HTTP MCP/OAuth hosting, Windows installer suite, messenger parity mapping, full
 media-upload workflow or automatic background watches. Those are not reported as MAX parity.
 
