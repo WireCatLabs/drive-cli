@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- A search that finds nothing before anything is imported says so in `not_imported`: no folder is selected, or no
+  sync has run yet. An empty answer read as "no such document".
+- `session start` checks that the keyring can be used before it shows the Google sign-in, so a computer without one
+  fails at once instead of after consent.
+- `drive complete --help` prints the help instead of "choose a supported shell".
+- The advice for a missing search model names a command that works as written: `npx -y @wirecat/tg-cli local models
+  text download e5-small`. The old `tg models text download e5-small` fails without a profile.
+
+### Documentation
+
+- README, search and configuration pages give the same npx command for the text and picture models, which needs no
+  global tg install and no Telegram sign-in.
+
 ## 0.17.3 — 18.10.2026
 
 ### Fixed

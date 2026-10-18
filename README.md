@@ -77,10 +77,17 @@ Search results include the original Google URL. `documents show` includes each t
 and title. Native Markdown exports are saved separately from the all-tab text used for indexing.
 Export refuses to overwrite an existing destination file.
 
-Semantic search uses an already-downloaded shared text model. Prepare the existing model cache
-with `tg personal models text download e5-small` or its `max` equivalent, then use `drive personal sync --embed`.
-There is no replacement model downloader or implicit download here. Missing models are reported.
-`--exact` searches words without semantic retrieval.
+Semantic search uses the shared local text model (about 135 MB). Drive has no model downloader yet, so
+download it once with tg, through npx. This installs nothing globally and needs no Telegram sign-in; `local` is any
+profile name:
+
+```sh
+npx -y @wirecat/tg-cli local models text download e5-small
+drive personal sync --embed
+```
+
+Drive never downloads a model on its own; a missing one is reported. `--exact` searches words without semantic
+retrieval.
 
 ## Keep it current
 

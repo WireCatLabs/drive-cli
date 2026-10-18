@@ -4,7 +4,7 @@ import { CliError, type KeyringStore } from "@wirecat/cli-base"
 import { CodeChallengeMethod, type Credentials as GoogleTokens, OAuth2Client } from "google-auth-library"
 import { type OAuthApplication, profileName, readConfig, writeConfig } from "./config.js"
 import { googleSource } from "./google.js"
-import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, saveSession, WRITE_SCOPE } from "./tokens.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, checkSessionStorage, READ_SCOPE, saveSession, WRITE_SCOPE } from "./tokens.js"
 
 export interface LoginOptions {
   env: NodeJS.ProcessEnv
@@ -67,6 +67,7 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
   )
   try {
     if (options.signal?.aborted) throw new CliError("cancelled", "Google sign-in was cancelled")
+    checkSessionStorage(options.env, name, options.storage, options.keyring)
     await new Promise<void>((resolve, fail) => {
       server.once("error", fail)
       server.listen(0, "127.0.0.1", resolve)

@@ -28,11 +28,13 @@ export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = 
     throw error
   }
 }
-// cli-core names one app's download command; drive has none and reads the models tg and max download.
+// cli-core names one app's download command; drive has none yet and reads the shared models tg downloads.
+// tg needs a profile word but no sign-in to download one, so npx works without installing or logging in.
 const modelAdvice = (text: string) =>
   text.replace(
     /`tg ((?:images )?models (?:text )?download [^`]+)`(?: fetches it)?/,
-    "tg or max downloads it: `tg $1` or `max $1`",
+    "drive has no downloader yet; tg downloads it to the shared folder without a Telegram sign-in: " +
+      "`npx -y @wirecat/tg-cli local $1`",
   )
 const withModelAdvice = async <T>(act: () => Promise<T>): Promise<T> => {
   try {

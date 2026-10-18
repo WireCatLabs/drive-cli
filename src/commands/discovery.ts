@@ -16,8 +16,10 @@ export const installCompleteCommand = (program: Command, { streams }: CommandCon
     .argument("[words...]", "a shell name, or after -- the words typed so far")
     .allowUnknownOption()
     .helpOption(false)
-    .action(async (words: string[]) => {
+    .action(async function (this: Command, words: string[]) {
       if (!(program as Command & { rawArgs: string[] }).rawArgs.includes("--")) {
+        // The help option stays off: during a Tab, `--help` is a word being completed, not a request.
+        if (words[0] === "--help" || words[0] === "-h") return streams.data(this.helpInformation())
         if (!["bash", "zsh", "fish", "powershell"].includes(words[0] ?? ""))
           throw new CliError("validation_error", "choose a supported shell")
         const { script } = await import("@bomb.sh/tab")
