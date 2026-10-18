@@ -56,3 +56,11 @@ pnpm docs:check
 Live user OAuth and Doc conversion need a registered Desktop client and user grant. They are
 manual, not CI. The earlier real service-account folder experiment could not create Docs because
 Google returned storageQuotaExceeded. The incomplete native Docs check is not reported as passed.
+
+## Test matrix
+
+[test-matrix.md](test-matrix.md) lists every command and option and whether a test drove it through the CLI. The
+suite records each parsed command in `coverage/argv.jsonl` (`scripts/testing/argv-trace.ts`); `pnpm test:matrix`
+rebuilds the page from that log and fails on a command or option with no test and no reason. A reason goes in
+`scripts/test-matrix-untested.ts`. Full validation runs `pnpm test:matrix:check` after the suite, and it fails when
+the committed page is stale.

@@ -156,7 +156,7 @@ describe("files upload", () => {
     const request = vi.fn(async () => reply(500))
     const run = (...args: string[]) =>
       createProgram({ env: f.env, streams: captureStreams(), uploadRequest: request }).parseAsync(
-        ["default", ...args, "files", "upload", path, "--parent", "folder-1", "--json"],
+        ["default", ...args, "files", "upload", path, "--parent", "folder-1", "--name", "renamed.txt", "--json"],
         { from: "user" },
       )
     await run("--dry-run")

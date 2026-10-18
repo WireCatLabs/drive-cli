@@ -6,5 +6,17 @@
     "@cspell/dict-ru_ru/cspell-ext.json"
   ],
   "ignorePaths": ["docs/dev/**", "CHANGELOG.md"],
-  "words": ["wirecat", "PKCE"]
+  "words": [
+    "accessproposals",
+    "checkpointed",
+    "inspectable",
+    "KACLS",
+    "LDML",
+    "PKCE",
+    "strikethrough",
+    "teamdrives",
+    "unconfigured",
+    "untrashed",
+    "wirecat"
+  ]
 }
