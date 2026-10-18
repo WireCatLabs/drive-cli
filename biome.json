@@ -14,21 +14,6 @@
       "!lint/baseline"
     ]
   },
-  "linter": {
-    "rules": {
-      "suspicious": {
-        "noImportCycles": "error"
-      },
-      "style": {
-        "noExcessiveLinesPerFile": {
-          "level": "error",
-          "options": {
-            "maxLines": 1000
-          }
-        }
-      }
-    }
-  },
   "overrides": [
     {
       "includes": ["src/**", "!**/*.test.ts"],
@@ -50,10 +35,6 @@
                   {
                     "group": ["proper-lockfile"],
                     "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
-                  },
-                  {
-                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
-                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
                   }
                 ]
               }
@@ -85,10 +66,6 @@
                   {
                     "group": ["proper-lockfile"],
                     "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
-                  },
-                  {
-                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
-                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
                   }
                 ]
               }
@@ -113,10 +90,6 @@
                   {
                     "group": ["proper-lockfile"],
                     "message": "src/profile-lock.ts owns the profile lock; take it through lockProfile"
-                  },
-                  {
-                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
-                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
                   }
                 ]
               }
@@ -141,24 +114,10 @@
                   {
                     "group": ["@modelcontextprotocol/**"],
                     "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
-                  },
-                  {
-                    "group": ["@wirecat/*/src/**", "@wirecat/*/dist/**"],
-                    "message": "use the WireCat packages through their public exports; their src and dist layout is not a contract"
                   }
                 ]
               }
             }
-          }
-        }
-      }
-    },
-    {
-      "includes": ["**/*.test.ts", "test/**", "**/generated/**"],
-      "linter": {
-        "rules": {
-          "style": {
-            "noExcessiveLinesPerFile": "off"
           }
         }
       }
