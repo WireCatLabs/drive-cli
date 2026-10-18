@@ -91,10 +91,12 @@ export const REASONS: ErrorReason[] = defineReasons(
 
 // Commander words the cause itself: unknown command with a suggestion, missing argument, missing option.
 const parseMessage = (error: CommanderError, fallback: string) =>
-  error.message
-    .replace(/^error: /, "")
-    .replace(/\s*\n\s*/g, " ")
-    .trim() || fallback
+  error.code === "commander.help"
+    ? "no command given after the profile name; list them with drive --help"
+    : error.message
+        .replace(/^error: /, "")
+        .replace(/\s*\n\s*/g, " ")
+        .trim() || fallback
 
 const recognisable = (error: unknown, invalidArguments: string): unknown =>
   error instanceof CommanderError ? new CliError("validation_error", parseMessage(error, invalidArguments)) : error

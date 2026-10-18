@@ -259,9 +259,10 @@ describe remote and local reads/writes; `api_operation` identifies a generated G
 Local lists use `page.mode: "page"` and return `next_page` when more results remain; Google lists
 (`files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives`, `documents history`)
 use `page.mode: "cursor"` and return `next_cursor`. Search and note lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
-one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`;
+one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`, and the process exit code names the kind (`2` bad input, `4` not signed in,
+`5` not allowed, `6` not found, `9` timeout; the full table is under [exit codes](commands.md#exit-codes));
 an uncertain remote write must be inspected before repeating it. MCP displays control characters
-visibly; `--agent-json` is no longer an option.
+visibly.
 
 For a few catalog fields, use `--json=id,name` instead of `--json`.
 Dotted paths select nested objects and arrays: use `--json=hits.ref,hits.excerpt` for search

@@ -8,8 +8,8 @@ and reuses WireCat's shared keyword search and optional local embeddings. Shared
 editor identities and evidence-backed memories stay attached to the imported documents.
 
 Drive uses Google's official Node clients.
-Sources supported now: native Google Docs and uploaded Markdown/TXT. Other types and shortcuts
-are reported as skipped; shortcuts are not followed outside the selected scope.
+Sources supported now: native Google Docs and Sheets, PDF, docx, xlsx, CSV, TSV, and uploaded Markdown/TXT.
+Other types and shortcuts are reported as skipped; shortcuts are not followed outside the selected scope.
 
 ## Install
 
@@ -129,7 +129,7 @@ when layout or tab coverage matters.
 
 One sync reads at most 10,000 entries under the chosen folders, and at most 10,000 changes from
 Google's change feed; past either, it stops with nothing lost and says what to do. Text caps at
-200,000 characters and snapshots at 50 MiB, with bounded pagination. Oversized input is refused rather than truncated. Google's native export
+2,000,000 characters and snapshots at 50 MiB, with bounded pagination. Oversized input is refused rather than truncated. Google's native export
 also has its own 10 MB limit. Documents changing during export remain pending for retry.
 
 ## Document knowledge and remote actions
@@ -153,7 +153,7 @@ Use the shared model setup with `models set --provider openai --model MODEL_ID`.
 come from the corresponding API-key environment variable and never enter regular configuration.
 Source content changes and scope removals mark source-backed memories stale. User notes stay local.
 
-The generated API exposes 68 Drive, Docs and Activity methods. Convenient commands include
+The generated API exposes 85 methods: 64 Drive, 17 Sheets, 3 Docs and 1 Activity. Convenient commands include
 file listing/copying/moving, trash/restore, folder creation, Docs creation/batch updates, comments,
 permissions, revisions and Shared Drives. Read grants remain the default. JSON API calls require
 explicit flags for mutation and permanent deletion; Google still enforces file roles and API policy.

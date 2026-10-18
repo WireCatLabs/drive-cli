@@ -75,6 +75,7 @@ describe("failure handler", () => {
       return JSON.parse(report(error, args).text).error.message
     }
     expect(await message(["default", "serch", "foo"])).toBe("unknown command 'serch' (Did you mean search?)")
+    expect(await message(["login"])).toBe("no command given after the profile name; list them with drive --help")
     expect(await message(["default", "search"])).toBe("missing required argument 'query'")
     expect(await message(["default", "documents", "export", "DOC_ID"])).toBe(
       "required option '--output <file>' not specified",
