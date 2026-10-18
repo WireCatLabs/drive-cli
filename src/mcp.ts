@@ -11,7 +11,7 @@ import type { ProgramOptions } from "./commands/context.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
-import { describeDriveProgram } from "./registry.js"
+import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
@@ -23,10 +23,12 @@ interface ToolDefinition {
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
 const excluded = new Set(["session", "config", "complete", "mcp", "models"])
+// REMOTE_WRITE also marks a command that sends a document to the model (memories extract); only GOOGLE_WRITE
+// changes Google files.
 const requiredScope = (command: CommandInfo) =>
   command.api_operation
     ? apiMethod(command.api_operation).scope
-    : command.effects?.remote === "write"
+    : command.effects?.remote === GOOGLE_WRITE.remote && command.effects.local === GOOGLE_WRITE.local
       ? WRITE_SCOPE
       : undefined
 

@@ -321,10 +321,11 @@ describe("MCP offers what the Google sign-in granted", () => {
     return new Set(mcpTools(createProgram, { env: f.env, keyring }, "default").map((tool) => tool.name))
   }
 
-  it("hides Google writes, activity and apps without their grants, and keeps reads and local writes", () => {
+  it("hides Google writes, activity and apps without their grants, and keeps reads, local and model writes", () => {
     for (const tools of [offered(READ_SCOPE), offered("none")]) {
       expect(tools).toContain("drive_api_drive_files_get")
       expect(tools).toContain("drive_facts_reverse")
+      expect(tools).toContain("drive_memories_extract")
       expect(tools).not.toContain("drive_api_drive_files_delete")
       expect(tools).not.toContain("drive_sheets_update")
       expect(tools).not.toContain("drive_api_driveactivity_activity_query")
