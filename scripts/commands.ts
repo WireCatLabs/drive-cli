@@ -1,6 +1,7 @@
 import { resolve } from "node:path"
 import { writeArtifacts } from "@wirecat/cli-base/codegen"
 import { COMMANDS_PAGE_LABELS, commandsPage, describeOptions } from "@wirecat/cli-base/commands"
+import { commandHelpMarkdown } from "@wirecat/cli-core/cli"
 import { createProgram } from "../dist/program.js"
 import { describeDriveProgram } from "../dist/registry.js"
 
@@ -11,11 +12,12 @@ const content = commandsPage({
   commands: describeDriveProgram(program),
   options: describeOptions(program),
   labels: COMMANDS_PAGE_LABELS.en,
+  details: (command) => commandHelpMarkdown(program, command.path),
   text: {
     banner: "<!-- Generated from the command tree by pnpm generate. Do not edit. -->",
     title: "Drive commands",
     intro:
-      "Look up every supported command and option here. Account operations require an explicit profile: `drive personal documents show DOC_ID` or `drive --profile personal documents show DOC_ID`. Help, discovery, API method listings, schemas and shell completion do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.",
+      "Look up every supported command and option here. Account operations require an explicit profile: `drive personal documents show DOC_ID` or `drive --profile personal documents show DOC_ID`. Help, scenarios, the agent skill, model downloads, discovery, API method listings, schemas and shell completion do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.",
     globalHeading: "Global options",
     globalIntro: "These options apply to the selected profile and current invocation.",
     mutates: "This command can change Google data or send data to the configured model.",

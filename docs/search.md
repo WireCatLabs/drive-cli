@@ -52,12 +52,11 @@ This applies to plain-word queries such as `budget decision`. A query that uses 
 
 ## Search by meaning
 
-Drive uses the shared local search model cache. Drive has no model downloader yet, so download the model once with
-tg through npx: it installs nothing globally and needs no Telegram sign-in (`local` is any profile name). Then ask
+Drive uses the shared local search model cache. Download the model once — it needs no profile or sign-in — then ask
 Drive to embed the imported text:
 
 ```sh
-npx -y @wirecat/tg-cli local models text download e5-small
+drive models text download e5-small
 drive personal sync --embed
 drive personal search 'what did we agree to spend?' --json
 ```

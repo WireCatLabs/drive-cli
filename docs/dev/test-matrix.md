@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**184 ✅ · 955 ⛔ · 0 ❌** — 171 commands, 968 options.
+**189 ✅ · 959 ⛔ · 0 ❌** — 177 commands, 971 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1133,9 +1133,17 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models set` | `--provider` | ✅ |  |
 | `models set` | `--model` | ✅ |  |
 | `models set` | `--base-url` | ✅ |  |
+| `models text download` |  | ✅ |  |
+| `models text download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
+| `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
 | `mcp` |  | ✅ |  |
 | `mcp` | `--tools` | ✅ |  |
 | `commands` |  | ✅ |  |
+| `skill show` |  | ✅ |  |
+| `skill install` |  | ✅ |  |
+| `skill install` | `--for` | ✅ |  |
+| `guide` |  | ⛔ | cli-core's command, printed to the process's stdout; src/help.test.ts runs checkGuide on every scenario |
+| `help` |  | ✅ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
 | *global* | `--profile` | ✅ |  |
 | *global* | `--json` | ✅ |  |
@@ -1150,3 +1158,4 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--yes` | ✅ |  |
 | *global* | `--allow-dangerous` | ✅ |  |
 | *global* | `--permission` | ✅ |  |
+| *global* | `--help-all` | ⛔ | Commander answers before any command runs, so the trace never sees it; src/help.test.ts checks it |

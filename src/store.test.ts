@@ -167,10 +167,10 @@ describe("released shared store and search", () => {
     }
   })
 
-  it("advises a tg download that works as written for a missing text model", async () => {
+  it("names drive's own download for a missing text model", async () => {
     const index = await openIndex(fixture().env)
     try {
-      await expect(index.embed(10)).rejects.toThrow(/`npx -y @wirecat\/tg-cli local models text download [^`]+`/)
+      await expect(index.embed(10)).rejects.toThrow(/`drive models text download [^`]+`/)
     } finally {
       await index.close()
     }

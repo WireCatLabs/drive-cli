@@ -12,18 +12,25 @@ import type { Command } from "commander"
 import { VERSION } from "./version.js"
 
 /** These commands do not select an account or load account configuration. */
-export const ACCOUNT_FREE_COMMANDS = new Set(["commands", "complete", "api show", "api list"])
+export const ACCOUNT_FREE_COMMANDS = new Set([
+  "commands",
+  "complete",
+  "api show",
+  "api list",
+  "help",
+  "guide",
+  "skill show",
+  "skill install",
+  "models text download",
+  "images models download",
+])
 
 /** Calls Google and keeps nothing on this machine, unlike cli-core's REMOTE_READ and REMOTE_WRITE. */
 export const GOOGLE_READ: Effects = { remote: "read", local: "none" }
 export const GOOGLE_WRITE: Effects = { remote: "write", local: "none" }
 
 /** Examples go into `commands --json` for agents and under the options in `--help` for people. */
-export const examples = (command: Command, lines: string[]): Command =>
-  annotate(command, { examples: lines }).addHelpText(
-    "after",
-    `Examples:\n${lines.map((line) => `  ${line}`).join("\n")}\n`,
-  )
+export const examples = (command: Command, lines: string[]): Command => annotate(command, { examples: lines })
 
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
 export const CONTRACT = 3

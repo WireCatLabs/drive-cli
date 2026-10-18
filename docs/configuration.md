@@ -78,12 +78,11 @@ The first line changes the shared default; the second overrides it for `work`.
 The final command prints both configuration sections, not a merged list of effective values.
 
 `drive personal config set picture_search true` turns picture search on for `personal` only.
-Prepare the shared local `clip-b32` model first (about 160 MB), then use queries in English. Drive has no model
-downloader yet; tg downloads it to the shared folder through npx, with no global install and no Telegram sign-in
-(`local` is any profile name):
+Download the shared local `clip-b32` model first (about 160 MB), then use queries in English. The download needs no
+profile or sign-in:
 
 ```sh
-npx -y @wirecat/tg-cli local images models download clip-b32
+drive images models download clip-b32
 ```
 
 `drive personal config set max_text_chars 500000` makes sync skip longer files with that reason; a
@@ -97,6 +96,7 @@ These values apply to the process that runs Drive; they are not saved by `config
 | Variable | Purpose |
 | --- | --- |
 | `DRIVE_TIMEOUT` | Whole-command deadline, like `--timeout` (`500ms`, `30s`, `2m`); the default is 30 seconds |
+| `DRIVE_READ_ONLY` | Set to anything but `0` or empty: every command refuses changes, local or on Google, with exit 5, as `--read-only` does |
 | `DRIVE_PROFILE_LOCK` | Pin the process to one profile: naming any other profile is refused with exit 5 |
 | `DRIVE_CONFIG_DIR` | Move `config.json` and the associated credential namespace |
 | `DRIVE_STATE_DIR` | Move snapshots and checkpoints |

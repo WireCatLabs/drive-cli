@@ -17,6 +17,8 @@
   },
   "files": [
     "dist",
+    "scenarios",
+    "skills",
     "README.md",
     "LICENSE"
   ],

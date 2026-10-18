@@ -6,6 +6,7 @@ import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { operations, validateRequest } from "./api-contract.js"
 import { readConfig, writeConfig } from "./config.js"
+import { reportFailure } from "./failure.js"
 import { googleApi } from "./google-api.js"
 import { invokeTool, mcpTools, toolArgv } from "./mcp.js"
 import { createProgram } from "./program.js"
@@ -142,6 +143,29 @@ describe("shared CLI policy and execution", () => {
         { from: "user" },
       ),
     ).rejects.toThrow("policy")
+  })
+  it("refuses every change under DRIVE_READ_ONLY=1 with exit 5, as --read-only does", async () => {
+    const f = fixture()
+    const env = { ...f.env, DRIVE_READ_ONLY: "1" }
+    const request = vi.fn(async () => ({}))
+    const index = vi.fn(async () => f.index)
+    for (const args of [
+      ["tags", "add", "doc-a", "tag"],
+      ["files", "copy", "doc-a"],
+    ]) {
+      const program = createProgram({ env, api: { call: request }, index, streams: captureStreams() })
+      const failure = await program.parseAsync(["default", ...args], { from: "user" }).catch((error) => error)
+      expect(failure).toMatchObject({ code: "permission_error", message: expect.stringContaining("DRIVE_READ_ONLY") })
+      expect(reportFailure(failure, { args, program, streams: captureStreams(), tty: false })).toBe(5)
+    }
+    expect(request).not.toHaveBeenCalled()
+    expect(index).not.toHaveBeenCalled()
+    const read = captureStreams()
+    await createProgram({ env, api: { call: request }, streams: read }).parseAsync(
+      ["default", "files", "get", "doc-a", "--json"],
+      { from: "user" },
+    )
+    expect(request).toHaveBeenCalledTimes(1)
   })
   it("supports profile-first syntax, config, completion and offline/dry-run without network", async () => {
     const f = fixture()

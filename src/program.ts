@@ -37,11 +37,13 @@ import { installMcpCommand } from "./commands/mcp.js"
 import { installRemoteCommands } from "./commands/remote.js"
 import { installSearchCommand } from "./commands/search.js"
 import { installSessionCommands } from "./commands/session.js"
+import { installSkillCommand } from "./commands/skill.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { activeProfile, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
+import { guide, installFirstScreen } from "./first-screen.js"
 import { googleSource } from "./google.js"
 import { apiMethod, googleApi, googleUploadRequest } from "./google-api.js"
 import type { DocumentIndex } from "./model.js"
@@ -298,6 +300,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installModelCommands(program, context)
   installMcpCommand(program, context, createProgram)
   installCommandsCommand(program, context)
+  installSkillCommand(program, context)
+  program.addCommand(guide())
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
@@ -412,5 +416,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       outputError: () => {},
     })
   }
+  installFirstScreen(program)
   return program
 }
