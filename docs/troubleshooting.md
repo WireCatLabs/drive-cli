@@ -29,7 +29,7 @@ tokens or private document text. Once the expected source appears, return to [se
 
 ## “Choose a profile explicitly”
 
-Run the command as `drive personal …` or `drive --profile personal …`, replacing `personal` with
+Run the command as `drive personal status` or `drive --profile personal status`, replacing `personal` with
 the account name you chose. The error lists configured profile names. Neither `DRIVE_PROFILE`
 nor an old saved default bypasses selection. For the first connection, follow
 [sign-in](installation.md#connect-your-account). For existing profiles, `drive personal session list`

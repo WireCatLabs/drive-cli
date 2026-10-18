@@ -14,7 +14,7 @@ changes one command invocation. These are different ways to control the tool.
 | System | Configuration file | Local data and snapshots |
 | --- | --- | --- |
 | Linux | `~/.config/drive-cli/config.json` | `~/.local/share/drive-cli/` |
-| macOS | `~/Library/Preferences/drive-cli/config.json` | `~/Library/Application Support/drive-cli/` |
+| macOS | `~/.config/drive-cli/config.json` | `~/Library/Application Support/drive-cli/` |
 | Windows | `%APPDATA%\drive-cli\Config\config.json` | `%LOCALAPPDATA%\drive-cli\Data\` |
 
 These are the operating-system defaults; the environment overrides below can move them. The
@@ -96,6 +96,8 @@ These values apply to the process that runs Drive; they are not saved by `config
 
 | Variable | Purpose |
 | --- | --- |
+| `DRIVE_TIMEOUT` | Whole-command deadline, like `--timeout` (`500ms`, `30s`, `2m`); the default is 30 seconds |
+| `DRIVE_PROFILE_LOCK` | Pin the process to one profile: naming any other profile is refused with exit 5 |
 | `DRIVE_CONFIG_DIR` | Move `config.json` and the associated credential namespace |
 | `DRIVE_STATE_DIR` | Move snapshots and checkpoints |
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
@@ -118,7 +120,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 | `--read-only` | Refuse both local and remote mutations |
 | `--permission KEY=LEVEL` | Override a command permission temporarily |
 | `--dry-run` | Validate and preview a supported operation without acting |
-| `--json`, `--jsonl` | Select structured output; `--json=id,title` keeps only those fields; MCP answers show control characters visibly |
+| `--json`, `--jsonl` | Select structured output; `--json=id,name` keeps only those fields; MCP answers show control characters visibly |
 | `--timeout DURATION`, `--max-output-bytes N` | Bound the command deadline and buffered output |
 
 These flags are not file settings. Command-specific options such as `search --limit` and
@@ -157,8 +159,7 @@ snapshots and retains the original file. An interrupted rebuild can be retried. 
 missing, run `drive personal sync --rescan` to fetch the selected sources again.
 
 Drive stops if the previous database contains annotations that would be left behind. To continue
-using them, set `MESSAGING_STORE` to the previous database path; do not delete it. `DRIVE_STORE`
-is retired and produces an error rather than silently selecting another file. Transfer of owner
+using them, set `MESSAGING_STORE` to the previous database path; do not delete it. Transfer of owner
 annotations between databases is not automatic.
 
 Continue with [linking documents to people and projects](recipes.md#link-a-document-to-a-person-or-project).
