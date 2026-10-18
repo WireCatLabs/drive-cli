@@ -13,7 +13,8 @@
   text download e5-small`. The old `tg models text download e5-small` fails without a profile.
 
 - `drive mcp` no longer offers tools the Google sign-in cannot run: changing Google files needs `--grant write`,
-  Drive Activity needs `activity`, Drive apps need `apps`. They used to be listed and fail when called.
+  Drive Activity needs `activity`, Drive apps need `apps`. They used to be listed and fail when called. `memories
+  extract`, which sends a document to the model and changes no Google file, stays offered without `--grant write`.
 
 ### Documentation
 
