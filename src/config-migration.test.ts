@@ -42,7 +42,7 @@ describe("existing AI settings", () => {
     const text = readFileSync(path, "utf8")
     expect(text).not.toContain('"embeddingModel"')
     expect(text).not.toContain('"baseUrl"')
-    expect(statSync(path).mode & 0o777).toBe(0o640)
+    if (process.platform !== "win32") expect(statSync(path).mode & 0o777).toBe(0o640)
     const before = statSync(path, { bigint: true })
     expect(readConfig(f.env)).toEqual(config)
     const after = statSync(path, { bigint: true })
