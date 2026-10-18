@@ -30,6 +30,26 @@ export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file",
     isolated: pathsAreOverridden({ appName: "drive-cli", prefix: "DRIVE", env }),
     ...(keyring ? { keyring } : {}),
   })
+const notSaved = () =>
+  new CliError(
+    "configuration_error",
+    "could not save Google sign-in; use an available keyring or explicitly choose --credential-storage file",
+    { reason: "sign-in.not-saved" },
+  )
+/** Before the browser opens: a missing keyring found only after consent makes the owner sign in twice. */
+export const checkSessionStorage = (
+  env: NodeJS.ProcessEnv,
+  name: string,
+  storage: "keyring" | "file",
+  keyring?: KeyringStore,
+): void => {
+  if (storage === "file") return
+  try {
+    credentials(env, storage, keyring).read(name)
+  } catch {
+    throw notSaved()
+  }
+}
 export const saveSession = (
   env: NodeJS.ProcessEnv,
   name: string,
@@ -40,11 +60,7 @@ export const saveSession = (
   try {
     credentials(env, storage, keyring).write(name, JSON.stringify(session))
   } catch {
-    throw new CliError(
-      "configuration_error",
-      "could not save Google sign-in; use an available keyring or explicitly choose --credential-storage file",
-      { reason: "sign-in.not-saved" },
-    )
+    throw notSaved()
   }
 }
 export const authorizedClient = (

@@ -52,11 +52,12 @@ This applies to plain-word queries such as `budget decision`. A query that uses 
 
 ## Search by meaning
 
-Drive uses the shared local search model cache. If you also use Telegram or MAX, prepare the
-model with that tool, then ask Drive to embed the imported text:
+Drive uses the shared local search model cache. Drive has no model downloader yet, so download the model once with
+tg through npx: it installs nothing globally and needs no Telegram sign-in (`local` is any profile name). Then ask
+Drive to embed the imported text:
 
 ```sh
-tg personal models text download e5-small
+npx -y @wirecat/tg-cli local models text download e5-small
 drive personal sync --embed
 drive personal search 'what did we agree to spend?' --json
 ```
@@ -64,7 +65,7 @@ drive personal search 'what did we agree to spend?' --json
 The model download uses the network; embedding runs locally. Drive does not download a missing
 model automatically. Embedding processes pending notes and documents across the shared database,
 including other profiles; Drive search still reads only the selected Google account. Word search works without it. Empty results mean no match in the imported
-coverage, not that Google Drive has no such document. Check [sync troubleshooting](troubleshooting.md).
+coverage, not that Google Drive has no such document; before the first import, `not_imported` says so. Check [sync troubleshooting](troubleshooting.md).
 
 ## Check what was searched
 

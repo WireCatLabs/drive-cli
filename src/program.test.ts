@@ -147,6 +147,25 @@ describe("standalone command workflow", () => {
     )
     expect(f.index.search).toHaveBeenCalledWith("synthetic-principal", "budget", { limit: 20, offset: 0, exact: true })
   })
+  it("says nothing is imported when a search comes back empty before the first sync", async () => {
+    const f = fixture()
+    const search = async () => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, index: async () => f.index }).parseAsync(
+        ["default", "search", "budget", "--json"],
+        { from: "user" },
+      )
+      return commandResult(streams.stdout.join(""))
+    }
+    expect((await search()).not_imported).toBe("profile default has imported no documents yet — drive default sync")
+    await createProgram({
+      env: f.env,
+      streams: captureStreams(),
+      source: async () => f.source,
+      index: async () => f.index,
+    }).parseAsync(["default", "sync", "--json"], { from: "user" })
+    expect((await search()).not_imported).toBeUndefined()
+  })
   it("shows local status without calling Google or opening an index", async () => {
     const f = fixture()
     const streams = captureStreams()

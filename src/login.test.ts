@@ -88,6 +88,23 @@ describe("browser OAuth", () => {
     expect(f.client.getToken).not.toHaveBeenCalled()
     await expect(fetch(f.redirect())).rejects.toThrow()
   })
+  it("refuses an unavailable keyring before it shows the sign-in URL", async () => {
+    const f = setup()
+    const broken = new Error("no Secret Service")
+    f.options.keyring = {
+      get: () => {
+        throw broken
+      },
+      set: () => {
+        throw broken
+      },
+      delete: () => {
+        throw broken
+      },
+    }
+    await expect(login(f.options)).rejects.toMatchObject({ details: { reason: "sign-in.not-saved" } })
+    expect(f.options.showUrl).not.toHaveBeenCalled()
+  })
   it("sanitizes token-exchange failures", async () => {
     const f = setup()
     vi.mocked(f.client.getToken).mockRejectedValue(new Error("fixture-access-token"))
