@@ -3299,7 +3299,7 @@ drive <profile> models set [options]
 
 ## `drive mcp`
 
-serve drive's commands to an agent over MCP on stdio
+serve drive's commands to an agent over MCP: search, then read or write
 
 This command can change Google data or send data to the configured model.
 
@@ -3309,7 +3309,7 @@ drive <profile> mcp [options]
 
 | Option | What it does |
 |---|---|
-| `--tools` | list the tools offered instead of starting the server. |
+| `--tools` | list the commands the server offers instead of starting it. |
 
 ## `drive commands`
 

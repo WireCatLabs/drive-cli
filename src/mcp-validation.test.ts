@@ -20,7 +20,10 @@ describe("MCP validation through the SDK", () => {
         ["unknown-field", { "file-id": "fixture-file", "unknown-field": "DO_NOT_LOG_ARGUMENT" }],
         ["file-id", {}],
       ] as const) {
-        const result = await client.callTool({ name: "drive_api_drive_files_get", arguments: args })
+        const result = await client.callTool({
+          name: "drive_read",
+          arguments: { command: "api drive-files-get", arguments: args },
+        })
         expect(result).toMatchObject({
           isError: true,
           structuredContent: { error: { code: "validation_error", message: expect.stringContaining(field) } },
@@ -29,16 +32,19 @@ describe("MCP validation through the SDK", () => {
       }
       expect(call).not.toHaveBeenCalled()
       const good = await client.callTool({
-        name: "drive_api_drive_files_get",
-        arguments: { "file-id": "fixture-file" },
+        name: "drive_read",
+        arguments: { command: "api drive-files-get", arguments: { "file-id": "fixture-file" } },
       })
       expect(good).toMatchObject({
         structuredContent: { item: { id: "fixture-file" }, meta: { run_id: expect.any(String) } },
       })
       expect(call).toHaveBeenCalledTimes(1)
       const sheetsResult = await client.callTool({
-        name: "drive_sheets_update",
-        arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", values: "[[1,2]]" },
+        name: "drive_write",
+        arguments: {
+          command: "sheets update",
+          arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", values: "[[1,2]]" },
+        },
       })
       expect(sheetsResult).toMatchObject({
         isError: true,
@@ -47,8 +53,11 @@ describe("MCP validation through the SDK", () => {
         },
       })
       const unknownSheetArgument = await client.callTool({
-        name: "drive_sheets_show",
-        arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", unknown: "DO_NOT_LOG_ARGUMENT" },
+        name: "drive_read",
+        arguments: {
+          command: "sheets show",
+          arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", unknown: "DO_NOT_LOG_ARGUMENT" },
+        },
       })
       expect(unknownSheetArgument).toMatchObject({
         isError: true,
@@ -57,10 +66,17 @@ describe("MCP validation through the SDK", () => {
         },
       })
       expect(JSON.stringify(unknownSheetArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
-      expect((await client.listTools()).tools.map((tool) => tool.name)).toContain("drive_store_import")
+      expect((await client.listTools()).tools.map((tool) => tool.name).sort()).toEqual([
+        "drive_read",
+        "drive_tools_search",
+        "drive_write",
+      ])
       const unknownTransferArgument = await client.callTool({
-        name: "drive_store_import",
-        arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), "unknown-field": true },
+        name: "drive_write",
+        arguments: {
+          command: "store import",
+          arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), "unknown-field": true },
+        },
       })
       expect(unknownTransferArgument).toMatchObject({
         isError: true,
@@ -83,6 +99,39 @@ describe("MCP validation through the SDK", () => {
       } finally {
         await store.close()
       }
+    } finally {
+      await client.close()
+      await server.close()
+    }
+  })
+
+  it("finds commands with drive_tools_search and offers no drive_write to a read-only profile", async () => {
+    const f = fixture()
+    const { server } = buildMcpServer(createProgram, { env: f.env, api: { call: vi.fn() } }, "default", {
+      readOnly: true,
+    })
+    const client = new Client({ name: "fixture-client", version: "1" })
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
+    await server.connect(serverTransport)
+    await client.connect(clientTransport)
+    try {
+      expect((await client.listTools()).tools.map((tool) => tool.name).sort()).toEqual([
+        "drive_read",
+        "drive_tools_search",
+      ])
+      const found = await client.callTool({ name: "drive_tools_search", arguments: { query: "files get" } })
+      expect(found).toMatchObject({
+        structuredContent: {
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              command: "api drive-files-get",
+              writes: false,
+              arguments: expect.objectContaining({ required: ["file-id"] }),
+            }),
+          ]),
+        },
+      })
+      expect(JSON.stringify(found)).not.toContain("drive-files-delete")
     } finally {
       await client.close()
       await server.close()
