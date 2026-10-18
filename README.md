@@ -57,7 +57,7 @@ your own Desktop client and leave it in Testing, Google usually ends its sign-in
 [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
 [Drive permissions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
 
-Use `--profile work` for another account. Each Google account has one local profile. `session list`
+Use `--profile work` for another account. Each Google account has one local profile. `drive personal session list`
 lists configured profiles. `session end` removes local sign-in while retaining cached data and
 configuration so re-login preserves document identities.
 
@@ -125,23 +125,6 @@ Google's change feed; past either, it stops with nothing lost and says what to d
 200,000 characters and snapshots at 50 MiB, with bounded pagination. Oversized input is refused rather than truncated. Google's native export
 also has its own 10 MB limit. Documents changing during export remain pending for retry.
 
-## Development
-
-Google logic stays here. SQL, chunking, embeddings and search live in the shared WireCat packages.
-
-```sh
-pnpm standards:check
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build
-pnpm smoke
-pnpm docs:check
-```
-
-See [architecture](docs/dev/ARCHITECTURE.md), [testing](docs/dev/TESTING.md),
-[development](docs/dev/DEVELOPMENT.md) and [releasing](docs/dev/RELEASING.md).
-
 ## Document knowledge and remote actions
 
 ```sh
@@ -171,33 +154,3 @@ explicit flags for mutation and permanent deletion; Google still enforces file r
 Read the [knowledge and API command guide](docs/dev/KNOWLEDGE_AND_API.md) for complete examples,
 permissions, history limits, AI settings and supported request formats. Contributor checks use
 isolated sources and mocked provider requests; see the [testing guide](docs/dev/TESTING.md).
-
-## Shared CLI conventions
-
-Committed Google Discovery snapshots feed a provider adapter into cli-base's shared code generators. cli-core builds the generated
-commands and validates their input; Google's SDK remains the transport. `pnpm generate` rebuilds
-types, validators, the operation manifest, coverage and [command reference](docs/commands.md).
-`pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.
-
-```sh
-drive personal api drive-files-get --help
-drive api show docs.documents.batchUpdate --json
-drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
-drive complete zsh
-drive personal --read-only mcp --tools --json
-```
-
-Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,
-readonly, ask and allow, configured under profile/default permissions. OAuth permission is a
-separate gate. `--read-only` also stops local mutations; `--yes` and `--allow-dangerous` answer
-confirmation but cannot override a denial. `--offline` refuses commands that may require network.
-Writes use the shared journal and uncertain Google outcomes are reported without automatic retry.
-
-MCP stdio tools derive from the same command registry and call the CLI executor with its guards.
-They exclude sign-in/config changes, arbitrary file export, body-file access and raw API dispatch.
-Generated typed methods remain available according to the profile's permissions. Agent-facing
-output shows control characters visibly; results use a shared output buffer and optional deadline.
-
-See the [alignment guide](docs/dev/CLI_ALIGNMENT.md) for policy examples, generation, compatibility
-checks and the remaining differences from MAX. The shared package pins now match the reviewed
-MAX versions; existing stores still require an explicit path and compatibility review.

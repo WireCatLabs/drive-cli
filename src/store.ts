@@ -2,11 +2,13 @@ import { CliError, isCliError } from "@wirecat/cli-base"
 import { documentIngestion } from "@wirecat/cli-core/documents"
 import type { MessageStore } from "@wirecat/cli-core/store"
 import { catalogInput } from "./catalog.js"
+import { activeProfile } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
 import { prepareStore } from "./store-transition.js"
 
 export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
+  if (name) activeProfile(env, name)
   const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
   await ensureSqlite()
   const { openStore, storePath } = await import("@wirecat/cli-core/store")

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
 import { googleSource } from "./google.js"
@@ -6,6 +7,11 @@ import { indexOver, openIndex } from "./store.js"
 import { content, file, fixture, workbook } from "./testing.js"
 
 describe("released shared store and search", () => {
+  it("does not create the database for a profile that is not signed in", async () => {
+    const f = fixture()
+    await expect(openIndex(f.env, "nobody")).rejects.toMatchObject({ details: { reason: "profile.not-signed-in" } })
+    expect(existsSync(f.env.MESSAGING_STORE as string)).toBe(false)
+  })
   it("returns snake_case search fields for both empty accounts and indexed passages", async () => {
     const f = fixture()
     const index = await openIndex(f.env)

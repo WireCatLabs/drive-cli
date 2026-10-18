@@ -29,3 +29,20 @@ use temporary storage for development and verify compatibility when changing dep
 Fast checks are standards:check, lint, docs:lint and ci:quick. Full validation adds tests, coverage,
 build and installed-package smoke. Commit hooks never install, build or run tests. Live account
 checks and model downloads remain explicit actions.
+
+## Checks before a pull request
+
+Google logic stays here. SQL, chunking, embeddings and search live in the shared WireCat packages.
+
+```sh
+pnpm standards:check
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm smoke
+pnpm docs:check
+```
+
+See [architecture](ARCHITECTURE.md), [testing](TESTING.md),
+[development](DEVELOPMENT.md) and [releasing](RELEASING.md).

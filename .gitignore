@@ -44,3 +44,4 @@ coverage/
 /.drive/
 /.artifacts/
 *.tgz
+/CLEANUP.md
