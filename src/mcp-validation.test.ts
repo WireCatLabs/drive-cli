@@ -1,7 +1,7 @@
 import { Client, InMemoryTransport } from "@modelcontextprotocol/client"
 import { openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it, vi } from "vitest"
-import { buildMcpServer } from "./mcp.js"
+import { buildMcpServer, mcpTools } from "./mcp.js"
 import { createProgram } from "./program.js"
 import { fixture } from "./testing.js"
 
@@ -136,5 +136,13 @@ describe("MCP validation through the SDK", () => {
       await client.close()
       await server.close()
     }
+  })
+
+  it("gives every command a name drive_read and drive_write can tell apart", () => {
+    const f = fixture()
+    const tools = mcpTools(createProgram, { env: f.env, api: { call: vi.fn() } }, "default")
+    // cli-core finds a command with spaces, "_" and "-" folded together; two paths that fold alike hide one.
+    const folded = new Set(tools.map((tool) => tool.command.path.join(" ").replace(/[\s_-]+/g, " ")))
+    expect(folded.size).toBe(tools.length)
   })
 })
