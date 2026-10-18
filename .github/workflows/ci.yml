@@ -28,5 +28,8 @@ jobs:
       bin: drive
       # Linux only on main; a release, the monthly run and a manual run add Windows and macOS.
       platforms: ${{ inputs.pack || inputs.platforms || github.event_name == 'workflow_dispatch' }}
+      platform-run: |
+        node dist/bin/drive.js personal --read-only mcp --tools --json >/dev/null
+        node dist/bin/drive.js commands --json >/dev/null
       checks: |
         pnpm smoke

@@ -159,3 +159,32 @@ Friendly structure commands submit one `spreadsheets.batchUpdate` request. Renam
 Raw/generated batches check the corresponding friendly permission keys after body validation,
 before preview/credentials/provider dispatch. Broad cell batches consult both format/update
 keys when they can affect both. This retains the same guards across command paths.
+
+## Shared CLI conventions
+
+Committed Google Discovery snapshots feed a provider adapter into cli-base's shared code generators. cli-core builds the generated
+commands and validates their input; Google's SDK remains the transport. `pnpm generate` rebuilds
+types, validators, the operation manifest, coverage and [command reference](../commands.md).
+`pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.
+
+```sh
+drive personal api drive-files-get --help
+drive api show docs.documents.batchUpdate --json
+drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
+drive complete zsh
+drive personal --read-only mcp --tools --json
+```
+
+Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,
+readonly, ask and allow, configured under profile/default permissions. OAuth permission is a
+separate gate. `--read-only` also stops local mutations; `--yes` and `--allow-dangerous` answer
+confirmation but cannot override a denial. `--offline` refuses commands that may require network.
+Writes use the shared journal and uncertain Google outcomes are reported without automatic retry.
+
+MCP stdio tools derive from the same command registry and call the CLI executor with its guards.
+They exclude sign-in/config changes, arbitrary file export, body-file access and raw API dispatch.
+Generated typed methods remain available according to the profile's permissions. Agent-facing
+output shows control characters visibly; results use a shared output buffer and optional deadline.
+
+See the [alignment guide](CLI_ALIGNMENT.md) for policy examples, generation, compatibility
+checks and the remaining differences from MAX.

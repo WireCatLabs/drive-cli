@@ -9,6 +9,14 @@ import { readState } from "./state.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
+  it("prints the version without a trailing blank line", async () => {
+    const streams = captureStreams()
+    await createProgram({ env: fixture().env, streams })
+      .parseAsync(["--version"], { from: "user" })
+      .catch(() => undefined)
+    expect(streams.stdout).toEqual([expect.stringMatching(/^\d+\.\d+\.\d+$/)])
+  })
+
   it("keeps only the fields --json names, and refuses one the answer does not have", async () => {
     const streams = captureStreams()
     await createProgram({ env: fixture().env, streams }).parseAsync(["api", "list", "--json=name"], { from: "user" })

@@ -89,8 +89,15 @@ export const REASONS: ErrorReason[] = defineReasons(
   ENTRIES.map(([reason, code, message, details = []]) => ({ reason, code, message, details })),
 )
 
+// Commander words the cause itself: unknown command with a suggestion, missing argument, missing option.
+const parseMessage = (error: CommanderError, fallback: string) =>
+  error.message
+    .replace(/^error: /, "")
+    .replace(/\s*\n\s*/g, " ")
+    .trim() || fallback
+
 const recognisable = (error: unknown, invalidArguments: string): unknown =>
-  error instanceof CommanderError ? new CliError("validation_error", invalidArguments) : error
+  error instanceof CommanderError ? new CliError("validation_error", parseMessage(error, invalidArguments)) : error
 
 const contextOf = (effects: Effects | undefined) => ({
   ...failureContext({ reasons: REASONS }),

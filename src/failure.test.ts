@@ -67,6 +67,20 @@ describe("failure handler", () => {
     expect(JSON.parse(text).error).toMatchObject({ code: "validation_error", reason: "input.invalid" })
   })
 
+  it("names the cause of a parse failure: unknown command, missing argument, missing option", async () => {
+    const message = async (args: string[]) => {
+      const streams = captureStreams()
+      const program = createProgram({ streams })
+      const error = await program.parseAsync(args, { from: "user" }).catch((caught) => caught)
+      return JSON.parse(report(error, args).text).error.message
+    }
+    expect(await message(["default", "serch", "foo"])).toBe("unknown command 'serch' (Did you mean search?)")
+    expect(await message(["default", "search"])).toBe("missing required argument 'query'")
+    expect(await message(["default", "documents", "export", "DOC_ID"])).toBe(
+      "required option '--output <file>' not specified",
+    )
+  })
+
   it("writes one line for a person at a terminal", () => {
     expect(report(new CliError("not_found", "nothing here"), ["default", "status"], true).text).toBe("✗ nothing here")
   })

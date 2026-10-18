@@ -99,8 +99,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     )
   program
     .configureOutput({
-      writeOut: (text) => streams.data(text),
-      writeErr: (text) => streams.diagnostic(text),
+      writeOut: (text) => streams.data(text.replace(/\n$/, "")),
+      writeErr: (text) => streams.diagnostic(text.replace(/\n$/, "")),
       outputError: () => undefined,
     })
     .exitOverride()
@@ -402,8 +402,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       },
     })
     command.exitOverride().configureOutput({
-      writeOut: (text) => streams.data(text),
-      writeErr: (text) => streams.diagnostic(text),
+      writeOut: (text) => streams.data(text.replace(/\n$/, "")),
+      writeErr: (text) => streams.diagnostic(text.replace(/\n$/, "")),
       outputError: () => {},
     })
   }
