@@ -94,10 +94,10 @@ describe("native Google Sheets operations", () => {
   })
   it("appends with row insertion and clears only values in the selected rectangle", async () => {
     const f = setup()
-    await f.run("sheets", "add", "synthetic-sheet", "Budget!A1:B4", "--values", '[["item",5]]')
+    await f.run("sheets", "add", "synthetic-sheet", "Budget!A1:B4", "--values", '[["item",5]]', "--input", "raw")
     expect(f.call).toHaveBeenLastCalledWith(
       "sheets.spreadsheets.values.append",
-      expect.objectContaining({ insertDataOption: "INSERT_ROWS" }),
+      expect.objectContaining({ insertDataOption: "INSERT_ROWS", valueInputOption: "RAW" }),
       { majorDimension: "ROWS", values: [["item", 5]] },
     )
     await f.run("sheets", "clear", "synthetic-sheet", "Budget!A2:B4")

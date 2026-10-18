@@ -147,6 +147,40 @@ describe("document knowledge commands", () => {
     await expect(call("documents", "list", "--tag", "budget")).rejects.toThrow(/query/)
     await expect(call("documents", "list", "kind:file")).rejects.toThrow(/kind/)
   })
+  it("pages and limits the local lists, and takes the global options", async () => {
+    const f = fixture()
+    const call = async (...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
+        ["default", ...args, "--json"],
+        { from: "user" },
+      )
+      return commandResult(streams.stdout.join(""))
+    }
+    await call("sync", "--limit", "10", "--rescan")
+    await call("notes", "add", "doc-a", "budget memo")
+    await call("notes", "add", "doc-a", "budget plan")
+    const memory = await call("memories", "add", "doc-a", "Budget", "--scope", "work")
+    await call("memories", "add", "doc-a", "Budget again", "--scope", "work", "--supersedes", memory.ref)
+    await call("facts", "add", "doc-a", "Budget approved", "--type", "decision")
+    expect((await call("documents", "list", "--limit", "1", "--page", "2")).items).toHaveLength(1)
+    expect((await call("notes", "list", "doc-a", "--limit", "1", "--page", "2")).items).toHaveLength(1)
+    expect((await call("memories", "list", "doc-a", "--limit", "1")).items).toHaveLength(1)
+    expect((await call("facts", "list", "doc-a", "--limit", "1")).items).toHaveLength(1)
+    await createProgram({ env: f.env, streams: captureStreams(), index: async () => f.index }).parseAsync(
+      ["default", "search", "budget", "--limit", "1", "--page", "2", "--json"],
+      { from: "user" },
+    )
+    expect(f.index.search).toHaveBeenCalledWith(
+      "synthetic-principal",
+      "budget",
+      expect.objectContaining({ limit: 1, offset: 1 }),
+    )
+    expect((await call("catalog", "search", "budget", "--limit", "1", "--page", "1")).items).toEqual(expect.any(Array))
+    await call("models", "set", "--purpose", "memories", "--provider", "openai", "--model", "fixture-model")
+    await call("session", "list")
+    await call("--quiet", "--debug", "--timeout", "30s", "--permission", "documents=allow", "config", "show")
+  })
   it("refuses stale extraction results after the source changes while the model is running", async () => {
     const f = fixture()
     const options = { env: f.env, source: async () => f.source }
@@ -222,6 +256,23 @@ describe("remote action commands", () => {
     [["revisions", "list", "doc-a"], "drive.revisions.list", { fileId: "doc-a" }],
     [["revisions", "get", "doc-a", "revision-one"], "drive.revisions.get", { revisionId: "revision-one" }],
     [["shared-drives", "--cursor", "next"], "drive.drives.list", { pageToken: "next" }],
+    [["shared-drives", "--limit", "5"], "drive.drives.list", { pageSize: 5 }],
+    [
+      ["comments", "list", "doc-a", "--limit", "5", "--cursor", "next"],
+      "drive.comments.list",
+      { pageSize: 5, pageToken: "next" },
+    ],
+    [
+      ["permissions", "list", "doc-a", "--limit", "5", "--cursor", "next"],
+      "drive.permissions.list",
+      { pageSize: 5, pageToken: "next" },
+    ],
+    [["documents", "history", "doc-a", "--limit", "5"], "drive.revisions.list", { fileId: "doc-a", pageSize: 5 }],
+    [
+      ["revisions", "list", "doc-a", "--limit", "5", "--cursor", "next"],
+      "drive.revisions.list",
+      { pageSize: 5, pageToken: "next" },
+    ],
   ]
   it.each(cases)("maps %j to a bounded official API request", async (args, method, params, body) => {
     const f = fixture()

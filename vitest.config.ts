@@ -4,7 +4,8 @@ export default defineConfig({
   tsconfig: "./node_modules/@wirecat/cli-base/config/tsconfig.base.json",
   test: {
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
-    setupFiles: ["@wirecat/cli-base/testing/setup"],
+    globalSetup: ["scripts/testing/argv-setup.ts"],
+    setupFiles: ["@wirecat/cli-base/testing/setup", "scripts/testing/argv-trace.ts"],
     // Concurrent real-store fixtures compete for SQLite writes and coverage CPU on CI.
     maxWorkers: 2,
     coverage: {

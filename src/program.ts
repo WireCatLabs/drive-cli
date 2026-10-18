@@ -346,7 +346,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           "this method deletes Google data; pass --allow-delete or --allow-dangerous",
           { reason: "delete.not-allowed" },
         )
-      if (flags.allowDangerous) action.setOptionValue("allowDelete", true)
+      if (flags.allowDangerous && !action.opts().allowDelete) action.setOptionValue("allowDelete", true)
     }
     const mutates = method ? apiMethod(method).mutates : writes(metadata.effects)
     const key = method ? `api.${method}` : path.join(".")

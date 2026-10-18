@@ -59,6 +59,17 @@ describe("standalone command workflow", () => {
       { from: "user" },
     )
     expect(commandResult(streams.stdout.join("")).added).toBe(true)
+    await createProgram({ env: f.env, streams: captureStreams() }).parseAsync(
+      ["default", "folders", "remove", "root"],
+      {
+        from: "user",
+      },
+    )
+    const listed = captureStreams()
+    await createProgram({ env: f.env, streams: listed }).parseAsync(["default", "folders", "list", "--json"], {
+      from: "user",
+    })
+    expect(commandResult(listed.stdout.join("")).items).toEqual([])
   })
   it("exposes shared registry metadata without remote access", async () => {
     const f = fixture()
