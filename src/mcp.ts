@@ -9,8 +9,10 @@ import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import type { ProgramOptions } from "./commands/context.js"
 import { mcpFailure } from "./failure.js"
+import { apiMethod } from "./google-api.js"
 import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
 import { describeDriveProgram } from "./registry.js"
+import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
 interface ToolDefinition {
@@ -21,6 +23,12 @@ interface ToolDefinition {
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
 const excluded = new Set(["session", "config", "complete", "mcp", "models"])
+const requiredScope = (command: CommandInfo) =>
+  command.api_operation
+    ? apiMethod(command.api_operation).scope
+    : command.effects?.remote === "write"
+      ? WRITE_SCOPE
+      : undefined
 
 /** Advertise the strict schema, but validate in our handler so failures are structured and audited. */
 const advertised = (tool: ToolDefinition) => {
@@ -60,7 +68,14 @@ export const mcpTools = (
   profile: string,
   flags: PolicyFlags = {},
 ): ToolDefinition[] => {
-  const settings = policySettings(options.env ?? process.env, profile, flags)
+  const env = options.env ?? process.env
+  const settings = policySettings(env, profile, flags)
+  // An injected API never asks Google for a token, so there is no grant to read, as at call time.
+  const granted = options.api ? undefined : grantedScopes(env, profile, options.keyring)
+  const grants = (command: CommandInfo) => {
+    const required = requiredScope(command)
+    return !granted || !required || required === READ_SCOPE || covers(granted, required)
+  }
   return flatten(describeDriveProgram(build(options)))
     .filter((command) => {
       if (
@@ -70,6 +85,7 @@ export const mcpTools = (
         command.path.join(" ") === "documents export"
       )
         return false
+      if (!grants(command)) return false
       const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
       return keys.every((key) => {
         const level = levelFor(settings.levels, key).level

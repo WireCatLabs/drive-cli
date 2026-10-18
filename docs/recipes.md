@@ -337,7 +337,9 @@ drive personal --read-only mcp
 ```
 
 Inspect the first command's tools before starting the stdio server. It uses the same command tree,
-profile and guards. This is not a hosted HTTP browser connector. Use
+profile and guards. Tools that change Google files, read Drive Activity or list Drive apps are offered
+only when the profile signed in with `--grant write`, `activity` or `apps`; restart the server after
+signing in again. This is not a hosted HTTP browser connector. Use
 [the full command reference](commands.md) to discover other supported operations.
 
 ## Find a document and the conversation where it was shared

@@ -106,12 +106,28 @@ export const authorizedClient = (
   })
   return client
 }
+export const covers = (granted: readonly string[], required: string): boolean =>
+  granted.includes(required) || (required === READ_SCOPE && granted.includes(WRITE_SCOPE))
+/**
+ * The scopes the saved sign-in was granted, read without a network call. None when there is no readable sign-in;
+ * `undefined` when the saved tokens do not say, so nothing is assumed.
+ */
+export const grantedScopes = (env: NodeJS.ProcessEnv, name: string, keyring?: KeyringStore): string[] | undefined => {
+  try {
+    const secret = credentials(env, activeProfile(env, name).storage, keyring).read(name)?.secret
+    const parsed = secret ? v.safeParse(Session, JSON.parse(secret)) : undefined
+    if (!parsed?.success) return []
+    return parsed.output.tokens.scope?.split(/\s+/).filter(Boolean)
+  } catch {
+    return []
+  }
+}
 export const checkAuthorization = async (client: OAuth2Client, required = READ_SCOPE): Promise<void> => {
   try {
     const { token } = await client.getAccessToken()
     if (!token) throw new CliError("authentication_error", "Google returned no access token")
     const info = await client.getTokenInfo(token)
-    if (!info.scopes.includes(required) && !(required === READ_SCOPE && info.scopes.includes(WRITE_SCOPE)))
+    if (!covers(info.scopes, required))
       throw new CliError(
         "permission_error",
         "sign-in lacks the required permission; run drive <profile> session start --grant write, activity or apps when needed",
