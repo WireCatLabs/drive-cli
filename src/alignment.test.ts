@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import { type Effects, writes } from "@wirecat/cli-base/standards"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
@@ -11,6 +11,7 @@ import { invokeTool, mcpTools, toolArgv } from "./mcp.js"
 import { createProgram } from "./program.js"
 import { requestSchema } from "./schema.js"
 import { commandResult, fixture } from "./testing.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, saveSession, WRITE_SCOPE } from "./tokens.js"
 
 describe("schema-generated Google contracts", () => {
   it("keeps all 85 operations and validates required IDs, bounds, enums and recursive bodies", () => {
@@ -299,5 +300,51 @@ describe("MCP derived from the same guarded command tree", () => {
       "--",
       "doc-a",
     ])
+  })
+})
+describe("MCP offers what the Google sign-in granted", () => {
+  const offered = (scope?: string) => {
+    const f = fixture()
+    const keyring = memoryKeyring()
+    if (scope !== "none")
+      saveSession(
+        f.env,
+        "default",
+        {
+          principal: "synthetic-principal",
+          clientId: "fixture-client",
+          tokens: { refresh_token: "fixture-refresh-token", ...(scope === undefined ? {} : { scope }) },
+        },
+        "keyring",
+        keyring,
+      )
+    return new Set(mcpTools(createProgram, { env: f.env, keyring }, "default").map((tool) => tool.name))
+  }
+
+  it("hides Google writes, activity and apps without their grants, and keeps reads and local writes", () => {
+    for (const tools of [offered(READ_SCOPE), offered("none")]) {
+      expect(tools).toContain("drive_api_drive_files_get")
+      expect(tools).toContain("drive_facts_reverse")
+      expect(tools).not.toContain("drive_api_drive_files_delete")
+      expect(tools).not.toContain("drive_sheets_update")
+      expect(tools).not.toContain("drive_api_driveactivity_activity_query")
+      expect(tools).not.toContain("drive_api_drive_apps_list")
+    }
+  })
+
+  it("offers each group once its grant is there", () => {
+    const tools = offered([WRITE_SCOPE, ACTIVITY_SCOPE, APPS_SCOPE].join(" "))
+    for (const name of [
+      "drive_api_drive_files_get",
+      "drive_api_drive_files_delete",
+      "drive_sheets_update",
+      "drive_api_driveactivity_activity_query",
+      "drive_api_drive_apps_list",
+    ])
+      expect(tools).toContain(name)
+  })
+
+  it("assumes nothing when the saved sign-in does not name its scopes", () => {
+    expect(offered()).toContain("drive_api_drive_files_delete")
   })
 })
