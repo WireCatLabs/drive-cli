@@ -1,5 +1,6 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
+import { readOnlyLockOf, readOnlyRefusal } from "@wirecat/cli-core/cli"
 import {
   guardedWrite,
   type Level,
@@ -23,6 +24,7 @@ export interface PolicyFlags {
   allowDangerous?: boolean
   dryRun?: boolean
 }
+const DRIVE_APP = { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "", version: VERSION }
 export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: PolicyFlags = {}) => {
   const config = readConfig(env)
   const own = config.profiles[profile]
@@ -31,7 +33,12 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
     ["profile", own?.permissions],
     ["defaults", config.defaults?.permissions],
   ])
-  return { levels, readOnly: flags.readOnly === true || (own?.read_only ?? config.defaults?.read_only ?? false) }
+  const lock = readOnlyLockOf(DRIVE_APP, env)
+  return {
+    levels,
+    lock,
+    readOnly: lock !== undefined || flags.readOnly === true || (own?.read_only ?? config.defaults?.read_only ?? false),
+  }
 }
 const defaults = Object.fromEntries(
   operations.filter((op) => op.effect === "destructive").map((op) => [`api.${op.id}`, "ask"]),
@@ -113,8 +120,9 @@ export const checkPolicy = async (
   flags: PolicyFlags = {},
   ask?: (key: string) => Promise<boolean>,
 ) => {
-  const { levels, readOnly } = policySettings(env, profile, flags)
+  const { levels, readOnly, lock } = policySettings(env, profile, flags)
   const { level } = levelFor(levels, key, defaults)
+  if (mutates && lock) throw readOnlyRefusal(lock, "change local or Google data")
   if (level === "deny" || (mutates && (readOnly || level === "readonly")))
     throw new CliError("permission_error", "profile policy refuses this operation", {
       reason: "policy.denied",
@@ -145,7 +153,7 @@ export const guardedGoogleWrite = async <T>(
   const guard = sendGuard({
     profile,
     command: "drive",
-    readOnlyLock: settings.readOnly ? "profile" : undefined,
+    readOnlyLock: settings.lock ?? (settings.readOnly ? "profile" : undefined),
     permissions: settings.levels,
     permissionDefaults: defaults,
     ask: async (permission) => checkPolicy(env, profile, permission, true, flags, ask),

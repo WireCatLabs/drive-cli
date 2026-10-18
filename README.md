@@ -25,6 +25,11 @@ drive --help
 See [installation and Google connection](docs/installation.md). Source builds are for
 [contributors](docs/dev/DEVELOPMENT.md).
 
+`drive guide` lists scenarios — the commands for a common task, in order — and `drive commands --json` is the full
+command tree. For an agent, `drive skill install` puts drive's instructions where Claude Code, Codex and Gemini CLI
+look, `drive personal mcp` serves three MCP tools (search, read, write), and `DRIVE_READ_ONLY=1` refuses every
+change, as `--read-only` does.
+
 ## Sign in and choose folders
 
 Sign in with WireCat's included Google application. Each user approves their own account in the
@@ -77,12 +82,11 @@ Search results include the original Google URL. `documents show` includes each t
 and title. Native Markdown exports are saved separately from the all-tab text used for indexing.
 Export refuses to overwrite an existing destination file.
 
-Semantic search uses the shared local text model (about 135 MB). Drive has no model downloader yet, so
-download it once with tg, through npx. This installs nothing globally and needs no Telegram sign-in; `local` is any
-profile name:
+Semantic search uses the shared local text model (about 135 MB). Download it once; it needs no profile or sign-in,
+and every WireCat CLI shares it:
 
 ```sh
-npx -y @wirecat/tg-cli local models text download e5-small
+drive models text download e5-small
 drive personal sync --embed
 ```
 

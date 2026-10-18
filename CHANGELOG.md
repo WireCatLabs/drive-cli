@@ -2,12 +2,28 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive guide [name]`: scenarios**, the commands for a common task in order — `set-up`, `find-decision`,
+  `brief-document`, `agent-access` — and memo's `person-brief` under "Works with". `--json` gives the same as data.
+- **`drive skill show` and `drive skill install`**: the agent skill, which says when to pick drive and points at
+  `guide` and `commands`. Neither needs a profile.
+- **`drive models text download <model>` and `drive images models download <model>`** download the search and
+  picture models into the folder every WireCat CLI shares, checked against their sha256. No profile or sign-in is
+  needed; `--offline` refuses them.
+- **`drive help options`** prints the options for every command and `drive help <command>` one command's help;
+  neither needs a profile.
+
 ### Changed — may break callers
 
 - **`drive mcp` serves three tools in place of one per command (161 before)**: `drive_tools_search` finds a command
   and shows its arguments, `drive_read` and `drive_write` run it as `{ command, arguments }` — the model tg and max
   use. Commands, arguments, permissions and the audit record are unchanged; `drive_write` is not offered when the
   profile allows no writes. `mcp --tools` lists commands by `command` instead of tool `name`.
+- **`drive --help` and a bare `drive` show a short first screen** instead of every command and option: what drive
+  is for, eight things it does, the other WireCat tools, and where to go next. The full help moved to `--help-all`,
+  the options for every command to `drive help options`. A leaf command's `--help` ends with Returns, Next usually
+  and Example, and its old "Examples:" block is gone.
 - **A list query refuses a word that starts with `--`** as an unknown option, with a suggestion
   (`documents list --tag budget` → "unknown option '--tag' (Did you mean --page?)"), instead of reading it as query
   text. It comes with cli-core 0.345.0.
@@ -21,16 +37,19 @@
 - `session start` checks that the keyring can be used before it shows the Google sign-in, so a computer without one
   fails at once instead of after consent.
 - `drive complete --help` prints the help instead of "choose a supported shell".
-- The advice for a missing search model names a command that works as written: `npx -y @wirecat/tg-cli local models
-  text download e5-small`. The old `tg models text download e5-small` fails without a profile.
+- The advice for a missing search or picture model names drive's own download (`drive models text download
+  e5-small`, `drive images models download clip-b32`) instead of tg's, which needed a profile and a second tool.
 - `drive mcp` no longer offers tools the Google sign-in cannot run: changing Google files needs `--grant write`,
   Drive Activity needs `activity`, Drive apps need `apps`. They used to be listed and fail when called. `memories
   extract`, which sends a document to the model and changes no Google file, stays offered without `--grant write`.
+- README, search and configuration pages download the text and picture models with drive itself; the
+  `npx @wirecat/tg-cli` workaround is gone. The configuration page lists `DRIVE_READ_ONLY`.
 
-### Documentation
+### Security
 
-- README, search and configuration pages give the same npx command for the text and picture models, which needs no
-  global tg install and no Telegram sign-in.
+- **`DRIVE_READ_ONLY=1` locks the process as `--read-only` does**: every command that changes local
+  or Google data is refused with exit 5 before anything is touched, and the MCP server offers no write.
+  Any value but empty or `0` turns it on.
 
 ## 0.17.3 — 18.10.2026
 

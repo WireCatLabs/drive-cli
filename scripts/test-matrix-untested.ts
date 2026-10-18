@@ -28,6 +28,24 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     reason: "needs a downloaded embedding model; the index it feeds is tested through the injected index",
   },
   {
+    command: "models text download",
+    option: "--accept-terms",
+    reason: "downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal",
+  },
+  {
+    command: "images models download",
+    reason: "downloads a model from Hugging Face; cli-core's downloadImageModel is tested there",
+  },
+  {
+    command: "guide",
+    reason: "cli-core's command, printed to the process's stdout; src/help.test.ts runs checkGuide on every scenario",
+  },
+  {
+    command: "",
+    option: "--help-all",
+    reason: "Commander answers before any command runs, so the trace never sees it; src/help.test.ts checks it",
+  },
+  {
     command: "",
     option: "--version",
     reason: "Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it",

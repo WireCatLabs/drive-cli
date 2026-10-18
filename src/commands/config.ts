@@ -1,6 +1,7 @@
+import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
 import { examples } from "../registry.js"
@@ -67,7 +68,7 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     })
 }
 
-export const installModelCommands = (program: Command, { env, output }: CommandContext) => {
+export const installModelCommands = (program: Command, { env, output, streams, policyFlags }: CommandContext) => {
   const models = annotate(program.command("models"), { effects: LOCAL_READ }).description(
     "choose the model that proposes memories; keys stay out of config",
   )
@@ -95,4 +96,56 @@ export const installModelCommands = (program: Command, { env, output }: CommandC
       writeConfig(env, config)
       output(itemOf({ purpose: args.purpose, configured: true }))
     })
+  const download = async (kind: "text" | "image", id: string, acceptTerms: boolean) => {
+    if (policyFlags().offline)
+      throw new CliError("permission_error", "downloading a model needs the network; --offline was requested", {
+        reason: "offline.refused",
+      })
+    const { downloadImageModel, downloadTextModel } = await import("@wirecat/cli-core/services")
+    const progress = (line: string) => {
+      if (!program.opts().quiet) streams.diagnostic(line)
+    }
+    const { model, directory } =
+      kind === "text"
+        ? await downloadTextModel(id, { env, acceptTerms, progress })
+        : await downloadImageModel(id, { env, progress })
+    output(
+      itemOf({
+        id: model.id,
+        kind,
+        title: model.title,
+        languages: model.languages,
+        licence: model.licence,
+        size_bytes: model.files.reduce((sum, file) => sum + file.bytes, 0),
+        downloaded: true,
+        path: join(directory, model.id),
+      }),
+    )
+  }
+  const text = annotate(models.command("text"), { effects: LOCAL_READ }).description(
+    "the local model that search by meaning uses",
+  )
+  examples(
+    annotate(text.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+      "download a search model once into the folder every WireCat CLI shares",
+    ),
+    ["drive models text download e5-small"],
+  )
+    .argument("<model>", "model id, such as e5-small")
+    .option("--accept-terms", "accept the model's licence terms, for a model that has its own")
+    .action((id: string, args: { acceptTerms?: boolean }) => download("text", id, args.acceptTerms === true))
+  const images = annotate(program.command("images"), { effects: LOCAL_READ, mcp: false }).description(
+    "the local model that picture search uses",
+  )
+  const imageModels = annotate(images.command("models"), { effects: LOCAL_READ }).description(
+    "models that read pictures, for picture search",
+  )
+  examples(
+    annotate(imageModels.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+      "download a picture model once into the folder every WireCat CLI shares",
+    ),
+    ["drive images models download clip-b32"],
+  )
+    .argument("<model>", "model id, such as clip-b32")
+    .action((id: string) => download("image", id, false))
 }
