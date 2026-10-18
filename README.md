@@ -28,7 +28,10 @@ See [installation and Google connection](docs/installation.md). Source builds ar
 ## Sign in and choose folders
 
 Sign in with WireCat's included Google application. Each user approves their own account in the
-browser. You can also create your own Desktop client as explained in the
+browser. Google's review of the Drive permissions is not finished, so Google shows an "unverified
+app" warning first and limits the application to 100 new users in total; see
+[the warning and how to continue](docs/installation.md#google-shows-an-unverified-app-warning).
+You can also create your own Desktop client as explained in the
 [installation guide](docs/installation.md). Connect your account, then choose a folder:
 
 ```sh
@@ -49,9 +52,9 @@ Credentials use the OS keyring. Without one, explicitly choose `--credential-sto
 the shared helper writes an owner-only private file. Tokens never enter regular config, output
 or diagnostics. `DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET` can provide application
 settings instead of the bundled application; `--client-file` takes priority. The included Desktop
-client identity is public application metadata, separate from private user tokens. Public distribution with
-this restricted scope needs Google verification; external Testing grants usually expire in
-seven days. [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
+client identity is public application metadata, separate from private user tokens. If you create
+your own Desktop client and leave it in Testing, Google usually ends its sign-ins after seven days.
+[Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
 [Drive permissions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
 
 Use `--profile work` for another account. Each Google account has one local profile. `session list`
@@ -124,9 +127,7 @@ also has its own 10 MB limit. Documents changing during export remain pending fo
 
 ## Development
 
-The tracked zoom-cli template was copied and pruned. Shared WireCat standards, packaging,
-release-job separation and installed-package checks remain. Google logic stays here; SQL,
-chunking, embeddings and search implementations remain in shared packages.
+Google logic stays here. SQL, chunking, embeddings and search live in the shared WireCat packages.
 
 ```sh
 pnpm standards:check
@@ -173,8 +174,7 @@ isolated sources and mocked provider requests; see the [testing guide](docs/dev/
 
 ## Shared CLI conventions
 
-Drive now uses MAX's API generation approach: committed Google Discovery snapshots feed a
-provider adapter into cli-base's shared code generators. cli-core builds the generated
+Committed Google Discovery snapshots feed a provider adapter into cli-base's shared code generators. cli-core builds the generated
 commands and validates their input; Google's SDK remains the transport. `pnpm generate` rebuilds
 types, validators, the operation manifest, coverage and [command reference](docs/commands.md).
 `pnpm generate:check` checks freshness offline. Only `pnpm spec:sync` fetches a new public specification.

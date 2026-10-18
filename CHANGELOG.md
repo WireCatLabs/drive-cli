@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Sign-in error hints name a command that runs: `drive <profile> session start`, or the profile itself when drive
+  knows it. They said `drive session start`, which fails without a profile.
+
+### Documentation
+
+- The README and the installation guide explain Google's "unverified app" warning: Google's review of the Drive
+  permissions is not finished, how to continue or use your own Google application, and that Google limits an
+  unverified application to 100 new users in total.
+
 ## 0.17.1 — 2026-10-18
 
 ### Fixed

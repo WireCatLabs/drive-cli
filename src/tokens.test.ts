@@ -75,4 +75,12 @@ describe("shared credential persistence", () => {
     ).toBe("rate_limited")
     expect(googleError({ name: "AbortError" }).code).toBe("cancelled")
   })
+  it("names a runnable session start in sign-in hints", () => {
+    const f = fixture()
+    expect(() => authorizedClient(f.env, "default", memoryKeyring())).toThrow("run drive default session start")
+    const revoked = googleError({ response: { status: 400, data: { error: "invalid_grant" } } })
+    const expired = googleError({ response: { status: 401 } })
+    expect(revoked.message).toContain("run drive <profile> session start")
+    expect(expired.message).toContain("run drive <profile> session start")
+  })
 })

@@ -60,9 +60,13 @@ export const authorizedClient = (
     if (!secret) throw new Error("missing login")
     parsed = v.safeParse(Session, JSON.parse(secret))
   } catch {
-    throw new CliError("authentication_error", "could not load Google sign-in — run drive session start again", {
-      reason: "sign-in.expired",
-    })
+    throw new CliError(
+      "authentication_error",
+      `could not load Google sign-in — run drive ${name} session start again`,
+      {
+        reason: "sign-in.expired",
+      },
+    )
   }
   if (!parsed.success || parsed.output.principal !== profile.principal)
     throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account", {
