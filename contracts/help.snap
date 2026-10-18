@@ -66,4 +66,3 @@ Commands:
                               stdio
   commands [path...]          print the command tree and its options as data
   help [command]              display help for command
-
