@@ -47,8 +47,10 @@ Use a Desktop client JSON, not an API key or service-account key.
 Publishing the application does not authorize your account or this computer. Run the
 [account connection step](installation.md#connect-your-account) and approve access in Google's
 browser screen. With WireCat's included client, ordinary users do not repeat Google Cloud setup.
-A custom Desktop client remains an alternative. Workspace policy and Google scope verification
-can still restrict which accounts or permissions are available.
+A custom Desktop client remains an alternative. Google has not finished its review of WireCat's
+application, so Google shows an "unverified app" warning and limits it to 100 new users in total;
+see [the warning](installation.md#google-shows-an-unverified-app-warning). Workspace policy can
+also restrict which accounts or permissions are available.
 
 ## Google API is disabled
 

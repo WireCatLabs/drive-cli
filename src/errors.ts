@@ -30,9 +30,13 @@ export const googleError = (error: unknown): CliError => {
         detail.reason === "SERVICE_DISABLED",
     )
   if (reason === "invalid_grant" || reason === "invalid_token")
-    return new CliError("authentication_error", "Google sign-in is no longer valid — run drive session start again", {
-      reason: "sign-in.expired",
-    })
+    return new CliError(
+      "authentication_error",
+      "Google sign-in is no longer valid — run drive <profile> session start again",
+      {
+        reason: "sign-in.expired",
+      },
+    )
   if (reason === "invalid_client")
     return new CliError(
       "configuration_error",
@@ -57,7 +61,7 @@ export const googleError = (error: unknown): CliError => {
       reason: "export.too-large",
     })
   if (status === 401)
-    return new CliError("authentication_error", "Google sign-in expired — run drive session start again", {
+    return new CliError("authentication_error", "Google sign-in expired — run drive <profile> session start again", {
       reason: "sign-in.expired",
     })
   if (status === 403)

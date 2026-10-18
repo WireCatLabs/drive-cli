@@ -68,8 +68,9 @@ Once those checks work, continue to [step 2](#connect-your-account).
 
 ## 2. Connect your account
 
-**WireCat's Google application is ready to use.** For this path, you do not create a Google Cloud
-project or download a credentials file. Each user authorizes their own account in the browser.
+With WireCat's Google application, you do not create a Google Cloud project or download a
+credentials file. Each user authorizes their own account in the browser. Before you start, read
+[Google's "unverified app" warning](#google-shows-an-unverified-app-warning).
 
 If you prefer your own Google application, follow the [optional app setup](#prepare-google-sign-in)
 first. Its final command starts sign-in with your client file, then returns you to browser approval
@@ -85,6 +86,24 @@ Run this command, or ask your agent to run it. Keep its terminal process open wh
 ```sh
 drive personal session start
 ```
+
+<a id="google-shows-an-unverified-app-warning"></a>
+
+### Google shows an "unverified app" warning
+
+Google has not finished its review of the Drive permissions that WireCat's application asks for.
+Until it does, Google may show an "unverified app" screen before the permission screen. The screen
+is Google's, and it says that Google has not verified the application.
+
+- To continue, use the link on Google's screen that goes on to the application, then approve
+  access as below. Do this only if you trust drive with read access to your Drive.
+- If you prefer not to, or if Google blocks the sign-in, stop and use
+  [your own Google application](#prepare-google-sign-in) instead.
+- Google limits an unverified application to 100 new users in total. When WireCat's application
+  reaches that limit, new users cannot sign in with it until Google finishes the review. Your own
+  application has its own, separate limits.
+
+See [Google's page on unverified apps](https://support.google.com/cloud/answer/7454865).
 
 ### Approve access in your browser
 
