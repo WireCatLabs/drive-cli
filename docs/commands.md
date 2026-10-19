@@ -4055,7 +4055,7 @@ drive <profile> mcp [options]
 
 ## `drive commands`
 
-print the command tree and its options as data
+every command by section, one line each; --json: the command tree as data
 
 ```sh
 drive commands [path]
@@ -4065,9 +4065,9 @@ drive commands [path]
 |---|---|---|
 | `path` | optional | only this command or group, as words. |
 
-**Returns:** print the command tree and its options as data
+**Returns:** every command by section, one line each; --json: the command tree as data
 
-**Example:** `drive commands --json`, `drive commands files copy --json`
+**Example:** `drive commands`, `drive commands files copy --json`
 
 ## `drive skill`
 

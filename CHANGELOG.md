@@ -16,6 +16,10 @@
 
 ### Changed — may break callers
 
+- **`drive commands` without `--json` prints a text list by section, even when piped**: every command on one line,
+  its usage and description, `(writes)` when it changes something, under Read, Write, Organise, Automate or Set up.
+  It printed the whole JSON tree. A script that parsed a bare `drive commands` must pass `--json`, which prints the
+  same document as before.
 - **`drive mcp` serves three tools in place of one per command (161 before)**: `drive_tools_search` finds a command
   and shows its arguments, `drive_read` and `drive_write` run it as `{ command, arguments }` — the model tg and max
   use. Commands, arguments, permissions and the audit record are unchanged; `drive_write` is not offered when the
@@ -30,6 +34,9 @@
 
 ### Fixed
 
+- `--help` on a list that takes a query (`documents list`, `memories list`, `facts list`, `api list`) prints the
+  help again; since cli-core 0.343.0 it was refused as an unknown option (exit 2). Every leaf command's `--help` is
+  now checked in the tests.
 - The profile may follow a global option that takes a value: `drive --timeout 30s personal status` reads `personal`
   as the profile, not `30s`.
 - A search that finds nothing before anything is imported says so in `not_imported`: no folder is selected, or no

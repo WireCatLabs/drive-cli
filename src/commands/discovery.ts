@@ -1,7 +1,7 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate, describeOptions } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
-import { NO_EFFECTS } from "@wirecat/cli-core/cli"
+import { commandsText, NO_EFFECTS } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { commandsDocument, describeDriveProgram, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
@@ -33,13 +33,20 @@ export const installCompleteCommand = (program: Command, { streams }: CommandCon
     })
 }
 
-export const installCommandsCommand = (program: Command, { print }: CommandContext) => {
+export const installCommandsCommand = (program: Command, { print, streams }: CommandContext) => {
   examples(
     annotate(program.command("commands"), { effects: NO_EFFECTS }).description(
-      "print the command tree and its options as data",
+      "every command by section, one line each; --json: the command tree as data",
     ),
-    ["drive commands --json", "drive commands files copy --json"],
+    ["drive commands", "drive commands files copy --json"],
   )
     .argument("[path...]", "only this command or group, as words")
-    .action((path: string[]) => print((renderer) => renderer.result(commandsDocument(program, path))))
+    .action((path: string[]) => {
+      const document = commandsDocument(program, path)
+      const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
+      // By format, not by terminal: piped, a reader got hundreds of kilobytes of JSON it never asked for.
+      if (!json && !jsonl)
+        return streams.data(commandsText(program, document.commands, document.scope).replace(/\n$/, ""))
+      print((renderer) => renderer.result(document))
+    })
 }
