@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`--json` help names a real field**: it said `--json=id,title`, which is refused; Drive results use `name`, so it
+  now says `--json=id,name`.
+
 ## 0.18.0 — 19.10.2026
 
 ### Added
