@@ -81,7 +81,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .version(VERSION)
     .usage("<profile> [options] <command>")
     .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
-    .option("--json", "print machine-readable JSON; --json=id,title keeps only those fields")
+    .option("--json", "print machine-readable JSON; --json=id,name keeps only those fields")
     .option("--jsonl", "print machine-readable JSON lines")
     .option("--quiet", "suppress optional diagnostics")
     .option("--debug", "on failure, show the full error record: cause and stack")
