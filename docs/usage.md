@@ -92,6 +92,10 @@ has more, the answer's `page.next_cursor` holds the token; pass it to `files lis
 by account in the content index; moving them in Google does not change their local reference.
 Duplicate names are safe: use IDs, rather than titles, to select a source.
 
+The same imported documents can supply [project evidence through Memo](recipes.md#gather-project-context-with-memo).
+Sync the selected folders first; browsing a file through a connected app alone does not retain it in Memo.
+Use the same shared database in both tools and choose the imported Drive profile explicitly.
+
 ## Read content and metadata offline
 
 After import, these commands use the local copy and do not contact Google:
