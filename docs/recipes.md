@@ -13,6 +13,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | --- | --- | --- | --- |
 | Import or refresh a project | Yes | Index and snapshots | No |
 | Prepare a brief from the saved copy | No | No | No |
+| Gather project context with Memo | Sync uses Google; gathering reads the saved copy | Index and snapshots during sync | No |
 | Browse and organize the cached folder tree | No | Tags/notes, when requested | No |
 | Add follow-up tags, notes or links | No | Yes | No |
 | Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--yes` or confirmation | No |
@@ -62,6 +63,67 @@ Read the saved passages and source metadata to check the decisions. Open their G
 you need the current online version. A brief cannot account for unsupported or
 unimported sources. Live `documents get` can inspect an accessible native Doc without importing
 it; it prints Docs JSON and does not make that document searchable.
+
+## Gather project context with Memo
+
+Use this when project information is spread across Drive documents and other sources your agent can
+read through Memo. Drive keeps the selected documents locally; Memo finds cited evidence about the
+project in that saved material. Both tools must use the same WireCat database. Connect the Drive
+profile first using [the installation guide](installation.md), and install
+[Memo](https://wirecat.dev/en/docs/memo/installation) if it is not already available.
+
+```text prompt
+Use Drive profile personal and Memo to gather context for Cobalt Orchard. First show the selected
+Drive folders and let me choose a narrow project folder. Sync it, report skipped or unfinished work,
+then gather evidence from that Drive profile for the last 60 days. Show original document links,
+source dates and gaps in coverage. Do not change Google files or create project relationships.
+```
+
+For manual use, replace `FOLDER_ID` with the project's Google folder ID or URL. The selected folder's
+descendants are included, so choose a project folder rather than the whole account:
+
+```sh
+drive personal folders list --json
+drive personal folders add FOLDER_ID
+drive personal sync --limit 50 --json
+drive personal status --json
+drive personal documents list --json
+memo projects list --json
+memo projects evidence COB --source drive:personal --json
+```
+
+Replace `COB` with an existing project's key, name or alias from `memo projects list`. A new project
+name can also be searched without creating a project. Replace `personal` in both commands if your
+Drive profile has another name. Successful sync registers that profile for local source selection;
+`drive:personal` tells Memo which imported account to read.
+
+`--limit 50` bounds content reads in that sync invocation; it does not limit recursive discovery to
+50 entries. Existing selected roots remain included. Inspect `folders list` first, and check the
+sync result and `status` for pending work or skipped files. Repeat sync to continue saved work. Do
+not interpret a finished batch as proof that every file type was read.
+
+Memo's default discovery window is 60 days. For a wider search, use:
+
+```sh
+memo projects evidence COB --source drive:personal --since-time 365d --json
+```
+
+For imported Google documents, the date is Google's source modification time when available, with
+stored-update time as a fallback. Importing an old document today does not make its known source
+date recent. A modification date also does not establish when a decision in the document happened.
+Inspect each hit's `time_kind`, URL and text before treating it as evidence. If Memo returns a
+checkpoint, continue with the same options and its `--cursor` value; failed or unread sources remain
+coverage gaps. Gathering uses stored content and does not refresh Google for you.
+
+Reading a file through a connected Google Drive app, or with live `documents get`, does not perform
+this local sync. No Markdown export or second import is needed after normal Drive sync. Both tools
+use the shared store by default; if you override `MESSAGING_STORE`, use the same path for both.
+Separate database files do not share document references.
+
+The expected result is a set of cited matches from the chosen account, with original Google links
+and explicit limits. Importing and searching do not create project membership, facts or tasks.
+Review those separately using [document relationships](#link-a-document-to-a-person-or-project) or
+[Memo's project workflows](https://wirecat.dev/en/docs/memo/recipes).
 
 ## Prepare a brief entirely offline
 

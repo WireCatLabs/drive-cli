@@ -4,6 +4,9 @@
 
 ### Fixed
 
+- **Project context with Memo**: the guides now explain selected-folder sync, the shared-store source,
+  source dates and coverage limits, and why a connected-app read alone does not import a document.
+
 - **`--json` help names a real field**: it said `--json=id,title`, which is refused; Drive results use `name`, so it
   now says `--json=id,name`.
 

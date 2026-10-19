@@ -86,6 +86,14 @@ file drive read). Open the `source_url` of such a hit; there is no passage to qu
 See [file-type coverage](usage.md#which-document-types-are-searchable) and
 [task recipes](recipes.md#refresh-a-project-and-prepare-a-meeting-brief).
 
+## Gather context across sources
+
+To find project evidence in the imported documents alongside other selected sources, use Memo
+against the same shared store. The [Drive-to-Memo recipe](recipes.md#gather-project-context-with-memo)
+shows folder selection, bounded sync and an explicit `drive:personal` source. Reading a Google file
+through a connected app alone does not make it available to that local search. Gathered matches
+retain their source dates and links; project relationships remain a separate review step.
+
 ## Search images by what they show
 
 When the profile has `picture_search` on, `drive personal search "cat on a sofa"` also returns `pictures`: the
