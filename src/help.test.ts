@@ -3,10 +3,12 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { captureStreams } from "@wirecat/cli-base"
+import { flatten } from "@wirecat/cli-base/commands"
 import { checkGuide } from "@wirecat/cli-core/cli"
 import { validateSkill } from "@wirecat/cli-core/skill-validation"
 import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
+import { describeDriveProgram } from "./registry.js"
 import { VERSION } from "./version.js"
 
 const run = async (args: string[], env: NodeJS.ProcessEnv = {}) => {
@@ -31,6 +33,16 @@ describe("help without a profile or an account", () => {
   it("reads help as a command, never as a profile", async () => {
     expect(await run(["help", "options"])).toContain("--read-only")
     expect(await run(["help", "documents", "context"])).toContain("Usage: drive <profile> documents context")
+  })
+
+  it("prints --help for every leaf command", async () => {
+    const leaves = flatten(describeDriveProgram(createProgram({ env: {} }))).filter((one) => !one.commands.length)
+    for (const leaf of leaves) expect(await run([...leaf.path, "--help"]), leaf.path.join(" ")).toContain("Usage:")
+  })
+
+  it("lists the commands by section as text, and as data with --json", async () => {
+    expect(await run(["commands"])).toMatch(/^drive commands, by section/)
+    expect(JSON.parse(await run(["commands", "--json"])).cli).toBe("drive")
   })
 
   it("keeps every scenario step runnable", async () => {

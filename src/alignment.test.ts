@@ -51,7 +51,7 @@ describe("schema-generated Google contracts", () => {
     expect(request).toHaveBeenCalledWith("drive.files.get", { fileId: "doc-a" }, undefined)
     const registry = captureStreams()
     await createProgram({ env: f.env, streams: registry }).parseAsync(
-      ["default", "commands", "api", "drive-files-get"],
+      ["default", "commands", "api", "drive-files-get", "--json"],
       {
         from: "user",
       },
