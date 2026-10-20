@@ -4,6 +4,11 @@
 
 ### Fixed
 
+- **`drive guide` lists memo's `decision-trail` under "Works with"**, the memo scenario whose steps run
+  `drive search`, next to `person-brief`, whose title is now capitalised as in memo and the other tools. Both titles
+  come from cli-core (0.348.0 → 0.370.0), whose scenario check also catches shell characters left outside
+  quotes in a step.
+
 - **Project context with Memo**: the guides now explain selected-folder sync, the shared-store source,
   source dates and coverage limits, and why a connected-app read alone does not import a document.
 
