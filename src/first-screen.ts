@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url"
-import { guideCommand, type HelpSection, inSection, installHelp } from "@wirecat/cli-core/cli"
+import { guideCommand, type HelpSection, inSection, installHelp, MEMO_SCENARIOS } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 
 const SECTIONS: Record<string, HelpSection> = {
@@ -39,7 +39,7 @@ export const guide = () =>
     { command: "drive" },
     {
       directory: fileURLToPath(new URL("../scenarios", import.meta.url)),
-      worksWith: [{ tool: "memo", name: "person-brief", title: "one person across every tool" }],
+      worksWith: [MEMO_SCENARIOS.personBrief, MEMO_SCENARIOS.decisionTrail],
     },
   )
 
