@@ -21,9 +21,16 @@ export const configKey = (key: string) => {
   if (head === "models" && parts.length === 2) parts[1] = snakeSetting(parts[1] ?? "")
   return [snakeSetting(head), ...parts].join(".")
 }
+const Mirror = v.strictObject({
+  id: v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,40}$/)),
+  path: v.pipe(v.string(), v.minLength(1)),
+  folder: v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/)),
+})
+export type Mirror = v.InferOutput<typeof Mirror>
 const Profile = v.strictObject({
   principal: v.string(),
   roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
+  mirrors: v.optional(v.array(Mirror)),
   storage: v.picklist(["keyring", "file"]),
   picture_search: v.optional(v.boolean()),
   ...Common,

@@ -22,6 +22,11 @@ const ENTRIES: Entry[] = [
   ["catalog.cycle", "invalid_response", "local folder ancestry contains a cycle"],
   ["catalog.tree-limit", "validation_error", "tree output exceeds 10000 nodes; choose a smaller folder"],
   ["api.unknown-method", "validation_error", "the Google method is not known; run drive api list"],
+  ["mirror.none", "not_found", "the profile has no mirrors; add one with drive <profile> mirrors add"],
+  ["mirror.not-folder", "validation_error", "the path to mirror is not a folder"],
+  ["mirror.not-found", "not_found", "no such mirror in this profile; see drive <profile> mirrors list"],
+  ["mirror.partial", "provider_error", "some files were not synced; see conflicts, missing and errors"],
+  ["mirror.too-many-cells", "validation_error", "a mirrored spreadsheet is over its cell limit"],
   ["body.unreadable", "validation_error", "the request body file could not be read"],
   ["delete.not-allowed", "permission_error", "this method permanently deletes Google data; pass --allow-delete"],
   [

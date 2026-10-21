@@ -35,7 +35,8 @@ import { importedDocument, installDocumentCommands } from "./commands/documents.
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMcpCommand } from "./commands/mcp.js"
-import { installRemoteCommands } from "./commands/remote.js"
+import { installMirrorCommands } from "./commands/mirrors.js"
+import { installRemoteCommands, type RemoteCommands } from "./commands/remote.js"
 import { installSearchCommand } from "./commands/search.js"
 import { installSessionCommands } from "./commands/session.js"
 import { installSkillCommand } from "./commands/skill.js"
@@ -235,7 +236,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         }
       }),
   })
-  installRemoteCommands(program, {
+  const remote: RemoteCommands = {
     output,
     positive,
     readBody:
@@ -301,7 +302,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }
       return guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce)
     },
-  })
+  }
+  installRemoteCommands(program, remote)
+  installMirrorCommands(program, context, remote)
   installConfigCommands(program, context)
   installCompleteCommand(program, context)
   installModelCommands(program, context)
