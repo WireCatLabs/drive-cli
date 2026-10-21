@@ -22,6 +22,7 @@ import { apiMethods, validateApiParams } from "../google-api.js"
 import { allOf } from "../output.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
 import { requestSchema } from "../schema.js"
+import { utcDriveQuery } from "../time.js"
 import { installSheetsCommands } from "./sheets.js"
 
 const API_METHOD_QUERY = {
@@ -54,6 +55,13 @@ const pageOf = (
       : {}),
   })
 }
+const sentParams = (method: string, params: Record<string, unknown>) => {
+  if (method !== "drive.files.list" || typeof params.q !== "string") return { params }
+  const { query, timezone } = utcDriveQuery(params.q)
+  return { params: { ...params, q: query }, meta: timezone ? { timezone } : undefined }
+}
+const zoneMeta = (meta: { timezone: string } | undefined) => (meta ? { meta } : {})
+
 export interface RemoteCommands {
   call(method: string, params: Record<string, unknown>, body?: Record<string, unknown>): Promise<unknown>
   output(body: Body): void
@@ -103,23 +111,23 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .option("--allow-delete", "allow a method that deletes for good or empties the trash")
     .action(async (name: string, args) => {
       validateApiParams(args.params)
-      output(itemOf(await call(name, args.params, args.body)))
+      const { params, meta } = sentParams(name, args.params)
+      output(itemOf(await call(name, params, args.body), zoneMeta(meta)))
     })
   const generated = generatedApiCommand({
     operations,
     checkParameter: (name, schema, raw) => checkApiParameter(name, schema, raw, schemas),
     checkBody: (operation, text) => checkApiBody(operation, text, schemas),
     readBody: (_command, opts) => readApiBody(opts, helpers.readBody),
-    execute: async (_command, operation, input) =>
+    execute: async (_command, operation, input) => {
+      const { params, meta } = sentParams(operation.id, { ...input.path, ...input.query })
       output(
         itemOf(
-          await call(
-            operation.id,
-            { ...input.path, ...input.query },
-            input.body === undefined ? undefined : jsonObject(input.body),
-          ),
+          await call(operation.id, params, input.body === undefined ? undefined : jsonObject(input.body)),
+          zoneMeta(meta),
         ),
-      ),
+      )
+    },
   })
   for (const child of generated.commands) api.addCommand(child)
   installSheetsCommands(program, helpers)
@@ -134,12 +142,16 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       ["drive personal files list --parent FOLDER_ID", `drive personal files list "name contains 'plan'" --limit 20`],
     ),
   )
-    .argument("[query...]", "Google Drive query the files match; trashed = false when omitted")
+    .argument(
+      "[query...]",
+      "Google Drive query the files match; trashed = false when omitted. A time without a zone is read in this computer's zone and sent as UTC",
+    )
     .option("--parent <id>", "only the files directly inside this folder id")
     .action(async (words: string[], args) => {
-      const query = words.length ? words.join(" ") : "trashed = false"
-      return output(
-        pageOf(
+      const typed = words.length ? words.join(" ") : "trashed = false"
+      const { query, timezone } = utcDriveQuery(typed)
+      return output({
+        ...pageOf(
           "files list",
           await call("drive.files.list", {
             q: args.parent ? `'${fileId(args.parent)}' in parents and (${query})` : query,
@@ -151,9 +163,10 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           }),
           "files",
           args.limit,
-          { query, parent: args.parent },
+          { query: typed, parent: args.parent },
         ),
-      )
+        ...(timezone ? { meta: { timezone } } : {}),
+      })
     })
   examples(
     annotate(files.command("get"), { effects: GOOGLE_READ })

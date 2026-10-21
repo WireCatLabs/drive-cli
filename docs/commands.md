@@ -944,7 +944,7 @@ drive <profile> facts add <document> <statement> [options]
 | `--type <type>` | what kind of fact it is. One of: `fact`, `statement`, `question`, `decision`, `promise`. Default: `fact`. |
 | `--scope <scope>` | whose fact it is: personal or work. One of: `personal`, `work`. |
 | `--supersedes <ref>` | a decision only: the decision this one replaces. |
-| `--occurred-time <time>` | when it happened, as the evidence shows, ISO 8601. |
+| `--occurred-time <time>` | when it happened, as the evidence shows, ISO 8601; a time without a zone is read in this computer's zone, a date alone as its midnight. |
 
 **Returns:** record a fact a document shows
 
@@ -3579,7 +3579,7 @@ drive <profile> files list [query] [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `query` | optional | Google Drive query the files match; trashed = false when omitted. |
+| `query` | optional | Google Drive query the files match; trashed = false when omitted. A time without a zone is read in this computer's zone and sent as UTC. |
 
 | Option | What it does |
 |---|---|

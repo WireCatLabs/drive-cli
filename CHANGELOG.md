@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`files list` reads a query time without a zone in this computer's zone**: Google reads
+  `modifiedTime > '2026-09-01T09:00:00'` as UTC, so drive now converts such a time (and a date alone, as the whole
+  local day) to UTC before it sends the query, and names the zone in `meta.timezone`. `api call drive.files.list`
+  and `api drive-files-list` do the same for `q`. A time that names its zone is sent as typed. What to watch for: a
+  script that typed UTC times without a zone gets other files on a computer outside UTC; add `Z` to keep UTC.
+
+### Fixed
+- **Text output shows times in this computer's zone and says which**: a stored UTC time such as `modified_time`
+  prints as local wall-clock time, followed by a `times in <zone>` line. JSON, JSONL and MCP output stay UTC.
+- **`facts add --occurred-time` help says how a time without a zone is read**: in this computer's zone, and a date
+  alone as its local midnight (cli-core 0.370.0 → 0.379.0, cli-base 0.47.0 → 0.48.0).
+
 ## 0.19.0 — 20.10.2026
 
 ### Added
