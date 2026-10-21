@@ -63,7 +63,7 @@
     "@googleapis/drive": "26.0.2",
     "@googleapis/driveactivity": "11.0.1",
     "@googleapis/sheets": "18.1.1",
-    "@modelcontextprotocol/server": "2.1.0",
+    "@modelcontextprotocol/server": "2.3.0",
     "@wirecat/cli-base": "0.48.0",
     "@wirecat/cli-core": "0.379.0",
     "commander": "15.0.0",
