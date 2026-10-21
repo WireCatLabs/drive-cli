@@ -1,5 +1,5 @@
 import { captureStreams } from "@wirecat/cli-base"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
 import { createProgram } from "./program.js"
 import { commandResult, content, file, fixture } from "./testing.js"
@@ -198,6 +198,41 @@ describe("document knowledge commands", () => {
         { from: "user" },
       ),
     ).rejects.toThrow("source changed")
+  })
+})
+
+describe("fact times", () => {
+  const zone = process.env.TZ
+  afterEach(() => {
+    if (zone === undefined) delete process.env.TZ
+    else process.env.TZ = zone
+  })
+
+  const occurredAt = async (tz: string, time: string) => {
+    process.env.TZ = tz
+    const f = fixture()
+    const call = async (...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
+        ["default", ...args, "--json"],
+        { from: "user" },
+      )
+      return commandResult(streams.stdout.join(""))
+    }
+    await call("sync")
+    const fact = await call("facts", "add", "doc-a", "Budget approved", "--occurred-time", time)
+    return (await call("facts", "show", "doc-a", fact.ref)).occurred_at
+  }
+
+  it("stores the same moment whatever zone the computer is in when the time names one", async () => {
+    const time = "2026-10-16T10:00:00+02:00"
+    expect(await occurredAt("Asia/Vladivostok", time)).toBe("2026-10-16T08:00:00.000Z")
+    expect(await occurredAt("America/Los_Angeles", time)).toBe("2026-10-16T08:00:00.000Z")
+  })
+
+  it("reads a time without a zone in the computer's zone", async () => {
+    expect(await occurredAt("Asia/Vladivostok", "2026-10-16T10:00")).toBe("2026-10-16T00:00:00.000Z")
+    expect(await occurredAt("America/Los_Angeles", "2026-10-16")).toBe("2026-10-16T07:00:00.000Z")
   })
 })
 

@@ -13,6 +13,7 @@ import {
   type Streams,
 } from "@wirecat/cli-base"
 import { annotate, flatten, metaOf } from "@wirecat/cli-base/commands"
+import { timezoneOf } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import {
   type Body,
@@ -54,6 +55,7 @@ import { checkProviderJson, checkResultFields, providerJsonFields } from "./prov
 import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
+import { localTimes } from "./time.js"
 import { authorizedClient, checkAuthorization } from "./tokens.js"
 import { uploadFile } from "./upload.js"
 import { VERSION } from "./version.js"
@@ -167,9 +169,14 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     if (fields && currentAction) checkResultFields(currentAction, whole, fields)
     const paths = fields ? fieldsOf(fields) : undefined
     const answer = paths ? (projectFields(whole, paths) as typeof whole) : whole
-    print((renderer, format, buffered) =>
-      renderAnswer(currentAction ?? program, { renderer, format, streams: buffered }, answer),
-    )
+    print((renderer, format, buffered) => {
+      const command = currentAction ?? program
+      if (format !== "pretty") return renderAnswer(command, { renderer, format, streams: buffered }, answer)
+      const zone = timezoneOf()
+      const shown = localTimes(answer, zone)
+      renderAnswer(command, { renderer, format, streams: buffered }, shown.value as typeof answer)
+      if (shown.changed || answer.meta.timezone) buffered.data(`times in ${answer.meta.timezone ?? zone}`)
+    })
   }
   const source = async () => {
     const name = selected()

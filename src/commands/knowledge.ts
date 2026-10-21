@@ -282,7 +282,10 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .addOption(new Option("--type <type>", "what kind of fact it is").choices(FACT_TYPES).default("fact"))
     .addOption(scope("whose fact it is: personal or work"))
     .option("--supersedes <ref>", "a decision only: the decision this one replaces")
-    .option("--occurred-time <time>", "when it happened, as the evidence shows, ISO 8601")
+    .option(
+      "--occurred-time <time>",
+      "when it happened, as the evidence shows, ISO 8601; a time without a zone is read in this computer's zone, a date alone as its midnight",
+    )
     .action(
       async (
         doc: string,
