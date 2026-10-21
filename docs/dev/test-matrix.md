@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**189 ✅ · 959 ⛔ · 0 ❌** — 177 commands, 971 options.
+**190 ✅ · 958 ⛔ · 0 ❌** — 177 commands, 971 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -593,7 +593,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-list` | `--include-team-drive-items` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--include-labels` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--include-items-from-all-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-list` | `--q` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-files-list` | `--q` | ✅ |  |
 | `api drive-files-list` | `--drive-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list-labels` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list-labels` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
