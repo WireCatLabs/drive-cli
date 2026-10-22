@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**190 ✅ · 958 ⛔ · 0 ❌** — 177 commands, 971 options.
+**197 ✅ · 958 ⛔ · 0 ❌** — 182 commands, 973 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1124,6 +1124,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `shared-drives` |  | ✅ |  |
 | `shared-drives` | `--limit` | ✅ |  |
 | `shared-drives` | `--cursor` | ✅ |  |
+| `mirrors add` |  | ✅ |  |
+| `mirrors add` | `--parent` | ✅ |  |
+| `mirrors list` |  | ✅ |  |
+| `mirrors remove` |  | ✅ |  |
+| `mirrors status` |  | ✅ |  |
+| `mirrors sync` |  | ✅ |  |
+| `mirrors sync` | `--replace` | ✅ |  |
 | `config show` |  | ✅ |  |
 | `config set` |  | ✅ |  |
 | `config set` | `--defaults` | ✅ |  |
