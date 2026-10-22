@@ -3957,7 +3957,7 @@ drive <profile> mirrors remove <id>
 
 ### `drive mirrors status`
 
-show what the next sync would create or update; Google is not asked
+show which local files the next sync would create or send; Google is not asked
 
 ```sh
 drive <profile> mirrors status [id]
@@ -3967,13 +3967,13 @@ drive <profile> mirrors status [id]
 |---|---|---|
 | `id` | optional | mirror id; every mirror of the profile when omitted. |
 
-**Returns:** show what the next sync would create or update; Google is not asked
+**Returns:** show which local files the next sync would create or send; Google is not asked
 
 **Example:** `drive personal mirrors status`
 
 ### `drive mirrors sync`
 
-write changed files into their Docs and Sheets; a Google edit stops that file
+sync both ways with Docs and Sheets; a part changed on both sides is reported
 
 This command can change Google data or send data to the configured model.
 
@@ -3987,11 +3987,12 @@ drive <profile> mirrors sync [id] [options]
 
 | Option | What it does |
 |---|---|
-| `--replace` | overwrite changes made in Google since the last sync; recreate deleted files. |
+| `--keep <side>` | where a part changed on both sides, keep this side. One of: `local`, `google`, `both`. |
+| `--replace` | same as --keep local, and create again files deleted in Google. |
 
-**Returns:** write changed files into their Docs and Sheets; a Google edit stops that file
+**Returns:** sync both ways with Docs and Sheets; a part changed on both sides is reported
 
-**Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --replace`
+**Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --keep google`, `drive personal mirrors sync 1a2b3c4d --replace`
 
 ## `drive config`
 

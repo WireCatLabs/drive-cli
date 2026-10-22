@@ -4,9 +4,9 @@ import { resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core/cli"
-import { planPush, pushDocuments, scanLocal } from "@wirecat/cli-core/documents"
+import { type Keep, type PushConflict, planPush, pushDocuments, scanLocal } from "@wirecat/cli-core/documents"
 import { newOperationId } from "@wirecat/cli-core/sends"
-import type { Command } from "commander"
+import { type Command, Option } from "commander"
 import { activeProfile, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
 import { mirrorState } from "../mirror-state.js"
@@ -17,6 +17,18 @@ import { lockProfile } from "../profile-lock.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 import type { RemoteCommands } from "./remote.js"
+
+const conflictOf = (conflict: PushConflict) => ({
+  path: conflict.path,
+  url: conflict.url,
+  reason: conflict.reason,
+  ...(conflict.parts
+    ? { parts: conflict.parts.map((part) => ({ last_sync: part.base, local: part.local, google: part.remote })) }
+    : {}),
+  ...(conflict.localChangedAt ? { local_changed_at: conflict.localChangedAt } : {}),
+  ...(conflict.remoteChangedAt ? { google_changed_at: conflict.remoteChangedAt } : {}),
+  ...(conflict.remoteChangedBy ? { google_changed_by: conflict.remoteChangedBy } : {}),
+})
 
 export const installMirrorCommands = (program: Command, context: CommandContext, { call }: RemoteCommands) => {
   const { env, selected, output, source } = context
@@ -91,7 +103,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
   examples(
     annotate(mirrors.command("status"), { effects: LOCAL_READ })
       .argument("[id]", "mirror id; every mirror of the profile when omitted")
-      .description("show what the next sync would create or update; Google is not asked"),
+      .description("show which local files the next sync would create or send; Google is not asked"),
     ["drive personal mirrors status"],
   ).action(async (id?: string) => {
     const name = selected()
@@ -119,10 +131,21 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
   examples(
     annotate(mirrors.command("sync"), { effects: REMOTE_WRITE })
       .argument("[id]", "mirror id; every mirror of the profile when omitted")
-      .option("--replace", "overwrite changes made in Google since the last sync; recreate deleted files")
-      .description("write changed files into their Docs and Sheets; a Google edit stops that file"),
-    ["drive personal mirrors sync", "drive personal mirrors sync 1a2b3c4d --replace"],
-  ).action(async (id: string | undefined, args: { replace?: boolean }) => {
+      .addOption(
+        new Option("--keep <side>", "where a part changed on both sides, keep this side").choices([
+          "local",
+          "google",
+          "both",
+        ]),
+      )
+      .option("--replace", "same as --keep local, and create again files deleted in Google")
+      .description("sync both ways with Docs and Sheets; a part changed on both sides is reported"),
+    [
+      "drive personal mirrors sync",
+      "drive personal mirrors sync 1a2b3c4d --keep google",
+      "drive personal mirrors sync 1a2b3c4d --replace",
+    ],
+  ).action(async (id: string | undefined, args: { keep?: "local" | "google" | "both"; replace?: boolean }) => {
     const name = selected()
     const profile = activeProfile(env, name)
     const chosen = id ? [find(id)] : mirrorsOf()
@@ -130,6 +153,12 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
       throw new CliError("not_found", `profile ${name} has no mirrors; add one with drive ${name} mirrors add`, {
         reason: "mirror.none",
       })
+    if (args.replace && args.keep && args.keep !== "local")
+      throw new CliError(
+        "validation_error",
+        "--replace keeps the local side; it cannot be combined with --keep google or both",
+      )
+    const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
     const google = await source()
     const target = googleTarget(call, () => google.identity())
     const lock = await lockProfile(env, name)
@@ -145,7 +174,8 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
             target,
             state: mirrorState(env, name, mirror, profile.principal),
             principal: profile.principal,
-            force: args.replace === true,
+            ...(keep ? { keep } : {}),
+            recreate: args.replace === true,
             // `call` already checks policy and journals each Google write it makes.
             guard: (_attempt, act) => act(),
             operationId: newOperationId,
@@ -157,11 +187,13 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     } finally {
       await lock.release()
     }
-    output(allOf(results))
+    output(allOf(results.map(({ conflicts, ...result }) => ({ ...result, conflicts: conflicts.map(conflictOf) }))))
     const failed = results.some((result) => result.errors.length || result.conflicts.length || result.missing.length)
     if (failed)
-      throw new CliError("provider_error", "some files were not pushed; see conflicts, missing and errors", {
-        reason: "mirror.partial",
-      })
+      throw new CliError(
+        "provider_error",
+        `some files were not synced; see conflicts, missing and errors, then rerun with --keep local, google or both`,
+        { reason: "mirror.partial" },
+      )
   })
 }
