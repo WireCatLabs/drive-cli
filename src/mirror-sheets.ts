@@ -3,9 +3,11 @@ import { readFileSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import {
   columnName,
+  type Keep,
   type LocalDocument,
   type Prepared,
   type Pushed,
+  type RemoteChange,
   readSpreadsheet,
 } from "@wirecat/cli-core/documents"
 
@@ -27,6 +29,31 @@ export interface SheetSnapshot {
   tabs: MirroredTab[]
 }
 export type Call = (method: string, params: Record<string, unknown>, body?: Record<string, unknown>) => Promise<unknown>
+
+/** When and by whom the file last changed, from its revision list; nothing when Google does not say. */
+export const lastChange = async (call: Call, id: string): Promise<RemoteChange> => {
+  try {
+    let last: { modifiedTime?: string; lastModifyingUser?: { displayName?: string } } | undefined
+    let pageToken: string | undefined
+    for (let page = 0; page < 20; page++) {
+      const data = (await call("drive.revisions.list", {
+        fileId: id,
+        pageSize: 1000,
+        fields: "nextPageToken,revisions(modifiedTime,lastModifyingUser(displayName))",
+        ...(pageToken ? { pageToken } : {}),
+      })) as { nextPageToken?: string; revisions?: (typeof last)[] }
+      last = data.revisions?.at(-1) ?? last
+      pageToken = data.nextPageToken
+      if (!pageToken) break
+    }
+    return {
+      ...(last?.modifiedTime ? { changedAt: last.modifiedTime } : {}),
+      ...(last?.lastModifyingUser?.displayName ? { changedBy: last.lastModifyingUser.displayName } : {}),
+    }
+  } catch {
+    return {}
+  }
+}
 
 const MAX_CELLS = 200_000
 const NUMBER = /^-?(0|[1-9]\d*)(\.\d+)?([eE][-+]?\d+)?$/
@@ -118,6 +145,25 @@ const size = (rows: Cell[][]) => ({ rows: rows.length, columns: Math.max(0, ...r
 const quoted = (title: string) => `'${title.replace(/'/g, "''")}'`
 const range = (title: string, rows: number, columns: number) =>
   `${quoted(title)}!A1:${columnName(Math.max(columns, 1))}${Math.max(rows, 1)}`
+/** The mirrored columns, every row: rows added below in Google count as a change. */
+const columnsRange = (title: string, columns: number) => `${quoted(title)}!A1:${columnName(Math.max(columns, 1))}`
+
+/**
+ * Google's rows as the file's text. A cell whose value the file already holds keeps its spelling (`1.50` stays
+ * `1.50`); the delimiter, line endings, byte-order mark and final line break stay the file's.
+ */
+export const delimitedText = (rows: Cell[][], original: string, delimiter: string): string => {
+  const bom = original.startsWith("\uFEFF") ? "\uFEFF" : ""
+  const eol = original.includes("\r\n") ? "\r\n" : "\n"
+  const before = parseDelimited(original.replace(/^\uFEFF/, ""), delimiter)
+  const field = (cell: Cell, was: string | undefined) => {
+    const text = was !== undefined && typed(was) === cell ? was : String(cell)
+    return text.includes(delimiter) || /["\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
+  }
+  const lines = rows.map((row, r) => row.map((cell, c) => field(cell, before[r]?.[c])).join(delimiter))
+  const final = /\r?\n$/.test(original) || !original ? eol : ""
+  return bom + lines.join(eol) + (lines.length ? final : "")
+}
 
 interface RemoteTab {
   sheetId: number
@@ -254,22 +300,28 @@ export const recoveredSheet = async (call: Call, id: string): Promise<SheetSnaps
   return { kind: "sheet", tabs: first ? [{ sheetId: first.sheetId, source: "", rows: 0, columns: 0, hash: "" }] : [] }
 }
 
+/**
+ * Compares the mirrored cells in Google and the file with what the last sync left. One side changed: it is taken,
+ * Google's cells written back into a CSV or TSV file. Both changed: a conflict unless `keep` picks a side.
+ */
 export const prepareSheet = async (
   call: Call,
-  input: { id: string; url: string; file: LocalDocument; recorded: SheetSnapshot; force: boolean },
+  input: { id: string; url: string; file: LocalDocument; recorded: SheetSnapshot; keep?: Keep },
 ): Promise<Prepared<SheetSnapshot>> => {
-  const { id, recorded, force } = input
+  const { id, recorded, keep } = input
   const titles = new Map((await remoteTabs(call, id)).map((tab) => [tab.sheetId, tab.title]))
   const kept = recorded.tabs.filter((tab) => titles.has(tab.sheetId))
-  if (kept.length < recorded.tabs.length && !force) return { conflict: "a mirrored tab was deleted in Google" }
-  const current = await readRanges(
-    call,
-    id,
-    kept.map((tab) => range(titles.get(tab.sheetId) ?? "", tab.rows, tab.columns)),
-  )
+  if (kept.length < recorded.tabs.length && keep !== "local")
+    return { conflict: "a mirrored tab was deleted in Google", remote: await lastChange(call, id) }
+  const current = (
+    await readRanges(
+      call,
+      id,
+      kept.map((tab) => columnsRange(titles.get(tab.sheetId) ?? "", tab.columns)),
+    )
+  ).map(trimmed)
   const recovered = kept.some((tab) => tab.hash === "")
-  if (!force && !recovered && kept.some((tab, index) => hashRows(current[index] ?? []) !== tab.hash))
-    return { conflict: "the mirrored cells changed in Google since the last push" }
+  const remoteChanged = !recovered && kept.some((tab, index) => hashRows(current[index] ?? []) !== tab.hash)
 
   const tabs = await readLocalTabs(input.file)
   const pairs = tabs.map((tab, index) => ({
@@ -278,10 +330,46 @@ export const prepareSheet = async (
       kept.find((mirror) => mirror.source === tab.title) ??
       (tabs.length === 1 || (recovered && index === 0) ? kept[0] : undefined),
   }))
-  const unchanged = pairs.every(({ tab, mirror }) => mirror && hashRows(tab.rows) === mirror.hash) && !recovered
+  const localChanged = recovered || !pairs.every(({ tab, mirror }) => mirror && hashRows(tab.rows) === mirror.hash)
   const pushed = (snapshot: SheetSnapshot): Pushed<SheetSnapshot> => ({ id, url: input.url, snapshot })
-  if (unchanged) return { unchanged: pushed(recorded) }
+  if (!remoteChanged && !localChanged) return { unchanged: pushed(recorded) }
+
+  const delimiter = /\.tsv$/i.test(input.file.path) ? "\t" : /\.csv$/i.test(input.file.path) ? "," : undefined
+  const [only] = tabs
+  const [mirror] = kept
+  const single = delimiter !== undefined && tabs.length === 1 && kept.length === 1 && only && mirror
+  const pulled = (rows: Cell[][]): SheetSnapshot => ({
+    kind: "sheet",
+    tabs: mirror ? [{ ...mirror, source: only?.title ?? mirror.source, ...size(rows), hash: hashRows(rows) }] : [],
+  })
+  if (remoteChanged && localChanged && single && hashRows(only.rows) === hashRows(current[0] ?? []))
+    return { unchanged: pushed(pulled(current[0] ?? [])) }
+  let take: "local" | "remote" = remoteChanged ? "remote" : "local"
+  if (remoteChanged && localChanged) {
+    if (!keep) return { conflict: "the mirrored cells changed here and in Google", remote: await lastChange(call, id) }
+    if (keep === "both")
+      return {
+        conflict: "a Sheet cannot keep both versions; choose --keep local or --keep remote",
+        remote: await lastChange(call, id),
+      }
+    take = keep
+  }
+  if (take === "remote" && !single && keep === "local") take = "local"
+  if (take === "remote") {
+    if (!single)
+      return {
+        conflict: "the Sheet changed in Google; only CSV and TSV files take changes back, so choose --keep local",
+        remote: await lastChange(call, id),
+      }
+    const rows = current[0] ?? []
+    return {
+      local: delimitedText(rows, readFileSync(input.file.absolute, "utf8"), delimiter),
+      remote: false,
+      write: async () => pushed(pulled(rows)),
+    }
+  }
   return {
+    remote: true,
     write: async () => {
       const missing = pairs.filter((pair) => !pair.mirror)
       const added = new Map<string, number>()

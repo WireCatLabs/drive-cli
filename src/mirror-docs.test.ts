@@ -1,6 +1,9 @@
+import { mkdtempSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { markdownBlocks } from "@wirecat/cli-core/documents"
 import { describe, expect, it } from "vitest"
-import { editRequests, insertRequests, readDoc, representable } from "./mirror-docs.js"
+import { editRequests, insertRequests, prepareDoc, readDoc, representable } from "./mirror-docs.js"
 
 const paragraph = (start: number, text: string, extra: Record<string, unknown> = {}, style: object = {}) => ({
   startIndex: start,
@@ -141,5 +144,73 @@ describe("editRequests", () => {
     const requests = editRequests(read, [...read.placed.map((item) => item.block), { kind: "rule" }])
     expect(requests[0]).toEqual({ insertText: { location: { index: 5 }, text: "\n" } })
     expect(requests[1]).toEqual({ insertText: { location: { index: 6 }, text: "\n" } })
+  })
+})
+
+describe("prepareDoc", () => {
+  const googleDoc = (notes: string, extra: Record<string, unknown> = {}) => ({
+    revisionId: "rev-2",
+    lists: { checks: { listProperties: { nestingLevels: [{ glyphType: "GLYPH_TYPE_UNSPECIFIED" }] } } },
+    body: {
+      content: [
+        { startIndex: 0, endIndex: 1, sectionBreak: {} },
+        paragraph(1, "Plan\n", { paragraphStyle: { namedStyleType: "HEADING_1" } }),
+        paragraph(6, "call\n", { bullet: { listId: "checks" } }),
+        paragraph(11, `${notes}\n`, extra),
+      ],
+    },
+  })
+  const setup = async (local: string, notes: string, extra: Record<string, unknown> = {}) => {
+    const folder = mkdtempSync(join(tmpdir(), "mirror-docs-"))
+    const absolute = join(folder, "plan.md")
+    writeFileSync(absolute, local)
+    const base = await markdownBlocks("# Plan\n\n- [ ] call\n\nnotes\n")
+    const writes: unknown[] = []
+    const call = async (method: string, _params: Record<string, unknown>, body?: Record<string, unknown>) => {
+      if (method === "docs.documents.get") return googleDoc(notes, extra)
+      if (method === "drive.files.export") return `# Plan\n\n- [x] call\n\n${notes}\n`
+      if (method === "drive.revisions.list")
+        return {
+          revisions: [
+            { modifiedTime: "2026-10-22T09:00:00.000Z", lastModifyingUser: { displayName: "Synthetic Editor" } },
+          ],
+        }
+      if (method === "docs.documents.batchUpdate") return writes.push(body)
+      throw new Error(`unexpected ${method}`)
+    }
+    const input = {
+      id: "doc-1",
+      url: "https://example.invalid/doc-1",
+      file: { path: "plan.md", absolute, hash: "h", kind: "doc" },
+      recorded: { kind: "doc" as const, written: base, local: base },
+    }
+    return { call, input, writes }
+  }
+
+  it("brings Google's edit and tick into the file and sends the file's edit to the Doc", async () => {
+    const { call, input } = await setup("# Plan v2\n\n* [ ] call\n\nnotes\n", "notes from Google")
+    const prepared = await prepareDoc(call, input)
+    expect(prepared).toMatchObject({ local: "# Plan v2\n\n* [x] call\n\nnotes from Google\n", remote: true })
+  })
+
+  it("reports a paragraph changed on both sides with Google's last change", async () => {
+    const { call, input } = await setup("# Plan\n\n- [ ] call\n\nnotes from the laptop\n", "notes from Google")
+    expect(await prepareDoc(call, input)).toEqual({
+      conflict: "the same part changed here and in Google",
+      parts: [{ base: "notes", local: "notes from the laptop", remote: "notes from Google" }],
+      remote: { changedAt: "2026-10-22T09:00:00.000Z", changedBy: "Synthetic Editor" },
+    })
+    expect(await prepareDoc(call, { ...input, keep: "both" })).toMatchObject({
+      local: "# Plan\n\n- [x] call\n\nnotes from the laptop\n\nnotes from Google\n",
+      remote: true,
+    })
+  })
+
+  it("never takes pending suggestions, whatever side is kept", async () => {
+    const { call, input } = await setup("# Plan\n\n- [ ] call\n\nnotes\n", "notes", { suggestedBulletChanges: {} })
+    for (const keep of [undefined, "local", "remote"] as const)
+      expect(await prepareDoc(call, { ...input, ...(keep ? { keep } : {}) })).toMatchObject({
+        conflict: "the Doc has pending suggestions; accept or reject them in Google first",
+      })
   })
 })

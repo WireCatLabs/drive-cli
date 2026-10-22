@@ -1,17 +1,21 @@
 import { readFileSync } from "node:fs"
 import {
   type Block,
+  blockKey,
+  blocksMarkdown,
   diffBlocks,
   type Inline,
+  type Keep,
   type ListKind,
   type LocalDocument,
   markdownBlocks,
+  mergeBlocks,
   normalizeInlines,
   type Prepared,
   type Pushed,
-  reconcileBlocks,
+  spliceMarkdown,
 } from "@wirecat/cli-core/documents"
-import type { Call } from "./mirror-sheets.js"
+import { type Call, lastChange } from "./mirror-sheets.js"
 
 export interface DocSnapshot {
   kind: "doc"
@@ -76,6 +80,9 @@ export const representable = (blocks: Block[]): Block[] =>
 
 export const localBlocks = async (file: LocalDocument): Promise<Block[]> =>
   representable(await markdownBlocks(readFileSync(file.absolute, "utf8")))
+
+const sameBlocks = (a: Block[], b: Block[]) =>
+  a.length === b.length && a.every((block, index) => blockKey(block) === blockKey(b[index] as Block))
 
 interface TextStyle {
   bold?: boolean
@@ -467,31 +474,70 @@ export const recoveredDoc = async (call: Call, id: string): Promise<DocSnapshot>
   return { kind: "doc", written: blocks, local: blocks }
 }
 
+/**
+ * Merges the Doc and the local file against what the last sync left on both. Google's changes are spliced into
+ * the Markdown, the file's changes become block edits; a part both changed is a conflict unless `keep` settles it.
+ */
 export const prepareDoc = async (
   call: Call,
-  input: { id: string; url: string; file: LocalDocument; recorded: DocSnapshot; force: boolean },
+  input: { id: string; url: string; file: LocalDocument; recorded: DocSnapshot; keep?: Keep },
 ): Promise<Prepared<DocSnapshot>> => {
-  const { id, recorded, force } = input
+  const { id, recorded, keep } = input
   const doc = await fetchDoc(call, id)
-  if (doc.suggestions && !force)
-    return { conflict: "the Doc has pending suggestions; accept or reject them in Google first" }
-  const local = await localBlocks(input.file)
+  // Suggested text reads as if it were accepted; it must neither reach the file nor be written over.
+  if (doc.suggestions) return { conflict: "the Doc has pending suggestions; accept or reject them in Google first" }
+  const text = readFileSync(input.file.absolute, "utf8")
+  const local = representable(await markdownBlocks(text))
   const current = doc.placed.map((item) => item.block)
-  const reconciled = reconcileBlocks(recorded.written, current, local, recorded.local)
-  if (reconciled.status === "conflict" && !force) return { conflict: "the Doc changed in Google since the last push" }
-  const next = reconciled.status === "clean" ? reconciled.blocks : local
+  const merged = mergeBlocks(recorded.local, recorded.written, local, current, keep)
+  let next: Block[]
+  if (merged.status === "unaligned") {
+    if (!keep)
+      return {
+        conflict: "the Doc no longer matches what the last sync wrote; choose a side with --keep",
+        remote: await lastChange(call, id),
+      }
+    next = keep === "local" ? local : keep === "remote" ? current : [...local, ...current]
+  } else if (merged.status === "conflict")
+    return {
+      conflict: "the same part changed here and in Google",
+      parts: merged.conflicts.map((part) => ({
+        base: blocksMarkdown(part.base),
+        local: blocksMarkdown(part.local),
+        remote: blocksMarkdown(part.remote),
+      })),
+      remote: await lastChange(call, id),
+    }
+  else next = merged.blocks
+
+  let content: string | undefined
+  if (!sameBlocks(local, next)) {
+    content = await spliceMarkdown(text, next, representable)
+    if (content === undefined)
+      return {
+        conflict: "Google's changes cannot be written into the Markdown file without changing other lines",
+        remote: await lastChange(call, id),
+      }
+  }
   const requests = editRequests(doc, next)
-  const pushed = (snapshot: DocSnapshot): Pushed<DocSnapshot> => ({ id, url: input.url, snapshot })
-  if (!requests.length) return { unchanged: pushed({ kind: "doc", written: current, local }) }
+  const pushed = (written: Block[]): Pushed<DocSnapshot> => ({
+    id,
+    url: input.url,
+    snapshot: { kind: "doc", written, local: next },
+  })
+  if (!requests.length && content === undefined) return { unchanged: pushed(current) }
   return {
+    ...(content === undefined ? {} : { local: content }),
+    remote: requests.length > 0,
     write: async () => {
+      if (!requests.length) return pushed(current)
       await call(
         "docs.documents.batchUpdate",
         { documentId: id },
         { requests, writeControl: { requiredRevisionId: doc.revisionId } },
       )
       const written = await fetchDoc(call, id)
-      return pushed({ kind: "doc", written: written.placed.map((item) => item.block), local })
+      return pushed(written.placed.map((item) => item.block))
     },
   }
 }

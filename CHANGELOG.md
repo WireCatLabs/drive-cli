@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`mirrors sync` works both ways.** Edits and ticks made in Google come back into the local files: a Markdown
+  file changes only on the lines of changed paragraphs, so its own markers, spacing and code languages stay; a CSV
+  or TSV file takes Google's cells and keeps how it spelled unchanged values (`1.50` stays `1.50`). The same
+  paragraph or cells changed on both sides is a conflict: that file is left alone, the rest sync, and the report
+  shows each side's text, when the file changed and Google's last revision time and editor. `--keep local`,
+  `--keep google` or `--keep both` settles it. Every mirrored file is now read from Google on each sync. XLSX files
+  do not take changes back; a Google edit to one stays a conflict until `--keep local`.
+
+### Changed
+
+- **`--replace` keeps Google's edits that do not collide.** It now means `--keep local` plus creating deleted
+  files again, so only conflicting parts are overwritten, and Google's other edits come back into the file. A Doc
+  with pending suggestions is refused whatever side is kept: suggested text would read as accepted.
+
 ## 0.22.0 — 22.10.2026
 
 ### Changed

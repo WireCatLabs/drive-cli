@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs"
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, isCliError } from "@wirecat/cli-base"
@@ -24,13 +24,13 @@ const fakeGoogle = () => {
   const calls: string[] = []
   let ids = 0
   const tabOf = (spreadsheetId: string, range: string) => {
-    const match = /^'((?:[^']|'')*)'!A1:([A-Z]+)(\d+)$/.exec(range)
+    const match = /^'((?:[^']|'')*)'!A1:([A-Z]+)(\d*)$/.exec(range)
     if (!match) throw new Error(`unexpected range ${range}`)
     const title = (match[1] as string).replace(/''/g, "'")
     const tab = tabs.get(spreadsheetId)?.find((item) => item.title === title)
     if (!tab) throw new Error(`no tab ${title}`)
     const columns = [...(match[2] as string)].reduce((sum, letter) => sum * 26 + letter.charCodeAt(0) - 64, 0)
-    return { tab, rows: Number(match[3]), columns }
+    return { tab, rows: match[3] ? Number(match[3]) : Number.POSITIVE_INFINITY, columns }
   }
   const call = async (method: string, params: Record<string, unknown>, body?: Record<string, unknown>) => {
     calls.push(method)
@@ -93,6 +93,12 @@ const fakeGoogle = () => {
           })
         }
         return {}
+      case "drive.revisions.list":
+        return {
+          revisions: [
+            { modifiedTime: "2026-10-22T09:00:00.000Z", lastModifyingUser: { displayName: "Synthetic Editor" } },
+          ],
+        }
       case "sheets.spreadsheets.values.batchGet":
         return {
           valueRanges: (params.ranges as string[]).map((range) => {
@@ -188,26 +194,80 @@ describe("mirrors", () => {
     expect(sheet.find((tab) => tab.title === "Notes")?.cells).toEqual([["kept by a person"]])
   })
 
-  it("stops when the mirrored cells changed in Google, and overwrites only with --replace", async () => {
+  it("reports cells changed on both sides with when Google changed them, and keeps the side asked for", async () => {
     const t = setup()
     t.write("budget.csv", "a\n1\n")
+    t.write("other.csv", "x\n1\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    await t.run("mirrors", "sync")
+    const sheetId = [...t.google.files.entries()].find(([, file]) => file.name === "budget")?.[0] as string
+    const tab = t.google.tabs.get(sheetId)?.[0]
+    if (!tab) throw new Error("missing tab")
+    ;(tab.cells[1] as Cell[])[0] = "edited in Google"
+    t.write("budget.csv", "a\n2\n")
+    t.write("other.csv", "x\n2\n")
+    const stopped = await t.run("mirrors", "sync")
+    expect(stopped.error).toMatchObject({ code: "provider_error", details: { reason: "mirror.partial" } })
+    expect(stopped.result).toMatchObject({
+      items: [
+        {
+          updated: ["other.csv"],
+          conflicts: [
+            {
+              path: "budget.csv",
+              reason: "the mirrored cells changed here and in Google",
+              local_changed_at: expect.any(String),
+              google_changed_at: "2026-10-22T09:00:00.000Z",
+              google_changed_by: "Synthetic Editor",
+            },
+          ],
+        },
+      ],
+    })
+    expect(tab.cells[1]).toEqual(["edited in Google"])
+    expect((await t.run("mirrors", "sync", "--keep", "both")).error).toMatchObject({ code: "provider_error" })
+    expect((await t.run("mirrors", "sync", "--keep", "google")).error).toBeUndefined()
+    expect(readFileSync(join(t.local, "budget.csv"), "utf8")).toBe("a\nedited in Google\n")
+    t.write("budget.csv", "a\n3\n")
+    ;(tab.cells[1] as Cell[])[0] = "again in Google"
+    expect((await t.run("mirrors", "sync", "--replace")).error).toBeUndefined()
+    expect(tab.cells[1]).toEqual([3])
+  })
+
+  it("brings cells edited in Google back into the CSV, keeping how the file spells unchanged values", async () => {
+    const t = setup()
+    t.write("prices.csv", '\uFEFFitem,price\r\ntea,1.50\r\n"milk, oat",2\r\n')
     await t.run("mirrors", "add", t.local, "--parent", "root-folder")
     await t.run("mirrors", "sync")
     const sheetId = [...t.google.files.entries()].find(([, file]) => file.mimeType === SHEET)?.[0] as string
     const tab = t.google.tabs.get(sheetId)?.[0]
     if (!tab) throw new Error("missing tab")
-    ;(tab.cells[1] as Cell[])[0] = "edited in Google"
-    t.write("budget.csv", "a\n2\n")
-    const stopped = await t.run("mirrors", "sync")
-    expect(stopped.error).toMatchObject({ code: "provider_error", details: { reason: "mirror.partial" } })
-    expect(stopped.result).toMatchObject({
-      items: [
-        { conflicts: [{ path: "budget.csv", reason: "the mirrored cells changed in Google since the last push" }] },
-      ],
+    ;(tab.cells[2] as Cell[])[1] = 2.25
+    tab.cells.push(["bread", 3])
+    const pulled = await t.run("mirrors", "sync")
+    expect(pulled.error).toBeUndefined()
+    expect(pulled.result).toMatchObject({ items: [{ pulled: ["prices.csv"], updated: [] }] })
+    expect(readFileSync(join(t.local, "prices.csv"), "utf8")).toBe(
+      '\uFEFFitem,price\r\ntea,1.50\r\n"milk, oat",2.25\r\nbread,3\r\n',
+    )
+    expect((await t.run("mirrors", "sync")).result).toMatchObject({
+      items: [{ pulled: [], updated: [], unchanged: 1 }],
     })
-    expect(tab.cells[1]).toEqual(["edited in Google"])
-    expect((await t.run("mirrors", "sync", "--replace")).error).toBeUndefined()
-    expect(tab.cells[1]).toEqual([2])
+  })
+
+  it("does not write Google's changes into an XLSX file", async () => {
+    const t = setup()
+    t.write("book.xlsx", workbook({ First: "alpha" }))
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    await t.run("mirrors", "sync")
+    const sheetId = [...t.google.files.entries()].find(([, file]) => file.mimeType === SHEET)?.[0] as string
+    const tab = t.google.tabs.get(sheetId)?.[0]
+    if (!tab) throw new Error("missing tab")
+    ;(tab.cells[0] as Cell[])[0] = "edited in Google"
+    const stopped = await t.run("mirrors", "sync")
+    expect(stopped.result).toMatchObject({ items: [{ conflicts: [{ path: "book.xlsx" }] }] })
+    expect((await t.run("mirrors", "sync", "--keep", "local")).error).toBeUndefined()
+    expect(tab.cells[0]).toEqual(["alpha"])
   })
 
   it("mirrors every worksheet of an XLSX file as its own tab", async () => {
