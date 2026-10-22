@@ -1,4 +1,5 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, isCliError } from "@wirecat/cli-base"
 import { describe, expect, it } from "vitest"
@@ -109,7 +110,7 @@ const fakeGoogle = () => {
 const setup = () => {
   const f = fixture([])
   const google = fakeGoogle()
-  const local = mkdtempSync("/var/tmp/drive-mirror-")
+  const local = mkdtempSync(join(tmpdir(), "drive-mirror-"))
   const write = (path: string, text: string | Buffer) => {
     mkdirSync(join(local, path, ".."), { recursive: true })
     writeFileSync(join(local, path), text)
