@@ -349,7 +349,7 @@ export const prepareSheet = async (
     if (!keep) return { conflict: "the mirrored cells changed here and in Google", remote: await lastChange(call, id) }
     if (keep === "both")
       return {
-        conflict: "a Sheet cannot keep both versions; choose --keep local or --keep remote",
+        conflict: "a Sheet cannot keep both versions; choose --keep local or --keep google",
         remote: await lastChange(call, id),
       }
     take = keep

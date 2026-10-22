@@ -527,7 +527,9 @@ export const prepareDoc = async (
   })
   if (!requests.length && content === undefined) return { unchanged: pushed(current) }
   return {
-    ...(content === undefined ? {} : { local: content }),
+    ...(content === undefined
+      ? {}
+      : { local: content, afterLocal: { kind: "doc" as const, written: current, local: current } }),
     remote: requests.length > 0,
     write: async () => {
       if (!requests.length) return pushed(current)
