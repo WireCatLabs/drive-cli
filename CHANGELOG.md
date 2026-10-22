@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **cli-core 0.383.0 → 0.384.0, with no change to drive's commands**: the new `meta.timezone` and `meta.window`
+  in JSON answers cover messenger commands with date filters (`search conversations`, `inbox` and others), and
+  drive has none of them. `files list` already names its zone in `meta.timezone` since 0.20.0.
+
 ## 0.21.0 — 22.10.2026
 
 ### Added
