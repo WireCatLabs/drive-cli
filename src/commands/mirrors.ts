@@ -139,9 +139,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
         ]),
       )
       .option("--replace", "same as --keep local, and create again files deleted in Google")
-      .description(
-        "sync both ways: local changes go to Docs and Sheets, Google's come back; a part changed on both sides is reported",
-      ),
+      .description("sync both ways with Docs and Sheets; a part changed on both sides is reported"),
     [
       "drive personal mirrors sync",
       "drive personal mirrors sync 1a2b3c4d --keep google",

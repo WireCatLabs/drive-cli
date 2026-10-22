@@ -12,5 +12,12 @@
     "reason": "A mirror is a saved pairing of a local folder and a Google Drive folder that mirrors sync writes into; no shared noun names it. Add mirrors to the cli-base vocabulary if a second CLI adopts the push engine from cli-core.",
     "owner": "@WireCatLabs",
     "review_after": "2026-12-22"
+  },
+  {
+    "rule": "option-role",
+    "target": "mirrors sync --keep",
+    "reason": "Picks which side wins where a file changed both locally and in Google (local, google or both); no shared flag names a conflict side. Add it to the cli-base vocabulary if a second CLI adopts two-way sync from cli-core.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
   }
 ]
