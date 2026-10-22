@@ -8,6 +8,11 @@
   in JSON answers cover messenger commands with date filters (`search conversations`, `inbox` and others), and
   drive has none of them. `files list` already names its zone in `meta.timezone` since 0.20.0.
 
+### Fixed
+
+- **A store the pre-rename `cli-messaging` wrote is refused again, and left untouched** (cli-core 0.385.0). Since
+  cli-core 0.382.0 such a file was opened and failed with `internal_error`; it now fails with `configuration_error`.
+
 ## 0.21.0 — 22.10.2026
 
 ### Added
