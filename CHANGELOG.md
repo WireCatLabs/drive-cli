@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`mirrors`: keep local folders mirrored into native Google Docs and Sheets.** `mirrors add <path> --parent
+  <folder>` saves a mirror; `mirrors sync` writes changed files: Markdown becomes a Google Doc with native headings,
+  bulleted, numbered and checklist items, tables, code, quotes, links and images; CSV, TSV and XLSX become a
+  Google Sheet with typed cells, one tab per worksheet. An update edits in place: a Doc changes only the
+  paragraphs that changed, so comments on the rest stay, and a Sheet rewrites only the mirrored range, so other
+  tabs, columns and formatting stay. A change made in Google since the last sync stops that file unless
+  `--replace`; a checklist tick may change on either side. `- [x]` items are written struck through, since Google
+  lets no app tick a box. Nothing is ever deleted in Google. `mirrors status` shows what the next sync would do
+  without asking Google; `mirrors list` and `mirrors remove` change local settings only. Needs the write grant
+  (`session start --grant write`). DOCX files are not mirrored yet (cli-core 0.379.0 → 0.383.0, cli-base
+  0.48.0 → 0.49.0).
+
 ## 0.20.0 — 21.10.2026
 
 ### Changed — may break callers

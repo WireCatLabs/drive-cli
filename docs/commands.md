@@ -3899,6 +3899,100 @@ drive <profile> shared-drives [options]
 
 **Example:** `drive personal shared-drives`
 
+## `drive mirrors`
+
+keep local folders mirrored into Google Docs and Sheets
+
+### `drive mirrors add`
+
+mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets
+
+This command changes local state.
+
+```sh
+drive <profile> mirrors add <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | local folder to mirror. |
+
+| Option | What it does |
+|---|---|
+| `--parent <id>` | the Google Drive folder to write into, by id or URL. |
+
+**Returns:** mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets
+
+**Example:** `drive personal mirrors add ./notes --parent FOLDER_ID`
+
+### `drive mirrors list`
+
+list this profile's mirrors
+
+```sh
+drive <profile> mirrors list
+```
+
+**Returns:** list this profile's mirrors
+
+**Example:** `drive personal mirrors list`
+
+### `drive mirrors remove`
+
+stop mirroring a folder; nothing in Google Drive is changed or deleted
+
+This command changes local state.
+
+```sh
+drive <profile> mirrors remove <id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | mirror id from mirrors list. |
+
+**Returns:** stop mirroring a folder; nothing in Google Drive is changed or deleted
+
+**Example:** `drive personal mirrors remove 1a2b3c4d`
+
+### `drive mirrors status`
+
+show what the next sync would create or update; Google is not asked
+
+```sh
+drive <profile> mirrors status [id]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | optional | mirror id; every mirror of the profile when omitted. |
+
+**Returns:** show what the next sync would create or update; Google is not asked
+
+**Example:** `drive personal mirrors status`
+
+### `drive mirrors sync`
+
+write changed files into their Docs and Sheets; a Google edit stops that file
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> mirrors sync [id] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | optional | mirror id; every mirror of the profile when omitted. |
+
+| Option | What it does |
+|---|---|
+| `--replace` | overwrite changes made in Google since the last sync; recreate deleted files. |
+
+**Returns:** write changed files into their Docs and Sheets; a Google edit stops that file
+
+**Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --replace`
+
 ## `drive config`
 
 read and change settings; credentials are kept apart
