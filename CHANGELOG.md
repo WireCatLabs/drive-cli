@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- **[Compared with other tools](docs/compare.md)**: drive next to gog, Workspace MCP and rclone, with where each
+  fits better, and when Google Docs' own Markdown editing is enough.
+
 ### Changed — may break callers
 
 - **The profile is only the first word, or `DRIVE_PROFILE`; `--profile` is gone.** `drive --profile work …` now fails
@@ -21,6 +26,8 @@
   `permission_error`; with no profile named, the locked one is used. Before, the variable was ignored.
 - **`session list` and `config show` run without a profile**, as they read every profile. A missing profile's error
   names a leftover `default_profile` instead of ignoring it silently.
+
+### Security
 
 - **`--permission` can no longer loosen a profile's settings.** A level looser than the profile's, its defaults or a
   built-in default (such as `ask` before a deletion) is refused with `validation_error`; before, `--permission
