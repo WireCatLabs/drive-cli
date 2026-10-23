@@ -9,7 +9,7 @@ import { content, file, fixture, workbook } from "./testing.js"
 describe("released shared store and search", () => {
   it("does not create the database for a profile that is not signed in", async () => {
     const f = fixture()
-    await expect(openIndex(f.env, "nobody")).rejects.toMatchObject({ details: { reason: "profile.not-signed-in" } })
+    await expect(openIndex(f.env, "nobody")).rejects.toMatchObject({ details: { reason: "profile.unknown" } })
     expect(existsSync(f.env.MESSAGING_STORE as string)).toBe(false)
   })
   it("returns snake_case search fields for both empty accounts and indexed passages", async () => {

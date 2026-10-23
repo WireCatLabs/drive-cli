@@ -94,7 +94,7 @@ describe("standalone command workflow", () => {
     expect(contract.contract).toBe(3)
     expect(contract.commands.find((c: { name: string }) => c.name === "sync").usage).toContain("drive <profile> sync")
     expect(contract.commands.find((c: { name: string }) => c.name === "commands").usage).not.toContain("<profile>")
-    expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(true)
+    expect(contract.global_options.some((option: { flags: string }) => option.flags.includes("--profile"))).toBe(false)
   })
   it("gives every handwritten command a short lower-case summary and examples that name real flags", () => {
     const program = createProgram({ env: {} })

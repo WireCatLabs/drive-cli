@@ -7,7 +7,7 @@ import { createProgram } from "./program.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("explicit account selection", () => {
-  it("refuses omitted profiles despite legacy defaults or environment, before providers and stores", async () => {
+  it("refuses omitted profiles despite a legacy default, before providers and stores", async () => {
     const f = fixture()
     const config = readConfig(f.env)
     config.default_profile = "default"
@@ -23,27 +23,29 @@ describe("explicit account selection", () => {
       ["status"],
       ["sync"],
       ["search", "budget"],
-      ["session", "list"],
       ["session", "start"],
-      ["config", "show"],
       ["files", "get", "doc-a"],
       ["api", "drive-files-get", "--file-id", "doc-a"],
     ]) {
       await expect(
         createProgram({
-          env: { ...f.env, DRIVE_PROFILE: "work" },
+          env: f.env,
           source,
           index,
           api: { call: request },
           streams: captureStreams(),
         }).parseAsync(args, { from: "user" }),
-      ).rejects.toMatchObject({ code: "validation_error", details: { profiles: ["default", "work"] } })
+      ).rejects.toMatchObject({
+        code: "validation_error",
+        message: expect.stringContaining("default_profile default in the config is not used"),
+        details: { profiles: ["default", "work"] },
+      })
     }
     expect(source).not.toHaveBeenCalled()
     expect(index).not.toHaveBeenCalled()
     expect(request).not.toHaveBeenCalled()
   })
-  it("uses only the named profile, supports MAX names and rejects ambiguous selectors", async () => {
+  it("uses only the named profile, supports MAX names and has no --profile option", async () => {
     const f = fixture()
     const config = readConfig(f.env)
     config.profiles["Personal.Account_2"] = {
@@ -51,24 +53,62 @@ describe("explicit account selection", () => {
       roots: ["personal-root"],
     }
     writeConfig(f.env, config)
-    for (const args of [
-      ["Personal.Account_2", "folders", "list"],
-      ["--profile", "Personal.Account_2", "folders", "list"],
-    ]) {
+    for (const [args, env] of [
+      [["Personal.Account_2", "folders", "list"], f.env],
+      [["folders", "list"], { ...f.env, DRIVE_PROFILE: "Personal.Account_2" }],
+    ] as const) {
       const streams = captureStreams()
-      await createProgram({ env: f.env, streams }).parseAsync(args, { from: "user" })
+      await createProgram({ env, streams }).parseAsync([...args], { from: "user" })
       expect(commandResult(streams.stdout.join("")).items).toEqual([{ id: "personal-root" }])
     }
     for (const args of [
-      ["default", "--profile", "other", "status"],
-      ["--profile", "default", "--profile=other", "status"],
+      ["--profile", "default", "status"],
+      ["default", "--profile=other", "status"],
     ])
       await expect(
         createProgram({ env: f.env, streams: captureStreams() }).parseAsync(args, { from: "user" }),
-      ).rejects.toThrow("select a profile once")
+      ).rejects.toThrow("there is no --profile")
     await expect(
       createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["../escape", "status"], { from: "user" }),
     ).rejects.toThrow("profile name")
+  })
+  it("pins the process to DRIVE_PROFILE_LOCK and refuses any other profile", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    config.profiles.agent = { principal: "synthetic-principal", roots: ["agent-root"], storage: "keyring" }
+    writeConfig(f.env, config)
+    const env = { ...f.env, DRIVE_PROFILE_LOCK: "agent" }
+    const run = (args: string[], extra: NodeJS.ProcessEnv = {}) => {
+      const streams = captureStreams()
+      return createProgram({ env: { ...env, ...extra }, streams })
+        .parseAsync(args, { from: "user" })
+        .then(() => commandResult(streams.stdout.join("")))
+    }
+    await expect(run(["default", "folders", "list"])).rejects.toMatchObject({
+      code: "permission_error",
+      details: { reason: "profile.lock-refused" },
+    })
+    await expect(run(["folders", "list"], { DRIVE_PROFILE: "default" })).rejects.toMatchObject({
+      code: "permission_error",
+    })
+    expect((await run(["folders", "list"])).items).toEqual([{ id: "agent-root" }])
+    expect((await run(["agent", "folders", "list"])).items).toEqual([{ id: "agent-root" }])
+  })
+  it("lists the profiles for one that does not exist, and reads all profiles without one", async () => {
+    const f = fixture()
+    await expect(
+      createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["nosuch", "folders", "list"], {
+        from: "user",
+      }),
+    ).rejects.toMatchObject({ code: "validation_error", details: { reason: "profile.unknown", profiles: ["default"] } })
+    for (const args of [
+      ["session", "list"],
+      ["config", "show"],
+    ]) {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams }).parseAsync(args, { from: "user" })
+      expect(streams.stdout.join("")).toContain("default")
+    }
   })
   it("keeps discovery and help available without reading invalid account configuration", async () => {
     const f = fixture()

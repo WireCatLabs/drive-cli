@@ -200,7 +200,7 @@ export const invokeTool = async (
   const startedAt = Date.now()
   const env = options.env ?? process.env
   const streams = captureStreams()
-  const startup: string[] = ["--profile", profile, "--json"]
+  const startup: string[] = [profile, "--json"]
   if (flags.readOnly) startup.push("--read-only")
   if (flags.offline) startup.push("--offline")
   if (flags.dryRun) startup.push("--dry-run")

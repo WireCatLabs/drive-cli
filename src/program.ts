@@ -83,7 +83,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     .description("manage Google Drive and Docs, local Markdown, shared knowledge and search")
     .version(VERSION)
     .usage("<profile> [options] <command>")
-    .option("--profile <name>", "explicit Google account profile (alternative to the first word)")
     .option("--json", "print machine-readable JSON; --json=id,name keeps only those fields")
     .option("--jsonl", "print machine-readable JSON lines")
     .option("--quiet", "suppress optional diagnostics")
@@ -109,20 +108,38 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       outputError: () => undefined,
     })
     .exitOverride()
+  let profileWord: string | undefined
+  /**
+   * The profile is the first word, or DRIVE_PROFILE; nothing picks one. DRIVE_PROFILE_LOCK pins the process: a
+   * word or variable naming another profile is refused, so an agent cannot reach a profile with fewer guards.
+   */
   const selected = (): string => {
-    const name = program.opts<{ profile?: string }>().profile
-    if (!name) {
-      const choices = Object.keys(readConfig(env).profiles).sort()
-      throw new CliError(
-        "validation_error",
-        "choose a profile explicitly: drive <profile> <command> or drive --profile <name> <command>; " +
-          (choices.length
-            ? `configured profiles: ${choices.join(", ")}`
-            : "no profiles configured; connect with drive personal session start"),
-        { reason: "profile.required", profiles: choices },
-      )
+    const lock = env.DRIVE_PROFILE_LOCK || undefined
+    const named = profileWord ?? (env.DRIVE_PROFILE || undefined)
+    if (lock !== undefined) {
+      profileName(lock)
+      if (named !== undefined && profileName(named) !== lock)
+        throw new CliError(
+          "permission_error",
+          `this process is locked to profile ${lock} (DRIVE_PROFILE_LOCK) — profile ${named} is refused`,
+          { reason: "profile.lock-refused" },
+        )
+      return lock
     }
-    return profileName(name)
+    if (named) return profileName(named)
+    const config = readConfig(env)
+    const choices = Object.keys(config.profiles).sort()
+    const leftover = config.default_profile
+      ? `; default_profile ${config.default_profile} in the config is not used — type drive ${config.default_profile} …`
+      : ""
+    throw new CliError(
+      "validation_error",
+      (choices.length
+        ? `name a profile: drive <profile> … — profiles here: ${choices.join(", ")} (or set DRIVE_PROFILE)`
+        : "no profiles here yet; create one with drive personal session start (any name in place of personal)") +
+        leftover,
+      { reason: "profile.required", profiles: choices },
+    )
   }
   let currentAction: Command | undefined
   let checkedMethod: string | undefined
@@ -345,8 +362,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const words = path.join(" ")
     // Discovery is account-independent and must not load config, credentials or the store.
     if (ACCOUNT_FREE_COMMANDS.has(words)) return
+    // These read every profile or none, so they run without one; a named profile is still checked.
+    if (["commands", "complete", "config show", "session list"].includes(words)) {
+      if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
+      return
+    }
     selected()
-    if (["commands", "complete", "config show", "config set", "session list"].includes(words)) return
+    if (words === "config set") return
     const flags = policyFlags()
     // The server writes only through its tools, and each tool call runs this same check with these flags.
     if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
@@ -397,12 +419,14 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const requested = liftJson(profiled.rest, (words) => commandIn(program, words), providerJsonFields)
     fields = requested.fields
     const lifted = { ...profiled, rest: requested.argv }
-    // Refuse conflicting/repeated selectors rather than letting Commander pick the last one.
     const flags = lifted.rest.slice(0, lifted.rest.indexOf("--") < 0 ? lifted.rest.length : lifted.rest.indexOf("--"))
-    const selectors = flags.filter((arg) => arg === "--profile" || arg.startsWith("--profile="))
-    if (selectors.length > 1 || (lifted.profile && selectors.length))
-      throw new CliError("validation_error", "select a profile once: use the first word or --profile")
-    const rest = lifted.profile ? ["--profile", profileName(lifted.profile), ...lifted.rest] : lifted.rest
+    if (flags.some((arg) => arg === "--profile" || arg.startsWith("--profile=")))
+      throw new CliError(
+        "validation_error",
+        "the profile is the first word: drive <profile> <command>; there is no --profile",
+      )
+    profileWord = lifted.profile ? profileName(lifted.profile) : undefined
+    const rest = lifted.rest
     try {
       const running = parse([...prefix, ...rest], settings)
       return deadline ? await deadline.race(async () => running) : await running

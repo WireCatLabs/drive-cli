@@ -87,7 +87,8 @@ drive images models download clip-b32
 
 `drive personal config set max_text_chars 500000` makes sync skip longer files with that reason; a
 file skipped for its length is read again on the next sync after the limit is raised.
-A missing profile is an error: `DRIVE_PROFILE` and a legacy saved default do not select one.
+The profile is the first word, or `DRIVE_PROFILE`. Nothing else picks one: a missing profile is an error that lists
+the profiles here, and a legacy saved default is named in that error, not used.
 
 ## Environment variables
 
@@ -97,7 +98,8 @@ These values apply to the process that runs Drive; they are not saved by `config
 | --- | --- |
 | `DRIVE_TIMEOUT` | Whole-command deadline, like `--timeout` (`500ms`, `30s`, `2m`); the default is 30 seconds |
 | `DRIVE_READ_ONLY` | Set to anything but `0` or empty: every command refuses changes, local or on Google, with exit 5, as `--read-only` does |
-| `DRIVE_PROFILE_LOCK` | Pin the process to one profile: naming any other profile is refused with exit 5 |
+| `DRIVE_PROFILE` | Name the profile when the command line does not start with one |
+| `DRIVE_PROFILE_LOCK` | Pin the process to one profile: a first word or `DRIVE_PROFILE` naming any other profile is refused with exit 5; with no profile named, the locked one is used |
 | `DRIVE_CONFIG_DIR` | Move `config.json` and the associated credential namespace |
 | `DRIVE_STATE_DIR` | Move snapshots and checkpoints |
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
@@ -115,7 +117,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 
 | Option | Effect for this invocation |
 | --- | --- |
-| `--profile NAME` or the first word `NAME` | Explicitly select the Google account profile |
+| the first word `NAME` | Select the Google account profile; there is no `--profile` option |
 | `--offline` | Refuse Google requests, sync and AI extraction; answer cached operations |
 | `--read-only` | Refuse both local and remote mutations |
 | `--permission KEY=LEVEL` | Tighten a command permission for this run; a level looser than the profile's or a built-in default is refused |

@@ -110,11 +110,18 @@ export const fileId = (input: string): string => {
   return id
 }
 export const activeProfile = (env: NodeJS.ProcessEnv, name: string) => {
-  const profile = readConfig(env).profiles[profileName(name)]
-  if (!profile)
-    throw new CliError("authentication_error", `profile ${name} is not signed in — drive ${name} session start`, {
-      reason: "profile.not-signed-in",
-    })
+  const config = readConfig(env)
+  const profile = config.profiles[profileName(name)]
+  if (!profile) {
+    const profiles = Object.keys(config.profiles).sort()
+    throw new CliError(
+      "validation_error",
+      profiles.length
+        ? `no profile ${name} here — profiles here: ${profiles.join(", ")}; a new one signs in with drive ${name} session start`
+        : `no profiles here yet; create one with drive ${name} session start`,
+      { reason: "profile.unknown", profiles },
+    )
+  }
   return profile
 }
 export interface OAuthApplication {
