@@ -118,7 +118,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 | `--profile NAME` or the first word `NAME` | Explicitly select the Google account profile |
 | `--offline` | Refuse Google requests, sync and AI extraction; answer cached operations |
 | `--read-only` | Refuse both local and remote mutations |
-| `--permission KEY=LEVEL` | Override a command permission temporarily |
+| `--permission KEY=LEVEL` | Tighten a command permission for this run; a level looser than the profile's or a built-in default is refused |
 | `--dry-run` | Validate and preview a supported operation without acting |
 | `--json`, `--jsonl` | Select structured output; `--json=id,name` keeps only those fields; MCP answers show control characters visibly |
 | `--timeout DURATION`, `--max-output-bytes N` | Bound the command deadline and buffered output |

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`--permission` can no longer loosen a profile's settings.** A level looser than the profile's, its defaults or a
+  built-in default (such as `ask` before a deletion) is refused with `validation_error`; before, `--permission
+  api=allow` lifted a `deny`, also for the MCP server it started. A flag still tightens. A permission in the config
+  or on the command line that names no drive command is refused, not ignored, so a misspelling cannot silently
+  allow more.
+
 ## 0.23.0 — 22.10.2026
 
 ### Added

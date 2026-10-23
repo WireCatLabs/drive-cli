@@ -49,6 +49,13 @@ const ENTRIES: Entry[] = [
   ["offline.refused", "permission_error", "this command needs Google; --offline was given"],
   ["policy.confirm", "confirmation_required", "the profile policy asks to confirm {permission}", ["permission"]],
   ["policy.denied", "permission_error", "the profile policy refuses {permission}", ["permission"]],
+  [
+    "policy.flag-loosens",
+    "validation_error",
+    "--permission only tightens; {permission} stays as saved",
+    ["permission"],
+  ],
+  ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
   ["profile.locked", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.not-signed-in", "authentication_error", "the profile is not signed in; run drive <profile> session start"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
