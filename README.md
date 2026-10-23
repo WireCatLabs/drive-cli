@@ -11,6 +11,9 @@ Drive uses Google's official Node clients.
 Sources supported now: native Google Docs and Sheets, PDF, docx, xlsx, CSV, TSV, and uploaded Markdown/TXT.
 Other types and shortcuts are reported as skipped; shortcuts are not followed outside the selected scope.
 
+How it compares with gog, Workspace MCP and rclone, and when another tool fits better:
+[compared with other tools](docs/compare.md).
+
 ## Install
 
 Install the compiled CLI with Node 22.16+ on the 22.x line or Node 24+. A source build is not
