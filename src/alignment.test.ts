@@ -70,6 +70,52 @@ describe("schema-generated Google contracts", () => {
   })
 })
 describe("shared CLI policy and execution", () => {
+  it("lets --permission only tighten, on the command line and for the MCP server", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    config.defaults = { permissions: { "api.drive.files.update": "deny" } }
+    writeConfig(f.env, config)
+    const request = vi.fn(async () => ({ id: "doc-a" }))
+    const run = (...argv: string[]) =>
+      createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
+        ["default", ...argv],
+        { from: "user" },
+      )
+    await expect(
+      run("--permission", "api.drive.files.update=allow", "api", "drive-files-update", "--file-id", "doc-a"),
+    ).rejects.toMatchObject({ details: { reason: "policy.flag-loosens", permission: "api.drive.files.update" } })
+    await expect(
+      run("--permission", "api=allow", "api", "drive-files-delete", "--file-id", "doc-a"),
+    ).rejects.toMatchObject({ details: { reason: "policy.flag-loosens" } })
+    await expect(
+      run("--permission", "api.drive.files.get=deny", "api", "drive-files-get", "--file-id", "doc-a"),
+    ).rejects.toMatchObject({ details: { reason: "policy.denied" } })
+    expect(request).not.toHaveBeenCalled()
+    expect(() =>
+      mcpTools(createProgram, { env: f.env, api: { call: request } }, "default", {
+        permission: ["api.drive.files.update=allow"],
+      }),
+    ).toThrow("only tightens")
+  })
+
+  it("refuses a permission that names no drive command instead of ignoring it", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    config.defaults = { permissions: { tagz: "deny" } }
+    writeConfig(f.env, config)
+    const request = vi.fn(async () => ({ id: "doc-a" }))
+    await expect(
+      createProgram({ env: f.env, api: { call: request }, streams: captureStreams() }).parseAsync(
+        ["default", "api", "drive-files-get", "--file-id", "doc-a"],
+        { from: "user" },
+      ),
+    ).rejects.toMatchObject({
+      code: "configuration_error",
+      details: { reason: "policy.unknown-key", permission: "tagz" },
+    })
+    expect(request).not.toHaveBeenCalled()
+  })
+
   it("buffers output atomically, sanitizes agent text and supports dotted shared settings", async () => {
     const f = fixture()
     const request = vi.fn(async () => ({ text: "budget\u202eunsafe" }))

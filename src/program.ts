@@ -50,7 +50,7 @@ import { googleSource } from "./google.js"
 import { apiMethod, googleApi, googleUploadRequest } from "./google-api.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
-import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags } from "./policy.js"
+import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags, permissionKeys } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
@@ -136,10 +136,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     if (answered) confirmations.add(key)
     return answered
   }
-  const policyFlags = (): PolicyFlags & { offline?: boolean } => ({
-    ...program.opts(),
-    allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
-  })
+  let knownKeys: Set<string> | undefined
+  const policyFlags = (): PolicyFlags & { offline?: boolean } => {
+    knownKeys ??= permissionKeys(flatten(describeDriveProgram(program)).map((info) => info.path))
+    return {
+      ...program.opts(),
+      allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
+      permissionKeys: knownKeys,
+    }
+  }
   const runId = randomUUID()
   const print = (render: (renderer: Renderer, format: RenderFormat, streams: Streams) => void) => {
     const format: RenderFormat = program.opts().jsonl

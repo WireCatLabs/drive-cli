@@ -3,11 +3,11 @@ import { CliError } from "@wirecat/cli-base"
 import { readOnlyLockOf, readOnlyRefusal } from "@wirecat/cli-core/cli"
 import {
   guardedWrite,
+  LEVELS,
   type Level,
   layerPermissions,
   levelFor,
   newOperationId,
-  permissionOverrides,
   RecipientList,
   SendJournal,
   sendGuard,
@@ -23,13 +23,80 @@ export interface PolicyFlags {
   yes?: boolean
   allowDangerous?: boolean
   dryRun?: boolean
+  /** The keys this program checks (`permissionKeys`); with them, a permission naming no command is refused. */
+  permissionKeys?: Set<string>
 }
 const DRIVE_APP = { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "", version: VERSION }
+const ORDER: Record<Level, number> = { deny: 0, readonly: 1, ask: 2, allow: 3 }
+
+const overridesOf = (entries: readonly string[] = []): Record<string, Level> => {
+  const levels: Record<string, Level> = {}
+  for (const entry of entries) {
+    const [key = "", level = "", extra] = entry.split("=")
+    if (!/^[a-z][a-z-]*(\.[a-zA-Z][a-zA-Z-]*)*$/.test(key) || !(LEVELS as readonly string[]).includes(level) || extra)
+      throw new CliError(
+        "validation_error",
+        "--permission takes a command path and level, e.g. files.trash=deny (deny, readonly, ask, allow)",
+      )
+    levels[key] = level as Level
+  }
+  return levels
+}
+
+/**
+ * Every key drive checks: each command path, `api.<method>` with its friendly alias, and the Sheets edit kinds a
+ * batch update is checked as. A permission names one of these or a group above them.
+ */
+export const permissionKeys = (paths: readonly (readonly string[])[]): Set<string> => {
+  const keys = new Set(["mcp", "sheets.create", "sheets.rename", "sheets.insert", "sheets.format", "sheets.update"])
+  for (const path of paths) keys.add(path.join("."))
+  for (const operation of operations) for (const key of methodPolicyKeys(operation.id)) keys.add(key)
+  return keys
+}
+const names = (keys: Set<string>, key: string) => keys.has(key) || [...keys].some((one) => one.startsWith(`${key}.`))
+
+/**
+ * The profile's levels with `--permission` laid over them. A flag only tightens: one that would loosen the
+ * profile, a built-in default or a key under it is refused, so an agent cannot add its way past the owner's
+ * settings. With `flags.permissionKeys`, a permission that names no drive command is refused, rather than ignored.
+ */
 export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: PolicyFlags = {}) => {
+  const keys = flags.permissionKeys
   const config = readConfig(env)
   const own = config.profiles[profile]
+  const overrides = overridesOf(flags.permission)
+  if (keys) {
+    const layers = [
+      ["--permission", overrides],
+      [`profile ${profile}`, own?.permissions],
+      ["defaults", config.defaults?.permissions],
+    ] as const
+    for (const [where, layer] of layers)
+      for (const key of Object.keys(layer ?? {}))
+        if (!names(keys, key))
+          throw new CliError(
+            where === "--permission" ? "validation_error" : "configuration_error",
+            `${where} names ${key}, which is no drive command; see drive commands`,
+            { reason: "policy.unknown-key", permission: key },
+          )
+  }
+  const saved = layerPermissions([
+    ["profile", own?.permissions],
+    ["defaults", config.defaults?.permissions],
+  ]).levels
+  for (const [key, level] of Object.entries(overrides)) {
+    const under = [...Object.keys(saved), ...Object.keys(defaults)].filter((named) => named.startsWith(`${key}.`))
+    const lifted = [key, ...under].find((named) => ORDER[level] > ORDER[levelFor(saved, named, defaults).level])
+    if (lifted !== undefined)
+      throw new CliError(
+        "validation_error",
+        `--permission ${key}=${level} would loosen ${lifted} from ${levelFor(saved, lifted, defaults).level}; ` +
+          "it only tightens — change the profile's permissions to loosen it",
+        { reason: "policy.flag-loosens", permission: lifted },
+      )
+  }
   const { levels } = layerPermissions([
-    ["flags", permissionOverrides(flags.permission)],
+    ["flags", overrides],
     ["profile", own?.permissions],
     ["defaults", config.defaults?.permissions],
   ])

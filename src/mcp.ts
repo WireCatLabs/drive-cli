@@ -12,7 +12,7 @@ import * as v from "valibot"
 import type { ProgramOptions } from "./commands/context.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
-import { methodPolicyKeys, type PolicyFlags, policySettings } from "./policy.js"
+import { methodPolicyKeys, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
@@ -101,14 +101,18 @@ export const mcpTools = (
   flags: PolicyFlags = {},
 ): ToolDefinition[] => {
   const env = options.env ?? process.env
-  const settings = policySettings(env, profile, flags)
+  const commands = flatten(describeDriveProgram(build(options)))
+  const settings = policySettings(env, profile, {
+    ...flags,
+    permissionKeys: flags.permissionKeys ?? permissionKeys(commands.map((command) => command.path)),
+  })
   // An injected API never asks Google for a token, so there is no grant to read, as at call time.
   const granted = options.api ? undefined : grantedScopes(env, profile, options.keyring)
   const grants = (command: CommandInfo) => {
     const required = requiredScope(command)
     return !granted || !required || required === READ_SCOPE || covers(granted, required)
   }
-  return flatten(describeDriveProgram(build(options)))
+  return commands
     .filter((command) => {
       if (
         command.commands.length ||
