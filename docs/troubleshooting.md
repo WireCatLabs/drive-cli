@@ -27,12 +27,12 @@ drive personal search 'known word' --exact --json
 Share the sanitized error code and command when asking for help. Do not include client JSON,
 tokens or private document text. Once the expected source appears, return to [search](search.md).
 
-## “Choose a profile explicitly”
+## “Name a profile”
 
-Run the command as `drive personal status` or `drive --profile personal status`, replacing `personal` with
-the account name you chose. The error lists configured profile names. Neither `DRIVE_PROFILE`
-nor an old saved default bypasses selection. For the first connection, follow
-[sign-in](installation.md#connect-your-account). For existing profiles, `drive personal session list`
+Run the command as `drive personal status`, replacing `personal` with the account name you chose, or set
+`DRIVE_PROFILE=personal`. The error lists the profiles here. An old saved default does not select one; the error
+names it. For the first connection, follow
+[sign-in](installation.md#connect-your-account). For existing profiles, `drive session list`
 shows all configured names.
 
 ## Google Cloud setup is confusing

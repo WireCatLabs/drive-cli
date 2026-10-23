@@ -57,7 +57,8 @@ const ENTRIES: Entry[] = [
   ],
   ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
   ["profile.locked", "provider_unavailable", "another drive command holds this profile; retry later"],
-  ["profile.not-signed-in", "authentication_error", "the profile is not signed in; run drive <profile> session start"],
+  ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
+  ["profile.lock-refused", "permission_error", "this process is locked to another profile (DRIVE_PROFILE_LOCK)"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
   ["sign-in.declined", "authentication_error", "the Google sign-in was declined"],
   [

@@ -62,7 +62,7 @@ your own Desktop client and leave it in Testing, Google usually ends its sign-in
 [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
 [Drive permissions](https://developers.google.com/workspace/drive/api/guides/api-specific-auth).
 
-Use `--profile work` for another account. Each Google account has one local profile. `drive personal session list`
+Use `drive work …` for another account. Each Google account has one local profile. `drive session list`
 lists configured profiles. `session end` removes local sign-in while retaining cached data and
 configuration so re-login preserves document identities.
 

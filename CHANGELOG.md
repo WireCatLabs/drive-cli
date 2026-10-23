@@ -2,7 +2,19 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **The profile is only the first word, or `DRIVE_PROFILE`; `--profile` is gone.** `drive --profile work …` now fails
+  with a pointer to `drive work …`. `DRIVE_PROFILE` names the profile when the command line does not.
+- **A profile that does not exist is `validation_error` (exit 2) with the profiles here** (`profile.unknown`,
+  `details.profiles`), not `authentication_error` (exit 4) with a hint to sign in under the misspelled name.
+
 ### Fixed
+
+- **`DRIVE_PROFILE_LOCK` pins the process.** A first word or `DRIVE_PROFILE` naming another profile is refused with
+  `permission_error`; with no profile named, the locked one is used. Before, the variable was ignored.
+- **`session list` and `config show` run without a profile**, as they read every profile. A missing profile's error
+  names a leftover `default_profile` instead of ignoring it silently.
 
 - **`--permission` can no longer loosen a profile's settings.** A level looser than the profile's, its defaults or a
   built-in default (such as `ask` before a deletion) is refused with `validation_error`; before, `--permission

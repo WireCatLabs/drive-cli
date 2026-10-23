@@ -11,7 +11,6 @@ These options apply to the selected profile and current invocation.
 | Option | What it does |
 |---|---|
 | `-V, --version` | output the version number. |
-| `--profile <name>` | explicit Google account profile (alternative to the first word). |
 | `--json` | print machine-readable JSON; --json=id,name keeps only those fields. |
 | `--jsonl` | print machine-readable JSON lines. |
 | `--quiet` | suppress optional diagnostics. |
@@ -60,7 +59,7 @@ drive <profile> session list
 
 **Returns:** list the configured profiles; credentials are never printed
 
-**Example:** `drive personal session list`
+**Example:** `drive session list`
 
 ### `drive session end`
 
@@ -4008,7 +4007,7 @@ drive <profile> config show
 
 **Returns:** show the defaults and every profile's settings
 
-**Example:** `drive personal config show`
+**Example:** `drive config show`
 
 ### `drive config set`
 
