@@ -7,17 +7,12 @@ becomes P2.
 
 - **DRV-21 · P3 · Larger annotation transfers.** `store import` refuses above 1,000 records / 16 MiB; design a
   resumable transfer that keeps reviewed bindings and refuses changed sources. cli-core + `src/store-import.ts`.
-- **DRV-22 · P3 · Comment writes:** reply, resolve, reopen, optionally poll. The API methods exist
-  (`api drive-comments-*`, `drive-replies-*`).
 - **DRV-23 · P3 · Opt-in deletion across mirrors**, with a local archive. Today nothing is deleted in Google.
 - **DRV-24 · P3 · More Docs and Sheets editing helpers** (tables, headers, charts, validation), only on demand.
 - **DRV-25 · P3 · Write as Google suggestions** instead of refusing a Doc with pending suggestions.
 - **DRV-26 · P3 · Remote HTTP MCP with per-user OAuth** for web and mobile agents; a Web OAuth client of its own.
   cli-core shared transport.
 - **DRV-27 · P3 · Service-account or ADC sign-in** for servers and CI.
-- **DRV-28 · P3 · Mark fetched document text as untrusted** in MCP and JSON output. cli-core output.
-- **DRV-29 · P3 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
-  `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
 - **DRV-30 · P3 · Box and Microsoft document adapters** on cli-core `documents`.
 
 ## Standards and maintenance

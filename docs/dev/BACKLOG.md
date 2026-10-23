@@ -28,6 +28,8 @@ by path below.
   moderate advisories on `>=2.0.0 <2.3.0`. drive serves stdio only, so exposure is probably low, but the audit is
   public. `package.json`.
 - **DRV-4 · P1 · Add `SECURITY.md`** (WC-SECR-18): the repository has none and names no contact. Copy max-cli's.
+- **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
+  Today only `api drive-files-export` / `drive-files-download`.
 
 ## Next (P2)
 
@@ -62,7 +64,17 @@ by path below.
 - **DRV-17 · P2 · Raise cli-base 0.49.0 → 0.50.1 and cli-core 0.386.0 → 0.394.0.** `package.json`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
-- **DRV-19 · P2 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
-  Today only `api drive-files-export` / `drive-files-download`.
 - **DRV-20 · P2 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared
   security page (WC-DOC-9).
+- **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
+  `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
+- **DRV-22 · P2 · Comment writes:** reply, resolve, reopen, optionally poll. The API methods exist
+  (`api drive-comments-*`, `drive-replies-*`).
+- **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. cli-core output.
+- **DRV-43 · P2 · MCP offers the left-out commands that are safe to offer:** `session list`, `config show`,
+  `skill show`, `guide`, `documents export` into a fixed folder, and `config set`/`models set` behind a
+  permission (owner, 2026-10-23: every MCP exposes every command). Per-command verdicts: cli-private
+  `research/comparisons/drive.md`.
+- **DRV-44 · P2 · Public compare page:** add Claude's built-in Drive connector; mark rclone's sign-in as partial,
+  since rclone is retiring its shared Google app in 2026.
+- **DRV-45 · P2 · The MCP recipe uses plain `drive personal mcp`,** not `--read-only` (`docs/recipes.md`).
