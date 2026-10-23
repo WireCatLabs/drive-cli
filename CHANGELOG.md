@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- **`pnpm audit --prod` is clean.** The MCP server library is 2.3.0 (advisories on 2.0–2.2) and its `zod` 4.6.7
+  (memory exhaustion on oversized input before 4.6.6).
+
 ## 0.24.0 — 23.10.2026
 
 ### Added
