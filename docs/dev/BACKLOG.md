@@ -24,9 +24,6 @@ by path below.
 - **DRV-2 · P1 · 🚩 Release main.** npm `latest` is 0.23.0; the Unreleased fixes (closed-pipe crash, `--profile`
   removal, `DRIVE_PROFILE_LOCK`, `--permission` that loosened a `deny`, partial sync saying `complete: true`,
   `DRIVE_READ_ONLY` letting `config set` write) reach users only with a release. `bin/release`; needs the owner's yes.
-- **DRV-3 · P1 · Raise `@modelcontextprotocol/server` to 2.3.0 or later.** `pnpm audit --prod`: 2 high, 1
-  moderate advisories on `>=2.0.0 <2.3.0`. drive serves stdio only, so exposure is probably low, but the audit is
-  public. `package.json`.
 - **DRV-4 · P1 · Add `SECURITY.md`** (WC-SECR-18): the repository has none and names no contact. Copy max-cli's.
 - **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
   Today only `api drive-files-export` / `drive-files-download`.
@@ -61,7 +58,6 @@ by path below.
 - **DRV-15 · P2 · Pull-request validation** (WC-CI-5): tests, coverage, contracts and the upgrade check run only
   after merge. Add the PR workflow and require its jobs. `.github/workflows/`.
 - **DRV-16 · P2 · `doctor` and `upgrade` roots** (WC-CMD-5). `drive doctor` is read as a profile name today.
-- **DRV-17 · P2 · Raise cli-base 0.49.0 → 0.50.1 and cli-core 0.386.0 → 0.394.0.** `package.json`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-20 · P2 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared
