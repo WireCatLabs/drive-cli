@@ -38,9 +38,11 @@ are preserved. Validators and operation effects are generated from committed inp
 
 ## Profiles and policies
 
-Both `drive work documents list` and `drive --profile work documents list` select a profile.
+`drive work documents list` selects a profile; so does `DRIVE_PROFILE=work` when the command line names none.
+`--profile` is refused, and `DRIVE_PROFILE_LOCK` pins the process to one profile.
 Permission layers use the shared nearest-layer/specific-path rules: temporary flags, profile,
-then defaults. `read_only` prevents mutation even when another level allows it. Housekeeping such
+then defaults. A `--permission` flag only tightens: a looser level, or a key that names no command,
+is refused. `read_only` prevents mutation even when another level allows it. Housekeeping such
 as command discovery and owner configuration remains available so a policy can be inspected/fixed.
 
 ```sh
@@ -136,8 +138,8 @@ media-upload workflow or automatic background watches. Those are not reported as
 ## Explicit profiles
 
 Drive reuses the shared `commandWords`, `liftProfile`, `refuseCommandName` and `usableProfileName`
-helpers used by MAX. Account actions require an explicit first-word profile or `--profile`;
-legacy config/environment defaults are ignored and repeated/conflicting selectors are rejected.
+helpers used by MAX. Account actions require an explicit first-word profile or `DRIVE_PROFILE`;
+a leftover `default_profile` is ignored and named in the error, and repeated/conflicting selectors are rejected.
 Help/version and account-independent discovery remain configuration-free. This enforces the
 owner's cross-CLI account-selection requirement. Account records are not renamed by selection.
 
@@ -177,7 +179,7 @@ drive complete zsh
 drive personal --read-only mcp --tools --json
 ```
 
-Profiles accept `drive work ...` as well as `--profile work`. Shared permission levels are deny,
+Profiles are the first word, `drive work ...`, or `DRIVE_PROFILE`. Shared permission levels are deny,
 readonly, ask and allow, configured under profile/default permissions. OAuth permission is a
 separate gate. `--read-only` also stops local mutations; `--yes` and `--allow-dangerous` answer
 confirmation but cannot override a denial. `--offline` refuses commands that may require network.

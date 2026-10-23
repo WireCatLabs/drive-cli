@@ -6,6 +6,7 @@
 
 - **[Compared with other tools](docs/compare.md)**: drive next to gog, Workspace MCP and rclone, with where each
   fits better, and when Google Docs' own Markdown editing is enough.
+- **[Roadmap](docs/roadmap.md)**: what is planned for drive and is not in it yet.
 
 ### Changed — may break callers
 
