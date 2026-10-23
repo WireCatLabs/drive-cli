@@ -17,6 +17,12 @@ const controller = new AbortController()
 const cancelled = () => controller.abort()
 process.once("SIGINT", cancelled)
 process.once("SIGTERM", cancelled)
+// A reader that stops early (`| head`) closes the pipe: that ends the command quietly, not with a stack.
+const pipeClosed = (error: NodeJS.ErrnoException) => {
+  controller.abort()
+  process.exitCode = error.code === "EPIPE" ? 0 : 3
+}
+process.stdout.on("error", pipeClosed)
 let program: Command | undefined
 try {
   program = createProgram({

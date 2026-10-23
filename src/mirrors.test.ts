@@ -209,6 +209,9 @@ describe("mirrors", () => {
     const stopped = await t.run("mirrors", "sync")
     expect(stopped.error).toMatchObject({ code: "provider_error", details: { reason: "mirror.partial" } })
     expect(stopped.result).toMatchObject({
+      meta: { complete: false, issues: [{ code: "provider_error", reason: "mirror.partial" }] },
+    })
+    expect(stopped.result).toMatchObject({
       items: [
         {
           updated: ["other.csv"],
