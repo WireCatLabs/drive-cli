@@ -24,7 +24,6 @@ by path below.
 - **DRV-2 · P1 · 🚩 Release main.** npm `latest` is 0.23.0; the Unreleased fixes (closed-pipe crash, `--profile`
   removal, `DRIVE_PROFILE_LOCK`, `--permission` that loosened a `deny`, partial sync saying `complete: true`,
   `DRIVE_READ_ONLY` letting `config set` write) reach users only with a release. `bin/release`; needs the owner's yes.
-- **DRV-4 · P1 · Add `SECURITY.md`** (WC-SECR-18): the repository has none and names no contact. Copy max-cli's.
 - **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
   Today only `api drive-files-export` / `drive-files-download`.
 
