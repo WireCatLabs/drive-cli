@@ -57,7 +57,6 @@ by path below.
   `src/config.ts:13`, `src/bin/drive.ts`.
 - **DRV-15 · P2 · Pull-request validation** (WC-CI-5): tests, coverage, contracts and the upgrade check run only
   after merge. Add the PR workflow and require its jobs. `.github/workflows/`.
-- **DRV-16 · P2 · `doctor` and `upgrade` roots** (WC-CMD-5). `drive doctor` is read as a profile name today.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-20 · P2 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared

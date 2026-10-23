@@ -31,6 +31,7 @@ import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, offset, type ProgramOptions, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
+import { installDoctorCommand } from "./commands/doctor.js"
 import { importedDocument, installDocumentCommands } from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
@@ -42,6 +43,7 @@ import { installSessionCommands } from "./commands/session.js"
 import { installSkillCommand } from "./commands/skill.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
+import { installUpgradeCommand } from "./commands/upgrade.js"
 import { activeProfile, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
@@ -340,6 +342,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installMcpCommand(program, context, createProgram)
   installCommandsCommand(program, context)
   installSkillCommand(program, context)
+  installDoctorCommand(program, context)
+  installUpgradeCommand(program, context)
   program.addCommand(guide())
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program

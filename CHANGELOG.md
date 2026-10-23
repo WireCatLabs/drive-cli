@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive doctor`**: the state of this installation (version, Node, whether the settings file reads, the profiles
+  here, the OAuth client, the store path, read-only and profile locks) without a profile, a login, the keyring or the
+  database. A settings file that does not read is a field in the answer, not a failure.
+- **`drive upgrade`** installs a newer drive with the package manager that installed it; `--check` only looks. It is
+  refused under `DRIVE_READ_ONLY` unless it only checks, and is not offered as an MCP tool.
+
+### Changed — may break callers
+
+- **`doctor` and `upgrade` are commands, so they can no longer be profile names.** `drive doctor` used to be read as
+  a profile called "doctor". A profile already named `doctor` or `upgrade` is reached only through `DRIVE_PROFILE`.
+
 ### Security
 
 - **`pnpm audit --prod` is clean.** The MCP server library is 2.3.0 (advisories on 2.0–2.2) and its `zod` 4.6.7

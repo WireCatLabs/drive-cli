@@ -24,7 +24,18 @@ interface ToolDefinition {
 }
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
-const excluded = new Set(["session", "config", "complete", "mcp", "models", "images", "guide", "help", "skill"])
+const excluded = new Set([
+  "session",
+  "config",
+  "complete",
+  "mcp",
+  "models",
+  "images",
+  "guide",
+  "help",
+  "skill",
+  "upgrade",
+])
 // REMOTE_WRITE also marks a command that sends a document to the model (memories extract); only GOOGLE_WRITE
 // changes Google files.
 const requiredScope = (command: CommandInfo) =>

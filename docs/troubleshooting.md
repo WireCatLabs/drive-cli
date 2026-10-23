@@ -6,6 +6,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 
 | Symptom | What to do |
 | --- | --- |
+| Not sure what is set up | Run `drive doctor`: version, whether the settings file reads, the profiles here and the paths. It needs no profile and reads no keyring or store. |
 | `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
 | Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
 | `google-api.disabled` | The OAuth project's owner must enable the requested API; see [API setup](#google-api-is-disabled). Reconnecting or granting write access does not enable it. |
@@ -18,6 +19,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | A link target cannot be found | Use a reference from the selected database. Check that every tool uses the same MESSAGING_STORE override before linking to messenger people/projects. |
 
 ```sh
+drive doctor --json
 drive personal status --json
 drive personal folders list --json
 drive personal sync --json
