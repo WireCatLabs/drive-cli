@@ -62,7 +62,7 @@
       "stream": "stderr",
       "kind": "json",
       "errorCode": "validation_error",
-      "contains": "choose a profile explicitly"
+      "contains": "profile.required"
     },
     {
       "id": "decision-reverse-readonly-before-auth",
