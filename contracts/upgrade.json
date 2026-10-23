@@ -62,6 +62,16 @@
       "kind": "json",
       "contains": "Synthetic budget fact",
       "allowSensitiveOutput": true
+    },
+    {
+      "id": "mirror-state-survives",
+      "args": ["default", "mirrors", "status", "--json"],
+      "exit": 0,
+      "stream": "stdout",
+      "kind": "json",
+      "json": {
+        "items": [{ "create": ["added.md"], "update": [], "unchanged": 1 }]
+      }
     }
   ]
 }
