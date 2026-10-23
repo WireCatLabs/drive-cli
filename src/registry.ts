@@ -15,6 +15,8 @@ import { VERSION } from "./version.js"
 export const ACCOUNT_FREE_COMMANDS = new Set([
   "commands",
   "complete",
+  "doctor",
+  "upgrade",
   "api show",
   "api list",
   "help",

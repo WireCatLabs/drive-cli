@@ -17,7 +17,7 @@ const content = commandsPage({
     banner: "<!-- Generated from the command tree by pnpm generate. Do not edit. -->",
     title: "Drive commands",
     intro:
-      "Look up every supported command and option here. Account operations require an explicit profile: `drive personal documents show DOC_ID` or `drive --profile personal documents show DOC_ID`. Help, scenarios, the agent skill, model downloads, discovery, API method listings, schemas and shell completion do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.",
+      "Look up every supported command and option here. Account operations require an explicit profile: the first word, as in `drive personal documents show DOC_ID`, or `DRIVE_PROFILE`; there is no `--profile`. Help, scenarios, the agent skill, model downloads, discovery, API method listings, schemas, shell completion, `doctor` and `upgrade` do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.",
     globalHeading: "Global options",
     globalIntro: "These options apply to the selected profile and current invocation.",
     mutates: "This command can change Google data or send data to the configured model.",

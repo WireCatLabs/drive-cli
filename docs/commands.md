@@ -2,7 +2,7 @@
 
 # Drive commands
 
-Look up every supported command and option here. Account operations require an explicit profile: `drive personal documents show DOC_ID` or `drive --profile personal documents show DOC_ID`. Help, scenarios, the agent skill, model downloads, discovery, API method listings, schemas and shell completion do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.
+Look up every supported command and option here. Account operations require an explicit profile: the first word, as in `drive personal documents show DOC_ID`, or `DRIVE_PROFILE`; there is no `--profile`. Help, scenarios, the agent skill, model downloads, discovery, API method listings, schemas, shell completion, `doctor` and `upgrade` do not select an account. See [recipes](recipes.md) for complete workflows and [import and storage](usage.md) for file-type and disk-use limits.
 
 ## Global options
 
@@ -4196,6 +4196,36 @@ drive skill install [options]
 **Returns:** put SKILL.md where Claude Code, Codex and Gemini CLI look
 
 **Example:** `drive skill install --for all`
+
+## `drive doctor`
+
+check this installation: config, profiles, paths; no keyring, store or network
+
+```sh
+drive doctor
+```
+
+**Returns:** check this installation: config, profiles, paths; no keyring, store or network
+
+**Example:** `drive personal doctor`, `drive personal doctor --json`
+
+## `drive upgrade`
+
+upgrade drive with the package manager that installed it; --check only looks
+
+This command changes local state.
+
+```sh
+drive upgrade [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--check` | say whether a newer version exists, and install nothing. |
+
+**Returns:** upgrade drive with the package manager that installed it; --check only looks
+
+**Example:** `drive upgrade --check`, `drive upgrade`
 
 ## `drive guide`
 

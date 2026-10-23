@@ -1,5 +1,6 @@
 import type { KeyringStore, Renderer, RenderFormat, Streams } from "@wirecat/cli-base"
 import type { Body } from "@wirecat/cli-core/cli"
+import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import { InvalidArgumentError } from "commander"
 import type { Complete } from "../extraction.js"
 import type { GoogleApi } from "../google-api.js"
@@ -20,6 +21,7 @@ export interface ProgramOptions {
   ask?: (key: string) => Promise<boolean>
   readBody?: (path: string | number) => string
   uploadRequest?: UploadRequest
+  update?: UpdateEnvironment
 }
 
 export interface CommandContext {

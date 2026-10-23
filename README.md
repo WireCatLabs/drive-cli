@@ -28,6 +28,9 @@ drive --help
 See [installation and Google connection](docs/installation.md). Source builds are for
 [contributors](docs/dev/DEVELOPMENT.md).
 
+`drive doctor` shows the version, settings file, profiles and paths without signing in, and `drive upgrade`
+installs a newer version with the package manager that installed drive.
+
 `drive guide` lists scenarios — the commands for a common task, in order — and `drive commands --json` is the full
 command tree. For an agent, `drive skill install` puts drive's instructions where Claude Code, Codex and Gemini CLI
 look, `drive personal mcp` serves three MCP tools (search, read, write), and `DRIVE_READ_ONLY=1` refuses every

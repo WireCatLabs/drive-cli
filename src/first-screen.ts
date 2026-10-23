@@ -32,6 +32,8 @@ const SECTIONS: Record<string, HelpSection> = {
   commands: "setup",
   guide: "setup",
   skill: "setup",
+  doctor: "setup",
+  upgrade: "setup",
 }
 
 export const guide = () =>
