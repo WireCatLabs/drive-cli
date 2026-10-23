@@ -64,11 +64,48 @@ try {
     join(profile, "documents/synthetic-doc.json"),
     JSON.stringify({ metadata, text, markdown: text, tabs: [] }),
   )
+  // A mirror as drive 0.21–0.24 left it: one file synced, one added since.
+  const mirrorRoot = join(process.env.XDG_STATE_HOME, "mirror-fixture")
+  mkdirSync(mirrorRoot, { recursive: true })
+  writeFileSync(join(mirrorRoot, "synced.md"), "# Synced\n")
+  writeFileSync(join(mirrorRoot, "added.md"), "# Added\n")
+  const mirror = {
+    id: createHash("sha256")
+      .update(JSON.stringify([mirrorRoot, "synthetic-folder"]))
+      .digest("hex")
+      .slice(0, 8),
+    path: mirrorRoot,
+    folder: "synthetic-folder",
+  }
+  mkdirSync(join(profile, "mirrors"), { recursive: true, mode: 0o700 })
+  writeFileSync(
+    join(profile, "mirrors", `${mirror.id}.json`),
+    JSON.stringify({
+      version: 1,
+      principal: "synthetic-principal",
+      root: mirrorRoot,
+      target: "synthetic-folder",
+      folders: {},
+      entries: {
+        "synced.md": {
+          id: "synthetic-mirrored-doc",
+          url: "https://docs.google.com/document/d/synthetic-mirrored-doc/edit",
+          kind: "doc",
+          hash: createHash("sha256").update("# Synced\n").digest("hex"),
+          snapshot: { kind: "doc", blocks: [] },
+          pushedAt: "2026-10-23T00:00:00.000Z",
+        },
+      },
+      pending: {},
+    }),
+  )
   const configDir = locations.config
   mkdirSync(configDir, { recursive: true, mode: 0o700 })
   writeFileSync(
     join(configDir, "config.json"),
-    JSON.stringify({ profiles: { default: { principal: "synthetic-principal", roots: [], storage: "keyring" } } }),
+    JSON.stringify({
+      profiles: { default: { principal: "synthetic-principal", roots: [], storage: "keyring", mirrors: [mirror] } },
+    }),
   )
   process.stdout.write(`${JSON.stringify({ seeded: true, document: note.ref })}\n`)
 } finally {

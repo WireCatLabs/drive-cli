@@ -1,34 +1,21 @@
-import { createHash } from "node:crypto"
 import { statSync } from "node:fs"
-import { resolve } from "node:path"
+import { join, resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core/cli"
-import { type Keep, type PushConflict, planPush, pushDocuments, scanLocal } from "@wirecat/cli-core/documents"
+import { fileMirrorState, type Keep, mirrorId, mirrorStatus, syncMirrors } from "@wirecat/cli-core/documents"
 import { newOperationId } from "@wirecat/cli-core/sends"
 import { type Command, Option } from "commander"
 import { activeProfile, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
-import { mirrorState } from "../mirror-state.js"
-import { googleTarget, mirrorKind } from "../mirror-target.js"
+import { googleTarget, type MirrorSnapshot, mirrorKind } from "../mirror-target.js"
 import { FOLDER } from "../model.js"
 import { allOf } from "../output.js"
 import { lockProfile } from "../profile-lock.js"
 import { examples } from "../registry.js"
+import { profileDir } from "../state.js"
 import type { CommandContext } from "./context.js"
 import type { RemoteCommands } from "./remote.js"
-
-const conflictOf = (conflict: PushConflict) => ({
-  path: conflict.path,
-  url: conflict.url,
-  reason: conflict.reason,
-  ...(conflict.parts
-    ? { parts: conflict.parts.map((part) => ({ last_sync: part.base, local: part.local, google: part.remote })) }
-    : {}),
-  ...(conflict.localChangedAt ? { local_changed_at: conflict.localChangedAt } : {}),
-  ...(conflict.remoteChangedAt ? { google_changed_at: conflict.remoteChangedAt } : {}),
-  ...(conflict.remoteChangedBy ? { google_changed_by: conflict.remoteChangedBy } : {}),
-})
 
 export const installMirrorCommands = (program: Command, context: CommandContext, { call }: RemoteCommands) => {
   const { env, selected, output, source } = context
@@ -48,6 +35,9 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
       )
     return mirror
   }
+
+  const stateOf = (name: string, principal: string) => (mirror: Mirror) =>
+    fileMirrorState<MirrorSnapshot>(join(profileDir(env, name), "mirrors"), mirror, principal, ["doc", "sheet"])
 
   examples(
     annotate(mirrors.command("add"), { effects: FETCH })
@@ -70,10 +60,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     const config = readConfig(env)
     const name = selected()
     const profile = activeProfile(env, name)
-    const id = createHash("sha256")
-      .update(JSON.stringify([root, folder]))
-      .digest("hex")
-      .slice(0, 8)
+    const id = mirrorId(root, folder)
     const list = profile.mirrors ?? []
     if (!list.some((mirror) => mirror.id === id)) list.push({ id, path: root, folder })
     config.profiles[name] = { ...profile, mirrors: list }
@@ -107,25 +94,8 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     ["drive personal mirrors status"],
   ).action(async (id?: string) => {
     const name = selected()
-    const profile = activeProfile(env, name)
-    const items = []
-    for (const mirror of id ? [find(id)] : mirrorsOf()) {
-      const state = mirrorState(env, name, mirror, profile.principal).read()
-      const { files, unsupported } = await scanLocal(mirror.path, mirrorKind)
-      const plan = planPush(files, state)
-      items.push({
-        id: mirror.id,
-        path: mirror.path,
-        folder: mirror.folder,
-        create: plan.create.map((file) => file.path),
-        update: plan.update.map((file) => file.path),
-        unchanged: plan.unchanged.length,
-        orphans: plan.orphans,
-        unsupported,
-        remote_checked: false,
-      })
-    }
-    output(allOf(items))
+    const { principal } = activeProfile(env, name)
+    output(allOf(await mirrorStatus(id ? [find(id)] : mirrorsOf(), mirrorKind, stateOf(name, principal))))
   })
 
   examples(
@@ -160,49 +130,25 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
       )
     const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
     const google = await source()
-    const target = googleTarget(call, () => google.identity())
-    const lock = await lockProfile(env, name)
-    const results = []
-    try {
-      for (const mirror of chosen)
-        results.push({
-          id: mirror.id,
-          path: mirror.path,
-          ...(await pushDocuments({
-            root: mirror.path,
-            folder: mirror.folder,
-            target,
-            state: mirrorState(env, name, mirror, profile.principal),
-            principal: profile.principal,
-            ...(keep ? { keep } : {}),
-            recreate: args.replace === true,
-            // `call` already checks policy and journals each Google write it makes.
-            guard: (_attempt, act) => act(),
-            operationId: newOperationId,
-            errorOf: googleError,
-            assertHeld: () => lock.assertHeld(),
-            ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
-          })),
-        })
-    } finally {
-      await lock.release()
-    }
-    const failedIn = results.filter(
-      (result) => result.errors.length || result.conflicts.length || result.missing.length,
-    )
-    const body = allOf(results.map(({ conflicts, ...result }) => ({ ...result, conflicts: conflicts.map(conflictOf) })))
-    if (failedIn.length)
-      body.meta = {
-        complete: false,
-        issues: failedIn.map((result) => ({
-          code: "provider_error" as const,
-          reason: "mirror.partial",
-          source: `mirror ${result.id}`,
-        })),
-      }
+    const { items, issues } = await syncMirrors({
+      mirrors: chosen,
+      target: googleTarget(call, () => google.identity()),
+      stateOf: stateOf(name, profile.principal),
+      principal: profile.principal,
+      ...(keep ? { keep } : {}),
+      recreate: args.replace === true,
+      // `call` already checks policy and journals each Google write it makes.
+      guard: (_attempt, act) => act(),
+      operationId: newOperationId,
+      errorOf: googleError,
+      lock: () => lockProfile(env, name),
+      ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
+      remote: "google",
+    })
+    const body = allOf(items)
+    if (issues.length) body.meta = { complete: false, issues }
     output(body)
-    const failed = failedIn.length > 0
-    if (failed)
+    if (issues.length)
       throw new CliError(
         "provider_error",
         `some files were not synced; see conflicts, missing and errors, then rerun with --keep local, google or both`,
