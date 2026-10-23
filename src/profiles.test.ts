@@ -110,6 +110,16 @@ describe("explicit account selection", () => {
       expect(streams.stdout.join("")).toContain("default")
     }
   })
+  it("refuses a setting change under DRIVE_READ_ONLY", async () => {
+    const f = fixture()
+    await expect(
+      createProgram({ env: { ...f.env, DRIVE_READ_ONLY: "1" }, streams: captureStreams() }).parseAsync(
+        ["default", "config", "set", "max_text_chars", "100"],
+        { from: "user" },
+      ),
+    ).rejects.toMatchObject({ code: "permission_error" })
+    expect(readConfig(f.env).profiles.default?.max_text_chars).toBeUndefined()
+  })
   it("keeps discovery and help available without reading invalid account configuration", async () => {
     const f = fixture()
     writeFileSync(join(f.env.DRIVE_CONFIG_DIR as string, "config.json"), "invalid JSON")

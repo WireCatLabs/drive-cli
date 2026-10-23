@@ -187,8 +187,21 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     } finally {
       await lock.release()
     }
-    output(allOf(results.map(({ conflicts, ...result }) => ({ ...result, conflicts: conflicts.map(conflictOf) }))))
-    const failed = results.some((result) => result.errors.length || result.conflicts.length || result.missing.length)
+    const failedIn = results.filter(
+      (result) => result.errors.length || result.conflicts.length || result.missing.length,
+    )
+    const body = allOf(results.map(({ conflicts, ...result }) => ({ ...result, conflicts: conflicts.map(conflictOf) })))
+    if (failedIn.length)
+      body.meta = {
+        complete: false,
+        issues: failedIn.map((result) => ({
+          code: "provider_error" as const,
+          reason: "mirror.partial",
+          source: `mirror ${result.id}`,
+        })),
+      }
+    output(body)
+    const failed = failedIn.length > 0
     if (failed)
       throw new CliError(
         "provider_error",

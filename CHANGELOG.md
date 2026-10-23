@@ -11,6 +11,12 @@
 
 ### Fixed
 
+- **A partial `sync` or `mirrors sync` says so in its answer.** `meta.complete` is `false` with one `issues` entry per
+  failed source, where it used to say `true` before the command failed.
+- **`DRIVE_READ_ONLY` refuses `config set`.** A setting changes what later runs may do; it was the one local write the
+  lock let through.
+- **Output piped into a reader that stops early ends quietly.** `drive commands --json | head` exits 0 instead of
+  printing a stack trace.
 - **`DRIVE_PROFILE_LOCK` pins the process.** A first word or `DRIVE_PROFILE` naming another profile is refused with
   `permission_error`; with no profile named, the locked one is used. Before, the variable was ignored.
 - **`session list` and `config show` run without a profile**, as they read every profile. A missing profile's error

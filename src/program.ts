@@ -50,7 +50,14 @@ import { googleSource } from "./google.js"
 import { apiMethod, googleApi, googleUploadRequest } from "./google-api.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
-import { checkPolicy, guardedGoogleWrite, methodPolicyKeys, type PolicyFlags, permissionKeys } from "./policy.js"
+import {
+  checkPolicy,
+  guardedGoogleWrite,
+  methodPolicyKeys,
+  type PolicyFlags,
+  permissionKeys,
+  refuseUnderReadOnly,
+} from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
@@ -368,7 +375,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return
     }
     selected()
-    if (words === "config set") return
+    if (words === "config set") return refuseUnderReadOnly(env, "change a setting")
     const flags = policyFlags()
     // The server writes only through its tools, and each tool call runs this same check with these flags.
     if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)

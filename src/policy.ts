@@ -26,7 +26,13 @@ export interface PolicyFlags {
   /** The keys this program checks (`permissionKeys`); with them, a permission naming no command is refused. */
   permissionKeys?: Set<string>
 }
-const DRIVE_APP = { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "", version: VERSION }
+export const DRIVE_APP = {
+  command: "drive",
+  appName: "drive-cli",
+  envPrefix: "DRIVE",
+  description: "",
+  version: VERSION,
+}
 const ORDER: Record<Level, number> = { deny: 0, readonly: 1, ask: 2, allow: 3 }
 
 const overridesOf = (entries: readonly string[] = []): Record<string, Level> => {
@@ -178,6 +184,11 @@ export const methodPolicyKeys = (method: string, body?: Record<string, unknown>)
     }
   }
   return [...new Set(keys)]
+}
+/** The read-only lock, for a local write that runs no policy check: a setting or other change to later runs. */
+export const refuseUnderReadOnly = (env: NodeJS.ProcessEnv, what: string) => {
+  const lock = readOnlyLockOf(DRIVE_APP, env)
+  if (lock) throw readOnlyRefusal(lock, what)
 }
 export const checkPolicy = async (
   env: NodeJS.ProcessEnv,

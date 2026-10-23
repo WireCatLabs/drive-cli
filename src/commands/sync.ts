@@ -33,7 +33,16 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
         ...(await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan)),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),
       }))
-      output(itemOf(result))
+      output(
+        itemOf(result, {
+          meta: result.errors.length
+            ? {
+                complete: false,
+                issues: [{ code: "provider_error" as const, reason: "sync.partial", source: "google-drive" }],
+              }
+            : {},
+        }),
+      )
       if (result.errors.length || result.pending)
         streams.diagnostic(`${result.pending} source operations remain; run drive ${selected()} sync again\n`)
       if (result.errors.length)
