@@ -33,6 +33,8 @@ describe("command data effects", () => {
     expect(effects("catalog list")).toEqual({ remote: "none", local: "read" })
     expect(effects("catalog import")).toEqual({ remote: "none", local: "write" })
     expect(effects("files copy")).toEqual({ remote: "write", local: "none" })
+    expect(effects("files download")).toEqual({ remote: "read", local: "write" })
+    expect(effects("files export")).toEqual({ remote: "read", local: "write" })
     expect(effects("sync")).toEqual({ remote: "read", local: "write" })
     expect(effects("session start")).toEqual({ remote: "write", local: "write" })
     expect(commands.find((command) => command.path.join(" ") === "mcp")).toMatchObject({

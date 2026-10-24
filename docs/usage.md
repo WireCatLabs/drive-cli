@@ -233,6 +233,29 @@ Tags, notes and links are local context; they do not edit the Google source. Ord
 and resyncs preserve them. `documents context` brings together notes, labels, links, memories
 and observed editors. For reviewed facts or person/project links, use [recipes](recipes.md).
 
+## Download or convert a file from Google
+
+These commands read Google directly; the file does not need to be imported:
+
+```sh
+drive personal files download FILE_ID --out ./download.bin
+drive personal files export DOC_ID --format pdf --out ./document.pdf
+drive personal files export DOC_ID --format docx --out ./document.docx
+drive personal files export SHEET_ID --format xlsx --out ./workbook.xlsx
+drive personal files export SHEET_ID --format csv --out ./sheet.csv
+```
+
+`download` saves an uploaded file's bytes. `export` asks Google to convert a native document;
+choose a format that Google supports for its type (PDF or DOCX for Docs, XLSX or CSV for Sheets).
+CSV exports only the first sheet. Google limits native exports to 10 MB; Drive bounds every download
+at 50 MB. Neither command imports the file into search or changes it in Google. Google Vids require
+the long-running API download flow and are not supported by these friendly commands.
+
+An existing output, including a symlink, is refused before downloading. Pass `--overwrite` to replace
+it. Results contain the file ID and byte count, without the document name or local output path.
+Both commands write a local file, so `--read-only` refuses them; `--dry-run` previews without fetching.
+The existing `documents export --output PATH` writes an imported Markdown snapshot offline.
+
 ## Export or stop importing
 
 ```sh

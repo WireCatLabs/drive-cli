@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**200 ✅ · 958 ⛔ · 0 ❌** — 184 commands, 974 options.
+**207 ✅ · 958 ⛔ · 0 ❌** — 186 commands, 979 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1089,6 +1089,13 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `sheets add` | `--values` | ✅ |  |
 | `sheets add` | `--input` | ✅ |  |
 | `sheets clear` |  | ✅ |  |
+| `files download` |  | ✅ |  |
+| `files download` | `--out` | ✅ |  |
+| `files download` | `--overwrite` | ✅ |  |
+| `files export` |  | ✅ |  |
+| `files export` | `--out` | ✅ |  |
+| `files export` | `--overwrite` | ✅ |  |
+| `files export` | `--format` | ✅ |  |
 | `files list` |  | ✅ |  |
 | `files list` | `--limit` | ✅ |  |
 | `files list` | `--cursor` | ✅ |  |

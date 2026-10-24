@@ -3568,6 +3568,53 @@ drive <profile> sheets clear <spreadsheet> <range>
 
 read and change files in Google Drive; nothing is imported
 
+### `drive files download`
+
+download a stored file to a local file
+
+This command changes local state.
+
+```sh
+drive <profile> files download <file> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+
+| Option | What it does |
+|---|---|
+| `--out <path>` | local file to write. |
+| `--overwrite` | replace an existing output file. |
+
+**Returns:** download a stored file to a local file
+
+**Example:** `drive personal files download FILE_ID --out download.bin`
+
+### `drive files export`
+
+export a Google document to a local file
+
+This command changes local state.
+
+```sh
+drive <profile> files export <file> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+
+| Option | What it does |
+|---|---|
+| `--out <path>` | local file to write. |
+| `--overwrite` | replace an existing output file. |
+| `--format <format>` | format Google should export. One of: `pdf`, `docx`, `xlsx`, `csv`. |
+
+**Returns:** export a Google document to a local file
+
+**Example:** `drive personal files export DOC_ID --format pdf --out document.pdf`
+
 ### `drive files list`
 
 list files in Google Drive, one page at a time
