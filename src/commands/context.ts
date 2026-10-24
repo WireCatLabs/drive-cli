@@ -9,6 +9,8 @@ import type { PolicyFlags } from "../policy.js"
 import type { UploadRequest } from "../upload.js"
 
 export interface ProgramOptions {
+  /** The WireCat first-run questions, before a command; only the real binary passes it. */
+  atStart?: (start: { path: string[]; headless: boolean }) => Promise<void>
   env?: NodeJS.ProcessEnv
   streams?: Streams
   keyring?: KeyringStore

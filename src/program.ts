@@ -373,6 +373,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const words = path.join(" ")
     // Discovery is account-independent and must not load config, credentials or the store.
     if (ACCOUNT_FREE_COMMANDS.has(words)) return
+    if (options.atStart) {
+      const given = program.opts()
+      await options.atStart({ path, headless: Boolean(given.json || given.jsonl || given.input === false) })
+    }
     // These read every profile or none, so they run without one; a named profile is still checked.
     if (["commands", "complete", "config show", "session list"].includes(words)) {
       if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
