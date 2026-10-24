@@ -36,16 +36,12 @@ stdin/stdout connection keeps working as before.
   `ask` and `allow` let a requested MCP write go through without a form on the server. The app's own
   approval is separate and depends on its settings. Google sign-in and file roles stay independent:
   a write also needs the write grant: reconnect with `--grant write`
-  ([recipes](recipes.md))
-  ([configuration guide](configuration.md), [security](security.md).
+  ([recipes](recipes.md), [configuration](configuration.md), [security](security.md)).
 - **The computer that runs `drive` must stay on.** To use it from a phone, run all of this on a small
   server that is always on, and connect your Google account there.
-- **Who can add a remote connector:**
-
-| App | Plans | Documentation |
-|---|---|---|
-| ChatGPT | Plus, Pro, Business, Enterprise, Education — in developer mode | [developer mode](https://developers.openai.com/api/docs/guides/custom-mcp-server) |
-| Claude | any; one custom connector on the free plan | [custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) |
+- **Check that your app or workspace allows custom MCP connections.** Availability and administrator
+  controls depend on the app. Follow the current [OpenAI connection guide](https://developers.openai.com/api/docs/guides/custom-mcp-server)
+  or [Claude connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 
 The setup steps for each operating system have not all been tried on that system. If a step does
 not work, [open an issue](https://github.com/WireCatLabs/drive-cli/issues).
@@ -117,8 +113,8 @@ The address for the app is your tunnel origin with `/mcp` at the end, for exampl
 
 - **ChatGPT or Codex web:** open **Plugins**, choose **+ Add custom MCP server**, and create a
   plugin with the `/mcp` address and OAuth, as the
-  [OpenAI connection guide](https://developers.openai.com/plugins/quickstart) describes. Choose
-  dynamic client registration (DCR) when offered.
+  [OpenAI connection guide](https://developers.openai.com/api/docs/guides/custom-mcp-server) describes. Choose
+  dynamic client registration (DCR) when offered, then install the plugin before using it in a conversation.
 - **Claude:** add a custom connector with this address, as described in
   [Claude custom connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
 

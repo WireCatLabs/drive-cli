@@ -10,8 +10,6 @@ becomes P2.
 - **DRV-23 · P3 · Opt-in deletion across mirrors**, with a local archive. Today nothing is deleted in Google.
 - **DRV-24 · P3 · More Docs and Sheets editing helpers** (tables, headers, charts, validation), only on demand.
 - **DRV-25 · P3 · Write as Google suggestions** instead of refusing a Doc with pending suggestions.
-- **DRV-26 · P3 · Remote HTTP MCP with per-user OAuth** for web and mobile agents; a Web OAuth client of its own.
-  cli-core shared transport.
 - **DRV-27 · P3 · Service-account or ADC sign-in** for servers and CI.
 - **DRV-30 · P3 · Box and Microsoft document adapters** on cli-core `documents`.
 - **DRV-43 · P3 · `mirrors watch` as a background service** that keeps syncing after the terminal closes; the
