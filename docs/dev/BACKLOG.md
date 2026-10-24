@@ -37,7 +37,8 @@ by path below.
   0.407.0. Done when: `drive mcp --http --public-url https://<name>.ts.net` serves MCP behind the access-code login
   and prints the code; `--permission` keys and saved permissions still apply to every tool call over HTTP; `--revoke`
   works; a `docs/remote.md` page (copied from tg-cli `docs/remote.md`, drive wording) is linked from the README and
-  `docs/compare.md` gains a row "MCP over HTTP" with drive ✅ (the page has no such row today; `docs/compare.md:87`
+  the comparison page (cli-docs `translations/pages/drive/compare.en.md`) gains a row "MCP over HTTP" with drive ✅
+  (row 16 at `:53` says only "MCP server for an agent"; `:89`
   still sends web and phone users to Claude's connector or Workspace MCP and needs the same update). Google sign-in
   and file roles stay independent of MCP permissions, as the server instructions already say.
 
