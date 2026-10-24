@@ -23,12 +23,15 @@ export const installMcpCommand = (
       if (args.tools)
         output(
           allOf(
-            mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(({ schema, command }) => ({
-              command: command.path.join(" "),
-              writes: writes(command.effects),
-              input_schema: schema,
-              effects: command.effects,
-            })),
+            mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(
+              ({ schema, command, availability }) => ({
+                command: command.path.join(" "),
+                writes: writes(command.effects),
+                input_schema: schema,
+                effects: command.effects,
+                availability: availability?.() ?? { available: true },
+              }),
+            ),
           ),
         )
       else {
