@@ -50,7 +50,7 @@ The tools:
 | Limits for an agent: read-only, allowed commands | ✅ | ✅ | ✅ | 🟡 |
 | Shared Drives | 🟡 | ✅ | ✅ | ✅ |
 | Comments and revision history | ✅ | ✅ | 🟡 | ❌ |
-| Export to PDF, Word, Excel and CSV | 🟡 | ✅ | 🟡 | ✅ |
+| Export to PDF, Word, Excel and CSV | ✅ | ✅ | 🟡 | ✅ |
 
 ¹ Until Google finishes reviewing WireCat's application, Google shows an "unverified app" screen at sign-in and
 admits at most 100 new users to it; you can also sign in with your own Google application. See
