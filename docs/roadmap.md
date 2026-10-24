@@ -9,7 +9,8 @@ an [issue on GitHub](https://github.com/WireCatLabs/drive-cli/issues).
 `drive` imports the Google Drive folders you choose and keeps their text on your computer: Google Docs and Sheets,
 PDF, docx, xlsx, CSV and Markdown. You can search them by words and by meaning, read them offline, and add tags,
 notes and memories. It also reads and edits live Google Sheets ranges, manages files, and keeps local Markdown and
-CSV folders mirrored into Google Docs and Sheets, both ways, when you run `mirrors sync`. Every command is in the
+CSV folders mirrored into Google Docs and Sheets, both ways, when you run `mirrors sync` or while `mirrors watch`
+runs. Every command is in the
 [command reference](commands.md).
 
 ## In progress
@@ -21,7 +22,8 @@ CSV folders mirrored into Google Docs and Sheets, both ways, when you run `mirro
 ## Next
 
 - **A guide for mirrored folders**: how to set one up, what happens when both sides change, and what never crosses.
-- **Mirrors that keep themselves in sync** while you work, without running `mirrors sync` by hand.
+- **`mirrors watch` as a background service** that starts with the computer, instead of a command left running in a
+  terminal.
 - **Local images in mirrored Markdown**, uploaded with the document. Today only images with an `https://` link
   appear in the Doc.
 - **Front matter in mirrored Markdown** kept out of the Doc's text.
