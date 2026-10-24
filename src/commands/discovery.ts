@@ -1,7 +1,7 @@
 import { CliError } from "@wirecat/cli-base"
-import { annotate, describeOptions } from "@wirecat/cli-base/commands"
+import { annotate, type CommandInfo, describeOptions } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
-import { commandsText, NO_EFFECTS } from "@wirecat/cli-core/cli"
+import { commandsText, environmentOf, NO_EFFECTS } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { commandsDocument, describeDriveProgram, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
@@ -43,6 +43,16 @@ export const installCommandsCommand = (program: Command, { print, streams }: Com
     .argument("[path...]", "only this command or group, as words")
     .action((path: string[]) => {
       const document = commandsDocument(program, path)
+      const annotateAvailability = (commands: readonly CommandInfo[]): CommandInfo[] =>
+        commands.map((command) => {
+          const availability = environmentOf(program).discoveryAvailability?.(command)
+          return {
+            ...command,
+            ...(availability ? { availability } : {}),
+            commands: annotateAvailability(command.commands),
+          }
+        })
+      document.commands = annotateAvailability(document.commands)
       const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
       // By format, not by terminal: piped, a reader got hundreds of kilobytes of JSON it never asked for.
       if (!json && !jsonl)

@@ -20,6 +20,7 @@ import {
   type Body,
   changesAuthority,
   commandWords,
+  environmentOf,
   itemOf,
   liftJson,
   liftProfile,
@@ -58,6 +59,7 @@ import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
   checkPolicy,
+  discoveryAvailability,
   guardedGoogleWrite,
   methodPolicyKeys,
   type PolicyFlags,
@@ -374,7 +376,28 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installSkillCommand(program, context)
   installDoctorCommand(program, context)
   installUpgradeCommand(program, context)
-  provide(program, { env, streams })
+  provide(program, {
+    env,
+    streams,
+    discoveryAvailability: (info) => {
+      if (!(profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)) return undefined
+      try {
+        const command = flatten(describeDriveProgram(program)).find((one) => one.path.join(" ") === info.path.join(" "))
+        return command ? discoveryAvailability(command, policySettings(env, selected(), policyFlags())) : undefined
+      } catch {
+        return undefined
+      }
+    },
+  })
+  for (const info of flatten(describeDriveProgram(program))) {
+    if (info.commands.length) continue
+    let command = program
+    for (const word of info.path) command = command.commands.find((one) => one.name() === word) ?? command
+    command.addHelpText("after", () => {
+      const availability = environmentOf(program).discoveryAvailability?.(info)
+      return availability?.available === false ? `\nAvailability: unavailable — ${availability.reason}\n` : ""
+    })
+  }
   program.addCommand(guide())
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program

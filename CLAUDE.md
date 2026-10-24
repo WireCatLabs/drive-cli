@@ -21,7 +21,9 @@ SDK error objects, headers, OAuth responses or document bodies. Data belongs in 
 No implicit model download or credential-file fallback.
 
 Browser login uses PKCE and state checks; its listener closes on success, failure, cancellation
-and timeout. Help, version and command discovery never load config, keyring or database. Remote
+and timeout. Version and unprofiled discovery never load config, keyring or database. With a named
+profile, help and discovery may read permission configuration to annotate availability; neither opens
+credentials or the database. Remote
 document operations default to reads. Remote writes require an explicitly requested OAuth write
 grant; legacy `api call` mutating methods also require --allow-writes, and permanent deletion there requires
 --allow-delete. Generated `api <method>` commands use command and method permissions instead of legacy flags;
