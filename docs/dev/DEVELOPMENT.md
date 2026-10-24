@@ -27,7 +27,8 @@ never dependency-internal imports. The default database is shared with other Wir
 use temporary storage for development and verify compatibility when changing dependency pins.
 
 Fast checks are standards:check, lint, docs:lint and ci:quick. Full validation adds tests, coverage,
-build and installed-package smoke. Commit hooks never install, build or run tests. Live account
+build, the contracts, generated files, the test matrix and installed-package smoke; it runs on every pull
+request (`pr.yml`) and on each merge to main (`main.yml`), Linux only. Commit hooks never install, build or run tests. Live account
 checks and model downloads remain explicit actions.
 
 ## Checks before a pull request

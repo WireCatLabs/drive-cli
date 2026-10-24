@@ -1,0 +1,17 @@
+name: Pull request validation
+
+# The same full Linux validation as main (WC-CI-5): contracts, generated files and the test matrix fail here,
+# before a merge, instead of at the next release.
+on:
+  pull_request:
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validation:
+    uses: ./.github/workflows/ci.yml
