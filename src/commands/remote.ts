@@ -1,5 +1,3 @@
-import { mkdirSync } from "node:fs"
-import { dirname } from "node:path"
 import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
@@ -162,9 +160,13 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     command.action(
       async (input: string, args: { out: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)
-        if (helpers.mcp) mkdirSync(dirname(args.out), { recursive: true, mode: 0o700 })
         const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
-        const bytes = await saveDownload(args.out, args.overwrite === true, () => helpers.download(id, mime))
+        const bytes = await saveDownload(
+          args.out,
+          args.overwrite === true,
+          () => helpers.download(id, mime),
+          helpers.mcp === true,
+        )
         output(itemOf({ id, bytes, ...(args.format ? { format: args.format } : {}) }))
       },
     )
