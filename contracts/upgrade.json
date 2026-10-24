@@ -70,7 +70,7 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "items": [{ "create": ["added.md"], "update": [], "unchanged": 1 }]
+        "items": [{ "create": 1, "update": 0, "unchanged": 1 }]
       }
     }
   ]
