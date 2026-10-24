@@ -272,6 +272,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }),
   })
   const remote: RemoteCommands = {
+    mcp: options.mcp,
     output,
     positive,
     readBody:
