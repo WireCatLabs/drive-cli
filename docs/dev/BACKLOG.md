@@ -38,3 +38,7 @@ by path below.
   `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
 - **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. Waiting for
   [cli-core #1883](https://github.com/WireCatLabs/cli-core/issues/1883) and a published shared output contract.
+- **DRV-47 · P2 · Switch `src/bin/drive.ts` to cli-core's `startCli`** ([cli-core
+  #1924](https://github.com/WireCatLabs/cli-core/pull/1924)). It replaces the hand-wired crash catch, SIGINT/SIGTERM,
+  closed pipe, `setupAtStart`, the `Allow <key>?` prompt (`entry.ask`) and the browser opener; `createProgram` takes
+  `entry` and calls `entry.atStart(command)`. A bare `drive` then exits 2, as tools on cli-core's program do.
