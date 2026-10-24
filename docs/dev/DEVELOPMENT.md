@@ -28,7 +28,8 @@ use temporary storage for development and verify compatibility when changing dep
 
 Fast checks are standards:check, lint, docs:lint and ci:quick. Full validation adds tests, coverage,
 build, the contracts, generated files, the test matrix and installed-package smoke; it runs on every pull
-request (`pr.yml`) and on each merge to main (`main.yml`), Linux only. Commit hooks never install, build or run tests. Live account
+request (`pr.yml`) and on each merge to main (`main.yml`), Linux only. A release pull request, titled
+`chore: release X`, adds Windows and macOS. Commit hooks never install, build or run tests. Live account
 checks and model downloads remain explicit actions.
 
 ## Checks before a pull request
