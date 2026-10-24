@@ -3,6 +3,7 @@ import { CliError } from "@wirecat/cli-base"
 // A copy of cli-core src/http/public-url.ts, which no cli-core package entry exports yet:
 // https://github.com/WireCatLabs/cli-core/issues/1902
 const EXAMPLE = "--public-url https://<name>.ts.net"
+export const DEFAULT_PORT = 8765
 
 export const publicUrlOf = (given: string | undefined): URL => {
   if (!given) throw new CliError("configuration_error", `--http needs the tunnel's address: ${EXAMPLE}`)
@@ -14,7 +15,7 @@ export const publicUrlOf = (given: string | undefined): URL => {
   }
   const local = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname)
   if (url.protocol !== "https:" && !local)
-    throw new CliError("validation_error", "--public-url must be https — the browser apps reach drive through it")
+    throw new CliError("validation_error", "--public-url must be https — it is the tunnel's public address")
   if (url.pathname !== "/" || url.search || url.hash)
     throw new CliError("validation_error", `--public-url is the tunnel's address only, without a path: ${EXAMPLE}`)
   return url

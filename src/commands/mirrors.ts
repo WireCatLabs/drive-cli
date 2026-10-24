@@ -24,17 +24,19 @@ import { newOperationId } from "@wirecat/cli-core/sends"
 import { type Command, Option } from "commander"
 import { activeProfile, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
+import { checkPort, type ImageOptions } from "../mirror-images.js"
 import { googleTarget, type MirrorSnapshot, mirrorKind } from "../mirror-target.js"
 import { FOLDER, type GoogleSource } from "../model.js"
 import { allOf } from "../output.js"
 import { lockProfile } from "../profile-lock.js"
+import { DEFAULT_PORT, portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
 import { profileDir } from "../state.js"
 import type { CommandContext } from "./context.js"
 import type { RemoteCommands } from "./remote.js"
 
 export const installMirrorCommands = (program: Command, context: CommandContext, { call }: RemoteCommands) => {
-  const { env, selected, output, source } = context
+  const { env, selected, output, source, streams } = context
   const mirrors = annotate(program.command("mirrors"), { effects: LOCAL_READ }).description(
     "keep local folders mirrored into Google Docs and Sheets",
   )
@@ -54,8 +56,17 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
 
   const stateOf = (name: string, principal: string) => (mirror: Mirror) =>
     fileMirrorState<MirrorSnapshot>(join(profileDir(env, name), "mirrors"), mirror, principal, ["doc", "sheet"])
-  const syncing = (name: string, principal: string, google: GoogleSource) => ({
-    target: googleTarget(call, () => google.identity()),
+  const imagesOf = async (args: ImageArgs): Promise<ImageOptions> => {
+    const warn = (text: string) => streams.diagnostic(`warning: ${text}`)
+    if (args.port !== undefined && !args.publicUrl)
+      throw new CliError("validation_error", "--port is the local port behind --public-url; pass both")
+    if (!args.publicUrl) return { warn }
+    const host = { publicUrl: publicUrlOf(args.publicUrl), port: portOf(args.port, DEFAULT_PORT) }
+    await checkPort(host.port)
+    return { host, warn }
+  }
+  const syncing = (name: string, principal: string, google: GoogleSource, images: ImageOptions) => ({
+    target: googleTarget(call, () => google.identity(), images),
     stateOf: stateOf(name, principal),
     principal,
     // `call` already checks policy and journals each Google write it makes.
@@ -159,57 +170,65 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
         ]),
       )
       .option("--replace", "same as --keep local, and create again files deleted in Google")
+      .option("--public-url <url>", IMAGE_URL_HELP)
+      .option("--port <port>", `the local port the tunnel forwards to (default ${DEFAULT_PORT})`)
       .description("sync both ways with Docs and Sheets; a part changed on both sides is reported"),
     [
       "drive personal mirrors sync",
       "drive personal mirrors sync 1a2b3c4d --keep google",
-      "drive personal mirrors sync 1a2b3c4d --replace",
+      "drive personal mirrors sync --public-url https://<name>.ts.net",
     ],
-  ).action(async (id: string | undefined, args: { keep?: "local" | "google" | "both"; replace?: boolean }) => {
-    const name = selected()
-    const profile = activeProfile(env, name)
-    const chosen = chosenOf(name, id)
-    if (args.replace && args.keep && args.keep !== "local")
-      throw new CliError(
-        "validation_error",
-        "--replace keeps the local side; it cannot be combined with --keep google or both",
-      )
-    const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
-    const google = await source()
-    const { items, issues } = await syncMirrors({
-      ...syncing(name, profile.principal, google),
-      mirrors: chosen,
-      ...(keep ? { keep } : {}),
-      recreate: args.replace === true,
-    })
-    const body = allOf(items)
-    if (issues.length) body.meta = { complete: false, issues }
-    output(body)
-    if (issues.length)
-      throw new CliError(
-        "provider_error",
-        `some files were not synced; see conflicts, missing and errors, then rerun with --keep local, google or both`,
-        { reason: "mirror.partial" },
-      )
-  })
+  ).action(
+    async (id: string | undefined, args: ImageArgs & { keep?: "local" | "google" | "both"; replace?: boolean }) => {
+      const name = selected()
+      const profile = activeProfile(env, name)
+      const chosen = chosenOf(name, id)
+      if (args.replace && args.keep && args.keep !== "local")
+        throw new CliError(
+          "validation_error",
+          "--replace keeps the local side; it cannot be combined with --keep google or both",
+        )
+      const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
+      const images = await imagesOf(args)
+      const google = await source()
+      const { items, issues } = await syncMirrors({
+        ...syncing(name, profile.principal, google, images),
+        mirrors: chosen,
+        ...(keep ? { keep } : {}),
+        recreate: args.replace === true,
+      })
+      const body = allOf(items)
+      if (issues.length) body.meta = { complete: false, issues }
+      output(body)
+      if (issues.length)
+        throw new CliError(
+          "provider_error",
+          `some files were not synced; see conflicts, missing and errors, then rerun with --keep local, google or both`,
+          { reason: "mirror.partial" },
+        )
+    },
+  )
 
   examples(
     annotate(mirrors.command("watch"), { effects: REMOTE_WRITE, lifetime: "persistent" })
       .argument("[id]", "mirror id; every mirror of the profile when omitted")
       .option("--every <duration>", "how often to ask Google for changes", "60s")
+      .option("--public-url <url>", IMAGE_URL_HELP)
+      .option("--port <port>", `the local port the tunnel forwards to (default ${DEFAULT_PORT})`)
       .summary("keep syncing both ways until Ctrl-C or --timeout")
       .description(
         "keep syncing both ways until Ctrl-C or --timeout: on each local save and each Google change; " +
           "a part changed on both sides is reported and left for mirrors sync --keep",
       ),
     ["drive personal mirrors watch", "drive personal mirrors watch 1a2b3c4d --every 2m --jsonl"],
-  ).action(async (id: string | undefined, args: { every: string }) => {
+  ).action(async (id: string | undefined, args: ImageArgs & { every: string }) => {
     const pollMs = parseDuration(args.every, "--every")
     if (pollMs < 10_000) throw new CliError("validation_error", "--every must be at least 10s")
     const name = selected()
     const profile = activeProfile(env, name)
     const chosen = chosenOf(name, id)
     const signal = context.signal() ?? new AbortController().signal
+    const images = await imagesOf(args)
     const google = await source()
     const states = stateOf(name, profile.principal)
     let token = await google.startToken()
@@ -231,7 +250,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     context.endsOnStop()
     let cycles = 0
     for await (const event of watchMirrors(
-      (mirrors) => syncMirrors({ ...syncing(name, profile.principal, google), mirrors }),
+      (mirrors) => syncMirrors({ ...syncing(name, profile.principal, google, images), mirrors }),
       { mirrors: chosen, signal, kindOf: mirrorKind, stateOf: states, remoteChanges, pollMs },
     )) {
       cycles++
@@ -260,6 +279,14 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     })
   })
 }
+
+interface ImageArgs {
+  publicUrl?: string
+  port?: string
+}
+
+const IMAGE_URL_HELP =
+  "the tunnel's https address, e.g. https://<name>.ts.net: local images go into Docs from a one-off address on it"
 
 const describeCycle = (cycle: {
   at: string

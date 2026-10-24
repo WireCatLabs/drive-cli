@@ -32,8 +32,6 @@ by path below.
 - **DRV-10 · P2 · `mirrors watch`.** Keep mirrors in sync without a manual run, on cli-core's shared server (owner:
   NEED-1620 A). First move `mirrors` and its state into cli-core (IDEA-203); Drive's change feed missed a Docs API
   edit (RISK-1601). cli-private `plans/2026-10-21-document-push-sync.md`.
-- **DRV-11 · P2 · 🚧 Local images in mirrored Markdown.** A local path becomes literal `![](path)` text; only
-  `https://` images are inserted. `src/mirror-docs.ts`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
