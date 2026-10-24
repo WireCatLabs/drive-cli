@@ -1,26 +1,57 @@
 import { annotate } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
-import { REMOTE_WRITE } from "@wirecat/cli-core/cli"
+import { itemOf, REMOTE_WRITE } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { allOf } from "../output.js"
+import { portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
 
+const DEFAULT_PORT = 8765
+
 export const installMcpCommand = (
   program: Command,
-  { env, options, selected, output, policyFlags, signal }: CommandContext,
+  { env, streams, options, selected, output, policyFlags, signal }: CommandContext,
   createProgram: (options: ProgramOptions) => Command,
 ) => {
   examples(
     annotate(program.command("mcp"), { effects: REMOTE_WRITE, lifetime: "persistent", mcp: false }).description(
       "serve drive's commands to an agent over MCP: search, then read or write",
     ),
-    ["drive personal mcp", "drive personal mcp --tools"],
+    [
+      "drive personal mcp",
+      "drive personal mcp --http --public-url https://<name>.ts.net",
+      "drive personal mcp --revoke",
+    ],
   )
     .option("--tools", "list the commands the server offers instead of starting it")
-    .action(async (args: { tools?: boolean }) => {
-      const { mcpTools, serveMcp } = await import("../mcp.js")
-      if (args.tools)
+    .option(
+      "--http",
+      "serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide",
+    )
+    .option("--port <port>", `the local port for --http (default ${DEFAULT_PORT})`)
+    .option("--public-url <url>", "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net")
+    .option("--revoke", "forget every login given to a browser app; each must log in again")
+    .action(async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string; revoke?: boolean }) => {
+      const { httpTokenFile, mcpTools, serveMcp, serveMcpOverHttp } = await import("../mcp.js")
+      if (args.revoke) {
+        const { revokeAll } = await import("@wirecat/cli-core/mcp")
+        revokeAll(httpTokenFile(env, selected()))
+        output(itemOf({ revoked: true, profile: selected() }))
+      } else if (args.http) {
+        const active = signal()
+        await serveMcpOverHttp(
+          createProgram,
+          { ...options, env, ...(active ? { signal: active } : {}) },
+          selected(),
+          policyFlags(),
+          {
+            publicUrl: publicUrlOf(args.publicUrl),
+            port: portOf(args.port, DEFAULT_PORT),
+            note: (text) => streams.diagnostic(text),
+          },
+        )
+      } else if (args.tools)
         output(
           allOf(
             mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(

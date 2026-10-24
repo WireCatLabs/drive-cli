@@ -21,25 +21,6 @@ by path below.
   permissions, every new user sees the "unverified app" screen and the app stops at 100 new users. Submit the
   data-access review, record the case, answer follow-ups; confirm Audience is In production. Owner task. Details:
   cli-private `plans/2026-10-17-google-data-access-verification.md`, [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md).
-- **DRV-44 · P1 · Remote MCP before launch: `drive mcp --http`**, so Claude and ChatGPT on the web and phone can
-  search and read the owner's Drive documents through the tunnel, as with tg and max. Owner ruling 2026-10-24 (cli-private
-  journal NEED-1716, answer A). Starts at `src/mcp.ts:335` (`serveMcp`, stdio only) and `src/commands/mcp.ts`.
-  tg and max already serve this: `mcp --http` logs in with a one-time access code (OAuth, token hashes per profile)
-  and `--revoke` forgets every login; the user guide to copy is tg-cli `docs/remote.md`. cli-core has the pieces:
-  `serveOverHttp`, `MCP_PATH` and `revokeAll` are exported from `@wirecat/cli-core/mcp` (`src/mcp/http/serve.ts`,
-  `src/mcp/http/oauth.ts`; `ownerLogin` is used inside `serveOverHttp`, so the login needs no separate export). The tg
-  and max wiring (`serveOverHttpUntilStopped`, the `--http`, `--port`, `--public-url`, `--revoke` flags) is in cli-core
-  `src/cli/messenger/mcp-command.ts` and `src/mcp/server.ts`; it is messenger-specific and not exported, so drive
-  copies the flag handling and the stop-on-Ctrl-C loop (about 60 lines) and passes its own `buildMcpServer`. **cli-core
-  change: not strictly required, one small one recommended.** `publicUrlOf` and `portOf` (`src/http/public-url
- .ts`: https-only check, no path, port range) are not in any package export, so drive must copy them; exporting
-  them from `@wirecat/cli-core/mcp` or `/cli` avoids a third copy. Both CLIs pin cli-core 0.406.0; cli-core main is
-  0.407.0. Done when: `drive mcp --http --public-url https://<name>.ts.net` serves MCP behind the access-code login
-  and prints the code; `--permission` keys and saved permissions still apply to every tool call over HTTP; `--revoke`
-  works; a `docs/remote.md` page (copied from tg-cli `docs/remote.md`, drive wording) is linked from the README and
-  `docs/compare.md` gains a row "MCP over HTTP" with drive ✅ (the page has no such row today; `docs/compare.md:87`
-  still sends web and phone users to Claude's connector or Workspace MCP and needs the same update). Google sign-in
-  and file roles stay independent of MCP permissions, as the server instructions already say.
 
 ## Next (P2)
 

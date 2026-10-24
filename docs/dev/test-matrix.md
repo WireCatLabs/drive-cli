@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**217 ✅ · 953 ⛔ · 0 ❌** — 190 commands, 980 options.
+**223 ✅ · 951 ⛔ · 0 ❌** — 190 commands, 984 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -143,8 +143,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api docs-documents-get` | `--comments-view-mode` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-get` | `--include-tabs-content` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-get` | `--suggestions-view-mode` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-about-get` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-about-get` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-about-get` |  | ✅ |  |
+| `api drive-about-get` | `--fields` | ✅ |  |
 | `api drive-about-get` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-about-get` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-about-get` | `--callback` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -1158,6 +1158,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
 | `mcp` |  | ✅ |  |
 | `mcp` | `--tools` | ✅ |  |
+| `mcp` | `--http` | ✅ |  |
+| `mcp` | `--port` | ✅ |  |
+| `mcp` | `--public-url` | ✅ |  |
+| `mcp` | `--revoke` | ✅ |  |
 | `commands` |  | ✅ |  |
 | `skill show` |  | ✅ |  |
 | `skill install` |  | ✅ |  |
