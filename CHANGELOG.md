@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- Correct the read-only agent scenario to keep denied commands discoverable.
+
 - Document remote MCP as available, retire its duplicate backlog entry, and update browser connection guidance.
 
 ## 0.28.1 — 24.10.2026
