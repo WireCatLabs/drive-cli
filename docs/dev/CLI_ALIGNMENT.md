@@ -136,7 +136,8 @@ does not establish content fidelity.
 Differences that remain: this CLI has Google-specific profile/state configuration and its own
 command catalogue for MCP, because the shared messenger/bot factories require messenger capabilities;
 only the three-tool surface is shared.
-There is no HTTP MCP/OAuth hosting, messenger parity mapping or full media-upload workflow.
+HTTP MCP uses the same guarded server behind an owner-managed HTTPS tunnel and one-time-code OAuth.
+See [remote connections](../remote.md). Messenger parity mapping and a full media-upload workflow remain omitted.
 `mirrors watch` runs in the foreground; starting it automatically as a background service remains
 planned. Published-package CI includes Windows acceptance. These differences are not MAX parity.
 
