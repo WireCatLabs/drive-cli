@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `drive <profile> mcp --http --public-url <https origin>` serves the MCP tools to ChatGPT and Claude on the web and phone, behind your tunnel and a one-time access code; saved permissions and `--permission` apply to every call. `--revoke` logs every browser app out. Guide: `docs/remote.md`.
+
 ### Fixed
 
 - Permission-denied commands stay discoverable in CLI help and MCP with current availability, reasons and required permission keys. Execution still refuses denied calls and missing write grants.
