@@ -15,3 +15,9 @@ permissions:
 jobs:
   validation:
     uses: ./.github/workflows/ci.yml
+    with:
+      # Windows and macOS only on the release pull request: a platform failure stops it before publishing,
+      # without slowing every other pull request.
+      platforms: >-
+        ${{ startsWith(github.event.pull_request.title, 'chore: release') ||
+        startsWith(github.event.pull_request.title, 'chore(release)') }}
