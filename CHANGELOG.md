@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Removed
+
+- `mirrors sync --public-url` and `mirrors watch --public-url`, added in 0.29.0: Google Docs did not download images through a Tailscale Funnel or an ngrok tunnel, so local images stayed as text anyway. Local images stay as Markdown text in the Doc, as `docs/mirrors.md` explains. `DRV-11`
+
 ## 0.29.0 — 24.10.2026
 
 ### Added

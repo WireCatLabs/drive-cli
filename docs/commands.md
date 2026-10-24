@@ -4101,12 +4101,10 @@ drive <profile> mirrors sync [id] [options]
 |---|---|
 | `--keep <side>` | where a part changed on both sides, keep this side. One of: `local`, `google`, `both`. |
 | `--replace` | same as --keep local, and create again files deleted in Google. |
-| `--public-url <url>` | the tunnel's https address, e.g. https://<name>.ts.net: local images go into Docs from a one-off address on it. |
-| `--port <port>` | the local port the tunnel forwards to (default 8765). |
 
 **Returns:** sync both ways with Docs and Sheets; a part changed on both sides is reported
 
-**Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --keep google`, `drive personal mirrors sync --public-url https://<name>.ts.net`
+**Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --keep google`, `drive personal mirrors sync 1a2b3c4d --replace`
 
 ### `drive mirrors watch`
 
@@ -4125,8 +4123,6 @@ drive <profile> mirrors watch [id] [options]
 | Option | What it does |
 |---|---|
 | `--every <duration>` | how often to ask Google for changes. Default: `60s`. |
-| `--public-url <url>` | the tunnel's https address, e.g. https://<name>.ts.net: local images go into Docs from a one-off address on it. |
-| `--port <port>` | the local port the tunnel forwards to (default 8765). |
 
 **Returns:** keep syncing both ways until Ctrl-C or --timeout
 

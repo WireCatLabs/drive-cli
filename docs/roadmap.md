@@ -12,8 +12,8 @@ notes and memories. It also reads and edits live Google Sheets ranges, manages f
 CSV folders mirrored into Google Docs and Sheets, both ways, when you run `mirrors sync` or while `mirrors watch`
 runs. It downloads stored files, exports Google documents as PDF, DOCX, XLSX or CSV, and replies to, resolves
 and reopens comments. Its [remote MCP server](remote.md) connects browser and phone agents through your
-HTTPS tunnel with an access-code login and profile permissions; the same tunnel lets `mirrors sync` put local
-images into Docs. See the [mirroring guide](mirrors.md) for setup and conflict choices. Every command is in the [command reference](commands.md).
+HTTPS tunnel with an access-code login and profile permissions. See the [mirroring guide](mirrors.md) for setup
+and conflict choices. Every command is in the [command reference](commands.md).
 
 ## In progress
 
