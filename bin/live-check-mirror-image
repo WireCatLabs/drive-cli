@@ -24,7 +24,7 @@ printf '%s' 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwA
 printf '# Mirror image check\n\nA synthetic file from drive-cli bin/live-check-mirror-image.\n\n![dot](pics/dot.png)\n' \
   >"$work/image-check.md"
 
-id=$(drive --json=id mirrors add "$work" --parent "$folder" |
+id=$(drive --json mirrors add "$work" --parent "$folder" |
   node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).item.id))')
 cleanup() { drive mirrors remove "$id" >/dev/null || true; }
 trap cleanup EXIT
