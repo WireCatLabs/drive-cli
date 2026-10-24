@@ -14,6 +14,9 @@ becomes P2.
   cli-core shared transport.
 - **DRV-27 · P3 · Service-account or ADC sign-in** for servers and CI.
 - **DRV-30 · P3 · Box and Microsoft document adapters** on cli-core `documents`.
+- **DRV-43 · P3 · `mirrors watch` as a background service** that keeps syncing after the terminal closes; the
+  command shipped in 0.27.0 and runs only in the foreground. Needs cli-core's server made provider-neutral
+  (NEED-1620). Wait for real use first. cli-private `plans/2026-10-21-document-push-sync.md`.
 
 ## Standards and maintenance
 
