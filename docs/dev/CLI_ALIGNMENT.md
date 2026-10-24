@@ -31,8 +31,8 @@ Generation refuses unknown schema keywords instead of silently replacing them wi
 
 Google Discovery does not express every backend rule. Some enumerations and required fields only
 appear in prose; they remain Google's responsibility. Date/time, byte and field-mask formats use
-their declared wire types rather than newly invented semantic validators. Media transport is
-listed as an omission, not counted as an implemented upload workflow. The request schemas exposed
+their declared wire types rather than newly invented semantic validators. Generated API methods accept JSON bodies; friendly `files download` and `files export`
+handle binary downloads and native-document exports. A full media-upload workflow remains omitted. The request schemas exposed
 by `api show` declare JSON Schema 2020-12. Recursive references and exact string-valued int64 data
 are preserved. Validators and operation effects are generated from committed inputs.
 
@@ -119,7 +119,7 @@ Those store fixtures are distinct from installed-Drive release acceptance. Publi
 comparisons live in cli-testing's performance/documents/offline-catalog report. The default
 database is the shared WireCat store; upgrade tests also cover offline reference rebuilding.
 
-Discovery contract 3 uses `effects: {remote, local}` and `api_operation` instead of `mutates`,
+Discovery contract 4 uses `effects: {remote, local}` and `api_operation` instead of `mutates`,
 `local` and `operation_id`. Effects also inform error retry safety. Standard output envelopes
 include `meta.complete`; local lists page by `next_page`, Google lists by `next_cursor`. JSONL emits item records and
 one end record. Search and note lists use `--page`; the old `--offset` flag
@@ -136,8 +136,9 @@ does not establish content fidelity.
 Differences that remain: this CLI has Google-specific profile/state configuration and its own
 command catalogue for MCP, because the shared messenger/bot factories require messenger capabilities;
 only the three-tool surface is shared.
-There is no HTTP MCP/OAuth hosting, Windows installer suite, messenger parity mapping, full
-media-upload workflow or automatic background watches. Those are not reported as MAX parity.
+There is no HTTP MCP/OAuth hosting, messenger parity mapping or full media-upload workflow.
+`mirrors watch` runs in the foreground; starting it automatically as a background service remains
+planned. Published-package CI includes Windows acceptance. These differences are not MAX parity.
 
 ## Explicit profiles
 
@@ -150,9 +151,8 @@ owner's cross-CLI account-selection requirement. Account records are not renamed
 Catalog lists use cli-base's validated query registry and the shared store's SQL compiler,
 with `kind`, `mime`, `name`, `parent`, observed `person`, `tag` and metadata `text` fields.
 They use `--limit`/`--page`; filter flags are not introduced. Catalog/tree/depth vocabulary is
-registered in cli-base. The cli-base adoption records 56 pre-existing handwritten option-role
-violations in the baseline; catalog commands add none. This baseline records inherited naming
-work and does not certify complete command-standard conformance.
+registered in cli-base. The original cli-base adoption recorded 56 pre-existing handwritten
+option-role violations; that historical count is not the current baseline. See the dated check below.
 
 ## Native Sheets vocabulary
 
@@ -190,9 +190,33 @@ confirmation but cannot override a denial. `--offline` refuses commands that may
 Writes use the shared journal and uncertain Google outcomes are reported without automatic retry.
 
 MCP stdio tools derive from the same command registry and call the CLI executor with its guards.
-They exclude sign-in/config changes, arbitrary file export, body-file access and raw API dispatch.
+They exclude sign-in changes, arbitrary file export, body-file access and raw API dispatch.
+Owner-authorized configuration/model changes require the MCP authority guard described above.
 Generated typed methods remain available according to the profile's permissions. Agent-facing
 output shows control characters visibly; results use a shared output buffer and optional deadline.
 
 See the [alignment guide](CLI_ALIGNMENT.md) for policy examples, generation, compatibility
 checks and the remaining differences from MAX.
+
+## Alignment check — 24 October 2026
+
+The 0.28.0 runtime pins cli-core 0.406.0 and cli-base 0.50.3. `models download` is the canonical
+shared command; `models text download` has no alias. Discovery contract 4 is declared in
+`src/registry.ts`.
+
+On the 0.28.0 source plus subsequent documentation changes, `pnpm standards:check` passes and
+`pnpm lint:commands` reports 29 violations: 19 baselined and 10 explicit overrides (budget 10),
+with zero new violations. Passing these checks does not certify full standards compliance.
+
+[Tracked alignment work](BACKLOG_LATER.md#standards-and-maintenance) remains: command entity
+metadata (DRV-31), lower-layer command wording (DRV-32), standard progress reporting (DRV-33),
+`bin/release --local` (DRV-34), a default whole-command deadline (DRV-35), and testing upgrades
+from an actual previous Drive release (DRV-36). The existing timeout hook only creates a deadline
+when `--timeout` is supplied; `bin/release` currently accepts no arguments. Further coverage,
+consent, security hygiene and module-size work is recorded as DRV-37 through DRV-40.
+
+This is a focused check of current declarations, release/deadline code and existing tracked work,
+not a new full audit of every shared standard. The earlier audit's counts must not be presented as
+current results. Stronger shared per-field untrusted-text marking is also pending in
+[cli-core issue 1883](https://github.com/WireCatLabs/cli-core/issues/1883); current MCP instructions
+already identify retrieved content as untrusted and make control characters visible.
