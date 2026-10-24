@@ -113,11 +113,7 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
   return {
     levels: ceiling ? { ...levels, [CEILING_KEY]: ceiling } : levels,
     lock,
-    readOnly:
-      lock !== undefined ||
-      ceiling === "readonly" ||
-      flags.readOnly === true ||
-      (own?.read_only ?? config.defaults?.read_only ?? false),
+    readOnly: lock !== undefined || ceiling === "readonly" || flags.readOnly === true,
   }
 }
 const defaults = Object.fromEntries(
@@ -138,6 +134,10 @@ export const methodPolicyKeys = (method: string, body?: Record<string, unknown>)
             ? `${parts[1]}.${verb}`
             : undefined
   const keys = [`api.${method}`, ...(alias ? [alias] : [])]
+  if (method === "drive.replies.create" && body)
+    keys.push(
+      body.action === "resolve" ? "comments.resolve" : body.action === "reopen" ? "comments.reopen" : "comments.reply",
+    )
   if (method === "sheets.spreadsheets.batchUpdate" && Array.isArray(body?.requests)) {
     const object = (value: unknown): value is Record<string, unknown> =>
       !!value && typeof value === "object" && !Array.isArray(value)
@@ -233,6 +233,7 @@ export const guardedGoogleWrite = async <T>(
   act: () => Promise<T>,
   flags: PolicyFlags = {},
   ask?: (key: string) => Promise<boolean>,
+  operationId = newOperationId(),
 ): Promise<T> => {
   const settings = policySettings(env, profile, flags)
   const guard = sendGuard({
@@ -250,5 +251,5 @@ export const guardedGoogleWrite = async <T>(
     recipients: new RecipientList(join(paths(env).state, "recipients", `${profile}.json`), "drive"),
     warn: () => {},
   })
-  return guardedWrite(guard, { chatId: null, kind: "edit", key, operationId: newOperationId() }, act)
+  return guardedWrite(guard, { chatId: null, kind: "edit", key, operationId }, act)
 }

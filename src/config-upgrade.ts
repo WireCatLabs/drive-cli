@@ -25,6 +25,11 @@ export const upgradeConfig = (raw: unknown, settings: Set<string>) => {
     return result
   }
   const scope = (value: unknown, where: string) => {
+    if (record(value) && (Object.hasOwn(value, "read_only") || Object.hasOwn(value, "readOnly")))
+      throw new CliError(
+        "configuration_error",
+        `${where}read_only is retired; remove it and use command permissions, --read-only or DRIVE_READ_ONLY`,
+      )
     const result = rename(value, settings, where)
     if (record(result) && record(result.models))
       result.models = Object.fromEntries(

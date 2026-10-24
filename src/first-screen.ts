@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url"
+import { metaOf } from "@wirecat/cli-base/commands"
 import { guideCommand, type HelpSection, inSection, installHelp, MEMO_SCENARIOS } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 
@@ -22,6 +23,7 @@ const SECTIONS: Record<string, HelpSection> = {
   identities: "organise",
   sync: "automate",
   mcp: "automate",
+  mirrors: "automate",
   session: "setup",
   folders: "setup",
   store: "setup",
@@ -50,6 +52,9 @@ export const installFirstScreen = (program: Command) => {
   for (const command of program.commands) {
     const section = SECTIONS[command.name()]
     if (section) inSection(command, section)
+    if (["files", "sheets", "comments"].includes(command.name()))
+      for (const child of command.commands)
+        inSection(child, metaOf(child).effects?.remote === "write" ? "write" : "read")
   }
   installHelp(program, {
     pitch: "chosen Google Drive folders as a local, searchable library: Docs, Sheets, PDF and docx as text, offline.",

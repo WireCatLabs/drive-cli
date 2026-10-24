@@ -153,7 +153,7 @@ describe("shared CLI policy and execution", () => {
   it("blocks local and all equivalent remote mutation paths before touching credentials, stores or network", async () => {
     const f = fixture()
     const config = readConfig(f.env)
-    config.defaults = { read_only: true }
+    config.defaults = { permissions: { tags: "readonly", files: "readonly" } }
     writeConfig(f.env, config)
     const request = vi.fn(async () => ({}))
     const index = vi.fn(async () => f.index)

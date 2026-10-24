@@ -28,11 +28,13 @@ Existing files using camelCase setting names are migrated to snake_case on their
 read. The file keeps its permissions and is not rewritten again if nothing changes. Profile names,
 permission paths and model-purpose names are preserved. Conflicting old/new values are refused.
 
+The old `read_only` and `readOnly` settings are refused. Remove them from the configuration file;
+use per-command `permissions` for saved limits, or `--read-only` / `DRIVE_READ_ONLY=1` for a run.
+
 ## Saved settings
 
 | Key | What it controls | Scope |
 | --- | --- | --- |
-| `read_only` | Refuses local and remote mutations, including sync and adding notes | A profile or `defaults` |
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
 | `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
 | `picture_search` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
@@ -62,15 +64,15 @@ drive personal config show --json
 ```
 
 These permissions restrict the live file/Doc command families. Local sync and local notes use
-separate keys. `read_only true` is broader: it also blocks local changes, so do not enable it when
+separate keys. `--read-only` is broader: it also blocks local changes, so do not use it when
 you want to import or tag documents. Inspect the [command reference](commands.md) and
 [data permissions](security.md) before choosing broader rules.
 
 `config set` changes the selected profile unless you add `--defaults`. For example:
 
 ```sh
-drive personal config set read_only true --defaults
-drive work config set read_only false
+drive personal config set permissions.files '"readonly"' --defaults
+drive work config set permissions.files '"deny"'
 drive personal config show --json
 ```
 
@@ -127,7 +129,7 @@ change which keyring entry the CLI sees. Model preparation and embedding must us
 
 These flags are not file settings. Command-specific options such as `search --limit` and
 `sync --limit` are described with their commands. Permission overrides take priority over profile
-permissions, then shared defaults. A saved `read_only true` remains a restriction even when a
+permissions, then shared defaults. A process-wide `DRIVE_READ_ONLY=1` remains a restriction even when a
 permission says `allow`. AI environment overrides take priority over profile/default model choices.
 
 ## Optional AI extraction

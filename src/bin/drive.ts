@@ -10,6 +10,7 @@ enableCompileCache()
 const { interactiveOf, REASONS, reportFailure } = await import("../failure.js")
 const { createProgram } = await import("../program.js")
 const { readOnlyLockOf, setupAtStart } = await import("@wirecat/cli-core/cli")
+const { readSecret } = await import("@wirecat/cli-core")
 const { DRIVE_APP } = await import("../policy.js")
 
 const args = process.argv.slice(2)
@@ -37,6 +38,13 @@ try {
         headless: headless || Boolean(process.env.CI) || !tty,
         readOnlyLock: readOnlyLockOf(DRIVE_APP, process.env),
       }),
+    ask: async (key) => {
+      const flags = program?.opts()
+      if (!tty || !process.stdin.isTTY || process.env.CI || flags?.json || flags?.jsonl || flags?.input === false)
+        return false
+      const answer = await readSecret(`Allow ${key}? [y/N] `, { echo: true, signal: controller.signal })
+      return /^(y|yes)$/i.test(answer.trim())
+    },
     openBrowser: (url) =>
       new Promise<void>((resolve, reject) => {
         const command =
