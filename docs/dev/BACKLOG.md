@@ -34,17 +34,9 @@ by path below.
   edit (RISK-1601). cli-private `plans/2026-10-21-document-push-sync.md`.
 - **DRV-11 · P2 · Local images in mirrored Markdown.** A local path becomes literal `![](path)` text; only
   `https://` images are inserted. `src/mirror-docs.ts`.
-- **DRV-13 · P2 · MCP surface from the command tree** (WC-CMD-18/21, WC-MCP-3): `mcp: false`, `lifetime` and
-  `cooperative` declared on commands instead of a name list; snake_case tool arguments. `src/mcp.ts`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
   `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
-- **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. cli-core output.
-- **DRV-43 · P2 · MCP offers the left-out commands that are safe to offer:** `session list`, `config show`,
-  `skill show`, `guide`, `documents export` into a fixed folder, and `config set`/`models set` behind a
-  permission (owner, 2026-10-23: every MCP exposes every command). Per-command verdicts: cli-private
-  `research/comparisons/drive.md`.
-- **DRV-44 · P2 · Public compare page:** add Claude's built-in Drive connector; mark rclone's sign-in as partial,
-  since rclone is retiring its shared Google app in 2026.
-- **DRV-45 · P2 · The MCP recipe uses plain `drive personal mcp`,** not `--read-only` (`docs/recipes.md`).
+- **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. Waiting for
+  [cli-core #1883](https://github.com/WireCatLabs/cli-core/issues/1883) and a published shared output contract.

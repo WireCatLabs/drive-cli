@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url"
-import { metaOf } from "@wirecat/cli-base/commands"
+import { annotate, metaOf } from "@wirecat/cli-base/commands"
 import { guideCommand, type HelpSection, inSection, installHelp, MEMO_SCENARIOS } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 
@@ -71,5 +71,6 @@ export const installFirstScreen = (program: Command) => {
     start: "drive personal session start",
   })
   const help = program.commands.find((command) => command.name() === "help")
+  if (help) annotate(help, { mcp: false })
   help?.exitOverride().configureOutput(program.configureOutput())
 }

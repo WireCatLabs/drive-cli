@@ -65,6 +65,7 @@ const sentParams = (method: string, params: Record<string, unknown>) => {
 const zoneMeta = (meta: { timezone: string } | undefined) => (meta ? { meta } : {})
 
 export interface RemoteCommands {
+  mcp?: boolean
   call(method: string, params: Record<string, unknown>, body?: Record<string, unknown>): Promise<unknown>
   output(body: Body): void
   positive(input: string): number
@@ -100,7 +101,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     output(itemOf({ operation: operationOf(method), request_schema: requestSchema(method) })),
   )
   examples(
-    annotate(api.command("call"), { effects: GOOGLE_WRITE })
+    annotate(api.command("call"), { mcp: false, effects: GOOGLE_WRITE })
       .description("call one Google API method by name with JSON parameters")
       .argument("<method>", "Google method name, as api list prints it"),
     [
@@ -160,7 +161,12 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       async (input: string, args: { out: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)
         const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
-        const bytes = await saveDownload(args.out, args.overwrite === true, () => helpers.download(id, mime))
+        const bytes = await saveDownload(
+          args.out,
+          args.overwrite === true,
+          () => helpers.download(id, mime),
+          helpers.mcp === true,
+        )
         output(itemOf({ id, bytes, ...(args.format ? { format: args.format } : {}) }))
       },
     )

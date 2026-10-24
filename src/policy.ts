@@ -55,7 +55,15 @@ const overridesOf = (entries: readonly string[] = []): Record<string, Level> => 
  * batch update is checked as. A permission names one of these or a group above them.
  */
 export const permissionKeys = (paths: readonly (readonly string[])[]): Set<string> => {
-  const keys = new Set(["mcp", "sheets.create", "sheets.rename", "sheets.insert", "sheets.format", "sheets.update"])
+  const keys = new Set([
+    "mcp.authority",
+    "mcp",
+    "sheets.create",
+    "sheets.rename",
+    "sheets.insert",
+    "sheets.format",
+    "sheets.update",
+  ])
   for (const path of paths) keys.add(path.join("."))
   for (const operation of operations) for (const key of methodPolicyKeys(operation.id)) keys.add(key)
   return keys
@@ -116,9 +124,10 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
     readOnly: lock !== undefined || ceiling === "readonly" || flags.readOnly === true,
   }
 }
-const defaults = Object.fromEntries(
-  operations.filter((op) => op.effect === "destructive").map((op) => [`api.${op.id}`, "ask"]),
-) as Record<string, Level>
+const defaults: Record<string, Level> = {
+  "mcp.authority": "deny",
+  ...Object.fromEntries(operations.filter((op) => op.effect === "destructive").map((op) => [`api.${op.id}`, "ask"])),
+}
 export const methodPolicyKeys = (method: string, body?: Record<string, unknown>) => {
   const parts = method.split(".")
   const verb = parts.at(-1)
@@ -138,6 +147,7 @@ export const methodPolicyKeys = (method: string, body?: Record<string, unknown>)
     keys.push(
       body.action === "resolve" ? "comments.resolve" : body.action === "reopen" ? "comments.reopen" : "comments.reply",
     )
+  if (method === "drive.replies.create" && body?.content !== undefined) keys.push("comments.reply")
   if (method === "sheets.spreadsheets.batchUpdate" && Array.isArray(body?.requests)) {
     const object = (value: unknown): value is Record<string, unknown> =>
       !!value && typeof value === "object" && !Array.isArray(value)

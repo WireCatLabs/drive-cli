@@ -14,6 +14,10 @@
 - **`comments reply`, `comments resolve` and `comments reopen`** change Google comment threads through the
   same method permissions and Google write grant as generated commands.
 
+- **MCP offers profile listings, settings reads, agent instructions, guides and imported Markdown export.**
+  Exports use a filename within the profile cache export folder. `config set` and `models set` require the
+  owner to allow `mcp.authority`; agents cannot alter their own authority settings.
+
 ### Changed — may break callers
 
 - **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
@@ -29,6 +33,10 @@
 - **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
   `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
   `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
+
+- **MCP argument names use snake_case**, such as `file_id` instead of `file-id`; CLI flags keep their spelling.
+  Command declarations control the MCP surface. Model downloads and skill installation are discoverable,
+  with skill installation requiring the owner’s authority permission.
 
 ### Security
 

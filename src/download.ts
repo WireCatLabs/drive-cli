@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { closeSync, linkSync, lstatSync, openSync, renameSync, rmSync, writeFileSync } from "node:fs"
+import { closeSync, linkSync, lstatSync, mkdirSync, openSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 
@@ -18,7 +18,12 @@ const exists = () =>
     param: "--out",
   })
 
-export const saveDownload = async (path: string, overwrite: boolean, read: () => Promise<Uint8Array>) => {
+export const saveDownload = async (
+  path: string,
+  overwrite: boolean,
+  read: () => Promise<Uint8Array>,
+  createDirectory = false,
+) => {
   if (!overwrite) {
     try {
       lstatSync(path)
@@ -28,6 +33,7 @@ export const saveDownload = async (path: string, overwrite: boolean, read: () =>
     }
   }
   const bytes = await read()
+  if (createDirectory) mkdirSync(dirname(path), { recursive: true, mode: 0o700 })
   const temp = join(dirname(path), `.${randomUUID()}.tmp`)
   let created = false
   try {

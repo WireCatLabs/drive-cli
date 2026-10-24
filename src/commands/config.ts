@@ -1,7 +1,7 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
 import { examples } from "../registry.js"
@@ -18,7 +18,7 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     ["drive config show"],
   ).action(() => output(itemOf(readConfig(env))))
   examples(
-    annotate(config.command("set"), { effects: LOCAL_WRITE }).description(
+    annotate(grantsAuthority(config.command("set")), { effects: LOCAL_WRITE }).description(
       "set one setting of this profile, or of the defaults",
     ),
     [
@@ -76,7 +76,9 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     "choose the model that proposes memories; keys stay out of config",
   )
   examples(
-    annotate(models.command("set"), { effects: LOCAL_WRITE }).description("set the provider and model for one use"),
+    annotate(grantsAuthority(models.command("set")), { effects: LOCAL_WRITE }).description(
+      "set the provider and model for one use",
+    ),
     ["drive personal models set --provider openai --model MODEL_ID", "drive personal models set --provider off"],
   )
     .option("--purpose <purpose>", "what the model is used for", "memories")
@@ -129,7 +131,7 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     "the local model that search by meaning uses",
   )
   examples(
-    annotate(text.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+    annotate(text.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
       "download a search model once into the folder every WireCat CLI shares",
     ),
     ["drive models text download e5-small"],
@@ -137,14 +139,14 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     .argument("<model>", "model id, such as e5-small")
     .option("--accept-terms", "accept the model's licence terms, for a model that has its own")
     .action((id: string, args: { acceptTerms?: boolean }) => download("text", id, args.acceptTerms === true))
-  const images = annotate(program.command("images"), { effects: LOCAL_READ, mcp: false }).description(
+  const images = annotate(program.command("images"), { effects: LOCAL_READ }).description(
     "the local model that picture search uses",
   )
   const imageModels = annotate(images.command("models"), { effects: LOCAL_READ }).description(
     "models that read pictures, for picture search",
   )
   examples(
-    annotate(imageModels.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+    annotate(imageModels.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
       "download a picture model once into the folder every WireCat CLI shares",
     ),
     ["drive images models download clip-b32"],

@@ -390,20 +390,25 @@ it does not convert local Markdown into a formatted Google Doc.
 
 ## Use a local MCP client
 
+Add `--read-only` when this server should refuse writes.
+
 For an agent without terminal access, set executable `drive` and arguments
-`personal --read-only mcp`. The connected account must be on the computer running this server.
+`personal mcp`. The connected account must be on the computer running this server.
 
 ```sh
-drive personal --read-only mcp --tools --json
-drive personal --read-only mcp
+drive personal mcp --tools --json
+drive personal mcp
 ```
 
 The server offers three tools: `drive_tools_search` finds a command and shows its arguments, and
 `drive_read` or `drive_write` runs it with `{ command, arguments }`. The first command above lists
-those commands, so inspect it before starting the stdio server. It uses the same command tree,
+those commands, so inspect it before starting the stdio server. MCP argument names use snake_case
+(for example `file_id`); the matching CLI flag is `--file-id`. It uses the same command tree,
 profile and guards; `drive_write` is not offered when the profile allows no writes. Commands that
 change Google files, read Drive Activity or list Drive apps are offered only when the profile signed
-in with `--grant write`, `activity` or `apps`; restart the server after signing in again. This is not a hosted HTTP browser connector. Use
+in with `--grant write`, `activity` or `apps`; restart the server after signing in again. Settings writes and skill installation require the owner to allow `permissions.mcp.authority`;
+an agent cannot change that guard itself. Exports and downloads take a filename within the profile’s
+cache export folder. This is not a hosted HTTP browser connector. Use
 [the full command reference](commands.md) to discover other supported operations.
 
 ## Find a document and the conversation where it was shared

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**214 ✅ · 954 ⛔ · 0 ❌** — 189 commands, 979 options.
+**215 ✅ · 953 ⛔ · 0 ❌** — 189 commands, 979 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1163,7 +1163,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `doctor` |  | ✅ |  |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
-| `guide` |  | ⛔ | cli-core's command, printed to the process's stdout; src/help.test.ts runs checkGuide on every scenario |
+| `guide` |  | ✅ |  |
 | `help` |  | ✅ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
 | *global* | `--json` | ✅ |  |

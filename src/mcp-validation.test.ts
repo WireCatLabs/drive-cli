@@ -16,9 +16,9 @@ describe("MCP validation through the SDK", () => {
     await client.connect(clientTransport)
     try {
       for (const [field, args] of [
-        ["file-id", { "file-id": 42 }],
-        ["unknown-field", { "file-id": "fixture-file", "unknown-field": "DO_NOT_LOG_ARGUMENT" }],
-        ["file-id", {}],
+        ["file_id", { file_id: 42 }],
+        ["unknown_field", { file_id: "fixture-file", unknown_field: "DO_NOT_LOG_ARGUMENT" }],
+        ["file_id", {}],
       ] as const) {
         const result = await client.callTool({
           name: "drive_read",
@@ -33,7 +33,7 @@ describe("MCP validation through the SDK", () => {
       expect(call).not.toHaveBeenCalled()
       const good = await client.callTool({
         name: "drive_read",
-        arguments: { command: "api drive-files-get", arguments: { "file-id": "fixture-file" } },
+        arguments: { command: "api drive-files-get", arguments: { file_id: "fixture-file" } },
       })
       expect(good).toMatchObject({
         structuredContent: { item: { id: "fixture-file" }, meta: { run_id: expect.any(String) } },
@@ -75,12 +75,12 @@ describe("MCP validation through the SDK", () => {
         name: "drive_write",
         arguments: {
           command: "store import",
-          arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), "unknown-field": true },
+          arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), unknown_field: true },
         },
       })
       expect(unknownTransferArgument).toMatchObject({
         isError: true,
-        structuredContent: { error: { code: "validation_error", message: expect.stringContaining("unknown-field") } },
+        structuredContent: { error: { code: "validation_error", message: expect.stringContaining("unknown_field") } },
       })
       expect(JSON.stringify(unknownTransferArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
       expect(call).toHaveBeenCalledTimes(1)
@@ -126,7 +126,7 @@ describe("MCP validation through the SDK", () => {
             expect.objectContaining({
               command: "api drive-files-get",
               writes: false,
-              arguments: expect.objectContaining({ required: ["file-id"] }),
+              arguments: expect.objectContaining({ required: ["file_id"] }),
             }),
           ]),
         },

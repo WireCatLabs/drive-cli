@@ -1,15 +1,18 @@
+import { join } from "node:path"
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams, visibleControls } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
+import { changesAuthorityAt } from "@wirecat/cli-core/cli"
 import { type McpCommand, registerCommands } from "@wirecat/cli-core/mcp"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import * as v from "valibot"
 import type { ProgramOptions } from "./commands/context.js"
+import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { methodPolicyKeys, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
@@ -24,18 +27,6 @@ interface ToolDefinition {
 }
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
-const excluded = new Set([
-  "session",
-  "config",
-  "complete",
-  "mcp",
-  "models",
-  "images",
-  "guide",
-  "help",
-  "skill",
-  "upgrade",
-])
 // REMOTE_WRITE also marks a command that sends a document to the model (memories extract); only GOOGLE_WRITE
 // changes Google files.
 const requiredScope = (command: CommandInfo) =>
@@ -112,7 +103,9 @@ export const mcpTools = (
   flags: PolicyFlags = {},
 ): ToolDefinition[] => {
   const env = options.env ?? process.env
-  const commands = flatten(describeDriveProgram(build(options)))
+  const root = build(options)
+  const commands = flatten(describeDriveProgram(root))
+  const authority = changesAuthorityAt(root)
   const settings = policySettings(env, profile, {
     ...flags,
     permissionKeys: flags.permissionKeys ?? permissionKeys(commands.map((command) => command.path)),
@@ -125,14 +118,12 @@ export const mcpTools = (
   }
   return commands
     .filter((command) => {
+      if (command.commands.length || command.mcp === false || command.lifetime === "persistent") return false
       if (
-        command.commands.length ||
-        excluded.has(command.path[0] ?? "") ||
-        command.path.join(" ") === "api call" ||
-        command.path.join(" ") === "documents export"
+        !grants(command) ||
+        (authority(command.path) && !["ask", "allow"].includes(levelFor(settings.levels, "mcp.authority").level))
       )
         return false
-      if (!grants(command)) return false
       const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
       return keys.every((key) => {
         const level = levelFor(settings.levels, key).level
@@ -143,7 +134,7 @@ export const mcpTools = (
       const properties: Record<string, unknown> = {}
       const required: string[] = []
       for (const argument of command.arguments) {
-        properties[argument.name] = isQuery(command, argument.name)
+        properties[argument.name.replaceAll("-", "_")] = isQuery(command, argument.name)
           ? {
               type: "string",
               maxLength: QUERY_LIMITS.bytes,
@@ -152,16 +143,17 @@ export const mcpTools = (
           : argument.variadic
             ? { type: "array", items: { type: "string", maxLength: 100000 }, maxItems: 100 }
             : { type: "string", maxLength: 100000 }
-        if (argument.required) required.push(argument.name)
+        if (argument.required) required.push(argument.name.replaceAll("-", "_"))
       }
       for (const option of command.options) {
         const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
         if (!name || ["body-file", "allow-write", "allow-delete", "allow-dangerous"].includes(name)) continue
-        properties[name] = {
+        const field = name.replaceAll("-", "_")
+        properties[field] = {
           type: option.takes_value ? "string" : "boolean",
           ...(option.choices ? { enum: option.choices } : {}),
         }
-        if (option.mandatory) required.push(name)
+        if (option.mandatory) required.push(field)
       }
       return {
         name: `drive_${command.path.join("_").replaceAll("-", "_")}`,
@@ -179,13 +171,15 @@ export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) =
   const args: string[] = [...tool.command.path]
   for (const option of tool.command.options) {
     const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
-    if (!name || input[name] === undefined) continue
-    if (option.takes_value) args.push(`--${name}=${String(input[name])}`)
-    else if (input[name] === true) args.push(`--${name}`)
+    if (!name) continue
+    const field = name.replaceAll("-", "_")
+    if (input[field] === undefined) continue
+    if (option.takes_value) args.push(`--${name}=${String(input[field])}`)
+    else if (input[field] === true) args.push(`--${name}`)
   }
   if (tool.command.arguments.length) args.push("--")
   for (const argument of tool.command.arguments) {
-    const value = input[argument.name]
+    const value = input[argument.name.replaceAll("-", "_")]
     if (Array.isArray(value)) {
       for (const item of value) args.push(String(item))
     } else if (value !== undefined) args.push(String(value))
@@ -236,8 +230,19 @@ export const invokeTool = async (
         }
     try {
       const checked = await checkedInput(tool, input)
+      const path = tool.command.path.join(" ")
+      const outputKey =
+        path === "documents export" ? "output" : ["files download", "files export"].includes(path) ? "out" : undefined
+      if (outputKey) {
+        const name = checked[outputKey]
+        if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
+          throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")
+        const directory = join(paths(env).cache, "exports", profile)
+        checked[outputKey] = join(directory, name)
+      }
       await build({
         ...options,
+        mcp: true,
         streams,
         // No one is at a terminal to answer: over MCP a write at level `ask` goes ahead.
         ask: async () => true,
