@@ -35,7 +35,7 @@ describe("MCP parity and authority", () => {
       expect(result, name).not.toHaveProperty("isError", true)
       expect(result.structuredContent).toBeDefined()
     }
-    for (const name of ["models text download", "images models download"])
+    for (const name of ["models download", "images models download"])
       expect(t.tools().some((tool) => tool.command.path.join(" ") === name)).toBe(true)
     for (const tool of t.tools())
       for (const key of Object.keys(tool.schema.properties as object)) expect(key).not.toContain("-")
@@ -85,7 +85,7 @@ describe("MCP parity and authority", () => {
   })
   it("refuses stale model download tools under read-only before fetching", async () => {
     const t = setup()
-    const tool = t.tool("models text download")
+    const tool = t.tool("models download")
     const result = await invokeTool(createProgram, tool, { model: "e5-small" }, t.options, "default", {
       readOnly: true,
     })

@@ -28,7 +28,7 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     reason: "needs a downloaded embedding model; the index it feeds is tested through the injected index",
   },
   {
-    command: "models text download",
+    command: "models download",
     option: "--accept-terms",
     reason: "downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal",
   },

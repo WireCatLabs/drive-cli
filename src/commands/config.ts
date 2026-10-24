@@ -73,7 +73,7 @@ export const installConfigCommands = (program: Command, { env, selected, output 
 
 export const installModelCommands = (program: Command, { env, output, streams, policyFlags }: CommandContext) => {
   const models = annotate(program.command("models"), { effects: LOCAL_READ }).description(
-    "choose the model that proposes memories; keys stay out of config",
+    "choose the memory model and download the search model",
   )
   examples(
     annotate(grantsAuthority(models.command("set")), { effects: LOCAL_WRITE }).description(
@@ -127,14 +127,11 @@ export const installModelCommands = (program: Command, { env, output, streams, p
       }),
     )
   }
-  const text = annotate(models.command("text"), { effects: LOCAL_READ }).description(
-    "the local model that search by meaning uses",
-  )
   examples(
-    annotate(text.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
+    annotate(models.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
       "download a search model once into the folder every WireCat CLI shares",
     ),
-    ["drive models text download e5-small"],
+    ["drive models download e5-small"],
   )
     .argument("<model>", "model id, such as e5-small")
     .option("--accept-terms", "accept the model's licence terms, for a model that has its own")

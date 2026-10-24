@@ -92,7 +92,7 @@ Semantic search uses the shared local text model (about 135 MB). Download it onc
 and every WireCat CLI shares it:
 
 ```sh
-drive models text download e5-small
+drive models download e5-small
 drive personal sync --embed
 ```
 

@@ -170,7 +170,7 @@ describe("released shared store and search", () => {
   it("names drive's own download for a missing text model", async () => {
     const index = await openIndex(fixture().env)
     try {
-      await expect(index.embed(10)).rejects.toThrow(/`drive models text download [^`]+`/)
+      await expect(index.embed(10)).rejects.toThrow(/`drive models download [^`]+`/)
     } finally {
       await index.close()
     }
