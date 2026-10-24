@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Correct shared alignment guidance for discovery contract 4, foreground watches and current command-lint debt.
+
 ## 0.28.0 — 24.10.2026
 
 ### Changed — may break callers
