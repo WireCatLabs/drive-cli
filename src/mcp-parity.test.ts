@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
@@ -82,6 +82,12 @@ describe("MCP parity and authority", () => {
     const t = setup()
     await createProgram({ ...t.options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
     const tool = t.tool("documents export")
+    expect(
+      await invokeTool(createProgram, tool, { document: "doc-a", output: "document.md" }, t.options, "default", {
+        readOnly: true,
+      }),
+    ).toHaveProperty("isError", true)
+    expect(existsSync(join(paths(t.env).cache, "exports"))).toBe(false)
     for (const output of ["../escape.md", "/tmp/escape.md", "folder/file.md", "..", "a\\b.md"]) {
       expect(await invokeTool(createProgram, tool, { document: "doc-a", output }, t.options, "default")).toHaveProperty(
         "isError",

@@ -1,4 +1,3 @@
-import { mkdirSync } from "node:fs"
 import { join } from "node:path"
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
@@ -255,7 +254,6 @@ export const invokeTool = async (
         if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
           throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")
         const directory = join(paths(env).cache, "exports", profile)
-        if (!flags.dryRun) mkdirSync(directory, { recursive: true, mode: 0o700 })
         checked[outputKey] = join(directory, name)
       }
       await build({
