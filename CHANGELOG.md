@@ -10,7 +10,7 @@
 
 - **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
   `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
-  `documents show` and `mirrors list` still provide explicitly requested details.
+  `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
 
 ## 0.26.0 — 24.10.2026
 
