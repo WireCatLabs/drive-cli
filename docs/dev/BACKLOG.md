@@ -40,11 +40,12 @@ by path below.
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
   `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
-- **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. cli-core output.
-- **DRV-43 · P2 · MCP offers the left-out commands that are safe to offer:** `session list`, `config show`,
+- **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. Waiting for
+  [cli-core #1883](https://github.com/WireCatLabs/cli-core/issues/1883) and a published shared output contract.
+- **DRV-43 · P2 · 🚧 feat/mcp-parity-1024 · MCP offers the left-out commands that are safe to offer:** `session list`, `config show`,
   `skill show`, `guide`, `documents export` into a fixed folder, and `config set`/`models set` behind a
   permission (owner, 2026-10-23: every MCP exposes every command). Per-command verdicts: cli-private
   `research/comparisons/drive.md`.
-- **DRV-44 · P2 · Public compare page:** add Claude's built-in Drive connector; mark rclone's sign-in as partial,
+- **DRV-44 · P2 · 🚧 feat/mcp-parity-1024 · Public compare page:** add Claude's built-in Drive connector; mark rclone's sign-in as partial,
   since rclone is retiring its shared Google app in 2026.
-- **DRV-45 · P2 · The MCP recipe uses plain `drive personal mcp`,** not `--read-only` (`docs/recipes.md`).
+- **DRV-45 · P2 · 🚧 feat/mcp-parity-1024 · The MCP recipe uses plain `drive personal mcp`,** not `--read-only` (`docs/recipes.md`).

@@ -1,15 +1,19 @@
+import { mkdirSync } from "node:fs"
+import { join } from "node:path"
 import { fromJsonSchema, McpServer } from "@modelcontextprotocol/server"
 import { StdioServerTransport } from "@modelcontextprotocol/server/stdio"
 import { CliError, captureStreams, visibleControls } from "@wirecat/cli-base"
 import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
+import { changesAuthorityAt } from "@wirecat/cli-core/cli"
 import { type McpCommand, registerCommands } from "@wirecat/cli-core/mcp"
 import { levelFor } from "@wirecat/cli-core/sends"
 import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import * as v from "valibot"
 import type { ProgramOptions } from "./commands/context.js"
+import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { methodPolicyKeys, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
@@ -24,6 +28,7 @@ interface ToolDefinition {
 }
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
+const offered = new Set(["session list", "config show", "config set", "models set", "skill show", "guide"])
 const excluded = new Set([
   "session",
   "config",
@@ -112,7 +117,9 @@ export const mcpTools = (
   flags: PolicyFlags = {},
 ): ToolDefinition[] => {
   const env = options.env ?? process.env
-  const commands = flatten(describeDriveProgram(build(options)))
+  const root = build(options)
+  const commands = flatten(describeDriveProgram(root))
+  const authority = changesAuthorityAt(root)
   const settings = policySettings(env, profile, {
     ...flags,
     permissionKeys: flags.permissionKeys ?? permissionKeys(commands.map((command) => command.path)),
@@ -127,12 +134,16 @@ export const mcpTools = (
     .filter((command) => {
       if (
         command.commands.length ||
-        excluded.has(command.path[0] ?? "") ||
-        command.path.join(" ") === "api call" ||
-        command.path.join(" ") === "documents export"
+        (excluded.has(command.path[0] ?? "") && !offered.has(command.path.join(" "))) ||
+        command.mcp === false ||
+        command.path.join(" ") === "api call"
       )
         return false
-      if (!grants(command)) return false
+      if (
+        !grants(command) ||
+        (authority(command.path) && !["ask", "allow"].includes(levelFor(settings.levels, "mcp.authority").level))
+      )
+        return false
       const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
       return keys.every((key) => {
         const level = levelFor(settings.levels, key).level
@@ -236,8 +247,20 @@ export const invokeTool = async (
         }
     try {
       const checked = await checkedInput(tool, input)
+      const path = tool.command.path.join(" ")
+      const outputKey =
+        path === "documents export" ? "output" : ["files download", "files export"].includes(path) ? "out" : undefined
+      if (outputKey) {
+        const name = checked[outputKey]
+        if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
+          throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")
+        const directory = join(paths(env).cache, "exports", profile)
+        if (!flags.dryRun) mkdirSync(directory, { recursive: true, mode: 0o700 })
+        checked[outputKey] = join(directory, name)
+      }
       await build({
         ...options,
+        mcp: true,
         streams,
         // No one is at a terminal to answer: over MCP a write at level `ask` goes ahead.
         ask: async () => true,

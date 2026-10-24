@@ -1,7 +1,7 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
 import { examples } from "../registry.js"
@@ -18,7 +18,7 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     ["drive config show"],
   ).action(() => output(itemOf(readConfig(env))))
   examples(
-    annotate(config.command("set"), { effects: LOCAL_WRITE }).description(
+    annotate(grantsAuthority(config.command("set")), { effects: LOCAL_WRITE }).description(
       "set one setting of this profile, or of the defaults",
     ),
     [
@@ -76,7 +76,9 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     "choose the model that proposes memories; keys stay out of config",
   )
   examples(
-    annotate(models.command("set"), { effects: LOCAL_WRITE }).description("set the provider and model for one use"),
+    annotate(grantsAuthority(models.command("set")), { effects: LOCAL_WRITE }).description(
+      "set the provider and model for one use",
+    ),
     ["drive personal models set --provider openai --model MODEL_ID", "drive personal models set --provider off"],
   )
     .option("--purpose <purpose>", "what the model is used for", "memories")

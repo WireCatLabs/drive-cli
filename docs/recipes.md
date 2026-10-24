@@ -390,12 +390,14 @@ it does not convert local Markdown into a formatted Google Doc.
 
 ## Use a local MCP client
 
+Add `--read-only` when this server should refuse writes.
+
 For an agent without terminal access, set executable `drive` and arguments
-`personal --read-only mcp`. The connected account must be on the computer running this server.
+`personal mcp`. The connected account must be on the computer running this server.
 
 ```sh
-drive personal --read-only mcp --tools --json
-drive personal --read-only mcp
+drive personal mcp --tools --json
+drive personal mcp
 ```
 
 The server offers three tools: `drive_tools_search` finds a command and shows its arguments, and

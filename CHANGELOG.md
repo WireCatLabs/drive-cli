@@ -14,6 +14,10 @@
 - **`comments reply`, `comments resolve` and `comments reopen`** change Google comment threads through the
   same method permissions and Google write grant as generated commands.
 
+- **MCP offers profile listings, settings reads, agent instructions, guides and imported Markdown export.**
+  Exports use a filename within the profile cache export folder. `config set` and `models set` require the
+  owner to allow `mcp.authority`; agents cannot alter their own authority settings.
+
 ### Changed — may break callers
 
 - **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;

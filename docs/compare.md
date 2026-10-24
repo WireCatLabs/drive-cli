@@ -1,7 +1,7 @@
 # Compared with other tools
 
 Several open tools already connect Google Drive, Docs and Sheets to a terminal or an AI agent. This
-page puts `drive` next to three of them, so you can see at a glance which tool does what and pick the
+page puts `drive` next to other options, so you can see at a glance which tool does what and pick the
 one that fits your job. The marks come from each project's own documentation; a tool may do more
 than its documentation says.
 
@@ -13,6 +13,9 @@ The tools:
   with a large set of Docs and Sheets editing commands and an MCP server.
 - **[Workspace MCP](https://github.com/taylorwilsdon/google_workspace_mcp)** — an MCP server for
   twelve Google services that you can run on your computer or host for a team.
+- **[Claude’s Google Workspace connectors](https://support.claude.com/en/articles/10166901-use-google-workspace-connectors)**
+  — built into Claude on the web and desktop; search and manage Drive files, with separate connectors for
+  editing Docs, Sheets and Slides.
 - **[rclone](https://github.com/rclone/rclone)** — a fast file copier and sync tool for Google Drive
   and many other storage services.
 
@@ -22,7 +25,7 @@ The tools:
 
 | Feature | drive | [gog](https://github.com/openclaw/gogcli) | [Workspace MCP](https://github.com/taylorwilsdon/google_workspace_mcp) | [rclone](https://github.com/rclone/rclone) |
 |---|:-:|:-:|:-:|:-:|
-| Sign in without creating your own Google Cloud project | ✅¹ | ❌ | ❌ | ✅ |
+| Sign in without creating your own Google Cloud project | ✅¹ | ❌ | ❌ | 🟡² |
 | List, copy, move and trash files | ✅ | ✅ | ✅ | ✅ |
 | Upload and download any file | 🟡 | ✅ | ✅ | ✅ |
 | Read a Google Doc as Markdown | ✅ | ✅ | ✅ | 🟡 |
@@ -52,6 +55,20 @@ The tools:
 ¹ Until Google finishes reviewing WireCat's application, Google shows an "unverified app" screen at sign-in and
 admits at most 100 new users to it; you can also sign in with your own Google application. See
 [installation](installation.md#google-shows-an-unverified-app-warning).
+
+² [rclone documents](https://rclone.org/drive/#making-your-own-client-id) that its shared Google client is being
+retired during 2026 and tells users to create their own client ID.
+
+## Claude's built-in connectors
+
+[Claude's Google Workspace documentation](https://support.claude.com/en/articles/10166901-use-google-workspace-connectors)
+describes Drive search, file metadata, uploads, folders, sharing, moves and trash, plus reading Sheets,
+Slides, PDF, images and Office files. Separate Docs, Sheets and Slides connectors support creating and
+editing files beside the chat, and Docs comments and suggestions. Connecting a Google account does not
+require running a local MCP server. This is useful when the work stays in Claude and Google Workspace.
+Drive CLI adds a local searchable copy, terminal commands, mirroring and shared WireCat document notes
+and memories. The feature tables compare the standalone tools; Claude's capabilities are described here
+because its Drive connector and document editors are separate integrations.
 
 ## Install and licence
 

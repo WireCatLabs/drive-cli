@@ -17,15 +17,17 @@ import { timezoneOf } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import {
   type Body,
+  changesAuthority,
   commandWords,
   itemOf,
   liftJson,
   liftProfile,
   parseDuration,
+  provide,
   refuseCommandName,
   renderAnswer,
 } from "@wirecat/cli-core/cli"
-import { newOperationId } from "@wirecat/cli-core/sends"
+import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import { Command, Help } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./commands/catalog.js"
@@ -45,7 +47,7 @@ import { installSkillCommand } from "./commands/skill.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, fileId, profileName, readConfig } from "./config.js"
+import { activeProfile, configKey, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { guide, installFirstScreen } from "./first-screen.js"
@@ -59,6 +61,7 @@ import {
   methodPolicyKeys,
   type PolicyFlags,
   permissionKeys,
+  policySettings,
   refuseUnderReadOnly,
 } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
@@ -365,6 +368,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installSkillCommand(program, context)
   installDoctorCommand(program, context)
   installUpgradeCommand(program, context)
+  provide(program, { env, streams })
   program.addCommand(guide())
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
@@ -404,7 +408,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return
     }
     selected()
-    if (words === "config set") return refuseUnderReadOnly(env, "change a setting")
+    if (words === "config set" && !options.mcp) return refuseUnderReadOnly(env, "change a setting")
+    if (options.mcp && changesAuthority(action)) {
+      const authority = policySettings(env, selected(), policyFlags())
+      if (!["ask", "allow"].includes(levelFor(authority.levels, "mcp.authority").level))
+        throw new CliError("permission_error", "MCP authority changes require the owner's mcp.authority permission")
+      if (words === "config set") {
+        const key = configKey(action.args[0] ?? "")
+        if (key === "permissions" || key.startsWith("permissions.mcp") || key === "read_only")
+          throw new CliError("permission_error", "an agent cannot change its own authority or read-only settings")
+      }
+    }
     const flags = policyFlags()
     // The server writes only through its tools, and each tool call runs this same check with these flags.
     if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
