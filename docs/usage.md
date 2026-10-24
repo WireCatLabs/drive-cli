@@ -281,7 +281,7 @@ Machine-readable command answers use an envelope: `item` for a single or rich re
 with `page` for a list; `meta` identifies the invocation, its duration and `complete` status. Drive-owned keys
 are snake_case. Provider metadata and user dictionaries keep their original keys. Search passages
 are under `item.hits`, and sync/status counters are under `item`. Help and shell completion remain
-text; `commands --json` uses the shared discovery document with contract `3`. Command `effects`
+text; `commands --json` uses the shared discovery document with contract `4`. Command `effects`
 describe remote and local reads/writes; `api_operation` identifies a generated Google method.
 Local lists use `page.mode: "page"` and return `next_page` when more results remain; Google lists
 (`files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives`, `documents history`)

@@ -38,7 +38,7 @@ The tools:
 | Keep CSV and Excel files as native Google Sheets | ✅ | 🟡 | 🟡 | 🟡 |
 | Bring edits made in Google back into local files | ✅ | ❌ | ❌ | 🟡 |
 | Show a conflict part by part and let you choose a side | ✅ | ❌ | ❌ | 🟡 |
-| Sync in the background | ❌ | 🟡 | ❌ | ❌ |
+| Sync in the background | 🟡³ | 🟡 | ❌ | ❌ |
 | A local copy you can search without connecting | ✅ | ❌ | ❌ | 🟡 |
 | Search by meaning, and images by what they show | ✅ | ❌ | ❌ | ❌ |
 | Text from PDF, Word and Excel files | ✅ | ➖ | ✅ | ❌ |
@@ -58,6 +58,8 @@ admits at most 100 new users to it; you can also sign in with your own Google ap
 
 ² [rclone documents](https://rclone.org/drive/#making-your-own-client-id) that its shared Google client is being
 retired during 2026 and tells users to create their own client ID.
+
+³ `mirrors watch` keeps syncing while its process runs. A service that starts with the computer remains planned.
 
 ## Claude's built-in connectors
 
