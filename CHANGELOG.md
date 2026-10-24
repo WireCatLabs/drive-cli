@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Correct the read-only agent scenario to use an explicit profile and keep denied commands discoverable.
+- Correct the read-only agent scenario to keep denied commands discoverable.
 
 - Document remote MCP as available, retire its duplicate backlog entry, and update browser connection guidance.
 
