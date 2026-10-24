@@ -27,7 +27,7 @@ describe("friendly file downloads", () => {
       bytes: 4,
     })
     expect(readFileSync(t.path)).toEqual(Buffer.from([0, 255, 10, 128]))
-    expect(statSync(t.path).mode & 0o777).toBe(0o600)
+    if (process.platform !== "win32") expect(statSync(t.path).mode & 0o777).toBe(0o600)
     await expect(t.run("files", "download", "synthetic-file", "--out", t.path)).rejects.toMatchObject({
       details: { reason: "download.exists" },
     })
