@@ -53,7 +53,7 @@ describe("help without a profile or an account", () => {
   it("refuses a model download under --offline before anything is fetched", async () => {
     await expect(run(["--offline", "models", "download", "e5-small"])).rejects.toMatchObject({
       code: "permission_error",
-      details: { reason: "offline.refused" },
+      details: { reason: "model.offline" },
     })
   })
 

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**217 ✅ · 953 ⛔ · 0 ❌** — 190 commands, 980 options.
+**14 ✅ · 979 ⛔ · 180 ❌** — 192 commands, 981 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -18,101 +18,101 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `session start` | `--grant` | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
 | `session list` |  | ✅ |  |
 | `session end` |  | ⛔ | revokes the stored Google token and removes it from the OS keyring |
-| `folders add` |  | ✅ |  |
-| `folders list` |  | ✅ |  |
-| `folders remove` |  | ✅ |  |
+| `folders add` |  | ❌ |  |
+| `folders list` |  | ❌ |  |
+| `folders remove` |  | ❌ |  |
 | `sync` |  | ✅ |  |
-| `sync` | `--limit` | ✅ |  |
-| `sync` | `--rescan` | ✅ |  |
+| `sync` | `--limit` | ❌ |  |
+| `sync` | `--rescan` | ❌ |  |
 | `sync` | `--embed` | ⛔ | needs a downloaded embedding model; the index it feeds is tested through the injected index |
-| `status` |  | ✅ |  |
-| `store check` |  | ✅ |  |
-| `store import` |  | ✅ |  |
-| `store import` | `--fingerprint` | ✅ |  |
-| `documents list` |  | ✅ |  |
-| `documents list` | `--limit` | ✅ |  |
-| `documents list` | `--page` | ✅ |  |
-| `documents show` |  | ✅ |  |
+| `status` |  | ❌ |  |
+| `store check` |  | ❌ |  |
+| `store import` |  | ❌ |  |
+| `store import` | `--fingerprint` | ❌ |  |
+| `documents list` |  | ❌ |  |
+| `documents list` | `--limit` | ❌ |  |
+| `documents list` | `--page` | ❌ |  |
+| `documents show` |  | ❌ |  |
 | `documents export` |  | ✅ |  |
 | `documents export` | `--output` | ✅ |  |
-| `documents context` |  | ✅ |  |
-| `documents get` |  | ✅ |  |
-| `documents create` |  | ✅ |  |
-| `documents create` | `--title` | ✅ |  |
-| `documents update` |  | ✅ |  |
-| `documents update` | `--body` | ✅ |  |
-| `documents history` |  | ✅ |  |
-| `documents history` | `--limit` | ✅ |  |
-| `documents history` | `--cursor` | ✅ |  |
-| `documents history` | `--activity` | ✅ |  |
-| `search` |  | ✅ |  |
-| `search` | `--limit` | ✅ |  |
-| `search` | `--page` | ✅ |  |
-| `search` | `--exact` | ✅ |  |
-| `catalog import` |  | ✅ |  |
-| `catalog show` |  | ✅ |  |
-| `catalog list` |  | ✅ |  |
-| `catalog list` | `--limit` | ✅ |  |
-| `catalog list` | `--page` | ✅ |  |
-| `catalog search` |  | ✅ |  |
-| `catalog search` | `--limit` | ✅ |  |
-| `catalog search` | `--page` | ✅ |  |
-| `catalog tree` |  | ✅ |  |
-| `catalog tree` | `--depth` | ✅ |  |
-| `catalog tags list` |  | ✅ |  |
-| `catalog tags add` |  | ✅ |  |
-| `catalog tags remove` |  | ✅ |  |
-| `tags list` |  | ✅ |  |
-| `tags add` |  | ✅ |  |
-| `tags remove` |  | ✅ |  |
-| `relationships list` |  | ✅ |  |
-| `relationships add` |  | ✅ |  |
-| `relationships add` | `--kind` | ✅ |  |
-| `relationships add` | `--role` | ✅ |  |
-| `relationships add` | `--reason` | ✅ |  |
-| `relationships remove` |  | ✅ |  |
-| `notes add` |  | ✅ |  |
-| `notes add` | `--title` | ✅ |  |
-| `notes list` |  | ✅ |  |
-| `notes list` | `--limit` | ✅ |  |
-| `notes list` | `--page` | ✅ |  |
-| `notes show` |  | ✅ |  |
-| `notes edit` |  | ✅ |  |
-| `notes edit` | `--revision` | ✅ |  |
-| `notes remove` |  | ✅ |  |
-| `memories add` |  | ✅ |  |
-| `memories add` | `--scope` | ✅ |  |
-| `memories add` | `--kind` | ✅ |  |
-| `memories add` | `--supersedes` | ✅ |  |
-| `memories list` |  | ✅ |  |
-| `memories list` | `--limit` | ✅ |  |
-| `memories show` |  | ✅ |  |
-| `memories confirm` |  | ✅ |  |
-| `memories stale` |  | ✅ |  |
-| `memories search` |  | ✅ |  |
-| `memories extract` |  | ✅ |  |
-| `memories extract` | `--scope` | ✅ |  |
-| `memories extract` | `--tab` | ✅ |  |
-| `memories extract` | `--yes` | ✅ |  |
-| `facts add` |  | ✅ |  |
-| `facts add` | `--type` | ✅ |  |
-| `facts add` | `--scope` | ✅ |  |
-| `facts add` | `--supersedes` | ✅ |  |
-| `facts add` | `--occurred-time` | ✅ |  |
-| `facts list` |  | ✅ |  |
-| `facts list` | `--limit` | ✅ |  |
-| `facts show` |  | ✅ |  |
-| `facts confirm` |  | ✅ |  |
-| `facts reverse` |  | ✅ |  |
-| `identities list` |  | ✅ |  |
-| `identities link` |  | ✅ |  |
-| `api list` |  | ✅ |  |
-| `api show` |  | ✅ |  |
-| `api call` |  | ✅ |  |
-| `api call` | `--params` | ✅ |  |
-| `api call` | `--body` | ✅ |  |
-| `api call` | `--allow-writes` | ✅ |  |
-| `api call` | `--allow-delete` | ✅ |  |
+| `documents context` |  | ❌ |  |
+| `documents get` |  | ❌ |  |
+| `documents create` |  | ❌ |  |
+| `documents create` | `--title` | ❌ |  |
+| `documents update` |  | ❌ |  |
+| `documents update` | `--body` | ❌ |  |
+| `documents history` |  | ❌ |  |
+| `documents history` | `--limit` | ❌ |  |
+| `documents history` | `--cursor` | ❌ |  |
+| `documents history` | `--activity` | ❌ |  |
+| `search` |  | ❌ |  |
+| `search` | `--limit` | ❌ |  |
+| `search` | `--page` | ❌ |  |
+| `search` | `--exact` | ❌ |  |
+| `catalog import` |  | ❌ |  |
+| `catalog show` |  | ❌ |  |
+| `catalog list` |  | ❌ |  |
+| `catalog list` | `--limit` | ❌ |  |
+| `catalog list` | `--page` | ❌ |  |
+| `catalog search` |  | ❌ |  |
+| `catalog search` | `--limit` | ❌ |  |
+| `catalog search` | `--page` | ❌ |  |
+| `catalog tree` |  | ❌ |  |
+| `catalog tree` | `--depth` | ❌ |  |
+| `catalog tags list` |  | ❌ |  |
+| `catalog tags add` |  | ❌ |  |
+| `catalog tags remove` |  | ❌ |  |
+| `tags list` |  | ❌ |  |
+| `tags add` |  | ❌ |  |
+| `tags remove` |  | ❌ |  |
+| `relationships list` |  | ❌ |  |
+| `relationships add` |  | ❌ |  |
+| `relationships add` | `--kind` | ❌ |  |
+| `relationships add` | `--role` | ❌ |  |
+| `relationships add` | `--reason` | ❌ |  |
+| `relationships remove` |  | ❌ |  |
+| `notes add` |  | ❌ |  |
+| `notes add` | `--title` | ❌ |  |
+| `notes list` |  | ❌ |  |
+| `notes list` | `--limit` | ❌ |  |
+| `notes list` | `--page` | ❌ |  |
+| `notes show` |  | ❌ |  |
+| `notes edit` |  | ❌ |  |
+| `notes edit` | `--revision` | ❌ |  |
+| `notes remove` |  | ❌ |  |
+| `memories add` |  | ❌ |  |
+| `memories add` | `--scope` | ❌ |  |
+| `memories add` | `--kind` | ❌ |  |
+| `memories add` | `--supersedes` | ❌ |  |
+| `memories list` |  | ❌ |  |
+| `memories list` | `--limit` | ❌ |  |
+| `memories show` |  | ❌ |  |
+| `memories confirm` |  | ❌ |  |
+| `memories stale` |  | ❌ |  |
+| `memories search` |  | ❌ |  |
+| `memories extract` |  | ❌ |  |
+| `memories extract` | `--scope` | ❌ |  |
+| `memories extract` | `--tab` | ❌ |  |
+| `memories extract` | `--yes` | ❌ |  |
+| `facts add` |  | ❌ |  |
+| `facts add` | `--type` | ❌ |  |
+| `facts add` | `--scope` | ❌ |  |
+| `facts add` | `--supersedes` | ❌ |  |
+| `facts add` | `--occurred-time` | ❌ |  |
+| `facts list` |  | ❌ |  |
+| `facts list` | `--limit` | ❌ |  |
+| `facts show` |  | ❌ |  |
+| `facts confirm` |  | ❌ |  |
+| `facts reverse` |  | ❌ |  |
+| `identities list` |  | ❌ |  |
+| `identities link` |  | ❌ |  |
+| `api list` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api show` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api call` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api call` | `--params` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api call` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api call` | `--allow-writes` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api call` | `--allow-delete` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-batch-update` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-batch-update` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-batch-update` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -123,14 +123,14 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api docs-documents-batch-update` | `--document-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-batch-update` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-batch-update` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api docs-documents-create` |  | ✅ |  |
+| `api docs-documents-create` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--callback` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api docs-documents-create` | `--body` | ✅ |  |
+| `api docs-documents-create` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-create` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-get` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api docs-documents-get` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -502,7 +502,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-create` | `--keep-revision-forever` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-create` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-create` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-delete` |  | ✅ |  |
+| `api drive-files-delete` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -511,7 +511,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-delete` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--supports-all-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--supports-team-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-delete` | `--file-id` | ✅ |  |
+| `api drive-files-delete` | `--file-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-delete` | `--enforce-single-parent` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-download` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-download` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -560,7 +560,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-generate-ids` | `--space` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-generate-ids` | `--type` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-generate-ids` | `--count` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-get` |  | ✅ |  |
+| `api drive-files-get` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -571,9 +571,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-get` | `--acknowledge-abuse` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--include-labels` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--include-permissions-for-view` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-get` | `--file-id` | ✅ |  |
+| `api drive-files-get` | `--file-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-get` | `--supports-team-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-list` |  | ✅ |  |
+| `api drive-files-list` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -585,7 +585,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-list` | `--supports-team-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--corpora` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--supports-all-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-list` | `--page-size` | ✅ |  |
+| `api drive-files-list` | `--page-size` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--spaces` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--team-drive-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--order-by` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -593,7 +593,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-files-list` | `--include-team-drive-items` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--include-labels` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--include-items-from-all-drives` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-files-list` | `--q` | ✅ |  |
+| `api drive-files-list` | `--q` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list` | `--drive-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list-labels` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-files-list-labels` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -733,16 +733,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-permissions-update` | `--permission-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-permissions-update` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-permissions-update` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` |  | ✅ |  |
+| `api drive-replies-create` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--callback` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` | `--comment-id` | ✅ |  |
-| `api drive-replies-create` | `--file-id` | ✅ |  |
-| `api drive-replies-create` | `--body` | ✅ |  |
+| `api drive-replies-create` | `--comment-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-replies-create` | `--file-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-replies-create` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-delete` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-delete` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -887,15 +887,15 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api driveactivity-activity-query` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api driveactivity-activity-query` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api driveactivity-activity-query` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api sheets-spreadsheets-batch-update` |  | ✅ |  |
+| `api sheets-spreadsheets-batch-update` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--callback` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api sheets-spreadsheets-batch-update` | `--spreadsheet-id` | ✅ |  |
-| `api sheets-spreadsheets-batch-update` | `--body` | ✅ |  |
+| `api sheets-spreadsheets-batch-update` | `--spreadsheet-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api sheets-spreadsheets-batch-update` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-batch-update` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-create` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-create` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -925,7 +925,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api sheets-spreadsheets-developer-metadata-search` | `--spreadsheet-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-developer-metadata-search` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-developer-metadata-search` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api sheets-spreadsheets-get` |  | ✅ |  |
+| `api sheets-spreadsheets-get` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -933,10 +933,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api sheets-spreadsheets-get` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--comments-view-mode` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api sheets-spreadsheets-get` | `--spreadsheet-id` | ✅ |  |
+| `api sheets-spreadsheets-get` | `--spreadsheet-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--exclude-tables-in-banded-ranges` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get` | `--ranges` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api sheets-spreadsheets-get` | `--include-grid-data` | ✅ |  |
+| `api sheets-spreadsheets-get` | `--include-grid-data` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get-by-data-filter` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get-by-data-filter` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-get-by-data-filter` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -1074,110 +1074,113 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api sheets-spreadsheets-values-update` | `--response-value-render-option` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-values-update` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api sheets-spreadsheets-values-update` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `sheets create` |  | ✅ |  |
-| `sheets rename` |  | ✅ |  |
-| `sheets insert` |  | ✅ |  |
-| `sheets format` |  | ✅ |  |
-| `sheets format` | `--body` | ✅ |  |
-| `sheets info` |  | ✅ |  |
-| `sheets show` |  | ✅ |  |
-| `sheets show` | `--render` | ✅ |  |
-| `sheets update` |  | ✅ |  |
-| `sheets update` | `--values` | ✅ |  |
-| `sheets update` | `--input` | ✅ |  |
-| `sheets add` |  | ✅ |  |
-| `sheets add` | `--values` | ✅ |  |
-| `sheets add` | `--input` | ✅ |  |
-| `sheets clear` |  | ✅ |  |
+| `sheets create` |  | ❌ |  |
+| `sheets rename` |  | ❌ |  |
+| `sheets insert` |  | ❌ |  |
+| `sheets format` |  | ❌ |  |
+| `sheets format` | `--body` | ❌ |  |
+| `sheets info` |  | ❌ |  |
+| `sheets show` |  | ❌ |  |
+| `sheets show` | `--render` | ❌ |  |
+| `sheets update` |  | ❌ |  |
+| `sheets update` | `--values` | ❌ |  |
+| `sheets update` | `--input` | ❌ |  |
+| `sheets add` |  | ❌ |  |
+| `sheets add` | `--values` | ❌ |  |
+| `sheets add` | `--input` | ❌ |  |
+| `sheets clear` |  | ❌ |  |
 | `files download` |  | ✅ |  |
-| `files download` | `--out` | ✅ |  |
-| `files download` | `--overwrite` | ✅ |  |
-| `files export` |  | ✅ |  |
-| `files export` | `--out` | ✅ |  |
-| `files export` | `--overwrite` | ✅ |  |
-| `files export` | `--format` | ✅ |  |
-| `files list` |  | ✅ |  |
-| `files list` | `--limit` | ✅ |  |
-| `files list` | `--cursor` | ✅ |  |
-| `files list` | `--parent` | ✅ |  |
-| `files get` |  | ✅ |  |
-| `files copy` |  | ✅ |  |
-| `files copy` | `--name` | ✅ |  |
-| `files copy` | `--parent` | ✅ |  |
-| `files move` |  | ✅ |  |
-| `files move` | `--parent` | ✅ |  |
-| `files move` | `--old-parent` | ✅ |  |
-| `files update` |  | ✅ |  |
-| `files update` | `--body` | ✅ |  |
-| `files trash` |  | ✅ |  |
-| `files restore` |  | ✅ |  |
-| `files mkdir` |  | ✅ |  |
-| `files mkdir` | `--parent` | ✅ |  |
-| `files upload` |  | ✅ |  |
-| `files upload` | `--parent` | ✅ |  |
-| `files upload` | `--name` | ✅ |  |
-| `comments reply` |  | ✅ |  |
-| `comments resolve` |  | ✅ |  |
-| `comments reopen` |  | ✅ |  |
-| `comments list` |  | ✅ |  |
-| `comments list` | `--limit` | ✅ |  |
-| `comments list` | `--cursor` | ✅ |  |
-| `comments get` |  | ✅ |  |
-| `permissions list` |  | ✅ |  |
-| `permissions list` | `--limit` | ✅ |  |
-| `permissions list` | `--cursor` | ✅ |  |
-| `permissions get` |  | ✅ |  |
-| `revisions list` |  | ✅ |  |
-| `revisions list` | `--limit` | ✅ |  |
-| `revisions list` | `--cursor` | ✅ |  |
-| `revisions get` |  | ✅ |  |
-| `shared-drives` |  | ✅ |  |
-| `shared-drives` | `--limit` | ✅ |  |
-| `shared-drives` | `--cursor` | ✅ |  |
-| `mirrors add` |  | ✅ |  |
-| `mirrors add` | `--parent` | ✅ |  |
-| `mirrors list` |  | ✅ |  |
-| `mirrors remove` |  | ✅ |  |
-| `mirrors status` |  | ✅ |  |
-| `mirrors sync` |  | ✅ |  |
-| `mirrors sync` | `--keep` | ✅ |  |
-| `mirrors sync` | `--replace` | ✅ |  |
-| `mirrors watch` |  | ✅ |  |
-| `mirrors watch` | `--every` | ✅ |  |
+| `files download` | `--output` | ✅ |  |
+| `files download` | `--overwrite` | ❌ |  |
+| `files export` |  | ❌ |  |
+| `files export` | `--output` | ❌ |  |
+| `files export` | `--overwrite` | ❌ |  |
+| `files export` | `--format` | ❌ |  |
+| `files list` |  | ❌ |  |
+| `files list` | `--limit` | ❌ |  |
+| `files list` | `--cursor` | ❌ |  |
+| `files list` | `--parent` | ❌ |  |
+| `files get` |  | ❌ |  |
+| `files copy` |  | ❌ |  |
+| `files copy` | `--name` | ❌ |  |
+| `files copy` | `--parent` | ❌ |  |
+| `files move` |  | ❌ |  |
+| `files move` | `--parent` | ❌ |  |
+| `files move` | `--old-parent` | ❌ |  |
+| `files update` |  | ❌ |  |
+| `files update` | `--body` | ❌ |  |
+| `files trash` |  | ❌ |  |
+| `files restore` |  | ❌ |  |
+| `files mkdir` |  | ❌ |  |
+| `files mkdir` | `--parent` | ❌ |  |
+| `files upload` |  | ❌ |  |
+| `files upload` | `--parent` | ❌ |  |
+| `files upload` | `--name` | ❌ |  |
+| `comments reply` |  | ❌ |  |
+| `comments resolve` |  | ❌ |  |
+| `comments reopen` |  | ❌ |  |
+| `comments list` |  | ❌ |  |
+| `comments list` | `--limit` | ❌ |  |
+| `comments list` | `--cursor` | ❌ |  |
+| `comments get` |  | ❌ |  |
+| `permissions list` |  | ❌ |  |
+| `permissions list` | `--limit` | ❌ |  |
+| `permissions list` | `--cursor` | ❌ |  |
+| `permissions get` |  | ❌ |  |
+| `revisions list` |  | ❌ |  |
+| `revisions list` | `--limit` | ❌ |  |
+| `revisions list` | `--cursor` | ❌ |  |
+| `revisions get` |  | ❌ |  |
+| `shared-drives` |  | ❌ |  |
+| `shared-drives` | `--limit` | ❌ |  |
+| `shared-drives` | `--cursor` | ❌ |  |
+| `mirrors add` |  | ❌ |  |
+| `mirrors add` | `--parent` | ❌ |  |
+| `mirrors list` |  | ❌ |  |
+| `mirrors remove` |  | ❌ |  |
+| `mirrors status` |  | ❌ |  |
+| `mirrors sync` |  | ❌ |  |
+| `mirrors sync` | `--keep` | ❌ |  |
+| `mirrors sync` | `--replace` | ❌ |  |
+| `mirrors watch` |  | ❌ |  |
+| `mirrors watch` | `--every` | ❌ |  |
 | `config show` |  | ✅ |  |
 | `config set` |  | ✅ |  |
-| `config set` | `--defaults` | ✅ |  |
-| `complete` |  | ✅ |  |
+| `config set` | `--defaults` | ❌ |  |
+| `complete` |  | ❌ |  |
 | `models set` |  | ✅ |  |
-| `models set` | `--purpose` | ✅ |  |
+| `models set` | `--purpose` | ❌ |  |
 | `models set` | `--provider` | ✅ |  |
-| `models set` | `--model` | ✅ |  |
-| `models set` | `--base-url` | ✅ |  |
-| `models download` |  | ✅ |  |
+| `models set` | `--model` | ❌ |  |
+| `models set` | `--base-url` | ❌ |  |
+| `models list` |  | ❌ |  |
+| `models download` |  | ❌ |  |
+| `models download` | `--offline` | ❌ |  |
 | `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
-| `mcp` |  | ✅ |  |
-| `mcp` | `--tools` | ✅ |  |
+| `mcp` |  | ❌ |  |
+| `mcp` | `--tools` | ❌ |  |
 | `commands` |  | ✅ |  |
+| `commands info` |  | ❌ |  |
 | `skill show` |  | ✅ |  |
-| `skill install` |  | ✅ |  |
-| `skill install` | `--for` | ✅ |  |
-| `doctor` |  | ✅ |  |
-| `upgrade` |  | ✅ |  |
-| `upgrade` | `--check` | ✅ |  |
+| `skill install` |  | ❌ |  |
+| `skill install` | `--for` | ❌ |  |
+| `doctor` |  | ❌ |  |
+| `upgrade` |  | ❌ |  |
+| `upgrade` | `--check` | ❌ |  |
 | `guide` |  | ✅ |  |
-| `help` |  | ✅ |  |
+| `help` |  | ❌ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
 | *global* | `--json` | ✅ |  |
-| *global* | `--jsonl` | ✅ |  |
-| *global* | `--quiet` | ✅ |  |
-| *global* | `--debug` | ✅ |  |
-| *global* | `--timeout` | ✅ |  |
-| *global* | `--max-output-bytes` | ✅ |  |
-| *global* | `--read-only` | ✅ |  |
-| *global* | `--offline` | ✅ |  |
-| *global* | `--dry-run` | ✅ |  |
-| *global* | `--yes` | ✅ |  |
-| *global* | `--allow-dangerous` | ✅ |  |
-| *global* | `--permission` | ✅ |  |
+| *global* | `--jsonl` | ❌ |  |
+| *global* | `--quiet` | ❌ |  |
+| *global* | `--debug` | ❌ |  |
+| *global* | `--timeout` | ❌ |  |
+| *global* | `--max-output-bytes` | ❌ |  |
+| *global* | `--read-only` | ❌ |  |
+| *global* | `--offline` | ❌ |  |
+| *global* | `--dry-run` | ❌ |  |
+| *global* | `--yes` | ❌ |  |
+| *global* | `--allow-dangerous` | ❌ |  |
+| *global* | `--permission` | ❌ |  |
 | *global* | `--help-all` | ⛔ | Commander answers before any command runs, so the trace never sees it; src/help.test.ts checks it |
