@@ -6,8 +6,7 @@ import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import { changesAuthorityAt } from "@wirecat/cli-core/cli"
-import { type McpCommand, registerCommands } from "@wirecat/cli-core/mcp"
-import { levelFor } from "@wirecat/cli-core/sends"
+import { type CommandAvailability, type McpCommand, registerCommands } from "@wirecat/cli-core/mcp"
 import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import * as v from "valibot"
@@ -15,12 +14,13 @@ import type { ProgramOptions } from "./commands/context.js"
 import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
-import { methodPolicyKeys, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
+import { discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
 interface ToolDefinition {
+  availability?: () => CommandAvailability
   name: string
   command: CommandInfo
   schema: Record<string, unknown>
@@ -106,7 +106,7 @@ export const mcpTools = (
   const root = build(options)
   const commands = flatten(describeDriveProgram(root))
   const authority = changesAuthorityAt(root)
-  const settings = policySettings(env, profile, {
+  policySettings(env, profile, {
     ...flags,
     permissionKeys: flags.permissionKeys ?? permissionKeys(commands.map((command) => command.path)),
   })
@@ -117,19 +117,7 @@ export const mcpTools = (
     return !granted || !required || required === READ_SCOPE || covers(granted, required)
   }
   return commands
-    .filter((command) => {
-      if (command.commands.length || command.mcp === false || command.lifetime === "persistent") return false
-      if (
-        !grants(command) ||
-        (authority(command.path) && !["ask", "allow"].includes(levelFor(settings.levels, "mcp.authority").level))
-      )
-        return false
-      const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
-      return keys.every((key) => {
-        const level = levelFor(settings.levels, key).level
-        return level !== "deny" && !(writes(command.effects) && (settings.readOnly || level === "readonly"))
-      })
-    })
+    .filter((command) => !command.commands.length && command.mcp !== false && command.lifetime !== "persistent")
     .map((command) => {
       const properties: Record<string, unknown> = {}
       const required: string[] = []
@@ -156,6 +144,19 @@ export const mcpTools = (
         if (option.mandatory) required.push(field)
       }
       return {
+        availability: () => {
+          const current = policySettings(env, profile, {
+            ...flags,
+            permissionKeys: flags.permissionKeys ?? permissionKeys(commands.map((one) => one.path)),
+          })
+          if (!grants(command))
+            return {
+              available: false,
+              reason: `the OAuth grant needs ${requiredScope(command)}`,
+              permission: "oauth.scope",
+            }
+          return discoveryAvailability(command, current, authority(command.path), true)
+        },
         name: `drive_${command.path.join("_").replaceAll("-", "_")}`,
         command,
         schema: { type: "object", properties, required, additionalProperties: false },
@@ -229,6 +230,11 @@ export const invokeTool = async (
           structuredContent: Record<string, unknown>
         }
     try {
+      const availability = tool.availability?.()
+      if (availability && !availability.available)
+        throw new CliError("permission_error", availability.reason ?? "this command is unavailable", {
+          ...(availability.permission ? { permission: availability.permission } : {}),
+        })
       const checked = await checkedInput(tool, input)
       const path = tool.command.path.join(" ")
       const outputKey =
@@ -308,6 +314,7 @@ export const buildMcpServer = (
         title: tool.command.description,
         description: tool.command.description,
         writes: writes(tool.command.effects),
+        availability: tool.availability,
         input: shownInput(tool),
         checked: true,
         run: async (input) => invokeTool(build, tool, input, options, profile, flags),

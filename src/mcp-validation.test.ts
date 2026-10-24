@@ -105,7 +105,7 @@ describe("MCP validation through the SDK", () => {
     }
   })
 
-  it("finds commands with drive_tools_search and offers no drive_write to a read-only profile", async () => {
+  it("keeps denied commands discoverable with availability on a read-only profile", async () => {
     const f = fixture()
     const { server } = buildMcpServer(createProgram, { env: f.env, api: { call: vi.fn() } }, "default", {
       readOnly: true,
@@ -118,6 +118,7 @@ describe("MCP validation through the SDK", () => {
       expect((await client.listTools()).tools.map((tool) => tool.name).sort()).toEqual([
         "drive_read",
         "drive_tools_search",
+        "drive_write",
       ])
       const found = await client.callTool({ name: "drive_tools_search", arguments: { query: "files get" } })
       expect(found).toMatchObject({
@@ -131,7 +132,26 @@ describe("MCP validation through the SDK", () => {
           ]),
         },
       })
-      expect(JSON.stringify(found)).not.toContain("drive-files-delete")
+      const blocked = await client.callTool({
+        name: "drive_tools_search",
+        arguments: { query: "api drive-files-delete" },
+      })
+      expect(blocked).toMatchObject({
+        structuredContent: {
+          items: expect.arrayContaining([
+            expect.objectContaining({
+              command: "api drive-files-delete",
+              availability: expect.objectContaining({ available: false }),
+            }),
+          ]),
+        },
+      })
+      expect(
+        await client.callTool({
+          name: "drive_write",
+          arguments: { command: "api drive-files-delete", arguments: { file_id: "fixture-file" } },
+        }),
+      ).toMatchObject({ isError: true, structuredContent: { error: { code: "permission_error" } } })
     } finally {
       await client.close()
       await server.close()

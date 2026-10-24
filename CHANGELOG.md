@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Permission-denied commands stay discoverable in CLI help and MCP with current availability, reasons and required permission keys. Execution still refuses denied calls and missing write grants.
 - Correct shared alignment guidance for discovery contract 4, foreground watches and current command-lint debt.
 
 ## 0.28.0 — 24.10.2026

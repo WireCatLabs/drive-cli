@@ -404,9 +404,10 @@ The server offers three tools: `drive_tools_search` finds a command and shows it
 `drive_read` or `drive_write` runs it with `{ command, arguments }`. The first command above lists
 those commands, so inspect it before starting the stdio server. MCP argument names use snake_case
 (for example `file_id`); the matching CLI flag is `--file-id`. It uses the same command tree,
-profile and guards; `drive_write` is not offered when the profile allows no writes. Commands that
-change Google files, read Drive Activity or list Drive apps are offered only when the profile signed
-in with `--grant write`, `activity` or `apps`; restart the server after signing in again. Settings writes and skill installation require the owner to allow `permissions.mcp.authority`;
+profile and guards. Denied commands and their arguments remain discoverable, with
+`availability.available: false`, a reason and the relevant permission key. The write tool remains
+listed even when writes are blocked. Commands that need missing Google scopes are marked unavailable;
+sign in with `--grant write`, `activity` or `apps` as appropriate, then restart the server. Settings writes and skill installation require the owner to allow `permissions.mcp.authority`;
 an agent cannot change that guard itself. Exports and downloads take a filename within the profile’s
 cache export folder. This is not a hosted HTTP browser connector. Use
 [the full command reference](commands.md) to discover other supported operations.

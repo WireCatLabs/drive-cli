@@ -308,9 +308,15 @@ describe("shared CLI policy and execution", () => {
     await createProgram({ env: f.env, streams: listed }).parseAsync(["default", "--read-only", "mcp", "--tools"], {
       from: "user",
     })
-    const offered = JSON.parse(listed.stdout.join("")).items as { effects: Effects }[]
+    const offered = JSON.parse(listed.stdout.join("")).items as {
+      effects: Effects
+      availability: { available: boolean }
+    }[]
     expect(offered.length).toBeGreaterThan(0)
-    expect(offered.every(({ effects }) => !writes(effects))).toBe(true)
+    expect(offered.some(({ effects }) => writes(effects))).toBe(true)
+    expect(offered.filter(({ effects }) => writes(effects)).every(({ availability }) => !availability.available)).toBe(
+      true,
+    )
   })
   it("reports ambiguous Google writes without enabling retry", async () => {
     const auth = new OAuth2Client("fixture-client")
@@ -326,13 +332,19 @@ describe("shared CLI policy and execution", () => {
   })
 })
 describe("MCP derived from the same guarded command tree", () => {
-  it("filters writes and denials, prevents argument injection and uses the CLI executor", async () => {
+  it("marks writes and denials unavailable, prevents argument injection and uses the CLI executor", async () => {
     const f = fixture()
     const request = vi.fn(async () => ({ id: "doc-a" }))
     const options = { env: f.env, api: { call: request } }
     const readonly = mcpTools(createProgram, options, "default", { readOnly: true })
-    expect(readonly.every((tool) => !writes(tool.command.effects))).toBe(true)
-    expect(readonly.some((tool) => tool.name === "drive_facts_reverse")).toBe(false)
+    expect(
+      readonly
+        .filter((tool) => writes(tool.command.effects))
+        .every((tool) => tool.availability?.().available === false),
+    ).toBe(true)
+    expect(readonly.find((tool) => tool.name === "drive_facts_reverse")?.availability?.()).toMatchObject({
+      available: false,
+    })
     const reverse = mcpTools(createProgram, options, "default").find((tool) => tool.name === "drive_facts_reverse")
     if (!reverse) throw new Error("missing decision reversal tool")
     expect(reverse.command.effects).toEqual({ remote: "none", local: "write" })
@@ -351,7 +363,11 @@ describe("MCP derived from the same guarded command tree", () => {
     const config = readConfig(f.env)
     config.defaults = { permissions: { files: "deny" } }
     writeConfig(f.env, config)
-    expect(mcpTools(createProgram, options, "default").some((tool) => tool.name === get.name)).toBe(false)
+    expect(
+      mcpTools(createProgram, options, "default")
+        .find((tool) => tool.name === get.name)
+        ?.availability?.(),
+    ).toMatchObject({ available: false })
     expect(await invokeTool(createProgram, get, { file_id: "doc-a" }, options, "default")).toMatchObject({
       isError: true,
     })
@@ -372,7 +388,7 @@ describe("MCP derived from the same guarded command tree", () => {
     ])
   })
 })
-describe("MCP offers what the Google sign-in granted", () => {
+describe("MCP marks missing Google grants unavailable", () => {
   const offered = (scope?: string) => {
     const f = fixture()
     const keyring = memoryKeyring()
@@ -388,18 +404,30 @@ describe("MCP offers what the Google sign-in granted", () => {
         "keyring",
         keyring,
       )
-    return new Set(mcpTools(createProgram, { env: f.env, keyring }, "default").map((tool) => tool.name))
+    return new Map(mcpTools(createProgram, { env: f.env, keyring }, "default").map((tool) => [tool.name, tool]))
   }
 
-  it("hides Google writes, activity and apps without their grants, and keeps reads, local and model writes", () => {
+  it("keeps Google writes, activity and apps visible with reasons for missing grants", () => {
     for (const tools of [offered(READ_SCOPE), offered("none")]) {
-      expect(tools).toContain("drive_api_drive_files_get")
-      expect(tools).toContain("drive_facts_reverse")
-      expect(tools).toContain("drive_memories_extract")
-      expect(tools).not.toContain("drive_api_drive_files_delete")
-      expect(tools).not.toContain("drive_sheets_update")
-      expect(tools).not.toContain("drive_api_driveactivity_activity_query")
-      expect(tools).not.toContain("drive_api_drive_apps_list")
+      expect(tools.has("drive_api_drive_files_get")).toBe(true)
+      expect(tools.has("drive_facts_reverse")).toBe(true)
+      expect(tools.has("drive_memories_extract")).toBe(true)
+      expect(tools.get("drive_api_drive_files_delete")?.availability?.()).toMatchObject({
+        available: false,
+        permission: "oauth.scope",
+      })
+      expect(tools.get("drive_sheets_update")?.availability?.()).toMatchObject({
+        available: false,
+        permission: "oauth.scope",
+      })
+      expect(tools.get("drive_api_driveactivity_activity_query")?.availability?.()).toMatchObject({
+        available: false,
+        permission: "oauth.scope",
+      })
+      expect(tools.get("drive_api_drive_apps_list")?.availability?.()).toMatchObject({
+        available: false,
+        permission: "oauth.scope",
+      })
     }
   })
 
@@ -412,10 +440,10 @@ describe("MCP offers what the Google sign-in granted", () => {
       "drive_api_driveactivity_activity_query",
       "drive_api_drive_apps_list",
     ])
-      expect(tools).toContain(name)
+      expect(tools.get(name)?.availability?.()).toEqual({ available: true })
   })
 
   it("assumes nothing when the saved sign-in does not name its scopes", () => {
-    expect(offered()).toContain("drive_api_drive_files_delete")
+    expect(offered().get("drive_api_drive_files_delete")?.availability?.()).toEqual({ available: true })
   })
 })

@@ -40,9 +40,34 @@ describe("MCP parity and authority", () => {
     for (const tool of t.tools())
       for (const key of Object.keys(tool.schema.properties as object)) expect(key).not.toContain("-")
     expect(t.options.api.call).not.toHaveBeenCalled()
-    expect(t.tools().map((tool) => tool.command.path.join(" "))).not.toContain("config set")
-    expect(t.tools().map((tool) => tool.command.path.join(" "))).not.toContain("models set")
+    expect(t.tool("config set").availability?.()).toMatchObject({ available: false, permission: "mcp.authority" })
+    expect(t.tool("models set").availability?.()).toMatchObject({ available: false, permission: "mcp.authority" })
   })
+  it("marks a denied command in profile-aware CLI help and discovery without calling Google", async () => {
+    const t = setup()
+    const config = readConfig(t.env)
+    config.profiles.default = {
+      ...(config.profiles.default as NonNullable<typeof config.profiles.default>),
+      permissions: { files: "deny" },
+    }
+    writeConfig(t.env, config)
+    const streams = captureStreams()
+    await createProgram({ ...t.options, streams }).parseAsync(["default", "commands", "files", "--json"], {
+      from: "user",
+    })
+    const document = JSON.parse(streams.stdout.join(""))
+    const get = document.commands[0].commands.find((one: { name: string }) => one.name === "get")
+    expect(get).toMatchObject({ availability: { available: false, permission: "files.get" } })
+    const help = captureStreams()
+    await createProgram({ ...t.options, streams: help })
+      .parseAsync(["default", "files", "get", "--help"], { from: "user" })
+      .catch((error) => {
+        if (error.code !== "commander.helpDisplayed") throw error
+      })
+    expect(help.stdout.join("")).toContain("Availability: unavailable")
+    expect(t.options.api.call).not.toHaveBeenCalled()
+  })
+
   it("requires saved authority, refuses self-grants and rechecks revoked permissions", async () => {
     const t = setup()
     expect(() => mcpTools(createProgram, t.options, "default", { permission: ["mcp.authority=allow"] })).toThrow(
@@ -50,6 +75,7 @@ describe("MCP parity and authority", () => {
     )
     t.allow()
     const config = t.tool("config set")
+    expect(config.availability?.()).toEqual({ available: true })
     const models = t.tool("models set")
     expect(t.tool("skill install")).toBeDefined()
     expect(
@@ -72,6 +98,7 @@ describe("MCP parity and authority", () => {
       permissions: { "mcp.authority": "deny" },
     }
     writeConfig(t.env, current)
+    expect(config.availability?.()).toMatchObject({ available: false, permission: "mcp.authority" })
     expect(
       await invokeTool(createProgram, config, { key: "max_text_chars", json_value: "2000" }, t.options, "default"),
     ).toHaveProperty("isError", true)

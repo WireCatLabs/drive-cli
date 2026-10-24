@@ -1,5 +1,7 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
+import type { CommandInfo } from "@wirecat/cli-base/commands"
+import { writes } from "@wirecat/cli-base/standards"
 import { readOnlyLockOf, readOnlyRefusal, setupPermissionCeiling } from "@wirecat/cli-core/cli"
 import {
   CEILING_KEY,
@@ -262,4 +264,25 @@ export const guardedGoogleWrite = async <T>(
     warn: () => {},
   })
   return guardedWrite(guard, { chatId: null, kind: "edit", key, operationId }, act)
+}
+
+export const discoveryAvailability = (
+  command: Pick<CommandInfo, "path" | "effects" | "api_operation">,
+  settings: ReturnType<typeof policySettings>,
+  authority = false,
+  mcp = false,
+) => {
+  if (mcp && authority && !["ask", "allow"].includes(levelFor(settings.levels, "mcp.authority").level))
+    return { available: false, reason: "the profile keeps mcp.authority off", permission: "mcp.authority" }
+  if (!mcp && command.path.join(" ") === "config set")
+    return settings.lock ? { available: false, reason: "the process is read-only" } : { available: true }
+  if (writes(command.effects) && settings.readOnly) return { available: false, reason: "the profile is read-only" }
+  const keys = command.api_operation ? methodPolicyKeys(command.api_operation) : [command.path.join(".")]
+  const denied = keys.find((key) => {
+    const level = levelFor(settings.levels, key).level
+    return level === "deny" || (writes(command.effects) && level === "readonly")
+  })
+  return denied
+    ? { available: false, reason: `the profile does not allow ${denied}`, permission: denied }
+    : { available: true }
 }
