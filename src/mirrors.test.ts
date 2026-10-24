@@ -2,7 +2,8 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, isCliError } from "@wirecat/cli-base"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
+import { mcpTools } from "./mcp.js"
 import { parseDelimited, typed } from "./mirror-sheets.js"
 import { FOLDER, SHEET } from "./model.js"
 import { createProgram } from "./program.js"
@@ -318,6 +319,126 @@ describe("mirrors", () => {
       details: { reason: "mirror.not-folder" },
     })
     expect((await t.run("mirrors", "sync")).error).toMatchObject({ details: { reason: "mirror.none" } })
+  })
+})
+
+/** Runs `mirrors watch` with JSON lines until `stop` says so; the lines it printed and the error it ended with. */
+const watching = async (
+  t: ReturnType<typeof setup>,
+  args: string[],
+  stop: (lines: Record<string, unknown>[], controller: AbortController) => void = () => {},
+  env: NodeJS.ProcessEnv = t.env,
+) => {
+  const streams = captureStreams()
+  const controller = new AbortController()
+  const lines = () =>
+    streams.stdout
+      .join("\n")
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => JSON.parse(line) as Record<string, unknown>)
+  const running = createProgram({
+    env,
+    streams,
+    source: async () => t.source,
+    api: { call: t.google.call },
+    signal: controller.signal,
+  }).parseAsync(["default", "mirrors", "watch", ...args, "--jsonl"], { from: "user" })
+  const ticker = setInterval(() => stop(lines(), controller), 20)
+  try {
+    await running
+    return { lines: lines() }
+  } catch (error) {
+    if (!isCliError(error)) throw error
+    return { lines: lines(), error }
+  } finally {
+    clearInterval(ticker)
+    controller.abort()
+  }
+}
+const items = (lines: Record<string, unknown>[]) =>
+  lines.filter((line) => line.type === "item").map((line) => line.data as Record<string, unknown>)
+
+describe("mirrors watch", () => {
+  it("syncs at start, then a saved file, and ends normally on Ctrl-C with the end record", async () => {
+    const t = setup()
+    t.write("budget.csv", "a\n1\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    let saved = false
+    const { lines, error } = await watching(t, [], (printed, controller) => {
+      const cycles = items(printed)
+      if (cycles.length === 1 && !saved) {
+        saved = true
+        t.write("budget.csv", "a\n2\n")
+      }
+      if (cycles.length === 2) controller.abort()
+    })
+    expect(error).toBeUndefined()
+    expect(items(lines).map((cycle) => cycle.triggers)).toEqual([["start"], ["local"]])
+    expect(items(lines)[0]).toMatchObject({ results: [{ created: ["budget.csv"] }] })
+    expect(items(lines)[1]).toMatchObject({ results: [{ updated: ["budget.csv"] }] })
+    expect(lines.at(-1)).toMatchObject({ type: "end", complete: true })
+  })
+
+  it("ends normally at --timeout", async () => {
+    const t = setup()
+    t.write("budget.csv", "a\n1\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    const streams = captureStreams()
+    await createProgram({
+      env: t.env,
+      streams,
+      source: async () => t.source,
+      api: { call: t.google.call },
+    }).parseAsync(["default", "--timeout", "1s", "mirrors", "watch", "--jsonl"], { from: "user" })
+    const printed = streams.stdout.join("\n").trim().split("\n")
+    expect(JSON.parse(printed.at(-1) as string)).toMatchObject({ type: "end", complete: true })
+  })
+
+  it("syncs a mirror when Google's change feed names one of its files", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "Date"] })
+    try {
+      const t = setup()
+      t.write("budget.csv", "a\n1\n")
+      await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+      const sheetOf = () => [...t.google.files.entries()].find(([, file]) => file.mimeType === SHEET)?.[0]
+      vi.mocked(t.source.changes).mockImplementation(async () => ({
+        items: [{ id: sheetOf() as string, removed: false }],
+        cursor: "next",
+      }))
+      let advanced = false
+      const { lines } = await watching(t, ["--every", "10s"], (printed, controller) => {
+        if (items(printed).length === 1 && !advanced) {
+          advanced = true
+          void vi.advanceTimersByTimeAsync(10_000)
+        }
+        if (items(printed).length === 2) controller.abort()
+      })
+      expect(items(lines).map((cycle) => cycle.triggers)).toEqual([["start"], ["remote"]])
+      expect(t.source.changes).toHaveBeenCalledWith("before-crawl")
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("is refused under DRIVE_READ_ONLY and is not an MCP tool", async () => {
+    const t = setup()
+    t.write("budget.csv", "a\n1\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    const { error } = await watching(t, [], () => {}, { ...t.env, DRIVE_READ_ONLY: "1" })
+    expect(error).toMatchObject({ code: "permission_error" })
+    const tools = mcpTools(createProgram, { env: t.env, api: { call: t.google.call } }, "default").map(
+      (tool) => tool.name,
+    )
+    expect(tools).toContain("drive_mirrors_sync")
+    expect(tools).not.toContain("drive_mirrors_watch")
+  })
+
+  it("refuses a poll more often than every 10 seconds", async () => {
+    const t = setup()
+    t.write("budget.csv", "a\n1\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    expect((await watching(t, ["--every", "1s"])).error).toMatchObject({ code: "validation_error" })
   })
 })
 

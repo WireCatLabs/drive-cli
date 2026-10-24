@@ -6,6 +6,7 @@ import {
   createOutputBuffer,
   createRenderer,
   fieldsOf,
+  isCliError,
   processStreams,
   projectFields,
   type Renderer,
@@ -159,6 +160,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   let fields: string | undefined
   let activeSignal = options.signal
   let deadline: ReturnType<typeof createDeadline> | undefined
+  let stopEnds = false
   const confirmations = new Set<string>()
   const askOnce = async (key: string) => {
     if (confirmations.has(key)) return true
@@ -240,6 +242,9 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     source,
     withIndex,
     policyFlags,
+    endsOnStop: () => {
+      stopEnds = true
+    },
   }
   const imported = importedDocument(context)
   installSessionCommands(program, context)
@@ -483,6 +488,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return deadline ? await deadline.race(async () => running) : await running
     } catch (error) {
       if (error instanceof Preview) return program
+      if (stopEnds && activeSignal?.aborted && (!isCliError(error) || error.code !== "outcome_unknown")) return program
       throw error
     } finally {
       deadline?.dispose()

@@ -4098,6 +4098,28 @@ drive <profile> mirrors sync [id] [options]
 
 **Example:** `drive personal mirrors sync`, `drive personal mirrors sync 1a2b3c4d --keep google`, `drive personal mirrors sync 1a2b3c4d --replace`
 
+### `drive mirrors watch`
+
+keep syncing both ways until Ctrl-C or --timeout: on each local save and each Google change; a part changed on both sides is reported and left for mirrors sync --keep
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> mirrors watch [id] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | optional | mirror id; every mirror of the profile when omitted. |
+
+| Option | What it does |
+|---|---|
+| `--every <duration>` | how often to ask Google for changes. Default: `60s`. |
+
+**Returns:** keep syncing both ways until Ctrl-C or --timeout
+
+**Example:** `drive personal mirrors watch`, `drive personal mirrors watch 1a2b3c4d --every 2m --jsonl`
+
 ## `drive config`
 
 read and change settings; credentials are kept apart

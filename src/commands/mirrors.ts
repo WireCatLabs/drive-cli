@@ -1,15 +1,31 @@
 import { statSync } from "node:fs"
 import { join, resolve } from "node:path"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, isCliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core/cli"
-import { fileMirrorState, type Keep, mirrorId, mirrorStatus, syncMirrors } from "@wirecat/cli-core/documents"
+import {
+  FETCH,
+  itemOf,
+  jsonlRecords,
+  LOCAL_READ,
+  LOCAL_WRITE,
+  listOf,
+  parseDuration,
+  REMOTE_WRITE,
+} from "@wirecat/cli-core/cli"
+import {
+  fileMirrorState,
+  type Keep,
+  mirrorId,
+  mirrorStatus,
+  syncMirrors,
+  watchMirrors,
+} from "@wirecat/cli-core/documents"
 import { newOperationId } from "@wirecat/cli-core/sends"
 import { type Command, Option } from "commander"
 import { activeProfile, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
 import { googleTarget, type MirrorSnapshot, mirrorKind } from "../mirror-target.js"
-import { FOLDER } from "../model.js"
+import { FOLDER, type GoogleSource } from "../model.js"
 import { allOf } from "../output.js"
 import { lockProfile } from "../profile-lock.js"
 import { examples } from "../registry.js"
@@ -38,6 +54,26 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
 
   const stateOf = (name: string, principal: string) => (mirror: Mirror) =>
     fileMirrorState<MirrorSnapshot>(join(profileDir(env, name), "mirrors"), mirror, principal, ["doc", "sheet"])
+  const syncing = (name: string, principal: string, google: GoogleSource) => ({
+    target: googleTarget(call, () => google.identity()),
+    stateOf: stateOf(name, principal),
+    principal,
+    // `call` already checks policy and journals each Google write it makes.
+    guard: <T>(_attempt: unknown, act: () => Promise<T>) => act(),
+    operationId: newOperationId,
+    errorOf: googleError,
+    lock: () => lockProfile(env, name),
+    ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
+    remote: "google",
+  })
+  const chosenOf = (name: string, id?: string) => {
+    const chosen = id ? [find(id)] : mirrorsOf()
+    if (!chosen.length)
+      throw new CliError("not_found", `profile ${name} has no mirrors; add one with drive ${name} mirrors add`, {
+        reason: "mirror.none",
+      })
+    return chosen
+  }
 
   examples(
     annotate(mirrors.command("add"), { effects: FETCH })
@@ -132,11 +168,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
   ).action(async (id: string | undefined, args: { keep?: "local" | "google" | "both"; replace?: boolean }) => {
     const name = selected()
     const profile = activeProfile(env, name)
-    const chosen = id ? [find(id)] : mirrorsOf()
-    if (!chosen.length)
-      throw new CliError("not_found", `profile ${name} has no mirrors; add one with drive ${name} mirrors add`, {
-        reason: "mirror.none",
-      })
+    const chosen = chosenOf(name, id)
     if (args.replace && args.keep && args.keep !== "local")
       throw new CliError(
         "validation_error",
@@ -145,19 +177,10 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
     const google = await source()
     const { items, issues } = await syncMirrors({
+      ...syncing(name, profile.principal, google),
       mirrors: chosen,
-      target: googleTarget(call, () => google.identity()),
-      stateOf: stateOf(name, profile.principal),
-      principal: profile.principal,
       ...(keep ? { keep } : {}),
       recreate: args.replace === true,
-      // `call` already checks policy and journals each Google write it makes.
-      guard: (_attempt, act) => act(),
-      operationId: newOperationId,
-      errorOf: googleError,
-      lock: () => lockProfile(env, name),
-      ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
-      remote: "google",
     })
     const body = allOf(items)
     if (issues.length) body.meta = { complete: false, issues }
@@ -169,4 +192,88 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
         { reason: "mirror.partial" },
       )
   })
+
+  examples(
+    annotate(mirrors.command("watch"), { effects: REMOTE_WRITE, lifetime: "persistent" })
+      .argument("[id]", "mirror id; every mirror of the profile when omitted")
+      .option("--every <duration>", "how often to ask Google for changes", "60s")
+      .summary("keep syncing both ways until Ctrl-C or --timeout")
+      .description(
+        "keep syncing both ways until Ctrl-C or --timeout: on each local save and each Google change; " +
+          "a part changed on both sides is reported and left for mirrors sync --keep",
+      ),
+    ["drive personal mirrors watch", "drive personal mirrors watch 1a2b3c4d --every 2m --jsonl"],
+  ).action(async (id: string | undefined, args: { every: string }) => {
+    const pollMs = parseDuration(args.every, "--every")
+    if (pollMs < 10_000) throw new CliError("validation_error", "--every must be at least 10s")
+    const name = selected()
+    const profile = activeProfile(env, name)
+    const chosen = chosenOf(name, id)
+    const signal = context.signal() ?? new AbortController().signal
+    const google = await source()
+    const states = stateOf(name, profile.principal)
+    let token = await google.startToken()
+    const remoteChanges = async (): Promise<string[] | "all"> => {
+      let changed: Set<string>
+      try {
+        const feed = await google.changes(token)
+        token = feed.cursor
+        changed = new Set(feed.items.map((item) => item.id))
+      } catch (error) {
+        if (!isCliError(error) || error.details?.reason !== "listing.too-large") throw error
+        token = await google.startToken()
+        return "all"
+      }
+      return chosen
+        .filter((mirror) => Object.values(states(mirror).read().entries).some((entry) => changed.has(entry.id)))
+        .map((mirror) => mirror.id)
+    }
+    context.endsOnStop()
+    let cycles = 0
+    for await (const event of watchMirrors(
+      (mirrors) => syncMirrors({ ...syncing(name, profile.principal, google), mirrors }),
+      { mirrors: chosen, signal, kindOf: mirrorKind, stateOf: states, remoteChanges, pollMs },
+    )) {
+      cycles++
+      const data = {
+        at: new Date().toISOString(),
+        triggers: event.triggers,
+        mirrors: event.mirrors,
+        ...("error" in event
+          ? { error: { code: event.error.code, message: event.error.message } }
+          : { results: event.result.items, ...(event.result.issues.length ? { issues: event.result.issues } : {}) }),
+      }
+      context.print((_renderer, format, streams) =>
+        streams.data(format === "pretty" ? describeCycle(data) : JSON.stringify({ type: "item", data })),
+      )
+    }
+    context.print((_renderer, format, streams) => {
+      if (format === "pretty") return
+      const end = listOf("mirrors watch", {
+        items: [],
+        limit: Math.max(1, cycles),
+        has_more: false,
+        paging: "cursor",
+        meta: { complete: true },
+      })
+      for (const record of jsonlRecords(end)) streams.data(JSON.stringify(record))
+    })
+  })
+}
+
+const describeCycle = (cycle: {
+  at: string
+  triggers: string[]
+  mirrors: string[]
+  error?: { message: string }
+  results?: { id: string; created: string[]; updated: string[]; pulled: string[]; conflicts: unknown[] }[]
+}) => {
+  const time = cycle.at.slice(11, 19)
+  if (cycle.error) return `${time} ${cycle.triggers.join("+")}: ${cycle.error.message}; trying again`
+  const parts = (cycle.results ?? []).map(
+    (result) =>
+      `${result.id} ${result.created.length} created, ${result.updated.length} sent, ${result.pulled.length} pulled` +
+      (result.conflicts.length ? `, ${result.conflicts.length} conflicts (mirrors sync ${result.id} --keep …)` : ""),
+  )
+  return `${time} ${cycle.triggers.join("+")}: ${parts.join("; ") || "nothing to do"}`
 }

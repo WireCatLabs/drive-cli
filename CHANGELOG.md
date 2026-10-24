@@ -4,6 +4,13 @@
 
 ### Added
 
+- **`mirrors watch` keeps mirrored folders in sync while it runs**, until Ctrl-C or `--timeout`, both a normal end. A
+  saved file is synced a couple of seconds after the last save, and only if it differs from the last sync; Google's
+  change feed is read every minute (`--every`) and only the mirrors whose files it names are synced. Every mirror is
+  also compared every 5 minutes and synced every 30, for changes no event reported. A part changed on both sides is
+  reported and left for `mirrors sync --keep`. With `--jsonl`, one line per sync and an end line; it is not an MCP
+  tool, and `DRIVE_READ_ONLY` refuses it.
+
 - **A mirroring guide** covers setup, both directions, conflicts, choosing a side and deletion limits.
   The documentation check now enforces standard changelog headings for new releases.
 

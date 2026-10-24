@@ -40,6 +40,8 @@ export interface CommandContext {
   source(): Promise<GoogleSource>
   withIndex<T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T>
   policyFlags(): PolicyFlags & { offline?: boolean }
+  /** Ctrl-C or --timeout ends this command normally: a stream that stops is a complete answer. */
+  endsOnStop(): void
 }
 
 export const positive = (input: string) => {
