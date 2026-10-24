@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `drive <profile> mirrors sync --public-url <https origin>` (and `mirrors watch`) inserts local PNG, JPEG and GIF images into mirrored Docs: drive serves each one through your tunnel at a random address that lives only while Google copies it, so nothing in Drive is shared. Without the option, local images stay as Markdown text, as before. `DRV-11`
+
 ## 0.29.0 — 24.10.2026
 
 ### Fixed

@@ -4,11 +4,9 @@ import { itemOf, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/c
 import type { Command } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { allOf } from "../output.js"
-import { portOf, publicUrlOf } from "../public-url.js"
+import { DEFAULT_PORT, portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
-
-const DEFAULT_PORT = 8765
 
 const installMcpCommandDefinition = (
   program: Command,

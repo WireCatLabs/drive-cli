@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs"
+import { isCliError } from "@wirecat/cli-base"
 import {
   type Block,
   blockKey,
@@ -15,7 +16,14 @@ import {
   type Pushed,
   spliceMarkdown,
 } from "@wirecat/cli-core/documents"
+import { type ImageOptions, isWeb, localImage, serveImages } from "./mirror-images.js"
 import { type Call, lastChange } from "./mirror-sheets.js"
+
+/** The local image a Doc's image was inserted from: Google keeps only the one-off address it fetched. */
+export interface LocalImageRef {
+  url: string
+  alt: string
+}
 
 export interface DocSnapshot {
   kind: "doc"
@@ -23,6 +31,8 @@ export interface DocSnapshot {
   written: Block[]
   /** The local file's blocks at the last push: a checklist tick follows the side that changed it. */
   local: Block[]
+  /** Local images in the Doc, by the address Google fetched each from. */
+  images?: Record<string, LocalImageRef>
 }
 
 // A line break inside a paragraph: Docs stores it as a vertical tab.
@@ -43,43 +53,81 @@ const PRESETS: Record<ListKind, string> = {
   check: "BULLET_CHECKBOX",
 }
 
-const isWeb = (url: string) => /^https:\/\//i.test(url)
+const imageText = (image: LocalImageRef) => `![${image.alt}](${image.url})`
+
+/**
+ * What the push left on the local side: an image Google did not take counts as its text, so the next push sees
+ * the image as a local change and tries again instead of settling on the text.
+ */
+const settled = (next: Block[], doc: ReadDoc): Block[] => {
+  const inDoc = new Set(Object.values(doc.images).map((image) => image.url))
+  return next.map((block) =>
+    block.kind === "image" && !isWeb(block.url) && !inDoc.has(block.url)
+      ? { kind: "paragraph", inlines: [{ text: imageText(block) }] }
+      : block,
+  )
+}
 
 /**
  * The local blocks as a Doc can hold them, so a block that is unchanged compares equal after a round trip:
- * a code block's language and an image's alt text cannot be stored, a local image becomes its Markdown as
- * text, a line break inside a table cell becomes a space, and a checklist item whose whole text is struck
- * is a checked one (the Doc writes checked items that way).
+ * a code block's language and a web image's alt text cannot be stored, a local image that cannot be inserted
+ * becomes its Markdown as text, a line break inside a table cell becomes a space, and a checklist item whose
+ * whole text is struck is a checked one (the Doc writes checked items that way).
  */
-export const representable = (blocks: Block[]): Block[] =>
-  blocks.map((block): Block => {
-    switch (block.kind) {
-      case "code":
-        return { kind: "code", text: block.text }
-      case "image":
-        return isWeb(block.url)
-          ? { kind: "image", url: block.url, alt: "" }
-          : { kind: "paragraph", inlines: [{ text: `![${block.alt}](${block.url})` }] }
-      case "table": {
-        const cell = (inlines: Inline[]) =>
-          normalizeInlines(inlines.map((inline) => ({ ...inline, text: inline.text.replace(/\n/g, " ") })))
-        return { kind: "table", header: block.header.map(cell), rows: block.rows.map((row) => row.map(cell)) }
-      }
-      case "item": {
-        if (block.list !== "check") return block
-        const inlines = normalizeInlines(block.inlines)
-        const struck = inlines.length > 0 && inlines.every((inline) => inline.strike)
-        return struck
-          ? { ...block, checked: true, inlines: inlines.map(({ strike: _, ...rest }) => rest) }
-          : { ...block, checked: Boolean(block.checked) }
-      }
-      default:
-        return block
-    }
-  })
+export const representableWith =
+  (insertable: (url: string) => boolean) =>
+  (blocks: Block[]): Block[] =>
+    blocks.map((block): Block => representBlock(block, insertable))
 
-export const localBlocks = async (file: LocalDocument): Promise<Block[]> =>
-  representable(await markdownBlocks(readFileSync(file.absolute, "utf8")))
+export const representable = representableWith(() => false)
+
+const representBlock = (block: Block, insertable: (url: string) => boolean): Block => {
+  switch (block.kind) {
+    case "code":
+      return { kind: "code", text: block.text }
+    case "image":
+      if (isWeb(block.url)) return { kind: "image", url: block.url, alt: "" }
+      return insertable(block.url)
+        ? { kind: "image", url: block.url, alt: block.alt }
+        : { kind: "paragraph", inlines: [{ text: imageText(block) }] }
+    case "table": {
+      const cell = (inlines: Inline[]) =>
+        normalizeInlines(inlines.map((inline) => ({ ...inline, text: inline.text.replace(/\n/g, " ") })))
+      return { kind: "table", header: block.header.map(cell), rows: block.rows.map((row) => row.map(cell)) }
+    }
+    case "item": {
+      if (block.list !== "check") return block
+      const inlines = normalizeInlines(block.inlines)
+      const struck = inlines.length > 0 && inlines.every((inline) => inline.strike)
+      return struck
+        ? { ...block, checked: true, inlines: inlines.map(({ strike: _, ...rest }) => rest) }
+        : { ...block, checked: Boolean(block.checked) }
+    }
+    default:
+      return block
+  }
+}
+
+/**
+ * How this file's blocks look in its Doc. A local image is an image once it is in the Doc, or when it can be
+ * served now; otherwise its Markdown stays as text, and a reason is warned once.
+ */
+const representation = (file: LocalDocument, known: Record<string, LocalImageRef>, images?: ImageOptions) => {
+  const inDoc = new Set(Object.values(known).map((image) => image.url))
+  const verdicts = new Map<string, boolean>()
+  return representableWith((url) => {
+    if (inDoc.has(url)) return true
+    if (!images?.host) return false
+    let verdict = verdicts.get(url)
+    if (verdict === undefined) {
+      const found = localImage(file, url)
+      verdict = !("reason" in found)
+      if ("reason" in found) images.warn(`${file.path}: image ${url} ${found.reason}; it stays as text in the Doc`)
+      verdicts.set(url, verdict)
+    }
+    return verdict
+  })
+}
 
 const sameBlocks = (a: Block[], b: Block[]) =>
   a.length === b.length && a.every((block, index) => blockKey(block) === blockKey(b[index] as Block))
@@ -145,6 +193,8 @@ export interface ReadDoc {
   /** True when the last paragraph holds text, so an append must first open an empty one. */
   needsTrailingParagraph: boolean
   suggestions: boolean
+  /** The local images found in the Doc, by the address Google fetched each from. */
+  images: Record<string, LocalImageRef>
 }
 
 const inlinesOf = (elements: ParagraphElement[]): Inline[] =>
@@ -177,9 +227,14 @@ const hasSuggestion = (paragraph: Paragraph) =>
   )
 
 /** The Doc as blocks. `ticks` are the checklist ticks Google's Markdown export shows, in document order. */
-export const readDoc = (document: DocsDocument, ticks: boolean[] = []): ReadDoc => {
+export const readDoc = (
+  document: DocsDocument,
+  ticks: boolean[] = [],
+  known: Record<string, LocalImageRef> = {},
+): ReadDoc => {
   const content = document.body?.content ?? []
   const placed: Placed[] = []
+  const images: Record<string, LocalImageRef> = {}
   let suggestions = false
   let tick = 0
   const checkCount = content.filter((element) => {
@@ -227,7 +282,9 @@ export const readDoc = (document: DocsDocument, ticks: boolean[] = []): ReadDoc 
       } else block = { kind: "item", list, depth, inlines }
     } else if (image && !plain(inlines).trim()) {
       const url = document.inlineObjects?.[image]?.inlineObjectProperties?.embeddedObject?.imageProperties?.sourceUri
-      block = url ? { kind: "image", url, alt: "" } : undefined
+      const local = url ? known[url] : undefined
+      if (url && local) images[url] = local
+      block = local ? { kind: "image", ...local } : url ? { kind: "image", url, alt: "" } : undefined
     } else if (/^HEADING_[1-6]$/.test(style.namedStyleType ?? "")) {
       block = { kind: "heading", level: Number(style.namedStyleType?.at(-1)) as 1, inlines }
     } else if (style.shading?.backgroundColor?.color && inlines.length && inlines.every((inline) => inline.code)) {
@@ -253,6 +310,7 @@ export const readDoc = (document: DocsDocument, ticks: boolean[] = []): ReadDoc 
     end: lastEmpty ? (last?.startIndex ?? endIndex - 1) : endIndex - 1,
     needsTrailingParagraph: !lastEmpty,
     suggestions,
+    images,
   }
 }
 
@@ -299,7 +357,10 @@ const docText = (inlines: Inline[]) => inlines.map((inline) => inline.text.repla
  */
 export const insertRequests = (blocks: Block[], at: number): Request[] => {
   const groups: Block[][] = []
-  for (const block of blocks) {
+  for (const given of blocks) {
+    // A local image goes in as its Markdown first; `placeImages` swaps it for the image in a batch of its own.
+    const block: Block =
+      given.kind === "image" && !isWeb(given.url) ? { kind: "paragraph", inlines: [{ text: imageText(given) }] } : given
     const last = groups.at(-1)
     const head = last?.[0]
     if (block.kind === "item" && head?.kind === "item" && head.list === block.list) last?.push(block)
@@ -430,17 +491,76 @@ const exportTicks = async (call: Call, id: string): Promise<boolean[]> => {
     block.kind === "item" && block.list === "check" ? [Boolean(block.checked)] : [],
   )
 }
-const fetchDoc = async (call: Call, id: string): Promise<ReadDoc> => {
+const fetchDoc = async (call: Call, id: string, known: Record<string, LocalImageRef> = {}): Promise<ReadDoc> => {
   const document = (await call("docs.documents.get", { documentId: id })) as DocsDocument
-  return readDoc(document, await exportTicks(call, id))
+  return readDoc(document, await exportTicks(call, id), known)
+}
+
+/**
+ * Swaps each local image's Markdown, written by the text batch, for the image itself. Google fetches the file
+ * from a one-off address on the owner's tunnel, live only during this batch. It is a batch of its own, so an
+ * image Google cannot fetch leaves the text written and the image as Markdown, with a warning.
+ */
+const placeImages = async (
+  call: Call,
+  id: string,
+  file: LocalDocument,
+  next: Block[],
+  known: Record<string, LocalImageRef>,
+  images?: ImageOptions,
+): Promise<ReadDoc> => {
+  const doc = await fetchDoc(call, id, known)
+  const host = images?.host
+  if (!host) return doc
+  const pending = next.flatMap((block, index) =>
+    block.kind === "image" && !isWeb(block.url) ? [{ block, index }] : [],
+  )
+  const wanted = pending.flatMap(({ block, index }) => {
+    const placed = doc.placed[index]
+    if (doc.placed.length !== next.length || placed?.block.kind !== "paragraph") return []
+    if (placed.block.inlines.map((inline) => inline.text).join("") !== imageText(block)) return []
+    const found = localImage(file, block.url)
+    return "reason" in found ? [] : [{ image: { url: block.url, alt: block.alt }, placed, found }]
+  })
+  if (!wanted.length) return doc
+  const learned: Record<string, LocalImageRef> = {}
+  try {
+    await serveImages(
+      host,
+      wanted.map((item) => item.found),
+      async (urls) => {
+        const requests = wanted
+          .map(({ placed }, index) => [
+            { deleteContentRange: { range: { startIndex: placed.start, endIndex: placed.end - 1 } } },
+            { insertInlineImage: { location: { index: placed.start }, uri: urls[index] } },
+          ])
+          .reverse()
+          .flat()
+        await call(
+          "docs.documents.batchUpdate",
+          { documentId: id },
+          { requests, writeControl: { requiredRevisionId: doc.revisionId } },
+        )
+        urls.forEach((url, index) => {
+          learned[url] = (wanted[index] as (typeof wanted)[number]).image
+        })
+      },
+    )
+  } catch (error) {
+    const why = isCliError(error) ? error.message : "Google did not take them"
+    images.warn(`${file.path}: ${wanted.length} image(s) stay as text in the Doc: ${why}`)
+    return doc
+  }
+  return fetchDoc(call, id, { ...known, ...learned })
 }
 const docUrl = (id: string) => `https://docs.google.com/document/d/${id}/edit`
 
 export const createDoc = async (
   call: Call,
   input: { file: LocalDocument; name: string; parent: string; origin: string },
+  images?: ImageOptions,
 ): Promise<Pushed<DocSnapshot>> => {
-  const local = await localBlocks(input.file)
+  const local = representation(input.file, {}, images)(await markdownBlocks(readFileSync(input.file.absolute, "utf8")))
   const created = (await call(
     "drive.files.create",
     { fields: "id,webViewLink", supportsAllDrives: true },
@@ -459,11 +579,16 @@ export const createDoc = async (
       { documentId: created.id },
       { requests, writeControl: { requiredRevisionId: empty.revisionId } },
     )
-  const written = await fetchDoc(call, created.id)
+  const written = await placeImages(call, created.id, input.file, local, {}, images)
   return {
     id: created.id,
     url: created.webViewLink ?? docUrl(created.id),
-    snapshot: { kind: "doc", written: written.placed.map((item) => item.block), local },
+    snapshot: {
+      kind: "doc",
+      written: written.placed.map((item) => item.block),
+      local: settled(local, written),
+      images: written.images,
+    },
   }
 }
 
@@ -481,13 +606,16 @@ export const recoveredDoc = async (call: Call, id: string): Promise<DocSnapshot>
 export const prepareDoc = async (
   call: Call,
   input: { id: string; url: string; file: LocalDocument; recorded: DocSnapshot; keep?: Keep },
+  images?: ImageOptions,
 ): Promise<Prepared<DocSnapshot>> => {
   const { id, recorded, keep } = input
-  const doc = await fetchDoc(call, id)
+  const known = recorded.images ?? {}
+  const doc = await fetchDoc(call, id, known)
   // Suggested text reads as if it were accepted; it must neither reach the file nor be written over.
   if (doc.suggestions) return { conflict: "the Doc has pending suggestions; accept or reject them in Google first" }
   const text = readFileSync(input.file.absolute, "utf8")
-  const local = representable(await markdownBlocks(text))
+  const represent = representation(input.file, known, images)
+  const local = represent(await markdownBlocks(text))
   const current = doc.placed.map((item) => item.block)
   const merged = mergeBlocks(recorded.local, recorded.written, local, current, keep)
   let next: Block[]
@@ -512,7 +640,7 @@ export const prepareDoc = async (
 
   let content: string | undefined
   if (!sameBlocks(local, next)) {
-    content = await spliceMarkdown(text, next, representable)
+    content = await spliceMarkdown(text, next, represent)
     if (content === undefined)
       return {
         conflict: "Google's changes cannot be written into the Markdown file without changing other lines",
@@ -520,26 +648,30 @@ export const prepareDoc = async (
       }
   }
   const requests = editRequests(doc, next)
-  const pushed = (written: Block[]): Pushed<DocSnapshot> => ({
+  const pushed = (written: ReadDoc): Pushed<DocSnapshot> => ({
     id,
     url: input.url,
-    snapshot: { kind: "doc", written, local: next },
+    snapshot: {
+      kind: "doc",
+      written: written.placed.map((item) => item.block),
+      local: settled(next, written),
+      images: written.images,
+    },
   })
-  if (!requests.length && content === undefined) return { unchanged: pushed(current) }
+  if (!requests.length && content === undefined) return { unchanged: pushed(doc) }
   return {
     ...(content === undefined
       ? {}
-      : { local: content, afterLocal: { kind: "doc" as const, written: current, local: current } }),
+      : { local: content, afterLocal: { kind: "doc" as const, written: current, local: current, images: doc.images } }),
     remote: requests.length > 0,
     write: async () => {
-      if (!requests.length) return pushed(current)
+      if (!requests.length) return pushed(doc)
       await call(
         "docs.documents.batchUpdate",
         { documentId: id },
         { requests, writeControl: { requiredRevisionId: doc.revisionId } },
       )
-      const written = await fetchDoc(call, id)
-      return pushed(written.placed.map((item) => item.block))
+      return pushed(await placeImages(call, id, input.file, next, known, images))
     },
   }
 }

@@ -1,6 +1,7 @@
 import { isCliError } from "@wirecat/cli-base"
 import type { DocumentTarget, Pushed } from "@wirecat/cli-core/documents"
 import { createDoc, type DocSnapshot, prepareDoc, recoveredDoc } from "./mirror-docs.js"
+import type { ImageOptions } from "./mirror-images.js"
 import { type Call, createSheet, prepareSheet, recoveredSheet, type SheetSnapshot } from "./mirror-sheets.js"
 import { DOC, FOLDER } from "./model.js"
 
@@ -13,7 +14,11 @@ const byOrigin = (origin: string) =>
   `appProperties has { key='wirecatOrigin' and value='${origin}' } and trashed = false`
 
 /** Google Docs and Sheets as a push target. Every call goes through `call`, which checks policy and journals writes. */
-export const googleTarget = (call: Call, identity: () => Promise<string>): DocumentTarget<MirrorSnapshot> => ({
+export const googleTarget = (
+  call: Call,
+  identity: () => Promise<string>,
+  images?: ImageOptions,
+): DocumentTarget<MirrorSnapshot> => ({
   identity,
   kindOf: mirrorKind,
   ensureFolder: async ({ parent, name, origin }) => {
@@ -44,7 +49,7 @@ export const googleTarget = (call: Call, identity: () => Promise<string>): Docum
     const snapshot = file.mimeType === DOC ? await recoveredDoc(call, file.id) : await recoveredSheet(call, file.id)
     return { id: file.id, url: file.webViewLink ?? "", snapshot }
   },
-  create: (input) => (input.file.kind === "doc" ? createDoc(call, input) : createSheet(call, input)),
+  create: (input) => (input.file.kind === "doc" ? createDoc(call, input, images) : createSheet(call, input)),
   prepare: async (input) => {
     let file: { trashed?: boolean; webViewLink?: string }
     try {
@@ -59,7 +64,7 @@ export const googleTarget = (call: Call, identity: () => Promise<string>): Docum
     }
     if (file.trashed) return { missing: true }
     const args = { ...input, url: file.webViewLink ?? "" }
-    if (input.recorded.kind === "doc") return prepareDoc(call, { ...args, recorded: input.recorded })
+    if (input.recorded.kind === "doc") return prepareDoc(call, { ...args, recorded: input.recorded }, images)
     return prepareSheet(call, { ...args, recorded: input.recorded })
   },
 })
