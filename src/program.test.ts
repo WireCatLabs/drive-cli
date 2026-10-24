@@ -5,8 +5,8 @@ import { flatten, parseCommandsDocument } from "@wirecat/cli-base/commands"
 import { describe, expect, it } from "vitest"
 import { createProgram } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
-import { readState } from "./state.js"
-import { commandResult, fixture } from "./testing.js"
+import { readState, saveState } from "./state.js"
+import { commandResult, file, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
   it("prints the version without a trailing blank line", async () => {
@@ -165,6 +165,28 @@ describe("standalone command workflow", () => {
       index: async () => f.index,
     }).parseAsync(["default", "sync", "--json"], { from: "user" })
     expect((await search()).not_imported).toBeUndefined()
+  })
+  it("omits skipped file names and provider metadata from status", async () => {
+    const f = fixture()
+    saveState(f.env, "default", {
+      version: 1,
+      principal: "synthetic-principal",
+      scope: "",
+      folders: {},
+      documents: {},
+      skipped: [
+        {
+          id: "skipped-doc",
+          reason: "unsupported",
+          file: { ...file("skipped-doc"), name: "SECRET-NAME", providerMetadata: { name: "SECRET-NAME" } },
+        },
+      ],
+    })
+    const streams = captureStreams()
+    await createProgram({ env: f.env, streams }).parseAsync(["default", "status", "--json"], { from: "user" })
+    expect(streams.stdout.join("")).not.toContain("SECRET-NAME")
+    expect(commandResult(streams.stdout.join("")).skipped).toEqual([{ id: "skipped-doc", reason: "unsupported" }])
+    expect(readState(f.env, "default", "synthetic-principal").skipped[0]?.file?.name).toBe("SECRET-NAME")
   })
   it("shows local status without calling Google or opening an index", async () => {
     const f = fixture()

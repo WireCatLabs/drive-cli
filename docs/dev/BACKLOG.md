@@ -24,6 +24,8 @@ by path below.
 - **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
   Today only `api drive-files-export` / `drive-files-download`.
 
+- **DRV-46 · P1 · 🚧 fix/status-privacy-1024 · Omit document names from status output.** Skipped metadata and mirror filenames.
+
 ## Next (P2)
 
 - **DRV-5 · P2 · A user guide for `mirrors`.** The 0.21–0.23 feature has no page: set-up, both directions,

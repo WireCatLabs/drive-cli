@@ -7,7 +7,6 @@ import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { activeProfile, paths } from "../config.js"
 import { MAX_ENTRIES } from "../google.js"
-import { skipJson } from "../model.js"
 import { examples } from "../registry.js"
 import { readState } from "../state.js"
 import { sync } from "../sync.js"
@@ -70,7 +69,7 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
         selected_folders: profile.roots,
         documents: Object.keys(state.documents).length,
         pending: state.pending?.jobs.length ?? 0,
-        skipped: state.skipped.map(skipJson),
+        skipped: state.skipped.map(({ id, reason }) => ({ id, reason })),
         last_sync: state.lastSync ?? null,
         coverage:
           "Google Docs/Sheets, PDF/DOCX/XLSX and Markdown/TXT/CSV/TSV; native export layout, tab fidelity and assets are not verified",

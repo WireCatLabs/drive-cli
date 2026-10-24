@@ -143,13 +143,28 @@ const tabCells = (t: ReturnType<typeof setup>, id: string) =>
   (t.google.tabs.get(id) ?? []).map((tab) => [tab.title, tab.cells])
 
 describe("mirrors", () => {
+  it("omits local roots and file names from status while retaining counts", async () => {
+    const t = setup()
+    t.write("SECRET-NAME.csv", "item,amount\nrent,950\n")
+    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
+    const before = t.google.calls.length
+    const status = await t.run("mirrors", "status")
+    expect(status.error).toBeUndefined()
+    expect(JSON.stringify(status.result)).not.toContain("SECRET-NAME")
+    expect(JSON.stringify(status.result)).not.toContain(t.local)
+    expect(status.result).toMatchObject({
+      items: [{ create: 1, update: 0, orphans: 0, unsupported: 0, remote_checked: false }],
+    })
+    expect(t.google.calls).toHaveLength(before)
+  })
+
   it("adds a mirror, then creates a Sheet with typed cells and a frozen bold header", async () => {
     const t = setup()
     t.write("data/budget.csv", 'item,amount,code\n"rent, flat",950.5,007\nfood,=1+1,42\n')
     const added = await t.run("mirrors", "add", t.local, "--parent", "root-folder")
     const id = (added.result as { id: string }).id
     expect((await t.run("mirrors", "status")).result).toMatchObject({
-      items: [{ id, create: ["data/budget.csv"], update: [], remote_checked: false }],
+      items: [{ id, create: 1, update: 0, remote_checked: false }],
     })
     const pushed = await t.run("mirrors", "sync")
     expect(pushed.error).toBeUndefined()
@@ -166,7 +181,7 @@ describe("mirrors", () => {
       ],
     ])
     expect((await t.run("mirrors", "status")).result).toMatchObject({
-      items: [{ create: [], update: [], unchanged: 1 }],
+      items: [{ create: 0, update: 0, unchanged: 1 }],
     })
   })
 
