@@ -6,6 +6,14 @@ import { policySettings } from "./policy.js"
 import { fixture } from "./testing.js"
 
 describe("existing AI settings", () => {
+  it.each(["read_only", "readOnly"])("refuses retired %s without rewriting configuration", (key) => {
+    const f = fixture()
+    const path = join(paths(f.env).config, "config.json")
+    const text = JSON.stringify({ ...readConfig(f.env), defaults: { [key]: true } })
+    writeFileSync(path, text)
+    expect(() => readConfig(f.env)).toThrow("read_only is retired")
+    expect(readFileSync(path, "utf8")).toBe(text)
+  })
   it("migrates an old file once, retaining its mode, profile names and permission paths", () => {
     const f = fixture()
     const path = join(paths(f.env).config, "config.json")
@@ -16,11 +24,10 @@ describe("existing AI settings", () => {
         ...existing,
         profiles: {
           ...existing.profiles,
-          personalAccount: { ...activeProfile(f.env, "default"), readOnly: true, pictureSearch: true },
+          personalAccount: { ...activeProfile(f.env, "default"), pictureSearch: true },
         },
         defaults: {
           embeddingModel: "all-MiniLM-L6-v2",
-          readOnly: false,
           maxTextChars: 2048,
           permissions: { "documents.memories.extract": "deny" },
           models: { memories: { provider: "openai", model: "fixture-model", baseUrl: "http://127.0.0.1:1" } },
@@ -31,14 +38,12 @@ describe("existing AI settings", () => {
     const config = readConfig(f.env)
     expect(config.defaults).toMatchObject({
       embedding_model: "all-MiniLM-L6-v2",
-      read_only: false,
       max_text_chars: 2048,
       permissions: { "documents.memories.extract": "deny" },
       models: { memories: { base_url: "http://127.0.0.1:1" } },
     })
-    expect(config.profiles.personalAccount?.read_only).toBe(true)
     expect(config.profiles.personalAccount?.picture_search).toBe(true)
-    expect(policySettings(f.env, "personalAccount").readOnly).toBe(true)
+    expect(policySettings(f.env, "personalAccount").readOnly).toBe(false)
     const text = readFileSync(path, "utf8")
     expect(text).not.toContain('"embeddingModel"')
     expect(text).not.toContain('"baseUrl"')
@@ -106,10 +111,10 @@ describe("an invalid config names the first bad key and never its value", () => 
 
   it("hides a value placed in a field of the wrong type", () => {
     const { env, path } = write({
-      profiles: { work: { principal: "p", roots: [], storage: "keyring", read_only: "fixture-hidden-value-42" } },
+      profiles: { work: { principal: "p", roots: [], storage: "keyring", max_text_chars: "fixture-hidden-value-42" } },
     })
     const message = errorOf(() => readConfig(env))
-    expect(message).toBe(`${path}: profiles.work.read_only has the wrong type or is out of range`)
+    expect(message).toBe(`${path}: profiles.work.max_text_chars has the wrong type or is out of range`)
     expect(message).not.toContain("fixture-hidden-value-42")
   })
 

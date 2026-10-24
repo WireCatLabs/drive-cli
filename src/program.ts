@@ -25,6 +25,7 @@ import {
   refuseCommandName,
   renderAnswer,
 } from "@wirecat/cli-core/cli"
+import { newOperationId } from "@wirecat/cli-core/sends"
 import { Command, Help } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { installCatalogCommands } from "./commands/catalog.js"
@@ -311,7 +312,13 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
           throw googleError(error)
         }
       }
-      return descriptor.mutates ? guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce) : act()
+      if (!descriptor.mutates) return act()
+      const operationId = newOperationId()
+      const result = await guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce, operationId)
+      return {
+        ...(result && typeof result === "object" && !Array.isArray(result) ? result : { data: result }),
+        operation_id: operationId,
+      }
     },
     download: async (id, mime) => {
       const method = mime ? "drive.files.export" : "drive.files.get"
@@ -340,7 +347,12 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         }
         return uploadFile({ path, ...args, stateDir: profileDir(env, selected()), request })
       }
-      return guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce)
+      const operationId = newOperationId()
+      const result = await guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce, operationId)
+      return {
+        ...(result && typeof result === "object" && !Array.isArray(result) ? result : { data: result }),
+        operation_id: operationId,
+      }
     },
   }
   installRemoteCommands(program, remote)

@@ -10,7 +10,6 @@ import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
   ...AI_ENTRIES,
-  read_only: v.optional(v.boolean()),
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
   max_text_chars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
 }

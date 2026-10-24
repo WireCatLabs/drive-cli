@@ -21,11 +21,14 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     annotate(config.command("set"), { effects: LOCAL_WRITE }).description(
       "set one setting of this profile, or of the defaults",
     ),
-    ["drive personal config set read_only true", `drive personal config set permissions.files '"readonly"' --defaults`],
+    [
+      "drive personal config set max_text_chars 100000",
+      `drive personal config set permissions.files '"readonly"' --defaults`,
+    ],
   )
     .argument(
       "<key>",
-      "read_only, max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>",
+      "max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>",
     )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")

@@ -3806,6 +3806,64 @@ drive <profile> files upload <path> [options]
 
 read the comments of a file in Google Drive
 
+### `drive comments reply`
+
+reply to a Google Drive comment
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> comments reply <file> <comment-id> <text>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+| `comment-id` | required | comment id from comments list. |
+| `text` | required | reply text. |
+
+**Returns:** reply to a Google Drive comment
+
+**Example:** `drive personal comments reply FILE_ID COMMENT_ID "Reply text"`
+
+### `drive comments resolve`
+
+resolve a Google Drive comment
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> comments resolve <file> <comment-id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+| `comment-id` | required | comment id from comments list. |
+
+**Returns:** resolve a Google Drive comment
+
+**Example:** `drive personal comments resolve FILE_ID COMMENT_ID`
+
+### `drive comments reopen`
+
+reopen a Google Drive comment
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> comments reopen <file> <comment-id>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+| `comment-id` | required | comment id from comments list. |
+
+**Returns:** reopen a Google Drive comment
+
+**Example:** `drive personal comments reopen FILE_ID COMMENT_ID`
+
 ### `drive comments list`
 
 list a file's comments
@@ -4068,7 +4126,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | read_only, max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |
@@ -4077,7 +4135,7 @@ drive <profile> config set <key> <json-value> [options]
 
 **Returns:** set one setting of this profile, or of the defaults
 
-**Example:** `drive personal config set read_only true`, `drive personal config set permissions.files '"readonly"' --defaults`
+**Example:** `drive personal config set max_text_chars 100000`, `drive personal config set permissions.files '"readonly"' --defaults`
 
 ## `drive complete`
 

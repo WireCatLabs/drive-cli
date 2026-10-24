@@ -42,7 +42,7 @@ are preserved. Validators and operation effects are generated from committed inp
 `--profile` is refused, and `DRIVE_PROFILE_LOCK` pins the process to one profile.
 Permission layers use the shared nearest-layer/specific-path rules: temporary flags, profile,
 then defaults. A `--permission` flag only tightens: a looser level, or a key that names no command,
-is refused. `read_only` prevents mutation even when another level allows it. Housekeeping such
+is refused. `DRIVE_READ_ONLY` prevents mutation even when another level allows it. The retired `read_only` setting is refused. Housekeeping such
 as command discovery and owner configuration remains available so a policy can be inspected/fixed.
 
 ```sh

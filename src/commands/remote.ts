@@ -385,6 +385,29 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     const group = annotate(program.command(resource), { effects: GOOGLE_READ }).description(
       `read the ${resource} of a file in Google Drive`,
     )
+    if (resource === "comments") {
+      for (const action of ["reply", "resolve", "reopen"] as const) {
+        const command = examples(
+          annotate(group.command(action), { effects: GOOGLE_WRITE })
+            .argument("<file>", fileArgument)
+            .argument("<comment-id>", "comment id from comments list")
+            .description(action === "reply" ? "reply to a Google Drive comment" : `${action} a Google Drive comment`),
+          [`drive personal comments ${action} FILE_ID COMMENT_ID${action === "reply" ? ' "Reply text"' : ""}`],
+        )
+        if (action === "reply") command.argument("<text>", "reply text")
+        command.action(async (file: string, comment: string, text?: string) => {
+          output(
+            itemOf(
+              await call(
+                "drive.replies.create",
+                { fileId: fileId(file), commentId: comment, fields: "*" },
+                action === "reply" ? { content: text } : { action },
+              ),
+            ),
+          )
+        })
+      }
+    }
     page(
       examples(
         annotate(group.command("list"), { effects: GOOGLE_READ })

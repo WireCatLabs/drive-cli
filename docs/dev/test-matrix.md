@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**207 ✅ · 958 ⛔ · 0 ❌** — 186 commands, 979 options.
+**214 ✅ · 954 ⛔ · 0 ❌** — 189 commands, 979 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -733,16 +733,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `api drive-permissions-update` | `--permission-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-permissions-update` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-permissions-update` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-replies-create` |  | ✅ |  |
 | `api drive-replies-create` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--pretty-print` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--$.xgafv` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--callback` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--alt` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-create` | `--quota-user` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` | `--comment-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` | `--file-id` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
-| `api drive-replies-create` | `--body` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
+| `api drive-replies-create` | `--comment-id` | ✅ |  |
+| `api drive-replies-create` | `--file-id` | ✅ |  |
+| `api drive-replies-create` | `--body` | ✅ |  |
 | `api drive-replies-create` | `--body-file` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-delete` |  | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
 | `api drive-replies-delete` | `--fields` | ⛔ | generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them and `api call` drives the shared executor |
@@ -1116,6 +1116,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files upload` |  | ✅ |  |
 | `files upload` | `--parent` | ✅ |  |
 | `files upload` | `--name` | ✅ |  |
+| `comments reply` |  | ✅ |  |
+| `comments resolve` |  | ✅ |  |
+| `comments reopen` |  | ✅ |  |
 | `comments list` |  | ✅ |  |
 | `comments list` | `--limit` | ✅ |  |
 | `comments list` | `--cursor` | ✅ |  |
