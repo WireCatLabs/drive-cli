@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- **A mirroring guide** covers setup, both directions, conflicts, choosing a side and deletion limits.
+  The documentation check now enforces standard changelog headings for new releases.
+
+- **`files download FILE_ID --out PATH` and `files export DOC_ID --format pdf|docx|xlsx|csv --out PATH`** save
+  Google content locally. Existing outputs require `--overwrite`; results report byte counts. The existing
+  `documents export --output PATH` still writes imported Markdown offline.
+
 ### Security
 
 - **Development tooling uses patched fast-uri and markdown-it.** Overrides resolve fast-uri 3.1.9 and
@@ -12,12 +21,6 @@
 - **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
   `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
   `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
-
-### Added
-
-- **`files download FILE_ID --out PATH` and `files export DOC_ID --format pdf|docx|xlsx|csv --out PATH`** save
-  Google content locally. Existing outputs require `--overwrite`; results report byte counts. The existing
-  `documents export --output PATH` still writes imported Markdown offline.
 
 ## 0.26.0 — 24.10.2026
 
