@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- **Development tooling uses patched fast-uri and markdown-it.** Overrides resolve fast-uri 3.1.9 and
+  markdown-it 15.0.3, body-parser 2.4.0 and ip-address 10.7.4; production dependencies and the historical upgrade fixture stay unchanged.
+
 ## 0.26.0 — 24.10.2026
 
 ### Added
