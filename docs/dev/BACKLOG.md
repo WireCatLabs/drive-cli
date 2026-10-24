@@ -21,9 +21,6 @@ by path below.
   permissions, every new user sees the "unverified app" screen and the app stops at 100 new users. Submit the
   data-access review, record the case, answer follow-ups; confirm Audience is In production. Owner task. Details:
   cli-private `plans/2026-10-17-google-data-access-verification.md`, [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md).
-- **DRV-2 · P1 · 🚩 Release main.** npm `latest` is 0.23.0; the Unreleased fixes (closed-pipe crash, `--profile`
-  removal, `DRIVE_PROFILE_LOCK`, `--permission` that loosened a `deny`, partial sync saying `complete: true`,
-  `DRIVE_READ_ONLY` letting `config set` write) reach users only with a release. `bin/release`; needs the owner's yes.
 - **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
   Today only `api drive-files-export` / `drive-files-download`.
 
@@ -54,8 +51,6 @@ by path below.
   `cooperative` declared on commands instead of a name list; snake_case tool arguments. `src/mcp.ts`.
 - **DRV-14 · P2 · Refuse the old `read_only` setting; let `ask` ask at a terminal** (WC-PERM-1, WC-PERM-9).
   `src/config.ts:13`, `src/bin/drive.ts`.
-- **DRV-15 · P2 · Pull-request validation** (WC-CI-5): tests, coverage, contracts and the upgrade check run only
-  after merge. Add the PR workflow and require its jobs. `.github/workflows/`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-20 · P2 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared
