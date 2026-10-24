@@ -6,7 +6,13 @@ import { type CommandInfo, flatten } from "@wirecat/cli-base/commands"
 import { QUERY_LIMITS } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import { changesAuthorityAt } from "@wirecat/cli-core/cli"
-import { type CommandAvailability, type McpCommand, registerCommands } from "@wirecat/cli-core/mcp"
+import {
+  type CommandAvailability,
+  MCP_PATH,
+  type McpCommand,
+  registerCommands,
+  serveOverHttp,
+} from "@wirecat/cli-core/mcp"
 import { openStore, storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import * as v from "valibot"
@@ -16,6 +22,7 @@ import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
+import { profileDir } from "./state.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
@@ -344,5 +351,53 @@ export const serveMcp = async (
   } finally {
     options.signal?.removeEventListener("abort", stop)
     await server.close()
+  }
+}
+
+/** Where `mcp --http` keeps the hashes of the logins it gave out, per profile. */
+export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>
+  join(profileDir(env, profile), "mcp-http.json")
+
+export interface HttpServing {
+  publicUrl: URL
+  port: number
+  note: (text: string) => void
+}
+
+/** The same server as stdio, one per browser session, behind cli-core's owner login; ends on Ctrl-C or --timeout. */
+export const serveMcpOverHttp = async (
+  build: BuildProgram,
+  options: ProgramOptions,
+  profile: string,
+  flags: PolicyFlags,
+  { publicUrl, port, note }: HttpServing,
+) => {
+  const env = options.env ?? process.env
+  const listening = await serveOverHttp(() => buildMcpServer(build, options, profile, flags).server, {
+    publicUrl,
+    port,
+    tokenFile: httpTokenFile(env, profile),
+    appName: "drive",
+    onCode: (code, expires) =>
+      note(
+        `login code for a new browser app: ${code} (until ${expires.toTimeString().slice(0, 5)}; a new one after each login)`,
+      ),
+    onError: (error) => note(`mcp: ${error.message}`),
+  }).catch((error: unknown) => {
+    if ((error as NodeJS.ErrnoException).code === "EADDRINUSE")
+      throw new CliError("configuration_error", `port ${port} is in use — pass another with --port`)
+    throw error
+  })
+  note(
+    `serving on ${listening.url.href} — point your tunnel at it; connectors use ${new URL(MCP_PATH, publicUrl).href}`,
+  )
+  try {
+    await new Promise<void>((resolve) => {
+      if (!options.signal) return
+      if (options.signal.aborted) resolve()
+      options.signal.addEventListener("abort", () => resolve(), { once: true })
+    })
+  } finally {
+    await listening.close()
   }
 }
