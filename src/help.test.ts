@@ -51,9 +51,15 @@ describe("help without a profile or an account", () => {
   })
 
   it("refuses a model download under --offline before anything is fetched", async () => {
-    await expect(run(["--offline", "models", "text", "download", "e5-small"])).rejects.toMatchObject({
+    await expect(run(["--offline", "models", "download", "e5-small"])).rejects.toMatchObject({
       code: "permission_error",
       details: { reason: "offline.refused" },
+    })
+  })
+
+  it("refuses the retired models text download spelling", async () => {
+    await expect(run(["models", "text", "download", "e5-small"])).rejects.toMatchObject({
+      code: "commander.unknownCommand",
     })
   })
 })

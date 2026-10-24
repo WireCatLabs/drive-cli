@@ -1153,8 +1153,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models set` | `--provider` | ✅ |  |
 | `models set` | `--model` | ✅ |  |
 | `models set` | `--base-url` | ✅ |  |
-| `models text download` |  | ✅ |  |
-| `models text download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
+| `models download` |  | ✅ |  |
+| `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
 | `mcp` |  | ✅ |  |
 | `mcp` | `--tools` | ✅ |  |

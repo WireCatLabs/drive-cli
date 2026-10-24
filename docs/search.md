@@ -56,7 +56,7 @@ Drive uses the shared local search model cache. Download the model once — it n
 Drive to embed the imported text:
 
 ```sh
-drive models text download e5-small
+drive models download e5-small
 drive personal sync --embed
 drive personal search 'what did we agree to spend?' --json
 ```

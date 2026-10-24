@@ -6,7 +6,7 @@ steps:
     why: signs in to Google in the browser, read-only; drive commands start with your profile, as in drive personal session start
   - run: drive folders add https://drive.google.com/drive/folders/FOLDER_ID
     why: only the folders you add are imported, with everything under them
-  - run: drive models text download e5-small
+  - run: drive models download e5-small
     why: the local model for search by meaning, once per computer; every WireCat CLI shares it
   - run: drive sync --embed
     why: imports what changed in those folders and indexes the text by meaning
