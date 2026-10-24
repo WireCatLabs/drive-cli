@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.29.0 — 24.10.2026
 
 ### Added
 
@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Adopt published cli-core 0.410.0 and the compatible cli-base 0.50.4 release.
 - Permission-denied commands stay discoverable in CLI help and MCP with current availability, reasons and required permission keys. Execution still refuses denied calls and missing write grants.
 - Correct shared alignment guidance for discovery contract 4, foreground watches and current command-lint debt.
 

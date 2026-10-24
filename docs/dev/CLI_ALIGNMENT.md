@@ -136,7 +136,8 @@ does not establish content fidelity.
 Differences that remain: this CLI has Google-specific profile/state configuration and its own
 command catalogue for MCP, because the shared messenger/bot factories require messenger capabilities;
 only the three-tool surface is shared.
-There is no HTTP MCP/OAuth hosting, messenger parity mapping or full media-upload workflow.
+HTTP MCP uses the same guarded server behind an owner-managed HTTPS tunnel and one-time-code OAuth.
+See [remote connections](../remote.md). Messenger parity mapping and a full media-upload workflow remain omitted.
 `mirrors watch` runs in the foreground; starting it automatically as a background service remains
 planned. Published-package CI includes Windows acceptance. These differences are not MAX parity.
 
@@ -220,3 +221,11 @@ not a new full audit of every shared standard. The earlier audit's counts must n
 current results. Stronger shared per-field untrusted-text marking is also pending in
 [cli-core issue 1883](https://github.com/WireCatLabs/cli-core/issues/1883); current MCP instructions
 already identify retrieved content as untrusted and make control characters visible.
+
+### 0.29.0 release follow-up
+
+The release uses cli-core 0.410.0 and compatible cli-base 0.50.4. Command lint reports 28 violations:
+19 baseline entries and nine overrides, with zero new violations. The shared vocabulary now covers
+`facts reverse`, so its override was removed. HTTP MCP adds the guarded browser connection described
+above. The remaining standards work listed in the dated check is still tracked; this release does
+not certify full alignment.
