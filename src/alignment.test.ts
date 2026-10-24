@@ -290,7 +290,7 @@ describe("shared CLI policy and execution", () => {
       (tool) => tool.name === "drive_api_drive_files_delete",
     )
     if (!remove) throw new Error("missing delete tool")
-    expect(await invokeTool(createProgram, remove, { "file-id": "doc-a" }, options, "default")).not.toHaveProperty(
+    expect(await invokeTool(createProgram, remove, { file_id: "doc-a" }, options, "default")).not.toHaveProperty(
       "isError",
     )
     expect(request).toHaveBeenCalledOnce()
@@ -345,14 +345,14 @@ describe("MCP derived from the same guarded command tree", () => {
     ])
     const get = readonly.find((tool) => tool.name === "drive_api_drive_files_get")
     if (!get) throw new Error("missing generated tool")
-    expect(await invokeTool(createProgram, get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
+    expect(await invokeTool(createProgram, get, { file_id: "doc-a" }, options, "default")).toMatchObject({
       structuredContent: { item: { id: "doc-a" } },
     })
     const config = readConfig(f.env)
     config.defaults = { permissions: { files: "deny" } }
     writeConfig(f.env, config)
     expect(mcpTools(createProgram, options, "default").some((tool) => tool.name === get.name)).toBe(false)
-    expect(await invokeTool(createProgram, get, { "file-id": "doc-a" }, options, "default")).toMatchObject({
+    expect(await invokeTool(createProgram, get, { file_id: "doc-a" }, options, "default")).toMatchObject({
       isError: true,
     })
     const tools = mcpTools(createProgram, options, "default")

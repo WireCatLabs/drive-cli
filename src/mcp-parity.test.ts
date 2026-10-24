@@ -35,6 +35,10 @@ describe("MCP parity and authority", () => {
       expect(result, name).not.toHaveProperty("isError", true)
       expect(result.structuredContent).toBeDefined()
     }
+    for (const name of ["models text download", "images models download"])
+      expect(t.tools().some((tool) => tool.command.path.join(" ") === name)).toBe(true)
+    for (const tool of t.tools())
+      for (const key of Object.keys(tool.schema.properties as object)) expect(key).not.toContain("-")
     expect(t.options.api.call).not.toHaveBeenCalled()
     expect(t.tools().map((tool) => tool.command.path.join(" "))).not.toContain("config set")
     expect(t.tools().map((tool) => tool.command.path.join(" "))).not.toContain("models set")
@@ -47,13 +51,14 @@ describe("MCP parity and authority", () => {
     t.allow()
     const config = t.tool("config set")
     const models = t.tool("models set")
+    expect(t.tool("skill install")).toBeDefined()
     expect(
-      await invokeTool(createProgram, config, { key: "max_text_chars", "json-value": "1000" }, t.options, "default"),
+      await invokeTool(createProgram, config, { key: "max_text_chars", json_value: "1000" }, t.options, "default"),
     ).not.toHaveProperty("isError", true)
     expect(readConfig(t.env).profiles.default?.max_text_chars).toBe(1000)
     for (const key of ["permissions", "permissions.mcp.authority", "permissions.mcp", "read_only"]) {
       expect(
-        await invokeTool(createProgram, config, { key, "json-value": "{}", defaults: true }, t.options, "default"),
+        await invokeTool(createProgram, config, { key, json_value: "{}", defaults: true }, t.options, "default"),
       ).toMatchObject({ isError: true, structuredContent: { error: { code: "permission_error" } } })
     }
     expect(await invokeTool(createProgram, models, { provider: "off" }, t.options, "default")).not.toHaveProperty(
@@ -68,12 +73,12 @@ describe("MCP parity and authority", () => {
     }
     writeConfig(t.env, current)
     expect(
-      await invokeTool(createProgram, config, { key: "max_text_chars", "json-value": "2000" }, t.options, "default"),
+      await invokeTool(createProgram, config, { key: "max_text_chars", json_value: "2000" }, t.options, "default"),
     ).toHaveProperty("isError", true)
     expect(readConfig(t.env).profiles.default?.max_text_chars).toBe(1000)
     t.allow()
     expect(
-      await invokeTool(createProgram, config, { key: "max_text_chars", "json-value": "2000" }, t.options, "default", {
+      await invokeTool(createProgram, config, { key: "max_text_chars", json_value: "2000" }, t.options, "default", {
         readOnly: true,
       }),
     ).toHaveProperty("isError", true)

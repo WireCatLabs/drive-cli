@@ -24,7 +24,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
     "sign in to Google and manage local profiles",
   )
   examples(
-    annotate(session.command("start"), { effects: REMOTE_WRITE }).description(
+    annotate(session.command("start"), { mcp: false, effects: REMOTE_WRITE }).description(
       "sign in to Google in the browser; read-only unless you pass --grant write",
     ),
     ["drive personal session start", "drive work session start --grant write,activity"],
@@ -80,7 +80,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
     ),
   )
   examples(
-    annotate(session.command("end"), { effects: LOCAL_WRITE }).description(
+    annotate(session.command("end"), { mcp: false, effects: LOCAL_WRITE }).description(
       "sign this profile out; imported documents stay",
     ),
     ["drive personal session end"],

@@ -88,7 +88,7 @@ Completion uses cli-base's registry and suggestion engine plus the same shell-sc
 MAX. It does not load Google credentials, open a store or fetch names over the network.
 MCP stdio uses the protocol SDK pinned in package.json and serves cli-core's three tools, as tg and
 max do: `drive_tools_search`, `drive_read` and `drive_write` (`registerCommands`). The commands they
-find and their input flags come from the command tree; a call constructs argv and runs the same CLI,
+find and their input flags come from the command tree, with snake_case MCP argument names; a call constructs argv and runs the same CLI,
 so schemas, profile selection and policies cannot drift into a second executor. Input is untrusted: positional values follow the end-of-options
 delimiter and a client cannot supply policy overrides. Denied/write-disabled commands are hidden, and
 so are commands whose Google scope the sign-in lacks; every call rechecks current policy. Sign-in changes, arbitrary export paths, body files,

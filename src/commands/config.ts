@@ -131,7 +131,7 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     "the local model that search by meaning uses",
   )
   examples(
-    annotate(text.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+    annotate(text.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
       "download a search model once into the folder every WireCat CLI shares",
     ),
     ["drive models text download e5-small"],
@@ -139,14 +139,14 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     .argument("<model>", "model id, such as e5-small")
     .option("--accept-terms", "accept the model's licence terms, for a model that has its own")
     .action((id: string, args: { acceptTerms?: boolean }) => download("text", id, args.acceptTerms === true))
-  const images = annotate(program.command("images"), { effects: LOCAL_READ, mcp: false }).description(
+  const images = annotate(program.command("images"), { effects: LOCAL_READ }).description(
     "the local model that picture search uses",
   )
   const imageModels = annotate(images.command("models"), { effects: LOCAL_READ }).description(
     "models that read pictures, for picture search",
   )
   examples(
-    annotate(imageModels.command("download"), { effects: FETCH, mcp: false, output: { entity: "model" } }).description(
+    annotate(imageModels.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
       "download a picture model once into the folder every WireCat CLI shares",
     ),
     ["drive images models download clip-b32"],

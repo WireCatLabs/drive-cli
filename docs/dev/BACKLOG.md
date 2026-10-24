@@ -34,8 +34,6 @@ by path below.
   edit (RISK-1601). cli-private `plans/2026-10-21-document-push-sync.md`.
 - **DRV-11 · P2 · Local images in mirrored Markdown.** A local path becomes literal `![](path)` text; only
   `https://` images are inserted. `src/mirror-docs.ts`.
-- **DRV-13 · P2 · MCP surface from the command tree** (WC-CMD-18/21, WC-MCP-3): `mcp: false`, `lifetime` and
-  `cooperative` declared on commands instead of a name list; snake_case tool arguments. `src/mcp.ts`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
 - **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of

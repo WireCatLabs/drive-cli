@@ -27,19 +27,6 @@ interface ToolDefinition {
 }
 /** A list's query is one string, as cli-core's MCP lists take it; the CLI joins its words the same way. */
 const isQuery = (command: CommandInfo, name: string) => command.query !== undefined && name === "query"
-const offered = new Set(["session list", "config show", "config set", "models set", "skill show", "guide"])
-const excluded = new Set([
-  "session",
-  "config",
-  "complete",
-  "mcp",
-  "models",
-  "images",
-  "guide",
-  "help",
-  "skill",
-  "upgrade",
-])
 // REMOTE_WRITE also marks a command that sends a document to the model (memories extract); only GOOGLE_WRITE
 // changes Google files.
 const requiredScope = (command: CommandInfo) =>
@@ -131,13 +118,7 @@ export const mcpTools = (
   }
   return commands
     .filter((command) => {
-      if (
-        command.commands.length ||
-        (excluded.has(command.path[0] ?? "") && !offered.has(command.path.join(" "))) ||
-        command.mcp === false ||
-        command.path.join(" ") === "api call"
-      )
-        return false
+      if (command.commands.length || command.mcp === false || command.lifetime === "persistent") return false
       if (
         !grants(command) ||
         (authority(command.path) && !["ask", "allow"].includes(levelFor(settings.levels, "mcp.authority").level))
@@ -153,7 +134,7 @@ export const mcpTools = (
       const properties: Record<string, unknown> = {}
       const required: string[] = []
       for (const argument of command.arguments) {
-        properties[argument.name] = isQuery(command, argument.name)
+        properties[argument.name.replaceAll("-", "_")] = isQuery(command, argument.name)
           ? {
               type: "string",
               maxLength: QUERY_LIMITS.bytes,
@@ -162,16 +143,17 @@ export const mcpTools = (
           : argument.variadic
             ? { type: "array", items: { type: "string", maxLength: 100000 }, maxItems: 100 }
             : { type: "string", maxLength: 100000 }
-        if (argument.required) required.push(argument.name)
+        if (argument.required) required.push(argument.name.replaceAll("-", "_"))
       }
       for (const option of command.options) {
         const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
         if (!name || ["body-file", "allow-write", "allow-delete", "allow-dangerous"].includes(name)) continue
-        properties[name] = {
+        const field = name.replaceAll("-", "_")
+        properties[field] = {
           type: option.takes_value ? "string" : "boolean",
           ...(option.choices ? { enum: option.choices } : {}),
         }
-        if (option.mandatory) required.push(name)
+        if (option.mandatory) required.push(field)
       }
       return {
         name: `drive_${command.path.join("_").replaceAll("-", "_")}`,
@@ -189,13 +171,15 @@ export const toolArgv = (tool: ToolDefinition, input: Record<string, unknown>) =
   const args: string[] = [...tool.command.path]
   for (const option of tool.command.options) {
     const name = option.flags.match(/--([a-z0-9-]+)/)?.[1]
-    if (!name || input[name] === undefined) continue
-    if (option.takes_value) args.push(`--${name}=${String(input[name])}`)
-    else if (input[name] === true) args.push(`--${name}`)
+    if (!name) continue
+    const field = name.replaceAll("-", "_")
+    if (input[field] === undefined) continue
+    if (option.takes_value) args.push(`--${name}=${String(input[field])}`)
+    else if (input[field] === true) args.push(`--${name}`)
   }
   if (tool.command.arguments.length) args.push("--")
   for (const argument of tool.command.arguments) {
-    const value = input[argument.name]
+    const value = input[argument.name.replaceAll("-", "_")]
     if (Array.isArray(value)) {
       for (const item of value) args.push(String(item))
     } else if (value !== undefined) args.push(String(value))

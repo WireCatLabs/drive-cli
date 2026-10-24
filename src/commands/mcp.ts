@@ -12,7 +12,7 @@ export const installMcpCommand = (
   createProgram: (options: ProgramOptions) => Command,
 ) => {
   examples(
-    annotate(program.command("mcp"), { effects: REMOTE_WRITE, lifetime: "persistent" }).description(
+    annotate(program.command("mcp"), { effects: REMOTE_WRITE, lifetime: "persistent", mcp: false }).description(
       "serve drive's commands to an agent over MCP: search, then read or write",
     ),
     ["drive personal mcp", "drive personal mcp --tools"],

@@ -8,7 +8,7 @@ import type { CommandContext } from "./context.js"
 
 export const installCompleteCommand = (program: Command, { streams }: CommandContext) => {
   examples(
-    annotate(program.command("complete"), { effects: NO_EFFECTS }).description(
+    annotate(program.command("complete"), { mcp: false, effects: NO_EFFECTS }).description(
       "print a shell completion script, or complete words",
     ),
     ["drive complete zsh"],

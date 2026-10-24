@@ -100,7 +100,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     output(itemOf({ operation: operationOf(method), request_schema: requestSchema(method) })),
   )
   examples(
-    annotate(api.command("call"), { effects: GOOGLE_WRITE })
+    annotate(api.command("call"), { mcp: false, effects: GOOGLE_WRITE })
       .description("call one Google API method by name with JSON parameters")
       .argument("<method>", "Google method name, as api list prints it"),
     [

@@ -34,6 +34,10 @@
   `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
   `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
 
+- **MCP argument names use snake_case**, such as `file_id` instead of `file-id`; CLI flags keep their spelling.
+  Command declarations control the MCP surface. Model downloads and skill installation are discoverable,
+  with skill installation requiring the owner’s authority permission.
+
 ### Security
 
 - **Development tooling uses patched fast-uri and markdown-it.** Overrides resolve fast-uri 3.1.9 and
