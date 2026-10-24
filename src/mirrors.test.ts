@@ -1,5 +1,4 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs"
-import { createServer } from "node:net"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, isCliError } from "@wirecat/cli-base"
@@ -440,28 +439,6 @@ describe("mirrors watch", () => {
     t.write("budget.csv", "a\n1\n")
     await t.run("mirrors", "add", t.local, "--parent", "root-folder")
     expect((await watching(t, ["--every", "1s"])).error).toMatchObject({ code: "validation_error" })
-  })
-
-  it("refuses a busy image port and a --port without --public-url before syncing anything", async () => {
-    const t = setup()
-    t.write("plan.md", "Plan\n\n![chart](chart.png)\n")
-    await t.run("mirrors", "add", t.local, "--parent", "root-folder")
-    const blocker = createServer().listen(0, "127.0.0.1")
-    await new Promise((done) => blocker.once("listening", done))
-    const port = String((blocker.address() as { port: number }).port)
-    const tunnel = ["--public-url", `http://127.0.0.1:${port}`, "--port", port]
-    try {
-      const calls = t.google.calls.length
-      expect((await t.run("mirrors", "sync", ...tunnel)).error).toMatchObject({
-        details: { reason: "mirror.port-busy" },
-      })
-      expect((await watching(t, tunnel)).error).toMatchObject({ details: { reason: "mirror.port-busy" } })
-      expect((await t.run("mirrors", "sync", "--port", port)).error).toMatchObject({ code: "validation_error" })
-      expect((await watching(t, ["--port", port])).error).toMatchObject({ code: "validation_error" })
-      expect(t.google.calls.length).toBe(calls)
-    } finally {
-      blocker.close()
-    }
   })
 })
 

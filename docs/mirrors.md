@@ -38,25 +38,9 @@ formatting or workbook layout matter; mirroring is not a complete Google documen
 
 ## Local images
 
-Google Docs copies an image only from a public web address, so a local image such as
-`![chart](pics/chart.png)` stays as that text in the Doc unless you give sync your tunnel's address:
-
-```sh
-drive personal mirrors sync --public-url https://<name>.ts.net
-```
-
-Drive then serves each new local image itself, through the tunnel, at a random address that works
-only while Google copies the image, and closes it right after. Nothing in your Google Drive is
-shared, and Google keeps its own copy inside the Doc. The tunnel is the one you use for
-[remote MCP](remote.md); it must forward to `--port` on this computer (default 8765). If
-`drive mcp --http` holds that port, stop it during the sync or pass another `--port` and point the
-tunnel there; sync refuses to start while the port is busy.
-
-Only PNG, JPEG and GIF files under 50 MB inside the mirrored folder are inserted. Any other image
-stays as text, with a warning. If Google cannot fetch an image, the rest of the Doc is still written,
-the image stays as text with a warning, and the next sync with `--public-url` tries again. An image
-already in the Doc stays there on later syncs without `--public-url`. `mirrors watch` takes the same
-two options.
+A local image such as `![chart](pics/chart.png)` stays as that text in the Doc; an image with an `https://`
+link appears as a picture. Google Docs inserts an image only by downloading it from a public web address as an
+anonymous visitor, so a private file, on your computer or in your Drive, cannot be placed in a Doc.
 
 ## Choose a side after a conflict
 
