@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.27.0 — 24.10.2026
 
 ### Added
 
@@ -33,13 +33,9 @@
 
 - **The retired `read_only` setting is refused**, including its old camelCase spelling. Remove it from config;
   use command permissions, `--read-only` or `DRIVE_READ_ONLY`. A terminal now asks before a write at level `ask`.
+
 - **Google write results include `operation_id`**, matching the write journal for both friendly and generated commands.
   Read-only file commands appear under Read in command discovery, and mirrors under Automate.
-
-
-- **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
-  `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
-  `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
 
 - **MCP argument names use snake_case**, such as `file_id` instead of `file-id`; CLI flags keep their spelling.
   Command declarations control the MCP surface. Model downloads and skill installation are discoverable,
