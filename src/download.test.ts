@@ -22,37 +22,37 @@ const setup = () => {
 describe("friendly file downloads", () => {
   it("writes binary bytes, reports only the id and size, and refuses overwrite before fetching", async () => {
     const t = setup()
-    expect(await t.run("files", "download", "synthetic-file", "--out", t.path)).toMatchObject({
+    expect(await t.run("files", "download", "synthetic-file", "--output", t.path)).toMatchObject({
       id: "synthetic-file",
       bytes: 4,
     })
     expect(readFileSync(t.path)).toEqual(Buffer.from([0, 255, 10, 128]))
     if (process.platform !== "win32") expect(statSync(t.path).mode & 0o777).toBe(0o600)
-    await expect(t.run("files", "download", "synthetic-file", "--out", t.path)).rejects.toMatchObject({
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path)).rejects.toMatchObject({
       details: { reason: "download.exists" },
     })
     expect(t.download).toHaveBeenCalledTimes(1)
-    await t.run("files", "download", "synthetic-file", "--out", t.path, "--overwrite")
+    await t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")
     expect(t.download).toHaveBeenCalledTimes(2)
   })
   it.each(Object.entries(EXPORT_FORMATS))("exports %s through the Google media seam", async (format, mime) => {
     const t = setup()
-    const result = await t.run("files", "export", "synthetic-doc", "--format", format, "--out", t.path)
+    const result = await t.run("files", "export", "synthetic-doc", "--format", format, "--output", t.path)
     expect(result).toMatchObject({ id: "synthetic-doc", format, bytes: 4 })
     expect(result).not.toHaveProperty("path")
-    await t.run("files", "export", "synthetic-doc", "--format", format, "--out", t.path, "--overwrite")
+    await t.run("files", "export", "synthetic-doc", "--format", format, "--output", t.path, "--overwrite")
     expect(t.download).toHaveBeenCalledWith("synthetic-doc", mime)
     expect(readFileSync(t.path)).toEqual(Buffer.from([0, 255, 10, 128]))
   })
   it("refuses invalid formats, missing output, offline, readonly and denied permissions before fetching", async () => {
     const t = setup()
     for (const args of [
-      ["files", "export", "synthetic-doc", "--format", "invalid", "--out", t.path],
+      ["files", "export", "synthetic-doc", "--format", "invalid", "--output", t.path],
       ["files", "download", "synthetic-file"],
-      ["--offline", "files", "download", "synthetic-file", "--out", t.path],
-      ["--read-only", "files", "download", "synthetic-file", "--out", t.path],
-      ["--permission", "files.download=deny", "files", "download", "synthetic-file", "--out", t.path],
-      ["--permission", "files.export=deny", "files", "export", "synthetic-doc", "--format", "pdf", "--out", t.path],
+      ["--offline", "files", "download", "synthetic-file", "--output", t.path],
+      ["--read-only", "files", "download", "synthetic-file", "--output", t.path],
+      ["--permission", "files.download=deny", "files", "download", "synthetic-file", "--output", t.path],
+      ["--permission", "files.export=deny", "files", "export", "synthetic-doc", "--format", "pdf", "--output", t.path],
     ])
       await expect(t.run(...args)).rejects.toBeInstanceOf(Error)
     expect(t.download).not.toHaveBeenCalled()
@@ -67,21 +67,21 @@ describe("friendly file downloads", () => {
         },
       },
     })
-    await expect(t.run("files", "download", "synthetic-file", "--out", t.path)).rejects.toMatchObject({
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path)).rejects.toMatchObject({
       code: "permission_error",
     })
     expect(t.download).not.toHaveBeenCalled()
   })
   it("previews without creating files or fetching and preserves an existing output on provider failure", async () => {
     const t = setup()
-    expect(await t.run("--dry-run", "files", "download", "synthetic-file", "--out", t.path)).toMatchObject({
+    expect(await t.run("--dry-run", "files", "download", "synthetic-file", "--output", t.path)).toMatchObject({
       dry_run: true,
     })
     expect(t.download).not.toHaveBeenCalled()
     expect(existsSync(t.path)).toBe(false)
     writeFileSync(t.path, "kept")
     t.download.mockRejectedValueOnce(new Error("synthetic provider failure"))
-    await expect(t.run("files", "download", "synthetic-file", "--out", t.path, "--overwrite")).rejects.toThrow(
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")).rejects.toThrow(
       "synthetic provider failure",
     )
     expect(readFileSync(t.path, "utf8")).toBe("kept")
@@ -91,10 +91,10 @@ describe("friendly file downloads", () => {
     const target = join(t.directory, "target")
     writeFileSync(target, "kept")
     symlinkSync(target, t.path)
-    await expect(t.run("files", "download", "synthetic-file", "--out", t.path)).rejects.toMatchObject({
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path)).rejects.toMatchObject({
       details: { reason: "download.exists" },
     })
-    await t.run("files", "download", "synthetic-file", "--out", t.path, "--overwrite")
+    await t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")
     expect(readFileSync(target, "utf8")).toBe("kept")
     expect(readFileSync(t.path)).toHaveLength(4)
   })

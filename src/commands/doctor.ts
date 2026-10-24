@@ -1,11 +1,12 @@
 import { existsSync } from "node:fs"
 import { join, resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ } from "@wirecat/cli-core/cli"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
+import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { application, paths, readConfig } from "../config.js"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { examples } from "../registry.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
@@ -56,11 +57,33 @@ export const doctorReport = (env: NodeJS.ProcessEnv) => {
   }
 }
 
-export const installDoctorCommand = (program: Command, { env, output }: CommandContext) => {
+const installDoctorCommandDefinition = (program: Command, { env, output }: CommandContext) => {
   examples(
     annotate(program.command("doctor"), { effects: LOCAL_READ }).description(
       "check this installation: config, profiles, paths; no keyring, store or network",
     ),
     ["drive doctor", "drive doctor --json"],
   ).action(() => output(itemOf(doctorReport(env))))
+}
+
+const DRIVE_CONTRACT_APP = {
+  command: "drive",
+  appName: "drive-cli",
+  envPrefix: "DRIVE",
+  description: "Google Drive",
+  version: "",
+}
+
+export const installDoctorCommand = (...args: Parameters<typeof installDoctorCommandDefinition>) => {
+  customizeSharedCommand(
+    sharedCommandTemplate(DRIVE_CONTRACT_APP, "doctor"),
+    "Drive diagnoses public OAuth configuration and local paths without opening a keyring, database or Google connection.",
+    () => {
+      installDoctorCommandDefinition(...args)
+      const command = args[0].commands.find((command) => command.name() === "doctor")
+      if (!command) throw new Error("doctor builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.doctor,
+  )
 }

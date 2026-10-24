@@ -123,16 +123,16 @@ describe("MCP parity and authority", () => {
     const options = { ...t.options, download: vi.fn(async () => Uint8Array.of(0, 255)) }
     const tool = t.tool("files download")
     expect(
-      await invokeTool(createProgram, tool, { file: "synthetic-file", out: "../escape.bin" }, options, "default"),
+      await invokeTool(createProgram, tool, { file: "synthetic-file", output: "../escape.bin" }, options, "default"),
     ).toHaveProperty("isError", true)
     expect(
-      await invokeTool(createProgram, tool, { file: "synthetic-file", out: "download.bin" }, options, "default", {
+      await invokeTool(createProgram, tool, { file: "synthetic-file", output: "download.bin" }, options, "default", {
         readOnly: true,
       }),
     ).toHaveProperty("isError", true)
     expect(existsSync(join(paths(t.env).cache, "exports"))).toBe(false)
     expect(
-      await invokeTool(createProgram, tool, { file: "synthetic-file", out: "download.bin" }, options, "default"),
+      await invokeTool(createProgram, tool, { file: "synthetic-file", output: "download.bin" }, options, "default"),
     ).not.toHaveProperty("isError", true)
     expect(readFileSync(join(paths(t.env).cache, "exports", "default", "download.bin"))).toEqual(Buffer.from([0, 255]))
   })

@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**223 ✅ · 951 ⛔ · 0 ❌** — 190 commands, 984 options.
+**226 ✅ · 951 ⛔ · 0 ❌** — 192 commands, 985 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1090,10 +1090,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `sheets add` | `--input` | ✅ |  |
 | `sheets clear` |  | ✅ |  |
 | `files download` |  | ✅ |  |
-| `files download` | `--out` | ✅ |  |
+| `files download` | `--output` | ✅ |  |
 | `files download` | `--overwrite` | ✅ |  |
 | `files export` |  | ✅ |  |
-| `files export` | `--out` | ✅ |  |
+| `files export` | `--output` | ✅ |  |
 | `files export` | `--overwrite` | ✅ |  |
 | `files export` | `--format` | ✅ |  |
 | `files list` |  | ✅ |  |
@@ -1153,7 +1153,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models set` | `--provider` | ✅ |  |
 | `models set` | `--model` | ✅ |  |
 | `models set` | `--base-url` | ✅ |  |
+| `models list` |  | ✅ |  |
 | `models download` |  | ✅ |  |
+| `models download` | `--offline` | ✅ |  |
 | `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
 | `mcp` |  | ✅ |  |
@@ -1163,6 +1165,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `mcp` | `--public-url` | ✅ |  |
 | `mcp` | `--revoke` | ✅ |  |
 | `commands` |  | ✅ |  |
+| `commands info` |  | ✅ |  |
 | `skill show` |  | ✅ |  |
 | `skill install` |  | ✅ |  |
 | `skill install` | `--for` | ✅ |  |

@@ -1,6 +1,7 @@
 import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
+  answerEntity,
   type Body,
   checkApiBody,
   checkApiParameter,
@@ -17,6 +18,7 @@ import {
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
+import * as v from "valibot"
 import { jsonObject, operationOf, operations, schemas } from "../api-contract.js"
 import { fileId } from "../config.js"
 import { type Download, EXPORT_FORMATS, saveDownload } from "../download.js"
@@ -85,7 +87,13 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   )
   withQuery(
     examples(
-      annotate(api.command("list"), { effects: NO_EFFECTS }).description("list the Google API methods drive can call"),
+      answerEntity(
+        annotate(api.command("list"), { effects: NO_EFFECTS }).description(
+          "list the Google API methods drive can call",
+        ),
+        "api_method",
+        v.strictObject({ name: v.string(), mutates: v.boolean(), destructive: v.boolean(), scope: v.string() }),
+      ),
       ["drive api list", "drive api list service:docs"],
     ),
     API_METHOD_QUERY,
@@ -145,11 +153,11 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         .description(exporting ? "export a Google document to a local file" : "download a stored file to a local file"),
       [
         exporting
-          ? "drive personal files export DOC_ID --format pdf --out document.pdf"
-          : "drive personal files download FILE_ID --out download.bin",
+          ? "drive personal files export DOC_ID --format pdf --output document.pdf"
+          : "drive personal files download FILE_ID --output download.bin",
       ],
     )
-      .requiredOption("--out <path>", "local file to write")
+      .requiredOption("--output <file>", "local file to write")
       .option("--overwrite", "replace an existing output file")
     if (exporting)
       command.addOption(
@@ -158,11 +166,11 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           .makeOptionMandatory(),
       )
     command.action(
-      async (input: string, args: { out: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
+      async (input: string, args: { output: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)
         const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
         const bytes = await saveDownload(
-          args.out,
+          args.output,
           args.overwrite === true,
           () => helpers.download(id, mime),
           helpers.mcp === true,

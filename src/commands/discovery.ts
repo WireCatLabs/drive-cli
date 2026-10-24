@@ -1,8 +1,16 @@
 import { CliError } from "@wirecat/cli-base"
-import { annotate, type CommandInfo, describeOptions } from "@wirecat/cli-base/commands"
+import { annotate, type CommandInfo, customizeSharedCommand, describeOptions } from "@wirecat/cli-base/commands"
 import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
-import { commandsText, environmentOf, NO_EFFECTS } from "@wirecat/cli-core/cli"
+import {
+  addContractInfo,
+  commandsText,
+  DISCOVERY_DESCRIPTIONS,
+  environmentOf,
+  NO_EFFECTS,
+  sharedCommandTemplate,
+} from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { commandsDocument, describeDriveProgram, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
@@ -33,11 +41,9 @@ export const installCompleteCommand = (program: Command, { streams }: CommandCon
     })
 }
 
-export const installCommandsCommand = (program: Command, { print, streams }: CommandContext) => {
+const installCommandsCommandDefinition = (program: Command, { print, streams }: CommandContext) => {
   examples(
-    annotate(program.command("commands"), { effects: NO_EFFECTS }).description(
-      "every command by section, one line each; --json: the command tree as data",
-    ),
+    annotate(program.command("commands"), { effects: NO_EFFECTS }).description(DISCOVERY_DESCRIPTIONS.commands),
     ["drive commands", "drive commands files copy --json"],
   )
     .argument("[path...]", "only this command or group, as words")
@@ -59,4 +65,23 @@ export const installCommandsCommand = (program: Command, { print, streams }: Com
         return streams.data(commandsText(program, document.commands, document.scope).replace(/\n$/, ""))
       print((renderer) => renderer.result(document))
     })
+}
+
+export const installCommandsCommand = (...args: Parameters<typeof installCommandsCommandDefinition>) => {
+  const [program, context] = args
+  customizeSharedCommand(
+    sharedCommandTemplate(
+      { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: "" },
+      "commands",
+    ),
+    "Drive binds discovery to its profile-aware usage renderer while retaining the shared command document and evidence endpoint.",
+    () => {
+      installCommandsCommandDefinition(...args)
+      addContractInfo(program, (value) => context.streams.data(JSON.stringify(value)))
+      const command = program.commands.find((command) => command.name() === "commands")
+      if (!command) throw new Error("discovery builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.commands,
+  )
 }

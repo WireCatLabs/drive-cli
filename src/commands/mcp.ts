@@ -1,7 +1,8 @@
-import { annotate } from "@wirecat/cli-base/commands"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
-import { itemOf, REMOTE_WRITE } from "@wirecat/cli-core/cli"
+import { itemOf, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { allOf } from "../output.js"
 import { portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
@@ -9,7 +10,7 @@ import type { CommandContext, ProgramOptions } from "./context.js"
 
 const DEFAULT_PORT = 8765
 
-export const installMcpCommand = (
+const installMcpCommandDefinition = (
   program: Command,
   { env, streams, options, selected, output, policyFlags, signal }: CommandContext,
   createProgram: (options: ProgramOptions) => Command,
@@ -76,3 +77,24 @@ export const installMcpCommand = (
       }
     })
 }
+
+const DRIVE_CONTRACT_APP = {
+  command: "drive",
+  appName: "drive-cli",
+  envPrefix: "DRIVE",
+  description: "Google Drive",
+  version: "",
+}
+
+export const installMcpCommand = (...args: Parameters<typeof installMcpCommandDefinition>) =>
+  customizeSharedCommand(
+    sharedCommandTemplate(DRIVE_CONTRACT_APP, "mcp"),
+    "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
+    () => {
+      installMcpCommandDefinition(...args)
+      const command = args[0].commands.find((command) => command.name() === "mcp")
+      if (!command) throw new Error("mcp builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.mcp,
+  )

@@ -1,12 +1,5 @@
 [
   {
-    "rule": "unknown-verb",
-    "target": "facts reverse",
-    "reason": "Use Memo\u2019s existing facts reverse command and Core\u2019s facts.reverse transition: an accepted decision no longer holds without a replacement. Review when the shared decision vocabulary includes reverse.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-16"
-  },
-  {
     "rule": "unknown-resource",
     "target": "mirrors",
     "reason": "A mirror is a saved pairing of a local folder and a Google Drive folder that mirrors sync writes into; no shared noun names it. Add mirrors to the cli-base vocabulary if a second CLI adopts the push engine from cli-core.",
@@ -21,23 +14,9 @@
     "review_after": "2026-12-22"
   },
   {
-    "rule": "flag-synonym",
-    "target": "files download --out",
-    "reason": "The approved download/export interface uses --out for the destination. Review with the shared output flag vocabulary before adding more file commands.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-24"
-  },
-  {
     "rule": "option-role",
     "target": "files download --overwrite",
     "reason": "Explicit replacement of an existing local output, including a symlink, is distinct from policy confirmation. Review when the shared vocabulary names this file-replacement control.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-24"
-  },
-  {
-    "rule": "flag-synonym",
-    "target": "files export --out",
-    "reason": "The approved download/export interface uses --out for the destination. Review with the shared output flag vocabulary before adding more file commands.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-24"
   },

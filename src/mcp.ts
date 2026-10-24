@@ -244,8 +244,7 @@ export const invokeTool = async (
         })
       const checked = await checkedInput(tool, input)
       const path = tool.command.path.join(" ")
-      const outputKey =
-        path === "documents export" ? "output" : ["files download", "files export"].includes(path) ? "out" : undefined
+      const outputKey = ["documents export", "files download", "files export"].includes(path) ? "output" : undefined
       if (outputKey) {
         const name = checked[outputKey]
         if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
