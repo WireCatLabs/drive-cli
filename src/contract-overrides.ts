@@ -146,7 +146,7 @@ export const SHELL_OVERRIDES: Readonly<{
       before: "serve this profile's commands to an AI agent",
       after: null,
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
       command: ["mcp"],
@@ -155,7 +155,7 @@ export const SHELL_OVERRIDES: Readonly<{
         "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp`",
       after: "serve drive's commands to an agent over MCP: search, then read or write",
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
       command: ["mcp"],
@@ -163,7 +163,7 @@ export const SHELL_OVERRIDES: Readonly<{
       before: true,
       after: null,
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
       command: ["mcp"],
@@ -209,9 +209,34 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: false,
           mandatory: false,
         },
+        {
+          flags: "--http",
+          description:
+            "serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide",
+          takes_value: false,
+          mandatory: false,
+        },
+        {
+          flags: "--port <port>",
+          description: "the local port for --http (default 8765)",
+          takes_value: true,
+          mandatory: false,
+        },
+        {
+          flags: "--public-url <url>",
+          description: "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net",
+          takes_value: true,
+          mandatory: false,
+        },
+        {
+          flags: "--revoke",
+          description: "forget every login given to a browser app; each must log in again",
+          takes_value: false,
+          mandatory: false,
+        },
       ],
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
       command: ["mcp"],
@@ -219,15 +244,19 @@ export const SHELL_OVERRIDES: Readonly<{
       before: ["config", "add", "check"],
       after: [],
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
       command: ["mcp"],
       field: "examples",
       before: null,
-      after: ["drive personal mcp", "drive personal mcp --tools"],
+      after: [
+        "drive personal mcp",
+        "drive personal mcp --http --public-url https://<name>.ts.net",
+        "drive personal mcp --revoke",
+      ],
       reason:
-        "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
   ],
   notes: [

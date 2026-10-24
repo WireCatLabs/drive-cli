@@ -89,7 +89,7 @@ const DRIVE_CONTRACT_APP = {
 export const installMcpCommand = (...args: Parameters<typeof installMcpCommandDefinition>) =>
   customizeSharedCommand(
     sharedCommandTemplate(DRIVE_CONTRACT_APP, "mcp"),
-    "Drive exposes Google document tools over stdio using OAuth grants and its own permission adapter; it has no HTTP transport.",
+    "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     () => {
       installMcpCommandDefinition(...args)
       const command = args[0].commands.find((command) => command.name() === "mcp")
