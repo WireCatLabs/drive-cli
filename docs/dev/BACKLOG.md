@@ -24,7 +24,7 @@ by path below.
 
 ## Next (P2)
 
-- **DRV-5 · P2 · A user guide for `mirrors`.** The 0.21–0.23 feature has no page: set-up, both directions,
+- **DRV-5 · P2 · 🚧 docs/mirrors-guide-1024 · A user guide for `mirrors`.** The 0.21–0.23 feature has no page: set-up, both directions,
   conflicts and `--keep`, what never crosses (deletions, XLSX edits back), suggestions refused. `docs/usage.md` or a
   new page in `docs/meta.json`. Details: cli-private `research/2026-10-22-drive-cli-parity.md` §5.
 - **DRV-6 · P2 · `drive commands` puts reads under "Write" and mirrors under "Other".** `sheets info`, `sheets
@@ -51,7 +51,7 @@ by path below.
   `src/config.ts:13`, `src/bin/drive.ts`.
 - **DRV-18 · P2 · 🟡 Document-only search selection through Memo.** Core has the file-only filter and Memo has
   `--source`; check the published pair end to end before writing code. cli-private `plans/2026-10-18-drive-handoff.md`.
-- **DRV-20 · P2 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared
+- **DRV-20 · P2 · 🚧 docs/mirrors-guide-1024 · Small docs fixes:** changelog headings (WC-DOC-15), `docs/security.md` links the portal's shared
   security page (WC-DOC-9).
 - **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
   `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.

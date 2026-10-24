@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- **A mirroring guide** covers setup, both directions, conflicts, choosing a side and deletion limits.
+  The documentation check now enforces standard changelog headings for new releases.
+
 ### Security
 
 - **Development tooling uses patched fast-uri and markdown-it.** Overrides resolve fast-uri 3.1.9 and

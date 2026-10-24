@@ -1,14 +1,8 @@
-/**
- * Links, anchors and the user-page rules in every tracked document, and the docs folder against its sidebar
- * (`docs/meta.json`). Not the changelog's shape: drive's released sections use ISO dates and a "Changed" heading,
- * which the shared shape refuses, and a released section is never edited.
- *
- *   pnpm docs:check
- */
 import { execFileSync } from "node:child_process"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { docsProblems, JOURNAL_IDS, structureProblems } from "@wirecat/cli-base/release"
+import { changelogProblems, docsProblems, JOURNAL_IDS, structureProblems } from "@wirecat/cli-base/release"
 
 const root = fileURLToPath(new URL("..", import.meta.url))
 const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclude-standard", "*.md"], {
@@ -19,7 +13,16 @@ const files = execFileSync("git", ["ls-files", "--cached", "--others", "--exclud
   .filter((file) => file && file !== "CHANGELOG.md")
   .map((file) => join(root, file))
 
+// Releases through 0.17.1 retain their original ISO dates; released text is frozen.
+const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8").split(/^## 0\.17\.1 /m)[0] ?? ""
 const problems = [
+  ...changelogProblems(changelog, {
+    release: false,
+    headings: ["Added", "Changed — may break callers", "Fixed", "Security", "Removed"],
+    unreleased: "Unreleased",
+    legacyHeadingsThrough: "0.23.0",
+    ids: JOURNAL_IDS,
+  }),
   ...docsProblems(root, { files, ids: JOURNAL_IDS, userPage: (name) => name === "README.md" }),
   ...structureProblems(root),
 ]

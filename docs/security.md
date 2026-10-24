@@ -4,6 +4,9 @@ Choose what Drive and your agent may read or change before connecting sensitive 
 This guide explains Google grants, local storage and command permissions so you can choose
 an appropriate scope, see where data goes and disconnect without confusing sign-out with deletion.
 
+The [shared WireCat security guide](https://wirecat.dev/en/docs/security) explains protections and
+reporting that apply to every tool. This page covers Drive grants and document storage.
+
 ## Google access and command permissions
 
 The default Google grant is account-wide `drive.readonly`. Selected folders limit ingestion;
