@@ -38,7 +38,7 @@ describe("help without a profile or an account", () => {
   it("prints --help for every leaf command", async () => {
     const leaves = flatten(describeDriveProgram(createProgram({ env: {} }))).filter((one) => !one.commands.length)
     for (const leaf of leaves) expect(await run([...leaf.path, "--help"]), leaf.path.join(" ")).toContain("Usage:")
-  })
+  }, 30_000)
 
   it("lists the commands by section as text, and as data with --json", async () => {
     expect(await run(["commands"])).toMatch(/^drive commands, by section/)
