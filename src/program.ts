@@ -17,13 +17,17 @@ import { annotate, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { timezoneOf } from "@wirecat/cli-base/query"
 import { writes } from "@wirecat/cli-base/standards"
 import {
+  addContractInfo,
+  assertSharedContracts,
   type Body,
   changesAuthority,
   commandWords,
   environmentOf,
+  hasSharedContract,
   itemOf,
   liftJson,
   liftProfile,
+  overrideSharedContract,
   parseDuration,
   provide,
   refuseCommandName,
@@ -52,6 +56,7 @@ import { installUpgradeCommand } from "./commands/upgrade.js"
 import { activeProfile, configKey, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
+import { REASONS as CONTRACT_REASONS } from "./failure.js"
 import { guide, installFirstScreen } from "./first-screen.js"
 import { googleSource } from "./google.js"
 import { apiMethod, googleApi, googleDownload, googleUploadRequest } from "./google-api.js"
@@ -402,7 +407,16 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
-    annotate(command, { origin: metaOf(command).origin ?? "handwritten", state: "beta" })
+    const metadata = { origin: metaOf(command).origin ?? "handwritten", state: "beta" as const }
+    if (hasSharedContract(command))
+      overrideSharedContract(
+        command,
+        "Drive explicitly labels its public CLI commands beta while its provider integration is reviewed.",
+        (one) => {
+          annotate(one, metadata)
+        },
+      )
+    else annotate(command, metadata)
   }
   const pathOf = (command: Command) => {
     const path: string[] = []
@@ -432,7 +446,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       await options.atStart({ path, headless: Boolean(given.json || given.jsonl || given.input === false) })
     }
     // These read every profile or none, so they run without one; a named profile is still checked.
-    if (["commands", "complete", "config show", "session list"].includes(words)) {
+    if (["commands", "commands info", "complete", "config show", "session list"].includes(words)) {
       if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
       return
     }
@@ -536,5 +550,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     })
   }
   installFirstScreen(program)
+  addContractInfo(program, (value) => streams.data(JSON.stringify(value)), {
+    fields: providerJsonFields,
+    errors: { reasons: CONTRACT_REASONS },
+  })
+  assertSharedContracts(program)
   return program
 }

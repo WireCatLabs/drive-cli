@@ -1,7 +1,7 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
 import { examples } from "../registry.js"
@@ -127,15 +127,17 @@ export const installModelCommands = (program: Command, { env, output, streams, p
       }),
     )
   }
-  examples(
-    annotate(models.command("download"), { effects: FETCH, output: { entity: "model" } }).description(
-      "download a search model once into the folder every WireCat CLI shares",
-    ),
-    ["drive models download e5-small"],
+  const sharedModels = modelCatalogueCommand(
+    { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: "" },
+    {
+      kinds: ["text"],
+      env: () => env,
+      output,
+      diagnostic: (line) => streams.diagnostic(line),
+      offline: () => policyFlags().offline === true,
+    },
   )
-    .argument("<model>", "model id, such as e5-small")
-    .option("--accept-terms", "accept the model's licence terms, for a model that has its own")
-    .action((id: string, args: { acceptTerms?: boolean }) => download("text", id, args.acceptTerms === true))
+  for (const command of sharedModels.commands) models.addCommand(command)
   const images = annotate(program.command("images"), { effects: LOCAL_READ }).description(
     "the local model that picture search uses",
   )

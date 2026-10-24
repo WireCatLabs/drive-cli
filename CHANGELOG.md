@@ -19,6 +19,14 @@
 - Permission-denied commands stay discoverable in CLI help and MCP with current availability, reasons and required permission keys. Execution still refuses denied calls and missing write grants.
 - Correct shared alignment guidance for discovery contract 4, foreground watches and current command-lint debt.
 
+### Changed — may break callers
+
+- **File download and export destinations use `--output <file>`.** Replace `--out` in scripts. Document-note lists use `text:review` or a quoted `text:` phrase; list rows, reads and writes declare the shared note schema.
+
+### Added
+
+- **Shared contracts, model catalogues and complete contract evidence come from Core.** Source and transport differences are explicit; a later silent edit fails before execution. Model lists accept native `kind:`, `id:` and `downloaded:` terms.
+
 ## 0.28.0 — 24.10.2026
 
 ### Changed — may break callers

@@ -14,6 +14,8 @@ import { VERSION } from "./version.js"
 /** These commands do not select an account or load account configuration. */
 export const ACCOUNT_FREE_COMMANDS = new Set([
   "commands",
+  "commands info",
+  "models list",
   "complete",
   "doctor",
   "upgrade",
