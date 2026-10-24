@@ -1,4 +1,4 @@
-import { annotate } from "@wirecat/cli-base/commands"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { defineQuery } from "@wirecat/cli-base/query"
 import {
   type Body,
@@ -9,11 +9,14 @@ import {
   queryHelp,
   queryTerms,
   REMOTE_WRITE,
+  sharedCommandTemplate,
+  termField,
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { extractDocumentMemories } from "@wirecat/cli-core/documents"
 import { FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import type { Complete } from "../extraction.js"
 import type { DocumentKnowledge } from "../knowledge.js"
 import {
@@ -28,6 +31,8 @@ import type { DocumentContent } from "../model.js"
 import { allOf } from "../output.js"
 import { examples } from "../registry.js"
 
+const NOTE_QUERY = defineQuery({ entity: "note", backend: "native", fields: [termField("text", "txt", "text:review")] })
+
 export interface KnowledgeCommands {
   document(input: string): { id: string; ref: string; hash: string; snapshot: DocumentContent }
   run<T>(input: string, fn: (knowledge: DocumentKnowledge, principal: string, ref: string) => Promise<T>): Promise<T>
@@ -35,7 +40,7 @@ export interface KnowledgeCommands {
   positive(input: string): number
   complete(): Complete
 }
-export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCommands) => {
+const installKnowledgeCommandsDefinition = (program: Command, helpers: KnowledgeCommands) => {
   const { run, output, positive } = helpers
   const documentArgument = "Google file or folder id or URL in the local catalog"
   const scopes = ["personal", "work"]
@@ -110,25 +115,30 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     "write notes about an imported document",
   )
   const noteArgument = "note:<id> reference, as notes list prints it"
-  examples(annotate(notes.command("add"), { effects: LOCAL_WRITE }).description("write a note about a document"), [
-    `drive personal notes add DOC_ID "Check the numbers" --title Review`,
-  ])
+  examples(
+    annotate(notes.command("add"), { effects: LOCAL_WRITE, output: { entity: "note" } }).description(
+      "write a note about a document",
+    ),
+    [`drive personal notes add DOC_ID "Check the numbers" --title Review`],
+  )
     .argument("<document>", documentArgument)
     .argument("<text>", "the note's text")
     .option("--title <title>", "a title for the note")
     .action(async (doc: string, text: string, args) =>
       output(itemOf(await run(doc, (k, p, ref) => k.addNote(p, ref, text, args.title)))),
     )
-  examples(annotate(notes.command("list"), { effects: LOCAL_READ }).description("list a document's notes"), [
-    "drive personal notes list DOC_ID",
-    "drive personal notes list DOC_ID review --limit 10",
-  ])
+  examples(
+    annotate(notes.command("list"), { effects: LOCAL_READ, output: { entity: "note" }, query: NOTE_QUERY }).description(
+      "list a document's notes",
+    ),
+    ["drive personal notes list DOC_ID", "drive personal notes list DOC_ID text:review --limit 10"],
+  )
     .argument("<document>", documentArgument)
-    .argument("[query...]", "words a note must contain")
+    .argument("[query...]", 'text:word or text:"a phrase" a note must contain')
     .option("--limit <n>", "how many notes to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)
     .action(async (doc: string, words: string[], { page, limit }: { limit: number; page: number }) => {
-      const query = words.length ? words.join(" ") : undefined
+      const query = queryTerms(words, NOTE_QUERY, "notes list").get("text")
       const found = await run(doc, (k, p, ref) =>
         k.notes(p, ref, { ...(query ? { search: query } : {}), limit, offset: (page - 1) * limit }),
       )
@@ -142,17 +152,21 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
         }),
       )
     })
-  examples(annotate(notes.command("show"), { effects: LOCAL_READ }).description("show one note"), [
-    "drive personal notes show DOC_ID note:NOTE_ID",
-  ])
+  examples(
+    annotate(notes.command("show"), { effects: LOCAL_READ, output: { entity: "note" } }).description("show one note"),
+    ["drive personal notes show DOC_ID note:NOTE_ID"],
+  )
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
     .action(async (doc: string, noteRef: string) =>
       output(itemOf(await run(doc, (k, p, ref) => k.note(p, ref, noteRef)))),
     )
-  examples(annotate(notes.command("edit"), { effects: LOCAL_WRITE }).description("replace a note's text"), [
-    `drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2`,
-  ])
+  examples(
+    annotate(notes.command("edit"), { effects: LOCAL_WRITE, output: { entity: "note" } }).description(
+      "replace a note's text",
+    ),
+    [`drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2`],
+  )
     .argument("<document>", documentArgument)
     .argument("<note>", noteArgument)
     .argument("<text>", "the note's new text")
@@ -365,4 +379,26 @@ export const installKnowledgeCommands = (program: Command, helpers: KnowledgeCom
     .action(async (doc: string, googleId: string, personRef: string) =>
       output(itemOf(await run(doc, (k, p, ref) => k.linkPerson(p, ref, googleId, personRef)))),
     )
+}
+
+const DRIVE_CONTRACT_APP = {
+  command: "drive",
+  appName: "drive-cli",
+  envPrefix: "DRIVE",
+  description: "Google Drive",
+  version: "",
+}
+
+export const installKnowledgeCommands = (...args: Parameters<typeof installKnowledgeCommandsDefinition>) => {
+  customizeSharedCommand(
+    sharedCommandTemplate(DRIVE_CONTRACT_APP, "notes"),
+    "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+    () => {
+      installKnowledgeCommandsDefinition(...args)
+      const command = args[0].commands.find((command) => command.name() === "notes")
+      if (!command) throw new Error("notes builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.notes,
+  )
 }

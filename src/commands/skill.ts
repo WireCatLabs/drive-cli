@@ -1,12 +1,19 @@
 import { createRenderer } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { skillCommand } from "@wirecat/cli-base/skill"
-import { grantsAuthority, itemOf, LOCAL_WRITE, NO_EFFECTS } from "@wirecat/cli-core/cli"
+import {
+  grantsAuthority,
+  itemOf,
+  LOCAL_WRITE,
+  NO_EFFECTS,
+  skillCommand as sharedSkillCommand,
+} from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
 
-export const installSkillCommand = (program: Command, { env, streams, output }: CommandContext) => {
+const installSkillCommandDefinition = (program: Command, { env, streams, output }: CommandContext) => {
   const skill = skillCommand(
     { command: "drive", appName: "drive-cli", version: VERSION },
     new URL("../../skills/drive-cli/SKILL.md", import.meta.url),
@@ -29,4 +36,21 @@ export const installSkillCommand = (program: Command, { env, streams, output }: 
     }).summary(install ? "put SKILL.md where Claude Code, Codex and Gemini CLI look" : "print drive's SKILL.md")
   }
   program.addCommand(annotate(skill, { effects: NO_EFFECTS }))
+}
+
+export const installSkillCommand = (...args: Parameters<typeof installSkillCommandDefinition>) => {
+  customizeSharedCommand(
+    sharedSkillCommand(
+      { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: VERSION },
+      new URL("../../skills/drive-cli/SKILL.md", import.meta.url),
+    ),
+    "Drive binds agent installation to its own output renderer and provider skill locations.",
+    () => {
+      installSkillCommandDefinition(...args)
+      const command = args[0].commands.find((command) => command.name() === "skill")
+      if (!command) throw new Error("skill builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.skill,
+  )
 }

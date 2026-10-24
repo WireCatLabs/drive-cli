@@ -15,7 +15,7 @@ export type Download = (id: string, mime?: string) => Promise<Uint8Array>
 const exists = () =>
   new CliError("validation_error", "the output file already exists; pass --overwrite to replace it", {
     reason: "download.exists",
-    param: "--out",
+    param: "--output",
   })
 
 export const saveDownload = async (

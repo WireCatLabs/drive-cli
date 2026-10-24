@@ -1,12 +1,13 @@
-import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ } from "@wirecat/cli-core/cli"
+import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
+import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { activeProfile, pictureSearch } from "../config.js"
+import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { examples } from "../registry.js"
 import { readState } from "../state.js"
 import { type CommandContext, positive } from "./context.js"
 
-export const installSearchCommand = (program: Command, { env, selected, output, withIndex }: CommandContext) => {
+const installSearchCommandDefinition = (program: Command, { env, selected, output, withIndex }: CommandContext) => {
   examples(
     annotate(program.command("search"), { effects: LOCAL_READ })
       .argument("<query>", "words to look for")
@@ -44,3 +45,24 @@ const notImported = (name: string, folders: number, documents: string[]): string
         `drive ${name} folders add FOLDER_ID, then drive ${name} sync`
     : `profile ${name} has imported no documents yet — drive ${name} sync`
 }
+
+const DRIVE_CONTRACT_APP = {
+  command: "drive",
+  appName: "drive-cli",
+  envPrefix: "DRIVE",
+  description: "Google Drive",
+  version: "",
+}
+
+export const installSearchCommand = (...args: Parameters<typeof installSearchCommandDefinition>) =>
+  customizeSharedCommand(
+    sharedCommandTemplate(DRIVE_CONTRACT_APP, "search"),
+    "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+    () => {
+      installSearchCommandDefinition(...args)
+      const command = args[0].commands.find((command) => command.name() === "search")
+      if (!command) throw new Error("search builder did not install its command")
+      return command
+    },
+    SHELL_OVERRIDES.search,
+  )

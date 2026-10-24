@@ -238,11 +238,11 @@ and observed editors. For reviewed facts or person/project links, use [recipes](
 These commands read Google directly; the file does not need to be imported:
 
 ```sh
-drive personal files download FILE_ID --out ./download.bin
-drive personal files export DOC_ID --format pdf --out ./document.pdf
-drive personal files export DOC_ID --format docx --out ./document.docx
-drive personal files export SHEET_ID --format xlsx --out ./workbook.xlsx
-drive personal files export SHEET_ID --format csv --out ./sheet.csv
+drive personal files download FILE_ID --output ./download.bin
+drive personal files export DOC_ID --format pdf --output ./document.pdf
+drive personal files export DOC_ID --format docx --output ./document.docx
+drive personal files export SHEET_ID --format xlsx --output ./workbook.xlsx
+drive personal files export SHEET_ID --format csv --output ./sheet.csv
 ```
 
 `download` saves an uploaded file's bytes. `export` asks Google to convert a native document;
