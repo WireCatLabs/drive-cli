@@ -170,3 +170,24 @@ export const googleUploadRequest =
     }
     return { status: response.status, header, data }
   }
+
+export const googleDownload =
+  (auth: OAuth2Client) =>
+  async (id: string, mime?: string): Promise<Uint8Array> => {
+    const api = drive({ version: "v3", auth })
+    const method = mime ? "drive.files.export" : "drive.files.get"
+    const params = mime ? { fileId: id, mimeType: mime } : { fileId: id, supportsAllDrives: true }
+    validateRequest(method, params)
+    try {
+      const options = { responseType: "arraybuffer" as const, timeout: 120000, maxContentLength: 50 * 1024 * 1024 }
+      const response = mime
+        ? await api.files.export({ fileId: id, mimeType: mime }, options)
+        : await api.files.get({ fileId: id, alt: "media", supportsAllDrives: true }, options)
+      const bytes = new Uint8Array(response.data as unknown as ArrayBuffer)
+      if (bytes.byteLength > 50 * 1024 * 1024)
+        throw new CliError("provider_error", "Google response exceeded the download bound")
+      return bytes
+    } catch (error) {
+      throw googleError(error)
+    }
+  }

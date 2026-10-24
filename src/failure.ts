@@ -34,6 +34,7 @@ const ENTRIES: Entry[] = [
     "the text is over {text_limit} characters; it was not imported",
     ["text_limit"],
   ],
+  ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.exists", "validation_error", "the output file already exists"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   ["file.not-file", "validation_error", "upload takes one file, not a folder"],

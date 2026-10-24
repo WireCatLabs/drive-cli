@@ -4,6 +4,7 @@ import {
   type Body,
   checkApiBody,
   checkApiParameter,
+  FETCH,
   generatedApiCommand,
   itemOf,
   type ListBody,
@@ -15,9 +16,10 @@ import {
   termField,
   withQuery,
 } from "@wirecat/cli-core/cli"
-import type { Command } from "commander"
+import { type Command, Option } from "commander"
 import { jsonObject, operationOf, operations, schemas } from "../api-contract.js"
 import { fileId } from "../config.js"
+import { type Download, EXPORT_FORMATS, saveDownload } from "../download.js"
 import { apiMethods, validateApiParams } from "../google-api.js"
 import { allOf } from "../output.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
@@ -67,6 +69,7 @@ export interface RemoteCommands {
   output(body: Body): void
   positive(input: string): number
   readBody?: (path: string | number) => string
+  download: Download
   upload(path: string, options: { name?: string; parent?: string }): Promise<unknown>
 }
 export const installRemoteCommands = (program: Command, helpers: RemoteCommands) => {
@@ -134,6 +137,34 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   const files = annotate(program.command("files"), { effects: GOOGLE_READ }).description(
     "read and change files in Google Drive; nothing is imported",
   )
+  for (const exporting of [false, true]) {
+    const command = examples(
+      annotate(files.command(exporting ? "export" : "download"), { effects: FETCH })
+        .argument("<file>", fileArgument)
+        .description(exporting ? "export a Google document to a local file" : "download a stored file to a local file"),
+      [
+        exporting
+          ? "drive personal files export DOC_ID --format pdf --out document.pdf"
+          : "drive personal files download FILE_ID --out download.bin",
+      ],
+    )
+      .requiredOption("--out <path>", "local file to write")
+      .option("--overwrite", "replace an existing output file")
+    if (exporting)
+      command.addOption(
+        new Option("--format <format>", "format Google should export")
+          .choices(Object.keys(EXPORT_FORMATS))
+          .makeOptionMandatory(),
+      )
+    command.action(
+      async (input: string, args: { out: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
+        const id = fileId(input)
+        const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
+        const bytes = await saveDownload(args.out, args.overwrite === true, () => helpers.download(id, mime))
+        output(itemOf({ id, bytes, ...(args.format ? { format: args.format } : {}) }))
+      },
+    )
+  }
   page(
     examples(
       annotate(files.command("list"), { effects: GOOGLE_READ }).description(

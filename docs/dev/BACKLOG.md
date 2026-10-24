@@ -21,8 +21,6 @@ by path below.
   permissions, every new user sees the "unverified app" screen and the app stops at 100 new users. Submit the
   data-access review, record the case, answer follow-ups; confirm Audience is In production. Owner task. Details:
   cli-private `plans/2026-10-17-google-data-access-verification.md`, [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md).
-- **DRV-19 · P1 · Friendly download and export** (`files download`, `documents export --format pdf|docx|xlsx|csv`).
-  Today only `api drive-files-export` / `drive-files-download`.
 
 ## Next (P2)
 

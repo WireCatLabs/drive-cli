@@ -49,7 +49,7 @@ import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { guide, installFirstScreen } from "./first-screen.js"
 import { googleSource } from "./google.js"
-import { apiMethod, googleApi, googleUploadRequest } from "./google-api.js"
+import { apiMethod, googleApi, googleDownload, googleUploadRequest } from "./google-api.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
@@ -312,6 +312,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         }
       }
       return descriptor.mutates ? guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce) : act()
+    },
+    download: async (id, mime) => {
+      const method = mime ? "drive.files.export" : "drive.files.get"
+      const flags = policyFlags()
+      for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, false, flags, askOnce)
+      if (options.download) return options.download(id, mime)
+      const client = authorizedClient(env, selected(), options.keyring, activeSignal)
+      await checkAuthorization(client, apiMethod(method).scope)
+      return googleDownload(client)(id, mime)
     },
     upload: async (path, args) => {
       const method = "drive.files.create"

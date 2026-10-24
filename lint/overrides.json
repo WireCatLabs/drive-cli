@@ -19,5 +19,33 @@
     "reason": "Picks which side wins where a file changed both locally and in Google (local, google or both); no shared flag names a conflict side. Add it to the cli-base vocabulary if a second CLI adopts two-way sync from cli-core.",
     "owner": "@WireCatLabs",
     "review_after": "2026-12-22"
+  },
+  {
+    "rule": "flag-synonym",
+    "target": "files download --out",
+    "reason": "The approved download/export interface uses --out for the destination. Review with the shared output flag vocabulary before adding more file commands.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-11-24"
+  },
+  {
+    "rule": "option-role",
+    "target": "files download --overwrite",
+    "reason": "Explicit replacement of an existing local output, including a symlink, is distinct from policy confirmation. Review when the shared vocabulary names this file-replacement control.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-11-24"
+  },
+  {
+    "rule": "flag-synonym",
+    "target": "files export --out",
+    "reason": "The approved download/export interface uses --out for the destination. Review with the shared output flag vocabulary before adding more file commands.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-11-24"
+  },
+  {
+    "rule": "option-role",
+    "target": "files export --overwrite",
+    "reason": "Explicit replacement of an existing local output, including a symlink, is distinct from policy confirmation. Review when the shared vocabulary names this file-replacement control.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-11-24"
   }
 ]
