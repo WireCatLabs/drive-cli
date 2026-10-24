@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **The first command at a terminal asks three questions once for every WireCat tool** (cli-core 0.404.0): which
+  languages you write and speak, which other WireCat tools to install, and whether commands and agents may only read.
+  Answered in any tool, they hold in all of them; "read only" makes every `drive` profile read-only. `tg setup`,
+  `max setup` or `wa setup` asks again. Agents, `--json`, `--no-input`, `CI` and `DRIVE_READ_ONLY` are never asked.
+
 ## 0.25.0 — 24.10.2026
 
 ### Added

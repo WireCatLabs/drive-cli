@@ -1,7 +1,8 @@
 import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
-import { readOnlyLockOf, readOnlyRefusal } from "@wirecat/cli-core/cli"
+import { readOnlyLockOf, readOnlyRefusal, setupPermissionCeiling } from "@wirecat/cli-core/cli"
 import {
+  CEILING_KEY,
   guardedWrite,
   LEVELS,
   type Level,
@@ -107,10 +108,16 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
     ["defaults", config.defaults?.permissions],
   ])
   const lock = readOnlyLockOf(DRIVE_APP, env)
+  // The shared first-run answer: no profile goes above it.
+  const ceiling = setupPermissionCeiling(env)
   return {
-    levels,
+    levels: ceiling ? { ...levels, [CEILING_KEY]: ceiling } : levels,
     lock,
-    readOnly: lock !== undefined || flags.readOnly === true || (own?.read_only ?? config.defaults?.read_only ?? false),
+    readOnly:
+      lock !== undefined ||
+      ceiling === "readonly" ||
+      flags.readOnly === true ||
+      (own?.read_only ?? config.defaults?.read_only ?? false),
   }
 }
 const defaults = Object.fromEntries(

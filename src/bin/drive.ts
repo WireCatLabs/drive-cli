@@ -9,6 +9,8 @@ enableCompileCache()
 // A static import compiles before the cache is on; cli-core and the program are most of those files.
 const { interactiveOf, REASONS, reportFailure } = await import("../failure.js")
 const { createProgram } = await import("../program.js")
+const { readOnlyLockOf, setupAtStart } = await import("@wirecat/cli-core/cli")
+const { DRIVE_APP } = await import("../policy.js")
 
 const args = process.argv.slice(2)
 const tty = process.stdout.isTTY === true
@@ -27,6 +29,14 @@ let program: Command | undefined
 try {
   program = createProgram({
     signal: controller.signal,
+    atStart: ({ path, headless }) =>
+      setupAtStart({
+        command: "drive",
+        env: process.env,
+        path,
+        headless: headless || Boolean(process.env.CI) || !tty,
+        readOnlyLock: readOnlyLockOf(DRIVE_APP, process.env),
+      }),
     openBrowser: (url) =>
       new Promise<void>((resolve, reject) => {
         const command =
