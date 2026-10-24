@@ -8,7 +8,9 @@
   "ignorePaths": ["docs/dev/**", "CHANGELOG.md"],
   "words": [
     "accessproposals",
+    "bisync",
     "checkpointed",
+    "gdrive",
     "inspectable",
     "KACLS",
     "LDML",
