@@ -21,7 +21,7 @@ by path below.
   permissions, every new user sees the "unverified app" screen and the app stops at 100 new users. Submit the
   data-access review, record the case, answer follow-ups; confirm Audience is In production. Owner task. Details:
   cli-private `plans/2026-10-17-google-data-access-verification.md`, [GOOGLE_OAUTH.md](GOOGLE_OAUTH.md).
-- **DRV-44 · P1 · Remote MCP before launch: `drive mcp --http`**, so Claude and ChatGPT on the web and phone can
+- **DRV-44 · P1 · 🚧 `feat/remote-mcp-http` · Remote MCP before launch: `drive mcp --http`**, so Claude and ChatGPT on the web and phone can
   search and read the owner's Drive documents through the tunnel, as with tg and max. Owner ruling 2026-10-24 (cli-private
   journal NEED-1716, answer A). Starts at `src/mcp.ts:335` (`serveMcp`, stdio only) and `src/commands/mcp.ts`.
   tg and max already serve this: `mcp --http` logs in with a one-time access code (OAuth, token hashes per profile)
