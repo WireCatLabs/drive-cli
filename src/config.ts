@@ -171,3 +171,17 @@ export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplica
     )
   }
 }
+
+export const selectedFolders = (env: NodeJS.ProcessEnv, profile: string, filter: { id?: string } = {}) =>
+  activeProfile(env, profile).roots.flatMap((id) => (filter.id === undefined || id === filter.id ? [{ id }] : []))
+export const configuredMirrors = (env: NodeJS.ProcessEnv, profile: string, filter: Partial<Mirror> = {}) =>
+  (activeProfile(env, profile).mirrors ?? []).filter((row) =>
+    Object.entries(filter).every(([key, value]) => row[key as keyof Mirror] === value),
+  )
+export const configuredSessions = (env: NodeJS.ProcessEnv, filter: { profile?: string; storage?: string } = {}) =>
+  Object.entries(readConfig(env).profiles).flatMap(([name, row]) =>
+    (filter.profile === undefined || filter.profile === name) &&
+    (filter.storage === undefined || filter.storage === row.storage)
+      ? [{ profile: name, selected_folders: row.roots.length, storage: row.storage }]
+      : [],
+  )

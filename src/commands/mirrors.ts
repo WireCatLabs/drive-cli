@@ -22,8 +22,9 @@ import {
 } from "@wirecat/cli-core/documents"
 import { newOperationId } from "@wirecat/cli-core/sends"
 import { type Command, Option } from "commander"
-import { activeProfile, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
+import { activeProfile, configuredMirrors, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
+import { bindQuery, MIRRORS_QUERY, mirrorRow, termsOf } from "../list-queries.js"
 import { googleTarget, type MirrorSnapshot, mirrorKind } from "../mirror-target.js"
 import { FOLDER, type GoogleSource } from "../model.js"
 import { allOf } from "../output.js"
@@ -104,9 +105,16 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     output(itemOf({ id, path: root, folder, folder_name: metadata.name, added: true }))
   })
 
-  examples(annotate(mirrors.command("list"), { effects: LOCAL_READ }).description("list this profile's mirrors"), [
-    "drive personal mirrors list",
-  ]).action(() => output(allOf(mirrorsOf())))
+  bindQuery(
+    examples(annotate(mirrors.command("list"), { effects: LOCAL_READ }).description("list this profile's mirrors"), [
+      "drive personal mirrors list",
+    ]),
+    MIRRORS_QUERY,
+    mirrorRow,
+  ).action((words: string[]) => {
+    const filter = termsOf(words, MIRRORS_QUERY, "mirrors list")
+    output(allOf(configuredMirrors(env, selected(), filter)))
+  })
 
   examples(
     annotate(mirrors.command("remove"), { effects: LOCAL_WRITE })

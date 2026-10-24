@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- `files list` uses the shared field query language, such as `name:"Example plan"` and `modified_time>=2026-01-01`, instead of Google query syntax. Timestamp values require an offset; `--timezone` controls date bounds. File-list fields use snake_case. Raw Google queries remain available through `api`.
+- Tag lists return `items` containing `{ "tag": "budget" }` rows. Removed spellings have no aliases.
+
+### Added
+
+- Lists declare schema-derived native queries for configured folders, mirrors, profiles, document tags, notes, relationships, contributors and remote files. Provider lists without predicates advertise their fields and reject filters before requests.
+
 ## 0.30.0 — 25.10.2026
 
 ### Removed

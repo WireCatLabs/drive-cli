@@ -96,7 +96,7 @@ describe("explicit profile store import", () => {
     expect(state.documents.SyntheticDoc_ABc?.picture).toBeUndefined()
     expect(state.cursor).toBe("retained-cursor")
     expect(state.linkedThrough).toBeUndefined()
-    expect((await run(f.env, ["tags", "list", "SyntheticDoc_ABc"])).item.tags).toEqual(["retained-tag"])
+    expect((await run(f.env, ["tags", "list", "SyntheticDoc_ABc"])).items).toEqual([{ tag: "retained-tag" }])
     expect((await run(f.env, ["documents", "show", "SyntheticDoc_ABc"])).item.text).toBe("Synthetic budget evidence")
     const context = await run(f.env, ["documents", "context", "SyntheticDoc_ABc"])
     expect(context.item.notes.items[0].text).toBe("Retain this owner memo")

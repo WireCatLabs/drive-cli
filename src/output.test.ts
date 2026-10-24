@@ -72,18 +72,20 @@ describe("times at the edges", () => {
     else process.env.TZ = zone
   })
 
-  it("sends a Drive query time without a zone as UTC, read in the computer's zone", async () => {
+  it("sends timestamp offsets as UTC and interprets date bounds in the query zone", async () => {
     process.env.TZ = "Asia/Vladivostok"
     const call = vi.fn(async (_method: string, _params?: Record<string, unknown>) => ({ files: [] }))
     const answer = await drive(
       call,
       "files",
       "list",
-      "modifiedTime > '2026-09-01T09:00:00' and createdTime <= '2026-09-01' and viewedByMeTime < '2026-09-02T00:00:00Z'",
+      'modified_time>"2026-09-01T09:00:00+10:00" AND created_time<=2026-09-01 AND viewed_by_me_time<"2026-09-02T00:00:00Z"',
+      "--timezone",
+      "Asia/Vladivostok",
       "--json",
     )
     expect(call.mock.calls[0]?.[1]?.q).toBe(
-      "modifiedTime > '2026-08-31T23:00:00.000Z' and createdTime <= '2026-09-01T13:59:59.999Z' and viewedByMeTime < '2026-09-02T00:00:00Z'",
+      "modifiedTime > '2026-08-31T23:00:00.000Z' and createdTime < '2026-09-01T14:00:00.000Z' and viewedByMeTime < '2026-09-02T00:00:00.000Z' and trashed = false",
     )
     expect(answer.meta.timezone).toBe("Asia/Vladivostok")
   })
@@ -92,8 +94,8 @@ describe("times at the edges", () => {
     const sent = async (tz: string) => {
       process.env.TZ = tz
       const call = vi.fn(async (_method: string, _params?: Record<string, unknown>) => ({ files: [] }))
-      const answer = await drive(call, "files", "list", "modifiedTime > '2026-09-01T09:00:00+02:00'", "--json")
-      expect(answer.meta.timezone).toBeUndefined()
+      const answer = await drive(call, "files", "list", 'modified_time>"2026-09-01T09:00:00+02:00"', "--json")
+      expect(answer.meta.timezone).toBe(tz)
       return call.mock.calls[0]?.[1]?.q
     }
     expect(await sent("Asia/Vladivostok")).toBe(await sent("America/Los_Angeles"))
@@ -122,11 +124,11 @@ describe("times at the edges", () => {
     expect(answer.meta.timezone).toBe("America/Los_Angeles")
   })
 
-  it("refuses a local time that daylight saving skips", async () => {
+  it("requires an offset on timestamp queries before remote I/O", async () => {
     process.env.TZ = "America/Los_Angeles"
     await expect(
-      drive(async () => ({ files: [] }), "files", "list", "modifiedTime > '2026-03-08T02:30:00'", "--json"),
-    ).rejects.toThrow(/daylight saving/)
+      drive(async () => ({ files: [] }), "files", "list", 'modified_time>"2026-03-08T02:30:00"', "--json"),
+    ).rejects.toThrow(/quoted timestamp with offset/)
   })
 
   it("shows a person the times in the computer's zone and says which zone", async () => {
@@ -149,7 +151,7 @@ describe("times at the edges", () => {
         env: fixture().env,
         streams: empty,
         api: { call: async () => ({ files: [] }) },
-      }).parseAsync(["default", "files", "list", "modifiedTime > '2026-09-01'"], { from: "user" })
+      }).parseAsync(["default", "files", "list", "modified_time>2026-09-01"], { from: "user" })
       expect(empty.stdout.at(-1)).toBe("times in Asia/Vladivostok")
     } finally {
       process.stdout.isTTY = tty
