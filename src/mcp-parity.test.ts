@@ -83,6 +83,14 @@ describe("MCP parity and authority", () => {
       }),
     ).toHaveProperty("isError", true)
   })
+  it("refuses stale model download tools under read-only before fetching", async () => {
+    const t = setup()
+    const tool = t.tool("models text download")
+    const result = await invokeTool(createProgram, tool, { model: "e5-small" }, t.options, "default", {
+      readOnly: true,
+    })
+    expect(result).toMatchObject({ isError: true, structuredContent: { error: { code: "permission_error" } } })
+  })
   it("confines binary downloads to the same export folder", async () => {
     const t = setup()
     const options = { ...t.options, download: vi.fn(async () => Uint8Array.of(0, 255)) }

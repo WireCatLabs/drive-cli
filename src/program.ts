@@ -398,7 +398,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const path = pathOf(action)
     const words = path.join(" ")
     // Discovery is account-independent and must not load config, credentials or the store.
-    if (ACCOUNT_FREE_COMMANDS.has(words)) return
+    if (ACCOUNT_FREE_COMMANDS.has(words) && !options.mcp) return
     if (options.atStart) {
       const given = program.opts()
       await options.atStart({ path, headless: Boolean(given.json || given.jsonl || given.input === false) })
