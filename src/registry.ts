@@ -35,7 +35,7 @@ export const GOOGLE_WRITE: Effects = { remote: "write", local: "none" }
 export const examples = (command: Command, lines: string[]): Command => annotate(command, { examples: lines })
 
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
-export const CONTRACT = 3
+export const CONTRACT = 4
 
 /** Preserve shared registry paths/anchors while making executable usage show the account boundary. */
 export const describeDriveProgram = (program: Command): CommandInfo[] => {

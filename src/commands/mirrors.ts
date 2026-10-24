@@ -95,7 +95,21 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
   ).action(async (id?: string) => {
     const name = selected()
     const { principal } = activeProfile(env, name)
-    output(allOf(await mirrorStatus(id ? [find(id)] : mirrorsOf(), mirrorKind, stateOf(name, principal))))
+    const items = await mirrorStatus(id ? [find(id)] : mirrorsOf(), mirrorKind, stateOf(name, principal))
+    output(
+      allOf(
+        items.map(({ id, folder, create, update, unchanged, orphans, unsupported, remote_checked }) => ({
+          id,
+          folder,
+          create: create.length,
+          update: update.length,
+          unchanged,
+          orphans: orphans.length,
+          unsupported,
+          remote_checked,
+        })),
+      ),
+    )
   })
 
   examples(

@@ -6,6 +6,11 @@
 
 - **Development tooling uses patched fast-uri and markdown-it.** Overrides resolve fast-uri 3.1.9 and
   markdown-it 15.0.3, body-parser 2.4.0 and ip-address 10.7.4; production dependencies and the historical upgrade fixture stay unchanged.
+### Changed — may break callers
+
+- **Status output omits document names.** `status` reports skipped IDs and reasons without file metadata;
+  `mirrors status` reports counts for `create`, `update` and `orphans`, without filenames or the local root.
+  `documents show` and `mirrors list` still provide explicitly requested details. The discovery contract is 4.
 
 ## 0.26.0 — 24.10.2026
 
