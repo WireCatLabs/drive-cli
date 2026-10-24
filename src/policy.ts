@@ -147,6 +147,7 @@ export const methodPolicyKeys = (method: string, body?: Record<string, unknown>)
     keys.push(
       body.action === "resolve" ? "comments.resolve" : body.action === "reopen" ? "comments.reopen" : "comments.reply",
     )
+  if (method === "drive.replies.create" && body?.content !== undefined) keys.push("comments.reply")
   if (method === "sheets.spreadsheets.batchUpdate" && Array.isArray(body?.requests)) {
     const object = (value: unknown): value is Record<string, unknown> =>
       !!value && typeof value === "object" && !Array.isArray(value)

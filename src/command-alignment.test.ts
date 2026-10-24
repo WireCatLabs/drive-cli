@@ -61,6 +61,25 @@ describe("comment writes and operation IDs", () => {
     ).rejects.toMatchObject({ code: "permission_error" })
     expect(t.call).not.toHaveBeenCalled()
   })
+  it("requires reply permission when resolving with comment text", async () => {
+    const t = setup()
+    const config = readConfig(t.env)
+    config.defaults = { permissions: { "comments.reply": "deny" } }
+    writeConfig(t.env, config)
+    await expect(
+      t.run(
+        "api",
+        "drive-replies-create",
+        "--file-id",
+        "synthetic-file",
+        "--comment-id",
+        "synthetic-comment",
+        "--body",
+        '{"action":"resolve","content":"Synthetic reply"}',
+      ),
+    ).rejects.toMatchObject({ code: "permission_error" })
+    expect(t.call).not.toHaveBeenCalled()
+  })
   it("returns operation IDs for generated writes and refuses comment writes under read-only", async () => {
     const t = setup()
     const result = await t.run(
