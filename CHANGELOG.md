@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Run recording comes from cli-core 0.430.0** (`recordRuns`) in place of drive's own copy. Runs are kept as before — every failed command, a usage error before any command included, a successful one under `--record` or `defaults.record: true`, nothing under `--no-record` — and Google requests are logged as before. A run with no profile now leaves `profile` out of `runs list` and `runs show` instead of `""`.
+
 ## 0.36.0 — 25.10.2026
 
 ### Security
