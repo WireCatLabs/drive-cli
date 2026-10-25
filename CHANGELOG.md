@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Security
+
+- `doctor` reports a `config.json` or config folder that other users of the computer can read. `doctor --json` gains `files: { checked, ok, problems: [{ path, mode, want }] }` (the file wants `0600`, the folder `0700`), the shape the other WireCat tools use, and stderr prints `to make it private: chmod 600 '<path>'` for each; nothing is changed on disk. drive 0.35 and older saved the file as `0644` on every `config set`; it is now saved `0600` (cli-base 0.57.0). Windows is not checked.
+
+### Changed — may break callers
+
+- A command that refuses the config file counts every problem `doctor` lists in its "(and N more problems)", saved permissions that name no command included. `session list` and a command run with no profile now refuse a file whose only problem is such a permission, as every other command already did.
+- `skill show`'s effects say it reads local files (`local: read`): `skill show --for claude|agents` prints the copy installed for that agent. `skill status` and `skill show --for` come from cli-base 0.56.0.
+- cli-core 0.428.0 and cli-base 0.57.0.
+
 ### Fixed
 
 - Every command starts faster: Google's client libraries load only when a command reaches Google. `drive --version`, `--help`, `config show` and `runs list` loaded about 1,380 module files; now about 1,180. `src/startup.test.ts` keeps them out of what the program imports at start.

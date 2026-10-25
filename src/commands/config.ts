@@ -4,9 +4,10 @@ import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import {
+  type Config,
   type ConfigFile,
-  ConfigSchema,
   checkTextLimit,
+  configIssues,
   DEFAULTS_ONLY,
   inspectConfig,
   readConfig,
@@ -15,16 +16,33 @@ import {
   unknownProfile,
   writeConfig,
 } from "../config.js"
-import { schemaIssues, withoutIssues } from "../config-issues.js"
-import { DRIVE_APP, fileIssues } from "../policy.js"
+import { DRIVE_APP, permissionNames } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
 type Node = Record<string, unknown>
 const isNode = (value: unknown): value is Node => typeof value === "object" && value !== null && !Array.isArray(value)
-const sameAt = (one: readonly string[], other: readonly string[]) =>
-  one.length === other.length && one.every((part, index) => part === other[index])
-const startsWith = (at: readonly string[], prefix: readonly string[]) => sameAt(at.slice(0, prefix.length), prefix)
+const without = (raw: unknown, at: readonly string[]): unknown => {
+  const copy = structuredClone(raw)
+  const parent = at.slice(0, -1).reduce<unknown>((node, key) => (isNode(node) ? node[key] : undefined), copy)
+  if (isNode(parent)) delete parent[at.at(-1) as string]
+  return copy
+}
+/** What loads, without the saved permissions no command checks: commands refuse them, so they do nothing. */
+const knownOnly = (config: Config, known: ReadonlySet<string>): Config => {
+  const keep = <T extends { permissions?: Record<string, unknown> | undefined }>(scope: T): T =>
+    scope.permissions
+      ? {
+          ...scope,
+          permissions: Object.fromEntries(Object.entries(scope.permissions).filter(([key]) => known.has(key))),
+        }
+      : scope
+  return {
+    ...config,
+    profiles: Object.fromEntries(Object.entries(config.profiles).map(([name, profile]) => [name, keep(profile)])),
+    ...(config.defaults ? { defaults: keep(config.defaults) } : {}),
+  }
+}
 
 /** The path `config set` and `unset` change in a profile or the defaults: one permission key, one model field, or one setting. */
 const settingAt = (key: string): string[] => {
@@ -42,10 +60,10 @@ export const installConfigCommands = (
   program: Command,
   { env, selected, output, streams, policyFlags, profileWord }: CommandContext,
 ) => {
-  const keys = () => policyFlags().permissionKeys ?? new Set<string>()
+  const known = () => permissionNames(policyFlags().permissionKeys ?? new Set<string>())
   /** The file as written; one that is not JSON cannot be changed by a command, only by hand. */
   const editable = () => {
-    const file = inspectConfig(env)
+    const file = inspectConfig(env, known())
     const broken = file.issues.filter((issue) => issue.kind === "invalid_json")
     if (broken.length) throw refusal(broken)
     return file
@@ -67,10 +85,9 @@ export const installConfigCommands = (
     ),
     ["drive config show"],
   ).action(() => {
-    const file = inspectConfig(env)
-    const issues = fileIssues(file, keys())
-    output(itemOf(withoutIssues(file.config, issues) as Node))
-    for (const issue of issues)
+    const file = inspectConfig(env, known())
+    output(itemOf(knownOnly(file.config, known()) as unknown as Node))
+    for (const issue of file.issues)
       streams.diagnostic(`${issue.what}, so it is left out${issue.fix ? ` — \`${issue.fix}\` removes it` : ""}`)
   })
   examples(
@@ -118,12 +135,14 @@ export const installConfigCommands = (
         node = node[part] as Node
       }
       node[at.at(-1) as string] = parsed
-      const before = new Set(fileIssues(file, keys()).map((issue) => issue.at.join("\u0000")))
-      const after = fileIssues(
-        { ...file, raw: next, issues: schemaIssues(next, ConfigSchema, { file: file.path, tool: "drive" }) },
-        keys(),
+      const issuesOf = (raw: unknown) => configIssues(raw, file.path, known())
+      const keyed = (raw: unknown) => new Set(issuesOf(raw).map((issue) => JSON.stringify(issue)))
+      const before = keyed(file.raw)
+      // A problem that goes away with this one setting is the setting's own, even when the file had it already.
+      const elsewhere = keyed(without(next, at))
+      const added = issuesOf(next).filter(
+        (issue) => !before.has(JSON.stringify(issue)) || !elsewhere.has(JSON.stringify(issue)),
       )
-      const added = after.filter((issue) => !before.has(issue.at.join("\u0000")) || startsWith(issue.at, at))
       if (added.length) throw refusal(added)
       saveConfigFile(file.path, next)
       output(itemOf({ key, updated: true, scope: name }))
@@ -142,7 +161,7 @@ export const installConfigCommands = (
       const root =
         !args.defaults &&
         profileWord() === undefined &&
-        fileIssues(file, keys()).some((issue) => issue.fix === `drive config unset ${key}`)
+        file.issues.some((issue) => issue.fix === `drive config unset ${key}`)
       if ((root || args.defaults) && env.DRIVE_PROFILE_LOCK)
         throw new CliError(
           "permission_error",

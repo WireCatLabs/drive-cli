@@ -72,6 +72,7 @@ import {
   methodPolicyKeys,
   type PolicyFlags,
   permissionKeys,
+  permissionNames,
   policySettings,
   refuseUnderReadOnly,
 } from "./policy.js"
@@ -151,7 +152,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return lock
     }
     if (named) return profileName(named)
-    const config = readConfig(env)
+    const config = readConfig(env, permissionNames(policyFlags().permissionKeys ?? new Set()))
     const choices = Object.keys(config.profiles).sort()
     throw new CliError(
       "validation_error",

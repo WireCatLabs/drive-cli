@@ -17,7 +17,7 @@ it("selects configured folders, mirrors and profiles without changing their save
   writeConfig(f.env, config)
   expect(selectedFolders(f.env, "default", { id: "other" })).toEqual([{ id: "other" }])
   expect(configuredMirrors(f.env, "default", { folder: "root" })).toEqual([profile.mirrors[0]])
-  expect(configuredSessions(f.env, { storage: "file" })).toEqual([
+  expect(configuredSessions(f.env, { storage: "file" }, new Set())).toEqual([
     { profile: "second", selected_folders: 0, storage: "file" },
   ])
   expect(readConfig(f.env)).toEqual(config)

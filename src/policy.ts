@@ -16,8 +16,7 @@ import {
   sendGuard,
 } from "@wirecat/cli-core/sends"
 import { operations } from "./api-contract.js"
-import { type ConfigFile, configPath, paths, readConfig, refusal } from "./config.js"
-import { type LocatedIssue, permissionIssues, savedPermissionKeys } from "./config-issues.js"
+import { inspectConfig, paths, refusal } from "./config.js"
 import { VERSION } from "./version.js"
 
 export interface PolicyFlags {
@@ -82,19 +81,6 @@ export const permissionNames = (keys: ReadonlySet<string>): Set<string> => {
   return names
 }
 
-/** Every saved permission key, in the defaults and every profile, that names no drive command. */
-export const permissionProblems = (raw: unknown, keys: ReadonlySet<string>, file: string) =>
-  permissionIssues(savedPermissionKeys(raw), permissionNames(keys), { file, tool: "drive" })
-
-/** Everything `doctor` and `config show` report: the file's own problems, then permission keys that name no command. */
-export const fileIssues = (file: ConfigFile, keys: ReadonlySet<string>): LocatedIssue[] => {
-  const seen = new Set(file.issues.map((issue) => issue.at.join("\u0000")))
-  return [
-    ...file.issues,
-    ...permissionProblems(file.raw, keys, file.path).filter((issue) => !seen.has(issue.at.join("\u0000"))),
-  ]
-}
-
 /**
  * The profile's levels with `--permission` laid over them. A flag only tightens: one that would loosen the
  * profile, a built-in default or a key under it is refused, so an agent cannot add its way past the owner's
@@ -102,11 +88,19 @@ export const fileIssues = (file: ConfigFile, keys: ReadonlySet<string>): Located
  */
 export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: PolicyFlags = {}) => {
   const keys = flags.permissionKeys
-  const config = readConfig(env)
+  const names = keys && permissionNames(keys)
+  const { config, issues } = inspectConfig(env, names)
+  const [first] = issues
+  if (first)
+    throw first.kind === "unknown_permission"
+      ? new CliError("configuration_error", refusal(issues).message, {
+          reason: "policy.unknown-key",
+          permission: first.key?.slice("permissions.".length),
+        })
+      : refusal(issues)
   const own = config.profiles[profile]
   const overrides = overridesOf(flags.permission)
-  if (keys) {
-    const names = permissionNames(keys)
+  if (names)
     for (const key of Object.keys(overrides))
       if (!names.has(key))
         throw new CliError(
@@ -117,14 +111,6 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
             permission: key,
           },
         )
-    const problems = permissionProblems(config, keys, configPath(env))
-    const [first] = problems
-    if (first)
-      throw new CliError("configuration_error", refusal(problems).message, {
-        reason: "policy.unknown-key",
-        permission: first.key?.slice("permissions.".length),
-      })
-  }
   const saved = layerPermissions([
     ["profile", own?.permissions],
     ["defaults", config.defaults?.permissions],

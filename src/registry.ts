@@ -27,6 +27,7 @@ export const ACCOUNT_FREE_COMMANDS = new Set([
   "guide",
   "skill show",
   "skill install",
+  "skill status",
   "models download",
   "images models download",
   "runs list",

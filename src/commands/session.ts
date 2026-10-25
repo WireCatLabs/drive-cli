@@ -4,6 +4,7 @@ import { itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core
 import type { Command } from "commander"
 import { activeProfile, application, configuredSessions, readConfig, writeConfig } from "../config.js"
 import { bindQuery, SESSIONS_QUERY, sessionRow, termsOf } from "../list-queries.js"
+import { permissionNames } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
@@ -18,7 +19,7 @@ const grants = (raw: string): Set<Grant> => {
 }
 
 export const installSessionCommands = (program: Command, context: CommandContext) => {
-  const { env, streams, options, selected, output } = context
+  const { env, streams, options, selected, output, policyFlags } = context
   const session = annotate(program.command("session"), { effects: LOCAL_READ }).description(
     "sign in to Google and manage local profiles",
   )
@@ -76,7 +77,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
     return output(
       itemOf({
         scope: "all-configured-profiles",
-        items: configuredSessions(env, filter),
+        items: configuredSessions(env, filter, permissionNames(policyFlags().permissionKeys ?? new Set())),
       }),
     )
   })

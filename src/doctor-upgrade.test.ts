@@ -1,6 +1,9 @@
+import { execFileSync } from "node:child_process"
+import { chmodSync, statSync } from "node:fs"
+import { dirname } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
-import { readConfig, writeConfig } from "./config.js"
+import { configPath, readConfig, writeConfig } from "./config.js"
 import { createProgram } from "./program.js"
 import { commandResult, fixture } from "./testing.js"
 
@@ -26,6 +29,34 @@ describe("doctor", () => {
     })
     expect(index).not.toHaveBeenCalled()
   })
+
+  it.skipIf(process.platform === "win32")(
+    "names a config file and folder others can read, with the chmod",
+    async () => {
+      const f = fixture()
+      const config = readConfig(f.env)
+      config.profiles.work = { principal: "synthetic-principal", roots: [], storage: "keyring" }
+      writeConfig(f.env, config)
+      const file = configPath(f.env)
+      expect(statSync(file).mode & 0o777).toBe(0o600)
+      chmodSync(file, 0o644)
+      chmodSync(dirname(file), 0o775)
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams }).parseAsync(["--json", "doctor"], { from: "user" })
+      expect(commandResult(streams.stdout.join("")).files).toEqual({
+        checked: true,
+        ok: false,
+        problems: [
+          { path: file, mode: "0644", want: "0600" },
+          { path: dirname(file), mode: "0775", want: "0700" },
+        ],
+      })
+      const fixes = streams.stderr.flatMap((line) => line.match(/^to make it private: (.*)$/)?.slice(1) ?? [])
+      expect(fixes).toEqual([`chmod 600 '${file}'`, `chmod 700 '${dirname(file)}'`])
+      for (const fix of fixes) execFileSync("sh", ["-c", fix])
+      expect(await run(f.env, ["doctor"])).toMatchObject({ files: { checked: true, ok: true, problems: [] } })
+    },
+  )
 })
 
 describe("upgrade", () => {
