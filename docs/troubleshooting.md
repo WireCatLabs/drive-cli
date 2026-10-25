@@ -16,7 +16,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | A file was skipped | Check its type and download permission. Docs, Sheets and uploaded Markdown/TXT, PDF, `.docx`, `.xlsx` and CSV are imported; scanned PDFs, Slides and shortcuts are not. |
 | Sync stopped with errors | Repeat sync; pending work resumes. Read the report rather than treating a partial import as complete. |
 | Semantic search reports a missing model | Prepare the shared model cache as described in [search](search.md#search-by-meaning), or use `--exact`. |
-| Another tool says the store was written by a newer version | Upgrade that tool, as the message says; see [below](#another-tool-says-the-store-was-written-by-a-newer-version). |
+| Another tool says the store was written by a newer version | Run `<tool> upgrade` for that tool; see [below](#another-tool-says-the-store-was-written-by-a-newer-version). |
 | A link target cannot be found | Use a reference from the selected database. Check that every tool uses the same MESSAGING_STORE override before linking to messenger people/projects. |
 
 ```sh
@@ -92,9 +92,9 @@ error code when asking for help rather than SDK responses or private content.
 
 Drive keeps your Drive documents in their own account in the shared store, and moves them there the first
 time an up-to-date drive opens it. After that, an older WireCat tool that uses the same store, such as Memo,
-stops with `the message store was written by a newer version`. Upgrade that tool with `<tool> upgrade`, for
-example `memo upgrade`; the message names the command. Your documents, tags, notes and `document:<id>`
-references are kept; nothing needs to be imported again.
+stops with `the message store was written by a newer version` and asks you to upgrade it. Run `<tool> upgrade`,
+for example `memo upgrade`. Your documents, tags, notes and `document:<id>` references are kept; nothing needs
+to be imported again.
 
 ## The store upgrade reports existing annotations
 
