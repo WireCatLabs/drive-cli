@@ -8,12 +8,20 @@
 - drive reads setting names only as written. A camelCase key, `default_profile` or `read_only` is an unknown setting like any other: the file is refused with the first problem and its `config unset`, and drive no longer rewrites the file. `config set` takes the key as written too.
 - A permission key that names no command is refused wherever it is saved, in any profile or the defaults, not only in the profile a command runs as. The refusal names the `config unset` that removes it.
 - A profile's `roots` may be left out (no folders), and so may `profiles` (no profiles yet). `principal` and `storage` are still required; doctor reports either one missing.
-- cli-core 0.423.0.
+- `commands --json` gives `config show` and `session list` a usage line without `<profile>` (`drive config show`), like `doctor` and `api list`; they read every profile or none.
+- Every drive `--dry-run` preview says `action_invoked: false`, beside `dry_run: true`, so a caller can check that nothing ran.
+- `runs list`, `runs show` and `run.json` gain `cli_command`, `argv` (values that may be content written `[redacted]`), `unknown_command`, `agent` and, for a failed run, `error`; `profile` is left out when the command named none. From cli-core 0.426.0.
+- cli-core 0.426.0.
 
 ### Added
 
 - `config unset <key>` removes one setting from a profile, from the defaults (`--defaults`), or a key the file should not have at its top (`drive config unset <key>`, with no profile, as doctor's `fix` says).
 - `config show`, `config set` and `config unset` work on a file that is valid JSON but has problems (`show` also on one that is not). `show` prints what loads and names each problem with its fix; `set` is refused only when the change adds a problem or leaves the setting it writes invalid. Every other command still refuses the file.
+
+### Fixed
+
+- A global `--dry-run` no longer lets a command write. `drive personal --dry-run config set …`, `config unset`, `drive --dry-run skill install`, `upgrade`, `models download` and `images models download` saved the setting, wrote both SKILL.md files, upgraded or downloaded; they now print the preview (`dry_run: true`, `action_invoked: false`) and change nothing. `config set` and `config unset` still refuse under `DRIVE_READ_ONLY` first.
+- Help shows drive's housekeeping commands without a profile: `drive doctor`, `drive api list`, `drive models list`, `drive config show`, `drive session list`, `drive runs list`, not `drive personal doctor`. The guide's steps name the profile where the command takes one (`drive personal sync`). MCP tool text says "what people wrote", not "messages". Needs cli-core 0.426.0.
 
 ## 0.34.0 — 25.10.2026
 
