@@ -874,7 +874,7 @@ export const SHELL_OVERRIDES: Readonly<{
     {
       command: ["commands", "info"],
       field: "examples",
-      before: ["drive commands info messages list"],
+      before: ["drive commands info commands"],
       after: ["drive commands info --json"],
       reason:
         "Drive binds discovery to its profile-aware usage renderer while retaining the shared command document and evidence endpoint.",

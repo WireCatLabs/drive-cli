@@ -4,6 +4,7 @@ import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
+import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
@@ -127,16 +128,13 @@ export const installModelCommands = (program: Command, { env, output, streams, p
       }),
     )
   }
-  const sharedModels = modelCatalogueCommand(
-    { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: "" },
-    {
-      kinds: ["text"],
-      env: () => env,
-      output,
-      diagnostic: (line) => streams.diagnostic(line),
-      offline: () => policyFlags().offline === true,
-    },
-  )
+  const sharedModels = modelCatalogueCommand(DRIVE_APP, {
+    kinds: ["text"],
+    env: () => env,
+    output,
+    diagnostic: (line) => streams.diagnostic(line),
+    offline: () => policyFlags().offline === true,
+  })
   for (const command of sharedModels.commands) models.addCommand(command)
   const images = annotate(program.command("images"), { effects: LOCAL_READ }).description(
     "the local model that picture search uses",

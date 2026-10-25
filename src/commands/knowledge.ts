@@ -39,6 +39,7 @@ import {
 } from "../list-queries.js"
 import type { DocumentContent } from "../model.js"
 import { allOf } from "../output.js"
+import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 
 export interface KnowledgeCommands {
@@ -411,17 +412,9 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
     )
 }
 
-const DRIVE_CONTRACT_APP = {
-  command: "drive",
-  appName: "drive-cli",
-  envPrefix: "DRIVE",
-  description: "Google Drive",
-  version: "",
-}
-
 export const installKnowledgeCommands = (...args: Parameters<typeof installKnowledgeCommandsDefinition>) => {
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_CONTRACT_APP, "notes"),
+    sharedCommandTemplate(DRIVE_APP, "notes"),
     "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
     () => {
       installKnowledgeCommandsDefinition(...args)

@@ -2,7 +2,7 @@ import { join } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import type { CommandInfo } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
-import { readOnlyLockOf, readOnlyRefusal, setupPermissionCeiling } from "@wirecat/cli-core/cli"
+import { type AppIdentity, readOnlyLockOf, readOnlyRefusal, setupPermissionCeiling } from "@wirecat/cli-core/cli"
 import {
   CEILING_KEY,
   guardedWrite,
@@ -29,12 +29,13 @@ export interface PolicyFlags {
   /** The keys this program checks (`permissionKeys`); with them, a permission naming no command is refused. */
   permissionKeys?: Set<string>
 }
-export const DRIVE_APP = {
+export const DRIVE_APP: AppIdentity = {
   command: "drive",
   appName: "drive-cli",
   envPrefix: "DRIVE",
-  description: "",
+  description: "Google Drive",
   version: VERSION,
+  messenger: false,
 }
 const ORDER: Record<Level, number> = { deny: 0, readonly: 1, ask: 2, allow: 3 }
 
