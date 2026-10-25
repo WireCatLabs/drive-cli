@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `drive store info --json` describes the shared store: where it is, its schema against the one drive reads (`schema.reason`, and `schema.upgrade` — what drive's next run moves it to), and which tools used it. It opens the store read-only and needs no profile, so WireCat Desktop can tell whether drive can read the store. The `store` group's help now says it covers the shared store too.
+
 ### Changed — may break callers
 
 - **Run recording comes from cli-core 0.430.0** (`recordRuns`) in place of drive's own copy. Runs are kept as before — every failed command, a usage error before any command included, a successful one under `--record` or `defaults.record: true`, nothing under `--no-record` — and Google requests are logged as before. A run with no profile now leaves `profile` out of `runs list` and `runs show` instead of `""`.
@@ -17,10 +21,6 @@
 - A command that refuses the config file counts every problem `doctor` lists in its "(and N more problems)", saved permissions that name no command included. `session list` and a command run with no profile now refuse a file whose only problem is such a permission, as every other command already did.
 - `skill show`'s effects say it reads local files (`local: read`): `skill show --for claude|agents` prints the copy installed for that agent. `skill status` and `skill show --for` come from cli-base 0.56.0.
 - cli-core 0.428.0 and cli-base 0.57.0.
-
-### Added
-
-- `drive store info --json` describes the shared store: where it is, its schema against the one drive reads (`schema.reason`, and `schema.upgrade` — what drive's next run moves it to), and which tools used it. It opens the store read-only and needs no profile, so WireCat Desktop can tell whether drive can read the store. The `store` group's help now says it covers the shared store too.
 
 ### Fixed
 

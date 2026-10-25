@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**239 ✅ · 951 ⛔ · 0 ❌** — 197 commands, 993 options.
+**240 ✅ · 951 ⛔ · 0 ❌** — 198 commands, 993 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -26,6 +26,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `sync` | `--rescan` | ✅ |  |
 | `sync` | `--embed` | ⛔ | needs a downloaded embedding model; the index it feeds is tested through the injected index |
 | `status` |  | ✅ |  |
+| `store info` |  | ✅ |  |
 | `store check` |  | ✅ |  |
 | `store import` |  | ✅ |  |
 | `store import` | `--fingerprint` | ✅ |  |
