@@ -1,4 +1,12 @@
-import { CliError, Credentials, type KeyringStore, pathsAreOverridden } from "@wirecat/cli-base"
+import {
+  CliError,
+  Credentials,
+  isCliError,
+  type KeyringStore,
+  pathsAreOverridden,
+  systemKeyring,
+} from "@wirecat/cli-base"
+import { credentialStorage, driveSessionCodec, type OAuthProvider, tokenKeeper } from "@wirecat/cli-core/oauth"
 import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
@@ -21,15 +29,16 @@ const Session = v.object({
   }),
 })
 export type Session = v.InferOutput<typeof Session>
+const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore) => ({
+  configDir: paths(env).config,
+  service: "drive-cli",
+  storage,
+  env,
+  isolated: pathsAreOverridden({ appName: "drive-cli", prefix: "DRIVE", env }),
+  ...(keyring ? { keyring } : {}),
+})
 export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>
-  new Credentials({
-    configDir: paths(env).config,
-    service: "drive-cli",
-    storage,
-    env,
-    isolated: pathsAreOverridden({ appName: "drive-cli", prefix: "DRIVE", env }),
-    ...(keyring ? { keyring } : {}),
-  })
+  new Credentials(credentialOptions(env, storage, keyring))
 const notSaved = () =>
   new CliError(
     "configuration_error",
@@ -89,21 +98,50 @@ export const authorizedClient = (
       reason: "sign-in.expired",
     })
   const session = parsed.output
+  const provider: OAuthProvider = {
+    id: "google",
+    name: "Google",
+    authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenUrl: "https://oauth2.googleapis.com/token",
+    revokeUrl: "https://oauth2.googleapis.com/revoke",
+    client: { clientId: session.clientId, ...(session.clientSecret ? { clientSecret: session.clientSecret } : {}) },
+    redirect: { kind: "loopback" },
+  }
+  const keeper = tokenKeeper({
+    provider,
+    storage: credentialStorage({
+      credentials: { ...credentialOptions(env, profile.storage), keyring: keyring ?? systemKeyring },
+      account: name,
+      codec: driveSessionCodec,
+    }),
+    lockDir: paths(env).config,
+    fetch: globalThis.fetch,
+    signInCommand: `drive ${name} session start`,
+    // Above the client's own 5-minute early refresh, so a token it asks to replace is replaced.
+    freshForMs: 6 * 60_000,
+    ...(signal ? { signal } : {}),
+  })
   const client = new OAuth2Client({
     clientId: session.clientId,
     clientSecret: session.clientSecret,
     transporterOptions: { timeout: 30000, ...(signal ? { signal } : {}) },
   })
-  client.setCredentials(session.tokens)
-  // Token refresh can rotate the refresh token; keep it with the same profile's application.
-  client.on("tokens", (tokens) => {
-    session.tokens = {
-      ...session.tokens,
-      ...tokens,
-      refresh_token: tokens.refresh_token ?? session.tokens.refresh_token,
+  // Without the refresh token the client cannot refresh on its own: every refresh goes through the keeper's
+  // lock, so two drive processes never spend the same refresh token.
+  client.refreshHandler = async () => {
+    try {
+      const tokens = await keeper.tokens()
+      if (!tokens.accessToken || tokens.expiresAt === undefined) throw new Error("no access token")
+      return { access_token: tokens.accessToken, expiry_date: tokens.expiresAt }
+    } catch (error) {
+      if (isCliError(error) && error.code !== "authentication_error") throw error
+      throw new CliError("authentication_error", `Google sign-in expired — run drive ${name} session start again`, {
+        reason: "sign-in.expired",
+      })
     }
-    saveSession(env, name, session, profile.storage, keyring)
-  })
+  }
+  const { refresh_token: _refresh, ...current } = session.tokens
+  client.setCredentials(current)
   return client
 }
 export const covers = (granted: readonly string[], required: string): boolean =>

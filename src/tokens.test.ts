@@ -1,11 +1,11 @@
 import { readFileSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { memoryKeyring } from "@wirecat/cli-base"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { application, paths } from "./config.js"
 import { googleError } from "./errors.js"
 import { fixture } from "./testing.js"
-import { authorizedClient, saveSession } from "./tokens.js"
+import { authorizedClient, credentials, grantedScopes, READ_SCOPE, saveSession } from "./tokens.js"
 
 describe("shared credential persistence", () => {
   const session = {
@@ -14,15 +14,71 @@ describe("shared credential persistence", () => {
     clientSecret: "fixture-client-secret",
     tokens: { refresh_token: "fixture-refresh", access_token: "fixture-access" },
   }
-  it("preserves refresh credentials when a refresh response only supplies an access token", () => {
+  const expired = { ...session, tokens: { ...session.tokens, expiry_date: 1, scope: READ_SCOPE } }
+  const tokenResponse = (body: Record<string, unknown>, status = 200) =>
+    vi.fn(async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } }))
+  const savedSession = (keyring: ReturnType<typeof memoryKeyring>, env: NodeJS.ProcessEnv) =>
+    JSON.parse(credentials(env, "keyring", keyring).read("default")?.secret ?? "{}")
+
+  it("refreshes through the shared keeper and keeps the entry the old drive reads", async () => {
     const f = fixture()
     const keyring = memoryKeyring()
-    saveSession(f.env, "default", session, "keyring", keyring)
-    const client = authorizedClient(f.env, "default", keyring)
-    client.emit("tokens", { access_token: "fixture-next" })
-    const reread = authorizedClient(f.env, "default", keyring)
-    expect(reread.credentials.refresh_token).toBe("fixture-refresh")
-    expect(reread.credentials.access_token).toBe("fixture-next")
+    saveSession(f.env, "default", expired, "keyring", keyring)
+    const fetch = tokenResponse({ access_token: "fixture-next", expires_in: 3600, token_type: "Bearer" })
+    vi.stubGlobal("fetch", fetch)
+    try {
+      const client = authorizedClient(f.env, "default", keyring)
+      expect(client.credentials.refresh_token).toBeUndefined()
+      expect((await client.getAccessToken()).token).toBe("fixture-next")
+      expect(fetch).toHaveBeenCalledTimes(1)
+      const body = String((fetch.mock.calls[0] as unknown as [string, RequestInit])[1].body)
+      expect(body).toContain("grant_type=refresh_token")
+      expect(body).toContain("refresh_token=fixture-refresh")
+      const saved = savedSession(keyring, f.env)
+      expect(saved.principal).toBe("synthetic-principal")
+      expect(saved.tokens).toMatchObject({
+        refresh_token: "fixture-refresh",
+        access_token: "fixture-next",
+        scope: READ_SCOPE,
+      })
+      expect(grantedScopes(f.env, "default", keyring)).toEqual([READ_SCOPE])
+      expect((await authorizedClient(f.env, "default", keyring).getAccessToken()).token).toBe("fixture-next")
+      expect(fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+  it("spends the refresh token once when two clients refresh together", async () => {
+    const f = fixture()
+    const keyring = memoryKeyring()
+    saveSession(f.env, "default", expired, "keyring", keyring)
+    const fetch = tokenResponse({ access_token: "fixture-next", expires_in: 3600 })
+    vi.stubGlobal("fetch", fetch)
+    try {
+      const tokens = await Promise.all([
+        authorizedClient(f.env, "default", keyring).getAccessToken(),
+        authorizedClient(f.env, "default", keyring).getAccessToken(),
+      ])
+      expect(tokens.map((one) => one.token)).toEqual(["fixture-next", "fixture-next"])
+      expect(fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+  it("names session start when Google refuses the refresh token", async () => {
+    const f = fixture()
+    const keyring = memoryKeyring()
+    saveSession(f.env, "default", expired, "keyring", keyring)
+    vi.stubGlobal("fetch", tokenResponse({ error: "invalid_grant" }, 400))
+    try {
+      await expect(authorizedClient(f.env, "default", keyring).getAccessToken()).rejects.toMatchObject({
+        code: "authentication_error",
+        details: { reason: "sign-in.expired" },
+        message: expect.stringContaining("run drive default session start"),
+      })
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
   it("makes file persistence explicit and private", () => {
     const f = fixture()

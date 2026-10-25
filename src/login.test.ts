@@ -60,7 +60,7 @@ describe("browser OAuth", () => {
     expect(f.client.getToken).toHaveBeenCalledWith(
       expect.objectContaining({ code: "fixture-code", codeVerifier: expect.any(String) }),
     )
-    expect(authorizedClient(f.env, "default", f.keyring).credentials.refresh_token).toBe("fixture-refresh-token")
+    expect(authorizedClient(f.env, "default", f.keyring).credentials.access_token).toBe("fixture-access-token")
     expect(JSON.stringify(readConfig(f.env))).not.toContain("fixture-refresh-token")
     await expect(fetch(f.redirect())).rejects.toThrow()
   })
