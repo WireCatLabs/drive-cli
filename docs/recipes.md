@@ -125,6 +125,20 @@ and explicit limits. Importing and searching do not create project membership, f
 Review those separately using [document relationships](#link-a-document-to-a-person-or-project) or
 [Memo's project workflows](https://wirecat.dev/en/docs/memo/recipes).
 
+### Search only Drive documents from Memo
+
+`memo search notes` searches your own notes and imported documents together. `--source` keeps only
+the documents of one Drive profile:
+
+```sh
+memo search notes "budget decision" --source drive:personal --json
+```
+
+List several profiles separated by commas, such as `--source drive:personal,drive:work`. A profile
+that has not synced yet is refused with the profiles the store holds. `memo search all` ranks messages,
+mail and notes together and has no source filter; `drive personal search` gives the same documents
+with Drive's own fields.
+
 ## Prepare a brief entirely offline
 
 ```text prompt
