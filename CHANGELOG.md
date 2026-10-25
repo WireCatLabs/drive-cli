@@ -10,6 +10,7 @@
 ### Added
 
 - Lists declare schema-derived native queries for configured folders, mirrors, profiles, document tags, notes, relationships, contributors and remote files. Provider lists without predicates advertise their fields and reject filters before requests.
+- A file's owner or editor is the same person as your mail contact with that exact email address, so `memo context` joins their files and mail. A name alone never joins anyone, and a person you unlink stays unlinked.
 
 ## 0.30.0 — 25.10.2026
 

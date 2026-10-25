@@ -140,7 +140,7 @@ export const saveContributors = async (
     await store.accounts.saveAccount(key, { name: "Google Drive" })
     await store.people.savePeople(
       key,
-      identified.map(({ id, user }) => ({ id, name: user.name ?? user.email ?? null })),
+      identified.map(({ id, user }) => ({ id, name: user.name ?? user.email ?? null, email: user.email ?? null })),
     )
   }
   const links: Omit<LinkInput, "from" | "origin">[] = []

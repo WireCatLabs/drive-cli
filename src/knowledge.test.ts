@@ -153,6 +153,21 @@ describe("shared document knowledge", () => {
       await f.index.close()
     }
   })
+  it("makes an editor the same person as the mail contact of their exact address", async () => {
+    const f = await setup()
+    const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
+    try {
+      const editor = await store.people.personOf({ provider: "google-drive", id: "email:editor@example.invalid" })
+      const mail = await store.people.personOf({ provider: "email", id: "editor@example.invalid" })
+      expect(mail?.uid).toBe(editor?.uid)
+      const owner = await store.people.personOf({ provider: "google-drive", id: "owner-user" })
+      expect(owner?.identities.map((one) => one.provider)).toEqual(["google-drive"])
+    } finally {
+      await store.close()
+      await f.index.close()
+    }
+  })
+
   it("stales source-backed memories on scope removal and refuses removed documents", async () => {
     const f = await setup()
     const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
