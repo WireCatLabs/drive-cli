@@ -107,5 +107,11 @@ describe("skill", () => {
     expect(readFileSync(join(home, ".claude", "skills", "drive-cli", "SKILL.md"), "utf8")).toContain(
       `version: "${VERSION}"`,
     )
+    expect(await run(["skill", "show", "--for", "claude"], { HOME: home })).toContain(`version: "${VERSION}"`)
+    const status = JSON.parse(await run(["skill", "status", "--json"], { HOME: home })).item
+    expect(status.targets).toEqual([
+      expect.objectContaining({ target: "claude", installed: VERSION, state: "current" }),
+      expect.objectContaining({ target: "agents", installed: null, state: "missing" }),
+    ])
   })
 })

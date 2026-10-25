@@ -28,13 +28,11 @@ const installSkillCommandDefinition = (program: Command, { env, streams, output 
     }),
   )
   for (const child of skill.commands) {
-    const install = child.name() === "install"
-    if (install) grantsAuthority(child)
-    // The text skill show prints ships inside the package.
-    annotate(child, {
-      effects: install ? LOCAL_WRITE : NO_EFFECTS,
-      examples: [install ? "drive skill install --for all" : "drive skill show"],
-    }).summary(install ? "put SKILL.md where Claude Code, Codex and Gemini CLI look" : "print drive's SKILL.md")
+    if (child.name() === "install")
+      annotate(grantsAuthority(child), { effects: LOCAL_WRITE, examples: ["drive skill install --for all"] }).summary(
+        "put SKILL.md where Claude Code, Codex and Gemini CLI look",
+      )
+    if (child.name() === "show") annotate(child, { examples: ["drive skill show"] }).summary("print drive's SKILL.md")
   }
   program.addCommand(annotate(skill, { effects: NO_EFFECTS }))
 }

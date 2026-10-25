@@ -185,6 +185,22 @@ describe("config runs on a file with problems", () => {
       message: `${path}: setting colour is not a setting of drive — remove it with \`drive config unset colour\``,
     })
   })
+
+  it("counts in a refusal every problem doctor lists, unknown permissions included", async () => {
+    const { env, path } = setup({
+      colour: "work",
+      defaults: { permissions: { "files.no-such": "deny" } },
+      profiles: { work: { ...PROFILE, permissions: { foldrs: "readonly" } } },
+    })
+    expect(await doctorIssues(env)).toHaveLength(3)
+    const message = `${path}: setting colour is not a setting of drive — remove it with \`drive config unset colour\` (and 2 more problems — \`doctor\` lists them all)`
+    for (const args of [
+      ["work", "folders", "list"],
+      ["folders", "list"],
+      ["session", "list"],
+    ])
+      await expect(run(env, args)).rejects.toMatchObject({ code: "configuration_error", message })
+  })
 })
 
 it("names the profile and the rule when saving a setting of the wrong type, never the value", () => {

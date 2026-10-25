@@ -29,19 +29,6 @@ export const SHELL_OVERRIDES: Readonly<{
     },
     {
       command: ["skill", "show"],
-      field: "effects",
-      before: {
-        remote: "none",
-        local: "read",
-      },
-      after: {
-        remote: "none",
-        local: "none",
-      },
-      reason: "Drive binds agent installation to its own output renderer and provider skill locations.",
-    },
-    {
-      command: ["skill", "show"],
       field: "examples",
       before: ["drive skill show", "drive skill show follow-ups"],
       after: ["drive skill show"],

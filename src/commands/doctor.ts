@@ -2,13 +2,12 @@ import { existsSync } from "node:fs"
 import { resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
+import { itemOf, LOCAL_READ, privateFiles, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { application, inspectConfig, paths } from "../config.js"
-import { publicIssue } from "../config-issues.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
-import { DRIVE_APP, fileIssues } from "../policy.js"
+import { DRIVE_APP, permissionNames } from "../policy.js"
 import { examples } from "../registry.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
@@ -24,8 +23,8 @@ const failure = (error: unknown) => {
  */
 export const doctorReport = (env: NodeJS.ProcessEnv, permissionKeys: ReadonlySet<string>) => {
   const where = paths(env)
-  const file = inspectConfig(env)
-  const config = { path: file.path, found: file.found, issues: fileIssues(file, permissionKeys).map(publicIssue) }
+  const file = inspectConfig(env, permissionNames(permissionKeys))
+  const config = { path: file.path, found: file.found, issues: file.issues }
   const profiles = Object.entries(file.config.profiles).map(([name, profile]) => ({
     profile: name,
     selected_folders: profile.roots.length,
@@ -39,6 +38,8 @@ export const doctorReport = (env: NodeJS.ProcessEnv, permissionKeys: ReadonlySet
     oauth = { client: "own", error: failure(error) }
   }
   const store = resolve(storePath(env))
+  // The credential file of `--credential-storage file` sits in this folder, so the folder keeps it private too.
+  const files = privateFiles({ files: [file.path], dirs: [where.config] })
   return {
     version: VERSION,
     runtime: { node: process.versions.node, platform: process.platform },
@@ -50,16 +51,24 @@ export const doctorReport = (env: NodeJS.ProcessEnv, permissionKeys: ReadonlySet
     read_only: env.DRIVE_READ_ONLY && env.DRIVE_READ_ONLY !== "0" ? "DRIVE_READ_ONLY" : null,
     profile_lock: env.DRIVE_PROFILE_LOCK || null,
     login: "not checked",
+    files: files.checked
+      ? { ...files, problems: files.problems.map(({ path, mode, want }) => ({ path, mode, want })) }
+      : files,
+    fixes: files.checked ? files.problems.map((problem) => problem.fix) : [],
   }
 }
 
-const installDoctorCommandDefinition = (program: Command, { env, output, policyFlags }: CommandContext) => {
+const installDoctorCommandDefinition = (program: Command, { env, output, streams, policyFlags }: CommandContext) => {
   examples(
     annotate(program.command("doctor"), { effects: LOCAL_READ }).description(
       "check this installation: config, profiles, paths; no keyring, store or network",
     ),
     ["drive doctor", "drive doctor --json"],
-  ).action(() => output(itemOf(doctorReport(env, policyFlags().permissionKeys ?? new Set()))))
+  ).action(() => {
+    const { fixes, ...report } = doctorReport(env, policyFlags().permissionKeys ?? new Set())
+    output(itemOf(report))
+    for (const fix of fixes) streams.diagnostic(`to make it private: ${fix}`)
+  })
 }
 
 export const installDoctorCommand = (...args: Parameters<typeof installDoctorCommandDefinition>) => {

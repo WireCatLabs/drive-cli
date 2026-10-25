@@ -1,18 +1,10 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
-import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-core/cli"
+import { AI_ENTRIES, type ConfigIssue, checkConfigText, issueMessage, usableProfileName } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
-import {
-  issueMessage,
-  type LocatedIssue,
-  parseConfigText,
-  publicIssue,
-  schemaIssues,
-  withoutIssues,
-} from "./config-issues.js"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
@@ -50,18 +42,37 @@ export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-
 export const configPath = (env: NodeJS.ProcessEnv) => join(paths(env).config, "config.json")
 const TOOL = "drive"
 
-const nodeAt = (raw: unknown, at: readonly string[]) =>
-  at.reduce<unknown>((node, key) => (node !== null && typeof node === "object" ? (node as never)[key] : undefined), raw)
+type Node = Record<string, unknown>
+const isNode = (value: unknown): value is Node => typeof value === "object" && value !== null && !Array.isArray(value)
 
-/** What still loads: a profile missing a setting drive cannot work without is left out whole. */
-const loadable = (raw: unknown, issues: readonly LocatedIssue[]): Config => {
-  const removed = issues.map((issue) =>
-    issue.kind === "missing_setting" && nodeAt(raw, issue.at) === undefined
-      ? { ...issue, at: issue.at.slice(0, -1) }
-      : issue,
+/** A profile missing a setting drive cannot work without is left out whole, so the rest of the file still loads. */
+const withoutIncomplete = (raw: unknown, issues: readonly ConfigIssue[]): Node | undefined => {
+  const incomplete = new Set(
+    issues.flatMap((issue) => (issue.kind === "missing_setting" && issue.profile ? [issue.profile] : [])),
   )
-  const loaded = v.safeParse(ConfigSchema, withoutIssues(raw, removed))
-  return loaded.success ? loaded.output : { profiles: {} }
+  if (!incomplete.size || !isNode(raw) || !isNode(raw.profiles)) return undefined
+  return {
+    ...raw,
+    profiles: Object.fromEntries(Object.entries(raw.profiles).filter(([name]) => !incomplete.has(name))),
+  }
+}
+
+const examine = (text: string, file: string, knownPermissions?: ReadonlySet<string>) => {
+  const check = (body: string) =>
+    checkConfigText(body, { file, tool: TOOL, schema: ConfigSchema, ...(knownPermissions ? { knownPermissions } : {}) })
+  const first = check(text)
+  if (first.issues.some((issue) => issue.kind === "invalid_json"))
+    return { raw: {}, config: { profiles: {} }, issues: first.issues }
+  const raw: unknown = JSON.parse(text)
+  if (first.config) return { raw, config: first.config, issues: first.issues }
+  const rest = withoutIncomplete(raw, first.issues)
+  const second = rest && check(JSON.stringify(rest))
+  return {
+    raw,
+    config: second?.config ?? { profiles: {} },
+    // Saved permissions are checked only in what loads, and the first pass loaded nothing.
+    issues: [...first.issues, ...(second?.issues ?? []).filter((issue) => issue.kind === "unknown_permission")],
+  }
 }
 
 export interface ConfigFile {
@@ -70,11 +81,14 @@ export interface ConfigFile {
   /** The file as written, for `config set` and `unset` to change without dropping what they do not touch. */
   raw: unknown
   config: Config
-  issues: LocatedIssue[]
+  issues: ConfigIssue[]
 }
 
-/** The file, what of it loads, and every problem the schema finds, for `doctor` and `config`, which must not refuse. */
-export const inspectConfig = (env: NodeJS.ProcessEnv): ConfigFile => {
+/**
+ * The file, what of it loads, and every problem in it, for `doctor` and `config`, which must not refuse. With
+ * `knownPermissions` (drive's permission names), a saved permission naming no command is a problem too.
+ */
+export const inspectConfig = (env: NodeJS.ProcessEnv, knownPermissions?: ReadonlySet<string>): ConfigFile => {
   const path = configPath(env)
   let text: string
   try {
@@ -82,22 +96,22 @@ export const inspectConfig = (env: NodeJS.ProcessEnv): ConfigFile => {
   } catch {
     return { path, found: false, raw: {}, config: { profiles: {} }, issues: [] }
   }
-  const parsed = parseConfigText(text, path)
-  if ("issue" in parsed) return { path, found: true, raw: {}, config: { profiles: {} }, issues: [parsed.issue] }
-  const issues = schemaIssues(parsed.raw, ConfigSchema, { file: path, tool: TOOL })
-  return { path, found: true, raw: parsed.raw, config: loadable(parsed.raw, issues), issues }
+  return { path, found: true, ...examine(text, path, knownPermissions) }
 }
 
-export const refusal = (issues: readonly LocatedIssue[]) =>
-  new CliError("configuration_error", issueMessage(issues.map(publicIssue)))
+/** The problems `raw` would have as the file, for `config set` to compare before and after a change. */
+export const configIssues = (raw: unknown, file: string, knownPermissions?: ReadonlySet<string>) =>
+  examine(JSON.stringify(raw), file, knownPermissions).issues
 
-export const readConfig = (env: NodeJS.ProcessEnv): Config => {
-  const { config, issues } = inspectConfig(env)
+export const refusal = (issues: readonly ConfigIssue[]) => new CliError("configuration_error", issueMessage(issues))
+
+export const readConfig = (env: NodeJS.ProcessEnv, knownPermissions?: ReadonlySet<string>): Config => {
+  const { config, issues } = inspectConfig(env, knownPermissions)
   if (issues.length) throw refusal(issues)
   return config
 }
 export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
-  const [issue] = schemaIssues(config, ConfigSchema, { file: "drive settings", tool: TOOL })
+  const [issue] = configIssues(config, "drive settings")
   if (issue)
     throw new CliError(
       "configuration_error",
@@ -186,8 +200,12 @@ export const configuredMirrors = (env: NodeJS.ProcessEnv, profile: string, filte
   (activeProfile(env, profile).mirrors ?? []).filter((row) =>
     Object.entries(filter).every(([key, value]) => row[key as keyof Mirror] === value),
   )
-export const configuredSessions = (env: NodeJS.ProcessEnv, filter: { profile?: string; storage?: string } = {}) =>
-  Object.entries(readConfig(env).profiles).flatMap(([name, row]) =>
+export const configuredSessions = (
+  env: NodeJS.ProcessEnv,
+  filter: { profile?: string; storage?: string },
+  knownPermissions: ReadonlySet<string>,
+) =>
+  Object.entries(readConfig(env, knownPermissions).profiles).flatMap(([name, row]) =>
     (filter.profile === undefined || filter.profile === name) &&
     (filter.storage === undefined || filter.storage === row.storage)
       ? [{ profile: name, selected_folders: row.roots.length, storage: row.storage }]

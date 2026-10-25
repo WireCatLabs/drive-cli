@@ -107,6 +107,19 @@ A problem with no `fix` (text that is not JSON, or a missing `principal` or `sto
 file. `config show`, `config set` and `config unset` keep working on a file that is valid JSON but has problems:
 `show` names each one with its fix, and `set` refuses only a change that adds a problem.
 
+## Keep the file private
+
+drive saves `config.json` so that only you can read it (`0600`), in a folder only you can enter (`0700`). A file
+saved by drive 0.35 or older, or a folder made by hand, may be open to other users of the computer. `drive doctor`
+lists such a file or folder under `files.problems` (`path`, `mode`, `want`) and prints the `chmod` that fixes it:
+
+```sh
+drive doctor
+chmod 600 '/home/me/.config/drive-cli/config.json'
+```
+
+Windows is not checked: it has no such modes.
+
 ## Environment variables
 
 These values apply to the process that runs Drive; they are not saved by `config set`.

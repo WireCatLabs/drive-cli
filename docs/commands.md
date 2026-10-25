@@ -4371,11 +4371,15 @@ the instructions an agent is given for this tool
 
 ### `drive skill show`
 
-print SKILL.md — `drive skill install` puts it where Claude Code, Codex and Gemini CLI look for it
+print SKILL.md — `drive skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
 
 ```sh
-drive skill show
+drive skill show [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--for <agents>` | print the copy installed for these agents instead of this version's. One of: `claude`, `agents`. |
 
 **Returns:** print drive's SKILL.md
 
@@ -4398,6 +4402,18 @@ drive skill install [options]
 **Returns:** put SKILL.md where Claude Code, Codex and Gemini CLI look
 
 **Example:** `drive skill install --for all`
+
+### `drive skill status`
+
+for each place `drive skill install` writes to: the path, the version installed there, and whether it is current, stale, missing or unversioned
+
+```sh
+drive skill status
+```
+
+**Returns:** whether the installed instructions for AI agents match this version
+
+**Example:** `drive skill status`, `drive skill status --json`
 
 ## `drive doctor`
 
