@@ -62,8 +62,8 @@ releases use the workflow below.
 ## Publish a release
 
 Date the top version section, update package.json and complete review. From clean, up-to-date
-main, `bin/release` takes the same machine-wide lock as the other WireCat CLIs and dispatches
-the workflow. If another release holds the lock, wait for it to finish. Publication uses npm's short-lived GitHub
+main, `bin/release` takes the release lock of this package (shared by every checkout of
+drive-cli; other packages have their own) and dispatches the workflow. If another release holds the lock, wait for it to finish. Publication uses npm's short-lived GitHub
 OIDC identity. It waits for the registry's exact version document before creating the tag and
 GitHub release; a failed publication never creates either.
 
@@ -73,7 +73,7 @@ nonpublishing validation keep their shared WireCat policies.
 
 ## Wait for another release
 
-The machine-wide lock permits one package release at a time. By default `bin/release` refuses
-when another release holds it. To join the queue for up to 30 minutes, use
+The lock permits one drive-cli release at a time on this machine; releases of other packages do
+not wait for it. By default `bin/release` refuses when another drive-cli release holds it. To join the queue for up to 30 minutes, use
 `WIRECAT_RELEASE_WAIT_SECONDS=1800 bin/release`. It still acquires the same lock and performs
 the normal source, publication and tag checks. Do not dispatch the workflow manually.
