@@ -31,6 +31,7 @@ import {
   overrideSharedContract,
   parseDuration,
   provide,
+  recordRuns,
   refuseCommandName,
   renderAnswer,
   runsCommand,
@@ -79,7 +80,6 @@ import {
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, ANY_PROFILE_COMMANDS, describeDriveProgram, markProfileFree } from "./registry.js"
-import { runRecording } from "./run-recording.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
 import { localTimes } from "./time.js"
@@ -442,22 +442,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       )
     else annotate(command, metadata)
   }
-  const recording = runRecording(program, {
-    env,
-    streams,
-    agent: options.mcp === true,
-    profile: () => {
-      try {
-        return selected()
-      } catch {
-        return undefined
-      }
-    },
-    settings: () => {
-      const defaults = readConfig(env).defaults
-      return { record: defaults?.record, keepRunsForDays: defaults?.keep_runs_for_days }
-    },
-  })
   const pathOf = (command: Command) => {
     const path: string[] = []
     for (let at: Command | null = command; at?.parent; at = at.parent) path.unshift(at.name())
@@ -580,7 +564,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       deadline?.dispose()
     }
   }
-  recording.wrap()
+  recordRuns(program, {
+    app: DRIVE_APP,
+    content: "document content",
+    agent: options.mcp === true,
+    profile: selected,
+    settings: () => {
+      const defaults = readConfig(env).defaults
+      return { record: defaults?.record, keepRunsForDays: defaults?.keep_runs_for_days }
+    },
+    env,
+    streams,
+  })
   // Imported generated children have their own Commander exit/output configuration.
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
