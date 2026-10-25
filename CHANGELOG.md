@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `drive store info --json` describes the shared store: where it is, its schema against the one drive reads (`schema.reason`, and `schema.upgrade` — what drive's next run moves it to), and which tools used it. It opens the store read-only and needs no profile, so WireCat Desktop can tell whether drive can read the store. The `store` group's help now says it covers the shared store too.
+
 ### Changed — may break callers
 
 - **Run recording comes from cli-core 0.430.0** (`recordRuns`) in place of drive's own copy. Runs are kept as before — every failed command, a usage error before any command included, a successful one under `--record` or `defaults.record: true`, nothing under `--no-record` — and Google requests are logged as before. A run with no profile now leaves `profile` out of `runs list` and `runs show` instead of `""`.

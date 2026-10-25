@@ -36,7 +36,14 @@ export const ACCOUNT_FREE_COMMANDS = new Set([
 ])
 
 /** These read every profile or none, so they run without one; a profile typed before them is still checked. */
-export const ANY_PROFILE_COMMANDS = new Set(["commands", "commands info", "complete", "config show", "session list"])
+export const ANY_PROFILE_COMMANDS = new Set([
+  "commands",
+  "commands info",
+  "complete",
+  "config show",
+  "session list",
+  "store info",
+])
 
 const PROFILE_FREE_COMMANDS = new Set([...ACCOUNT_FREE_COMMANDS, ...ANY_PROFILE_COMMANDS])
 
