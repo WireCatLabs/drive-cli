@@ -4319,7 +4319,7 @@ drive <profile> mcp [options]
 
 **Returns:** serve drive's commands to an agent over MCP: search, then read or write
 
-**Example:** `drive personal mcp`, `drive personal mcp --http --public-url https://<name>.ts.net`, `drive personal mcp --revoke`
+**Example:** `drive personal mcp --tools`, `drive personal mcp`, `drive personal mcp --http --public-url https://laptop.example.ts.net`
 
 ## `drive commands`
 

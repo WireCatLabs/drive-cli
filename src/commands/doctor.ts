@@ -7,6 +7,7 @@ import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { application, paths, readConfig } from "../config.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
@@ -66,17 +67,9 @@ const installDoctorCommandDefinition = (program: Command, { env, output }: Comma
   ).action(() => output(itemOf(doctorReport(env))))
 }
 
-const DRIVE_CONTRACT_APP = {
-  command: "drive",
-  appName: "drive-cli",
-  envPrefix: "DRIVE",
-  description: "Google Drive",
-  version: "",
-}
-
 export const installDoctorCommand = (...args: Parameters<typeof installDoctorCommandDefinition>) => {
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_CONTRACT_APP, "doctor"),
+    sharedCommandTemplate(DRIVE_APP, "doctor"),
     "Drive diagnoses public OAuth configuration and local paths without opening a keyring, database or Google connection.",
     () => {
       installDoctorCommandDefinition(...args)

@@ -11,6 +11,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { DRIVE_APP } from "../policy.js"
 import { commandsDocument, describeDriveProgram, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
@@ -70,10 +71,7 @@ const installCommandsCommandDefinition = (program: Command, { print, streams }: 
 export const installCommandsCommand = (...args: Parameters<typeof installCommandsCommandDefinition>) => {
   const [program, context] = args
   customizeSharedCommand(
-    sharedCommandTemplate(
-      { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: "" },
-      "commands",
-    ),
+    sharedCommandTemplate(DRIVE_APP, "commands"),
     "Drive binds discovery to its profile-aware usage renderer while retaining the shared command document and evidence endpoint.",
     () => {
       installCommandsCommandDefinition(...args)

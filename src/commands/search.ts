@@ -3,6 +3,7 @@ import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli
 import type { Command } from "commander"
 import { activeProfile, pictureSearch } from "../config.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 import { readState } from "../state.js"
 import { type CommandContext, positive } from "./context.js"
@@ -46,17 +47,9 @@ const notImported = (name: string, folders: number, documents: string[]): string
     : `profile ${name} has imported no documents yet — drive ${name} sync`
 }
 
-const DRIVE_CONTRACT_APP = {
-  command: "drive",
-  appName: "drive-cli",
-  envPrefix: "DRIVE",
-  description: "Google Drive",
-  version: "",
-}
-
 export const installSearchCommand = (...args: Parameters<typeof installSearchCommandDefinition>) =>
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_CONTRACT_APP, "search"),
+    sharedCommandTemplate(DRIVE_APP, "search"),
     "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
     () => {
       installSearchCommandDefinition(...args)

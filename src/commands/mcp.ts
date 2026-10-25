@@ -4,6 +4,7 @@ import { itemOf, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/c
 import type { Command } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { allOf } from "../output.js"
+import { DRIVE_APP } from "../policy.js"
 import { portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
@@ -20,9 +21,9 @@ const installMcpCommandDefinition = (
       "serve drive's commands to an agent over MCP: search, then read or write",
     ),
     [
+      "drive personal mcp --tools",
       "drive personal mcp",
-      "drive personal mcp --http --public-url https://<name>.ts.net",
-      "drive personal mcp --revoke",
+      "drive personal mcp --http --public-url https://laptop.example.ts.net",
     ],
   )
     .option("--tools", "list the commands the server offers instead of starting it")
@@ -78,17 +79,9 @@ const installMcpCommandDefinition = (
     })
 }
 
-const DRIVE_CONTRACT_APP = {
-  command: "drive",
-  appName: "drive-cli",
-  envPrefix: "DRIVE",
-  description: "Google Drive",
-  version: "",
-}
-
 export const installMcpCommand = (...args: Parameters<typeof installMcpCommandDefinition>) =>
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_CONTRACT_APP, "mcp"),
+    sharedCommandTemplate(DRIVE_APP, "mcp"),
     "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     () => {
       installMcpCommandDefinition(...args)

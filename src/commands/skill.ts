@@ -10,6 +10,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { DRIVE_APP } from "../policy.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
 
@@ -40,10 +41,7 @@ const installSkillCommandDefinition = (program: Command, { env, streams, output 
 
 export const installSkillCommand = (...args: Parameters<typeof installSkillCommandDefinition>) => {
   customizeSharedCommand(
-    sharedSkillCommand(
-      { command: "drive", appName: "drive-cli", envPrefix: "DRIVE", description: "Google Drive", version: VERSION },
-      new URL("../../skills/drive-cli/SKILL.md", import.meta.url),
-    ),
+    sharedSkillCommand(DRIVE_APP, new URL("../../skills/drive-cli/SKILL.md", import.meta.url)),
     "Drive binds agent installation to its own output renderer and provider skill locations.",
     () => {
       installSkillCommandDefinition(...args)
