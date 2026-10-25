@@ -24,13 +24,6 @@ The local database defaults to `~/.local/share/WireCat/wirecat.db` on Linux; pro
 are under `profiles/PROFILE_NAME/`. Read [local storage](usage.md#disk-use-index-without-an-export-directory)
 before moving or deleting them.
 
-Existing files using camelCase setting names are migrated to snake_case on their first successful
-read. The file keeps its permissions and is not rewritten again if nothing changes. Profile names,
-permission paths and model-purpose names are preserved. Conflicting old/new values are refused.
-
-The old `read_only` and `readOnly` settings are refused. Remove them from the configuration file;
-use per-command `permissions` for saved limits, or `--read-only` / `DRIVE_READ_ONLY=1` for a run.
-
 ## Saved settings
 
 | Key | What it controls | Scope |
@@ -92,7 +85,27 @@ drive images models download clip-b32
 `drive personal config set max_text_chars 500000` makes sync skip longer files with that reason; a
 file skipped for its length is read again on the next sync after the limit is raised.
 The profile is the first word, or `DRIVE_PROFILE`. Nothing else picks one: a missing profile is an error that lists
-the profiles here, and a legacy saved default is named in that error, not used.
+the profiles here.
+
+`config unset` removes one setting: `drive personal config unset max_text_chars`, or
+`drive config unset --defaults permissions.files` for the defaults.
+
+## Fix a problem in the file
+
+Every command other than `config` and `doctor` refuses a configuration file with a problem: a key drive does not
+know, a value of the wrong type, a permission that names no command, or text that is not JSON. The refusal names
+the first problem and the command that removes it. `drive doctor --json` lists every problem under
+`config.issues`; each has a `kind`, the `file`, the `profile` and `key` it is in, a `what` that says what the value
+has to be (never what it was), and a `fix` you can run exactly as written:
+
+```sh
+drive doctor --json
+drive personal config unset colour
+```
+
+A problem with no `fix` (text that is not JSON, or a missing `principal` or `storage`) is corrected by editing the
+file. `config show`, `config set` and `config unset` keep working on a file that is valid JSON but has problems:
+`show` names each one with its fix, and `set` refuses only a change that adds a problem.
 
 ## Environment variables
 

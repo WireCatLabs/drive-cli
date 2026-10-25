@@ -55,7 +55,7 @@ import { installSkillCommand } from "./commands/skill.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, configKey, fileId, profileName, readConfig } from "./config.js"
+import { activeProfile, fileId, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { REASONS as CONTRACT_REASONS } from "./failure.js"
@@ -154,15 +154,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     if (named) return profileName(named)
     const config = readConfig(env)
     const choices = Object.keys(config.profiles).sort()
-    const leftover = config.default_profile
-      ? `; default_profile ${config.default_profile} in the config is not used — type drive ${config.default_profile} …`
-      : ""
     throw new CliError(
       "validation_error",
-      (choices.length
+      choices.length
         ? `name a profile: drive <profile> … — profiles here: ${choices.join(", ")} (or set DRIVE_PROFILE)`
-        : "no profiles here yet; create one with drive personal session start (any name in place of personal)") +
-        leftover,
+        : "no profiles here yet; create one with drive personal session start (any name in place of personal)",
       { reason: "profile.required", profiles: choices },
     )
   }
@@ -253,6 +249,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     source,
     withIndex,
     policyFlags,
+    profileWord: () => profileWord,
     endsOnStop: () => {
       stopEnds = true
     },
@@ -476,15 +473,18 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
       return
     }
+    // The action picks the profile, the defaults or the top of the file, so a broken file can still be repaired.
+    if (words === "config unset" && !options.mcp && !profileWord) return refuseUnderReadOnly(env, "change a setting")
     selected()
-    if (words === "config set" && !options.mcp) return refuseUnderReadOnly(env, "change a setting")
+    if ((words === "config set" || words === "config unset") && !options.mcp)
+      return refuseUnderReadOnly(env, "change a setting")
     if (options.mcp && changesAuthority(action)) {
       const authority = policySettings(env, selected(), policyFlags())
       if (!["ask", "allow"].includes(levelFor(authority.levels, "mcp.authority").level))
         throw new CliError("permission_error", "MCP authority changes require the owner's mcp.authority permission")
-      if (words === "config set") {
-        const key = configKey(action.args[0] ?? "")
-        if (key === "permissions" || key.startsWith("permissions.mcp") || key === "read_only")
+      if (words === "config set" || words === "config unset") {
+        const key = action.args[0] ?? ""
+        if (key === "permissions" || key.startsWith("permissions.mcp"))
           throw new CliError("permission_error", "an agent cannot change its own authority or read-only settings")
       }
     }

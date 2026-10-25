@@ -42,7 +42,7 @@ are preserved. Validators and operation effects are generated from committed inp
 `--profile` is refused, and `DRIVE_PROFILE_LOCK` pins the process to one profile.
 Permission layers use the shared nearest-layer/specific-path rules: temporary flags, profile,
 then defaults. A `--permission` flag only tightens: a looser level, or a key that names no command,
-is refused. `DRIVE_READ_ONLY` prevents mutation even when another level allows it. The retired `read_only` setting is refused. Housekeeping such
+is refused. `DRIVE_READ_ONLY` prevents mutation even when another level allows it. Housekeeping such
 as command discovery and owner configuration remains available so a policy can be inspected/fixed.
 
 ```sh
@@ -145,7 +145,7 @@ planned. Published-package CI includes Windows acceptance. These differences are
 
 Drive reuses the shared `commandWords`, `liftProfile`, `refuseCommandName` and `usableProfileName`
 helpers used by MAX. Account actions require an explicit first-word profile or `DRIVE_PROFILE`;
-a leftover `default_profile` is ignored and named in the error, and repeated/conflicting selectors are rejected.
+repeated/conflicting selectors are rejected.
 Help/version and account-independent discovery remain configuration-free. This enforces the
 owner's cross-CLI account-selection requirement. Account records are not renamed by selection.
 

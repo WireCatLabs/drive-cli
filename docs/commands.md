@@ -4189,6 +4189,28 @@ drive <profile> config set <key> <json-value> [options]
 
 **Example:** `drive personal config set max_text_chars 100000`, `drive personal config set permissions.files '"readonly"' --defaults`, `drive personal config set record true --defaults`
 
+### `drive config unset`
+
+remove one setting from this profile, the defaults or the top of the file
+
+This command changes local state.
+
+```sh
+drive <profile> config unset <key> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `key` | required | the setting, permissions.<key> or models.<purpose>.<field>; any key, known or not. |
+
+| Option | What it does |
+|---|---|
+| `--defaults` | change the defaults instead of this profile. |
+
+**Returns:** remove one setting from this profile, the defaults or the top of the file
+
+**Example:** `drive personal config unset max_text_chars`, `drive personal config unset permissions.files --defaults`
+
 ## `drive complete`
 
 print a shell completion script, or complete words

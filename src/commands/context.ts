@@ -40,6 +40,8 @@ export interface CommandContext {
   source(): Promise<GoogleSource>
   withIndex<T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T>
   policyFlags(): PolicyFlags & { offline?: boolean }
+  /** The profile typed as the first word, if any; `selected()` also reads DRIVE_PROFILE and the lock. */
+  profileWord(): string | undefined
   /** Ctrl-C or --timeout ends this command normally: a stream that stops is a complete answer. */
   endsOnStop(): void
 }

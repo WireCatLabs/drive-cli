@@ -6,7 +6,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 
 | Symptom | What to do |
 | --- | --- |
-| Not sure what is set up | Run `drive doctor`: version, whether the settings file reads, the profiles here and the paths. It needs no profile and reads no keyring or store. |
+| Not sure what is set up | Run `drive doctor`: version, every problem in the settings file with the command that fixes it, the profiles here and the paths. It needs no profile and reads no keyring or store. |
 | A command failed earlier and you need what it did | Run `drive runs list status:failed`, then `drive runs show <run-id>`: the Google calls it made, their status and timing, and its error code. No profile is needed; document names, ids and text are never kept. |
 | `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
 | Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
@@ -34,8 +34,7 @@ tokens or private document text. Once the expected source appears, return to [se
 ## “Name a profile”
 
 Run the command as `drive personal status`, replacing `personal` with the account name you chose, or set
-`DRIVE_PROFILE=personal`. The error lists the profiles here. An old saved default does not select one; the error
-names it. For the first connection, follow
+`DRIVE_PROFILE=personal`. The error lists the profiles here. For the first connection, follow
 [sign-in](installation.md#connect-your-account). For existing profiles, `drive session list`
 shows all configured names.
 

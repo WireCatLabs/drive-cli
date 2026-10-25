@@ -1,11 +1,18 @@
-import { readFileSync, statSync } from "node:fs"
+import { readFileSync } from "node:fs"
 import { join } from "node:path"
-import { CliError, resolvePaths, saveConfigFile, writeSecurely } from "@wirecat/cli-base"
-import { AI_ENTRIES, loadSnakeCaseConfig, usableProfileName } from "@wirecat/cli-core/cli"
+import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
+import { AI_ENTRIES, usableProfileName } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
-import { upgradeConfig } from "./config-upgrade.js"
+import {
+  issueMessage,
+  type LocatedIssue,
+  parseConfigText,
+  publicIssue,
+  schemaIssues,
+  withoutIssues,
+} from "./config-issues.js"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
 
 const Common = {
@@ -20,12 +27,6 @@ const RunSettings = {
 }
 export const DEFAULTS_ONLY = new Set(Object.keys(RunSettings))
 export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])
-const snakeSetting = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase()
-export const configKey = (key: string) => {
-  const [head = "", ...parts] = key.split(".")
-  if (head === "models" && parts.length === 2) parts[1] = snakeSetting(parts[1] ?? "")
-  return [snakeSetting(head), ...parts].join(".")
-}
 const Mirror = v.strictObject({
   id: v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,40}$/)),
   path: v.pipe(v.string(), v.minLength(1)),
@@ -34,73 +35,75 @@ const Mirror = v.strictObject({
 export type Mirror = v.InferOutput<typeof Mirror>
 const Profile = v.strictObject({
   principal: v.string(),
-  roots: v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))),
+  roots: v.optional(v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/))), []),
   mirrors: v.optional(v.array(Mirror)),
   storage: v.picklist(["keyring", "file"]),
   picture_search: v.optional(v.boolean()),
   ...Common,
 })
 export const ConfigSchema = v.strictObject({
-  profiles: v.record(v.string(), Profile),
+  profiles: v.optional(v.record(v.string(), Profile), {}),
   defaults: v.optional(v.strictObject({ ...Common, ...RunSettings })),
-  default_profile: v.optional(v.string()),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
-// Built from the key path and a fixed reason only: valibot's own messages quote the value.
-const problem = (where: string, issue: v.BaseIssue<unknown>) => {
-  const key = v.getDotPath(issue)
-  if (key === null) return `${where} has to be a JSON object`
-  if (issue.expected === "never") return `${where}: ${key} is not a known setting`
-  if (issue.received === "undefined") return `${where}: ${key} is missing`
-  if (issue.path?.at(-1)?.origin === "key") return `${where}: ${key} is not an allowed name`
-  return `${where}: ${key} has the wrong type or is out of range`
-}
-const UNEXPLAINED = "drive configuration is invalid; no configuration values were logged"
-// The loader's message embeds valibot's issue messages, so the file is checked again here.
-const explain = (path: string, schema: v.GenericSchema): CliError => {
-  let raw: unknown
-  try {
-    raw = JSON.parse(readFileSync(path, "utf8"))
-  } catch {
-    return new CliError("configuration_error", `${path} is not valid JSON`)
-  }
-  try {
-    const issue = v.safeParse(schema, raw).issues?.[0]
-    return new CliError("configuration_error", issue ? problem(path, issue) : UNEXPLAINED)
-  } catch (error) {
-    return error instanceof CliError ? error : new CliError("configuration_error", UNEXPLAINED)
-  }
-}
-export const readConfig = (env: NodeJS.ProcessEnv): Config => {
-  const path = join(paths(env).config, "config.json")
-  let changed = false
-  const schema = v.pipe(
-    v.unknown(),
-    v.transform((raw) => {
-      const upgraded = upgradeConfig(raw, SETTING_NAMES)
-      changed = upgraded.changed
-      return upgraded.config
-    }),
-    ConfigSchema,
+export const configPath = (env: NodeJS.ProcessEnv) => join(paths(env).config, "config.json")
+const TOOL = "drive"
+
+const nodeAt = (raw: unknown, at: readonly string[]) =>
+  at.reduce<unknown>((node, key) => (node !== null && typeof node === "object" ? (node as never)[key] : undefined), raw)
+
+/** What still loads: a profile missing a setting drive cannot work without is left out whole. */
+const loadable = (raw: unknown, issues: readonly LocatedIssue[]): Config => {
+  const removed = issues.map((issue) =>
+    issue.kind === "missing_setting" && nodeAt(raw, issue.at) === undefined
+      ? { ...issue, at: issue.at.slice(0, -1) }
+      : issue,
   )
-  let config: Config
+  const loaded = v.safeParse(ConfigSchema, withoutIssues(raw, removed))
+  return loaded.success ? loaded.output : { profiles: {} }
+}
+
+export interface ConfigFile {
+  path: string
+  found: boolean
+  /** The file as written, for `config set` and `unset` to change without dropping what they do not touch. */
+  raw: unknown
+  config: Config
+  issues: LocatedIssue[]
+}
+
+/** The file, what of it loads, and every problem the schema finds, for `doctor` and `config`, which must not refuse. */
+export const inspectConfig = (env: NodeJS.ProcessEnv): ConfigFile => {
+  const path = configPath(env)
+  let text: string
   try {
-    config = loadSnakeCaseConfig(path, schema, () => ({ profiles: {} }))
+    text = readFileSync(path, "utf8")
   } catch {
-    throw explain(path, schema)
+    return { path, found: false, raw: {}, config: { profiles: {} }, issues: [] }
   }
-  try {
-    if (changed) writeSecurely(path, `${JSON.stringify(config, null, 2)}\n`, statSync(path).mode & 0o777)
-  } catch {
-    throw new CliError("configuration_error", UNEXPLAINED)
-  }
+  const parsed = parseConfigText(text, path)
+  if ("issue" in parsed) return { path, found: true, raw: {}, config: { profiles: {} }, issues: [parsed.issue] }
+  const issues = schemaIssues(parsed.raw, ConfigSchema, { file: path, tool: TOOL })
+  return { path, found: true, raw: parsed.raw, config: loadable(parsed.raw, issues), issues }
+}
+
+export const refusal = (issues: readonly LocatedIssue[]) =>
+  new CliError("configuration_error", issueMessage(issues.map(publicIssue)))
+
+export const readConfig = (env: NodeJS.ProcessEnv): Config => {
+  const { config, issues } = inspectConfig(env)
+  if (issues.length) throw refusal(issues)
   return config
 }
 export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
-  const checked = v.safeParse(ConfigSchema, config)
-  if (!checked.success) throw new CliError("configuration_error", problem("drive settings", checked.issues[0]))
-  saveConfigFile(join(paths(env).config, "config.json"), checked.output)
+  const [issue] = schemaIssues(config, ConfigSchema, { file: "drive settings", tool: TOOL })
+  if (issue)
+    throw new CliError(
+      "configuration_error",
+      `drive settings: ${issue.profile === undefined ? "" : `profile ${issue.profile}: `}${issue.what}`,
+    )
+  saveConfigFile(configPath(env), v.parse(ConfigSchema, config))
 }
 export const profileName = usableProfileName
 export const fileId = (input: string): string => {
@@ -114,19 +117,18 @@ export const fileId = (input: string): string => {
   if (!/^[A-Za-z0-9_-]{1,200}$/.test(id)) throw new CliError("validation_error", "invalid Google file ID")
   return id
 }
+export const unknownProfile = (name: string, profiles: string[]) =>
+  new CliError(
+    "validation_error",
+    profiles.length
+      ? `no profile ${name} here — profiles here: ${profiles.join(", ")}; a new one signs in with drive ${name} session start`
+      : `no profiles here yet; create one with drive ${name} session start`,
+    { reason: "profile.unknown", profiles },
+  )
 export const activeProfile = (env: NodeJS.ProcessEnv, name: string) => {
   const config = readConfig(env)
   const profile = config.profiles[profileName(name)]
-  if (!profile) {
-    const profiles = Object.keys(config.profiles).sort()
-    throw new CliError(
-      "validation_error",
-      profiles.length
-        ? `no profile ${name} here — profiles here: ${profiles.join(", ")}; a new one signs in with drive ${name} session start`
-        : `no profiles here yet; create one with drive ${name} session start`,
-      { reason: "profile.unknown", profiles },
-    )
-  }
+  if (!profile) throw unknownProfile(name, Object.keys(config.profiles).sort())
   return profile
 }
 export interface OAuthApplication {
