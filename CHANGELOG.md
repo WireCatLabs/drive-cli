@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- drive keeps a log of its runs, as tg, max and wa do: a failed command always, every command with `--record` or `record: true` in the defaults (`drive personal config set record true --defaults`), each for `keep_runs_for_days` (30 by default). `drive runs list`, `drive runs show <run-id>` and `drive runs path <run-id>` read them without a profile. A run holds the command's words, its profile, its outcome and every Google request as method, path shape with ids masked, status and duration, never a document id, name or text. `--no-record` keeps nothing.
+
 ## 0.33.0 — 25.10.2026
 
 ### Changed — may break callers

@@ -3,7 +3,15 @@ import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
-import { activeProfile, checkTextLimit, configKey, readConfig, SETTING_NAMES, writeConfig } from "../config.js"
+import {
+  activeProfile,
+  checkTextLimit,
+  configKey,
+  DEFAULTS_ONLY,
+  readConfig,
+  SETTING_NAMES,
+  writeConfig,
+} from "../config.js"
 import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
@@ -25,11 +33,12 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     [
       "drive personal config set max_text_chars 100000",
       `drive personal config set permissions.files '"readonly"' --defaults`,
+      "drive personal config set record true --defaults",
     ],
   )
     .argument(
       "<key>",
-      "max_text_chars, picture_search, shared AI settings, permissions.<key> or models.<purpose>.<field>",
+      "max_text_chars, picture_search, record, keep_runs_for_days, shared AI settings, permissions.<key> or models.<purpose>.<field>",
     )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
@@ -53,6 +62,8 @@ export const installConfigCommands = (program: Command, { env, selected, output 
       } catch {
         throw new CliError("validation_error", "setting value must be JSON")
       }
+      if (DEFAULTS_ONLY.has(head ?? "") && !args.defaults)
+        throw new CliError("validation_error", `${head} is set for every profile at once: add --defaults`)
       if (head === "picture_search") {
         if (args.defaults || parts.length || typeof parsed !== "boolean")
           throw new CliError("validation_error", "picture_search is true or false, set per profile")

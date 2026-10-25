@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**227 ✅ · 951 ⛔ · 0 ❌** — 192 commands, 986 options.
+**235 ✅ · 951 ⛔ · 0 ❌** — 195 commands, 991 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1173,6 +1173,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `doctor` |  | ✅ |  |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
+| `runs list` |  | ✅ |  |
+| `runs list` | `--limit` | ✅ |  |
+| `runs list` | `--page` | ✅ |  |
+| `runs show` |  | ✅ |  |
+| `runs show` | `--problems` | ✅ |  |
+| `runs path` |  | ✅ |  |
 | `guide` |  | ✅ |  |
 | `help` |  | ✅ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
@@ -1188,4 +1194,6 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--yes` | ✅ |  |
 | *global* | `--allow-dangerous` | ✅ |  |
 | *global* | `--permission` | ✅ |  |
+| *global* | `--record` | ✅ |  |
+| *global* | `--no-record` | ✅ |  |
 | *global* | `--help-all` | ⛔ | Commander answers before any command runs, so the trace never sees it; src/help.test.ts checks it |

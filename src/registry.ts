@@ -27,6 +27,9 @@ export const ACCOUNT_FREE_COMMANDS = new Set([
   "skill install",
   "models download",
   "images models download",
+  "runs list",
+  "runs show",
+  "runs path",
 ])
 
 /** Calls Google and keeps nothing on this machine, unlike cli-core's REMOTE_READ and REMOTE_WRITE. */
