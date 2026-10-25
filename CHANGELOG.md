@@ -10,6 +10,10 @@
 
 - **Run recording comes from cli-core 0.430.0** (`recordRuns`) in place of drive's own copy. Runs are kept as before — every failed command, a usage error before any command included, a successful one under `--record` or `defaults.record: true`, nothing under `--no-record` — and Google requests are logged as before. A run with no profile now leaves `profile` out of `runs list` and `runs show` instead of `""`.
 
+### Fixed
+
+- **A bare `drive --version` answers before the program loads**: about 50 module files in place of 1,150 (cli-core's `cli/start`). `--version` with anything else on the line goes through the program as before.
+
 ## 0.36.0 — 25.10.2026
 
 ### Security
