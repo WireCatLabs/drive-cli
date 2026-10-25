@@ -82,7 +82,7 @@ them offline; open the original link when you need to verify the current Google 
 inspect its explanation rather than assuming semantic search ran. Scanned PDFs, Slides, images
 and other unsupported content have no text, so they are left out of text and semantic search. Their names are
 indexed: a word from the file name finds them, and the hit has `not_read` set to the reason (it is `null` for a
-file drive read). Open the `source_url` of such a hit; there is no passage to quote.
+file drive read). Open the `url` of such a hit; there is no passage to quote.
 See [file-type coverage](usage.md#which-document-types-are-searchable) and
 [task recipes](recipes.md#refresh-a-project-and-prepare-a-meeting-brief).
 
@@ -97,7 +97,7 @@ retain their source dates and links; project relationships remain a separate rev
 ## Search images by what they show
 
 When the profile has `picture_search` on, `drive personal search "cat on a sofa"` also returns `pictures`: the
-images whose content is nearest to the words, best first, each with `ref`, `score`, `title` and `source_url`.
+images whose content is nearest to the words, best first, each with `ref`, `score`, `title` and `url`.
 They are a separate list, never mixed into `hits`. With the setting off, `pictures` is absent.
 
 Write picture queries in English. The picture model reads English only, so an agent that gets a question in

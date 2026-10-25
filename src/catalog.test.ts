@@ -227,11 +227,14 @@ it("labels metadata-only search hits so an agent cannot mistake a name match for
       { ...file("pending"), name: "Budget pending" },
     ])
     const result = (await index.search("synthetic-principal", "budget", { limit: 10, offset: 0, exact: true })) as {
-      hits: { content: string; kind: string; not_read: string }[]
+      hits: { content: string; not_read: string }[]
     }
     expect(result.hits).toHaveLength(2)
-    expect(result.hits.every((hit) => hit.content === "metadata" && typeof hit.not_read === "string")).toBe(true)
-    expect(result.hits.map((hit) => hit.kind).sort()).toEqual(["file", "folder"])
+    expect(result.hits.every((hit) => hit.content === "metadata")).toBe(true)
+    expect(result.hits.map((hit) => hit.not_read).sort()).toEqual([
+      "content is not indexed yet",
+      "folder metadata only",
+    ])
   } finally {
     await index.close()
   }
