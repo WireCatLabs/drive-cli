@@ -117,7 +117,7 @@ See [Google's page on unverified apps](https://support.google.com/cloud/answer/7
 ### Check the saved profile
 
 ```sh
-drive personal session list --json
+drive session list --json
 ```
 
 Find `personal` in the returned profiles. This lists local configuration without printing tokens;
