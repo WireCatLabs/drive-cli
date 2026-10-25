@@ -1,7 +1,7 @@
 import type { KeyringStore, Renderer, RenderFormat, Streams } from "@wirecat/cli-base"
 import type { Body } from "@wirecat/cli-core/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
-import { InvalidArgumentError } from "commander"
+import { type Command, InvalidArgumentError } from "commander"
 import type { Download } from "../download.js"
 import type { Complete } from "../extraction.js"
 import type { GoogleApi } from "../google-api.js"
@@ -12,7 +12,7 @@ import type { UploadRequest } from "../upload.js"
 export interface ProgramOptions {
   mcp?: boolean
   /** The WireCat first-run questions, before a command; only the real binary passes it. */
-  atStart?: (start: { path: string[]; headless: boolean }) => Promise<void>
+  atStart?: (command: Command) => Promise<void>
   env?: NodeJS.ProcessEnv
   streams?: Streams
   keyring?: KeyringStore
