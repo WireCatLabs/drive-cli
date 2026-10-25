@@ -110,7 +110,7 @@ file. `config show`, `config set` and `config unset` keep working on a file that
 ## Keep the file private
 
 drive saves `config.json` so that only you can read it (`0600`), in a folder only you can enter (`0700`). A file
-saved by drive 0.35 or older, or a folder made by hand, may be open to other users of the computer. `drive doctor`
+saved by an older drive, or a folder made by hand, may be open to other users of the computer. `drive doctor`
 lists such a file or folder under `files.problems` (`path`, `mode`, `want`) and prints the `chmod` that fixes it:
 
 ```sh

@@ -10,7 +10,8 @@ an [issue on GitHub](https://github.com/WireCatLabs/drive-cli/issues).
 PDF, docx, xlsx, CSV and Markdown. You can search them by words and by meaning, read them offline, and add tags,
 notes and memories. It also reads and edits live Google Sheets ranges, manages files, and keeps local Markdown and
 CSV folders mirrored into Google Docs and Sheets, both ways, when you run `mirrors sync` or while `mirrors watch`
-runs. It downloads stored files, exports Google documents as PDF, DOCX, XLSX or CSV, and replies to, resolves
+runs; YAML front matter at the top of a mirrored Markdown file stays out of the Doc's text and is kept as it is in
+the file. It downloads stored files, exports Google documents as PDF, DOCX, XLSX or CSV, and replies to, resolves
 and reopens comments. Its [remote MCP server](remote.md) connects browser and phone agents through your
 HTTPS tunnel with an access-code login and profile permissions. See the [mirroring guide](mirrors.md) for setup
 and conflict choices. Every command is in the [command reference](commands.md).
@@ -25,7 +26,6 @@ and conflict choices. Every command is in the [command reference](commands.md).
 
 - **`mirrors watch` as a background service** that starts with the computer, instead of a command left running in a
   terminal.
-- **Front matter in mirrored Markdown** kept out of the Doc's text.
 
 ## Later
 
