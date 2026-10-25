@@ -93,12 +93,8 @@ export const indexOver = (
       const pictures = await Promise.all(
         (result.pictures ?? []).map(async (picture) => {
           const note = await store.notes.note(picture.ref)
-          const metadata = note.frontMatter as { sourceUrl?: unknown } | null
-          return {
-            ...picture,
-            title: note.title,
-            source_url: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
-          }
+          const [file] = await store.files.ofDocument(picture.ref)
+          return { ...picture, title: note.title, url: file?.url ?? null }
         }),
       )
       const { pictures: _, ...rest } = result
@@ -108,13 +104,11 @@ export const indexOver = (
         hits: await Promise.all(
           result.hits.map(async (hit) => {
             const note = await store.notes.note(hit.ref)
-            const metadata = note.frontMatter as { sourceUrl?: unknown; tabs?: unknown; notRead?: unknown } | null
+            const metadata = note.frontMatter as { tabs?: unknown; notRead?: unknown } | null
             const entry = note.path ? await store.catalog.get(selected.id, note.path) : undefined
             return {
               ...hit,
-              source_url: typeof metadata?.sourceUrl === "string" ? metadata.sourceUrl : null,
               tabs: Array.isArray(metadata?.tabs) ? metadata.tabs : [],
-              kind: entry?.kind ?? "file",
               content: entry?.content ?? "indexed",
               not_read:
                 typeof metadata?.notRead === "string"

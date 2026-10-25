@@ -63,17 +63,48 @@ describe("released shared store and search", () => {
       const second = await index.save("synthetic-principal", content({ ...file("doc-a"), name: "Renamed" }), "hash-one")
       expect(second).toBe(first)
       const found = (await index.search("synthetic-principal", "budget", { limit: 10, offset: 0, exact: true })) as {
-        hits: { ref: string; title: string; source_url: string }[]
+        hits: { ref: string; title: string; url: string }[]
       }
       expect(found.hits.some((hit) => hit.ref === first)).toBe(true)
       expect(found.hits[0]?.title).toBe("Renamed")
-      expect(found.hits[0]?.source_url).toBe(file("doc-a").url)
+      expect(found.hits[0]?.url).toBe(file("doc-a").url)
       await index.remove("synthetic-principal", "doc-a")
       const gone = (await index.search("synthetic-principal", "budget", { limit: 10, offset: 0, exact: true })) as {
         hits: unknown[]
       }
       expect(gone.hits).toHaveLength(0)
     } finally {
+      await index.close()
+    }
+  })
+  it("describes a hit with the same link, title, edit time, kind and source name as cli-core's search", async () => {
+    const f = fixture()
+    const index = await openIndex(f.env)
+    const { openStore } = await import("@wirecat/cli-core/store")
+    const { searchNotes } = await import("@wirecat/cli-core/services")
+    const store = await openStore({ path: f.env.MESSAGING_STORE as string, env: f.env })
+    try {
+      await index.registerProfile?.("personal", "synthetic-principal")
+      const plan = { ...file("doc-a"), name: "Budget plan", modifiedAt: "2026-01-02T03:04:05.000Z" }
+      await index.save("synthetic-principal", content(plan), "hash-one")
+      await index.catalog?.import("synthetic-principal", [
+        { ...plan, name: "Budget plan renamed", url: `${plan.url}?moved=1`, modifiedAt: "2026-03-03T00:00:00.000Z" },
+      ])
+      const options = { limit: 5, offset: 0, exact: true }
+      const drive = (await index.search("synthetic-principal", "budget", options)) as { hits: object[] }
+      const core = await searchNotes(store, "budget", { ...options, env: f.env, command: "memo" })
+      expect(drive.hits).toMatchObject(core.hits)
+      expect(drive.hits[0]).toMatchObject({
+        url: `${plan.url}?moved=1`,
+        title: "Budget plan renamed",
+        updated_at: "2026-03-03T00:00:00.000Z",
+        kind: "document",
+        provider: "drive",
+        account: "personal",
+      })
+      expect(drive.hits[0]).not.toHaveProperty("source_url")
+    } finally {
+      await store.close()
       await index.close()
     }
   })
@@ -89,9 +120,9 @@ describe("released shared store and search", () => {
       )
       await index.save("synthetic-principal", content(file("doc-a")), "hash-two")
       const found = (await index.search("synthetic-principal", "passport", { limit: 10, offset: 0, exact: true })) as {
-        hits: { ref: string; source_url: string; not_read: string | null }[]
+        hits: { ref: string; url: string; not_read: string | null }[]
       }
-      expect(found.hits).toMatchObject([{ ref, source_url: scan.url, not_read: "unsupported type: image/png" }])
+      expect(found.hits).toMatchObject([{ ref, url: scan.url, not_read: "unsupported type: image/png" }])
       const body = (await index.search("synthetic-principal", "budget", {
         limit: 10,
         offset: 0,
@@ -206,8 +237,8 @@ describe("released shared store and search", () => {
           offset: 0,
           exact: false,
           pictures: true,
-        })) as { pictures: { ref: string; title: string; source_url: string }[] }
-        expect(on.pictures).toMatchObject([{ ref: reference, title: "cat.png", source_url: file("cat").url }])
+        })) as { pictures: { ref: string; title: string; url: string }[] }
+        expect(on.pictures).toMatchObject([{ ref: reference, title: "cat.png", url: file("cat").url }])
         const off = (await index.search("synthetic-principal", "cat", { limit: 5, offset: 0, exact: false })) as object
         expect(off).not.toHaveProperty("pictures")
       } finally {

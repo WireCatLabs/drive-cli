@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- `search --json` hits carry the Google link as `url` and say `kind: "document"`, the same fields and values as `memo search notes` and `search all` for the same document. `source_url` is removed, with no alias, from hits and from `pictures`; a folder hit is told apart by `not_read: "folder metadata only"` instead of `kind: "folder"`. `tabs`, `content` and `not_read` stay.
+
 ## 0.32.0 — 25.10.2026
 
 ### Changed — may break callers
