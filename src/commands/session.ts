@@ -4,9 +4,7 @@ import { itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core
 import type { Command } from "commander"
 import { activeProfile, application, configuredSessions, readConfig, writeConfig } from "../config.js"
 import { bindQuery, SESSIONS_QUERY, sessionRow, termsOf } from "../list-queries.js"
-import { login } from "../login.js"
 import { examples } from "../registry.js"
-import { credentials } from "../tokens.js"
 import type { CommandContext } from "./context.js"
 
 const GRANTS = ["write", "activity", "apps"] as const
@@ -47,6 +45,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
       if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
         throw new CliError("validation_error", "credential storage is keyring or file")
       const signal = context.signal()
+      const { login } = await import("../login.js")
       output(
         itemOf(
           await login({
@@ -86,10 +85,11 @@ export const installSessionCommands = (program: Command, context: CommandContext
       "sign this profile out; imported documents stay",
     ),
     ["drive personal session end"],
-  ).action(() => {
+  ).action(async () => {
     const name = selected()
     const config = readConfig(env)
     const profile = activeProfile(env, name)
+    const { credentials } = await import("../tokens.js")
     credentials(env, profile.storage, options.keyring).remove(name)
     // Preserve the principal and roots so reauthorization resumes the same source identities.
     writeConfig(env, config)

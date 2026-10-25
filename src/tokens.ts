@@ -19,11 +19,10 @@ import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
 import { providerEvent } from "./run-recording.js"
+import { READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
 
-export const READ_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
-export const WRITE_SCOPE = "https://www.googleapis.com/auth/drive"
-export const ACTIVITY_SCOPE = "https://www.googleapis.com/auth/drive.activity.readonly"
-export const APPS_SCOPE = "https://www.googleapis.com/auth/drive.apps.readonly"
+export { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
+
 const Session = v.object({
   principal: v.string(),
   clientId: v.string(),

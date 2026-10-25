@@ -6,6 +6,9 @@ import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
 import { DOC, type FileMetadata, type GoogleSource, type GoogleUser, SHEET, type TabText } from "./model.js"
+import { MAX_ENTRIES, READABLE, supported, tooManyEntries, XLSX } from "./supported.js"
+
+export { MAX_ENTRIES, supported, tooManyEntries } from "./supported.js"
 
 const FIELDS = "*"
 export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
@@ -14,25 +17,7 @@ export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
   ...(user.displayName ? { name: user.displayName } : {}),
 })
 const MAX_PAGES = 1000
-/** Every entry of a scan or a change list is held in memory, and in one checkpoint, until the sync ends. */
-export const MAX_ENTRIES = 10_000
 const MAX_BYTES = 50 * 1024 * 1024
-
-export const tooManyEntries = () =>
-  new CliError(
-    "provider_error",
-    `the chosen folders hold more than ${MAX_ENTRIES} entries, the most one sync reads; ` +
-      "choose fewer or smaller folders with `folders remove` and `folders add`",
-    { reason: "listing.too-large" },
-  )
-const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-const READABLE = new Set([
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  XLSX,
-  "text/csv",
-  "text/tab-separated-values",
-])
 export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
   if (!file.id || !file.mimeType || file.name === undefined || file.name === null)
     throw new CliError("invalid_response", "Google returned incomplete file metadata")
@@ -54,11 +39,6 @@ export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
     ...(file.owners ? { owners: file.owners.map(userOf) } : {}),
     ...(file.lastModifyingUser ? { lastModifiedBy: userOf(file.lastModifyingUser) } : {}),
   }
-}
-export const supported = (file: FileMetadata): boolean => {
-  if (file.mime === DOC || file.mime === SHEET || READABLE.has(file.mime)) return true
-  if (file.mime.startsWith("application/vnd.google-apps.")) return false
-  return file.mime === "text/plain" || file.mime === "text/markdown" || /\.(md|markdown|txt)$/i.test(file.name)
 }
 
 const ENGINE_LABEL: Record<Engine, string> = {
