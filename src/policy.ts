@@ -16,7 +16,8 @@ import {
   sendGuard,
 } from "@wirecat/cli-core/sends"
 import { operations } from "./api-contract.js"
-import { paths, readConfig } from "./config.js"
+import { type ConfigFile, configPath, paths, readConfig, refusal } from "./config.js"
+import { type LocatedIssue, permissionIssues, savedPermissionKeys } from "./config-issues.js"
 import { VERSION } from "./version.js"
 
 export interface PolicyFlags {
@@ -71,7 +72,28 @@ export const permissionKeys = (paths: readonly (readonly string[])[]): Set<strin
   for (const operation of operations) for (const key of methodPolicyKeys(operation.id)) keys.add(key)
   return keys
 }
-const names = (keys: Set<string>, key: string) => keys.has(key) || [...keys].some((one) => one.startsWith(`${key}.`))
+/** A permission names one of the keys or a group above them. */
+export const permissionNames = (keys: ReadonlySet<string>): Set<string> => {
+  const names = new Set<string>()
+  for (const key of keys) {
+    const parts = key.split(".")
+    for (let end = 1; end <= parts.length; end++) names.add(parts.slice(0, end).join("."))
+  }
+  return names
+}
+
+/** Every saved permission key, in the defaults and every profile, that names no drive command. */
+export const permissionProblems = (raw: unknown, keys: ReadonlySet<string>, file: string) =>
+  permissionIssues(savedPermissionKeys(raw), permissionNames(keys), { file, tool: "drive" })
+
+/** Everything `doctor` and `config show` report: the file's own problems, then permission keys that name no command. */
+export const fileIssues = (file: ConfigFile, keys: ReadonlySet<string>): LocatedIssue[] => {
+  const seen = new Set(file.issues.map((issue) => issue.at.join("\u0000")))
+  return [
+    ...file.issues,
+    ...permissionProblems(file.raw, keys, file.path).filter((issue) => !seen.has(issue.at.join("\u0000"))),
+  ]
+}
 
 /**
  * The profile's levels with `--permission` laid over them. A flag only tightens: one that would loosen the
@@ -84,19 +106,24 @@ export const policySettings = (env: NodeJS.ProcessEnv, profile: string, flags: P
   const own = config.profiles[profile]
   const overrides = overridesOf(flags.permission)
   if (keys) {
-    const layers = [
-      ["--permission", overrides],
-      [`profile ${profile}`, own?.permissions],
-      ["defaults", config.defaults?.permissions],
-    ] as const
-    for (const [where, layer] of layers)
-      for (const key of Object.keys(layer ?? {}))
-        if (!names(keys, key))
-          throw new CliError(
-            where === "--permission" ? "validation_error" : "configuration_error",
-            `${where} names ${key}, which is no drive command; see drive commands`,
-            { reason: "policy.unknown-key", permission: key },
-          )
+    const names = permissionNames(keys)
+    for (const key of Object.keys(overrides))
+      if (!names.has(key))
+        throw new CliError(
+          "validation_error",
+          `--permission names ${key}, which is no drive command; see drive commands`,
+          {
+            reason: "policy.unknown-key",
+            permission: key,
+          },
+        )
+    const problems = permissionProblems(config, keys, configPath(env))
+    const [first] = problems
+    if (first)
+      throw new CliError("configuration_error", refusal(problems).message, {
+        reason: "policy.unknown-key",
+        permission: first.key?.slice("permissions.".length),
+      })
   }
   const saved = layerPermissions([
     ["profile", own?.permissions],

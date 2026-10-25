@@ -7,10 +7,9 @@ import { createProgram } from "./program.js"
 import { commandResult, fixture } from "./testing.js"
 
 describe("explicit account selection", () => {
-  it("refuses omitted profiles despite a legacy default, before providers and stores", async () => {
+  it("refuses omitted profiles before providers and stores", async () => {
     const f = fixture()
     const config = readConfig(f.env)
-    config.default_profile = "default"
     config.profiles.work = {
       ...{ principal: "synthetic-principal", roots: ["root"], storage: "keyring" as const },
       principal: "other-account",
@@ -37,7 +36,7 @@ describe("explicit account selection", () => {
         }).parseAsync(args, { from: "user" }),
       ).rejects.toMatchObject({
         code: "validation_error",
-        message: expect.stringContaining("default_profile default in the config is not used"),
+        message: expect.stringContaining("name a profile: drive <profile>"),
         details: { profiles: ["default", "work"] },
       })
     }

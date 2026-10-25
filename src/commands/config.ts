@@ -1,22 +1,63 @@
 import { join } from "node:path"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, saveConfigFile } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import {
-  activeProfile,
+  type ConfigFile,
+  ConfigSchema,
   checkTextLimit,
-  configKey,
   DEFAULTS_ONLY,
+  inspectConfig,
   readConfig,
+  refusal,
   SETTING_NAMES,
+  unknownProfile,
   writeConfig,
 } from "../config.js"
-import { DRIVE_APP } from "../policy.js"
+import { schemaIssues, withoutIssues } from "../config-issues.js"
+import { DRIVE_APP, fileIssues } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
 
-export const installConfigCommands = (program: Command, { env, selected, output }: CommandContext) => {
+type Node = Record<string, unknown>
+const isNode = (value: unknown): value is Node => typeof value === "object" && value !== null && !Array.isArray(value)
+const sameAt = (one: readonly string[], other: readonly string[]) =>
+  one.length === other.length && one.every((part, index) => part === other[index])
+const startsWith = (at: readonly string[], prefix: readonly string[]) => sameAt(at.slice(0, prefix.length), prefix)
+
+/** The path `config set` and `unset` change in a profile or the defaults: one permission key, one model field, or one setting. */
+const settingAt = (key: string): string[] => {
+  const [head = "", ...parts] = key.split(".")
+  if (head === "permissions" && parts.length) return [head, parts.join(".")]
+  return [head, ...parts]
+}
+
+const refuseUnsafe = (at: readonly string[]) => {
+  if (at.some((part) => ["__proto__", "prototype", "constructor", ""].includes(part)))
+    throw new CliError("validation_error", "unknown setting path")
+}
+
+export const installConfigCommands = (
+  program: Command,
+  { env, selected, output, streams, policyFlags, profileWord }: CommandContext,
+) => {
+  const keys = () => policyFlags().permissionKeys ?? new Set<string>()
+  /** The file as written; one that is not JSON cannot be changed by a command, only by hand. */
+  const editable = () => {
+    const file = inspectConfig(env)
+    const broken = file.issues.filter((issue) => issue.kind === "invalid_json")
+    if (broken.length) throw refusal(broken)
+    return file
+  }
+  const scopeOf = (file: ConfigFile, defaults: boolean | undefined): { at: string[]; scope: string } => {
+    if (defaults) return { at: ["defaults"], scope: "defaults" }
+    const name = selected()
+    const profiles = isNode(file.raw) && isNode(file.raw.profiles) ? file.raw.profiles : {}
+    if (!isNode(profiles[name])) throw unknownProfile(name, Object.keys(profiles).sort())
+    return { at: ["profiles", name], scope: name }
+  }
+
   const config = annotate(program.command("config"), { effects: LOCAL_READ }).description(
     "read and change settings; credentials are kept apart",
   )
@@ -25,7 +66,13 @@ export const installConfigCommands = (program: Command, { env, selected, output 
       "show the defaults and every profile's settings",
     ),
     ["drive personal config show"],
-  ).action(() => output(itemOf(readConfig(env))))
+  ).action(() => {
+    const file = inspectConfig(env)
+    const issues = fileIssues(file, keys())
+    output(itemOf(withoutIssues(file.config, issues) as Node))
+    for (const issue of issues)
+      streams.diagnostic(`${issue.what}, so it is left out${issue.fix ? ` — \`${issue.fix}\` removes it` : ""}`)
+  })
   examples(
     annotate(grantsAuthority(config.command("set")), { effects: LOCAL_WRITE }).description(
       "set one setting of this profile, or of the defaults",
@@ -42,44 +89,90 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
-    .action((rawKey: string, raw: string, args: { defaults?: boolean }) => {
-      const key = configKey(rawKey)
-      const value = readConfig(env)
-      if (args.defaults) value.defaults ??= {}
-      const target = args.defaults
-        ? (value.defaults as NonNullable<typeof value.defaults>)
-        : activeProfile(env, selected())
-      if (!args.defaults) value.profiles[selected()] = target as (typeof value.profiles)[string]
-      const [head, ...parts] = key.split(".")
-      if (
-        !SETTING_NAMES.has(head ?? "") ||
-        parts.some((part) => ["__proto__", "prototype", "constructor"].includes(part))
-      )
+    .action((key: string, raw: string, args: { defaults?: boolean }) => {
+      const file = editable()
+      const { at: scope, scope: name } = scopeOf(file, args.defaults)
+      const setting = settingAt(key)
+      refuseUnsafe(setting)
+      const [head = "", ...parts] = setting
+      if (!SETTING_NAMES.has(head))
         throw new CliError("validation_error", "config set accepts profile settings and shared AI settings")
+      if (parts.length && head !== "permissions" && !(head === "models" && parts.length === 2))
+        throw new CliError("validation_error", "unknown setting path")
       let parsed: unknown
       try {
         parsed = JSON.parse(raw)
       } catch {
         throw new CliError("validation_error", "setting value must be JSON")
       }
-      if (DEFAULTS_ONLY.has(head ?? "") && !args.defaults)
+      if (DEFAULTS_ONLY.has(head) && !args.defaults)
         throw new CliError("validation_error", `${head} is set for every profile at once: add --defaults`)
-      if (head === "picture_search") {
-        if (args.defaults || parts.length || typeof parsed !== "boolean")
-          throw new CliError("validation_error", "picture_search is true or false, set per profile")
-        ;(target as { picture_search?: boolean }).picture_search = parsed
-      } else if (head === "max_text_chars" && !parts.length) target.max_text_chars = checkTextLimit(parsed)
-      else if (!parts.length) Object.assign(target, { [key]: parsed })
-      else if (head === "permissions") {
-        target.permissions ??= {}
-        Object.assign(target.permissions, { [parts.join(".")]: parsed })
-      } else if (head === "models" && parts.length === 2 && parts[0] && parts[1]) {
-        target.models ??= {}
-        target.models[parts[0]] ??= {}
-        Object.assign(target.models[parts[0]] as object, { [parts[1]]: parsed })
-      } else throw new CliError("validation_error", "unknown setting path")
-      writeConfig(env, value)
-      output(itemOf({ key, updated: true, scope: args.defaults ? "defaults" : selected() }))
+      if (head === "picture_search" && (args.defaults || typeof parsed !== "boolean"))
+        throw new CliError("validation_error", "picture_search is true or false, set per profile")
+      if (head === "max_text_chars") parsed = checkTextLimit(parsed)
+      const at = [...scope, ...setting]
+      const next: Node = isNode(file.raw) ? structuredClone(file.raw) : {}
+      let node = next
+      for (const part of at.slice(0, -1)) {
+        if (!isNode(node[part])) node[part] = {}
+        node = node[part] as Node
+      }
+      node[at.at(-1) as string] = parsed
+      const before = new Set(fileIssues(file, keys()).map((issue) => issue.at.join("\u0000")))
+      const after = fileIssues(
+        { ...file, raw: next, issues: schemaIssues(next, ConfigSchema, { file: file.path, tool: "drive" }) },
+        keys(),
+      )
+      const added = after.filter((issue) => !before.has(issue.at.join("\u0000")) || startsWith(issue.at, at))
+      if (added.length) throw refusal(added)
+      saveConfigFile(file.path, next)
+      output(itemOf({ key, updated: true, scope: name }))
+    })
+  examples(
+    annotate(grantsAuthority(config.command("unset")), { effects: LOCAL_WRITE }).description(
+      "remove one setting from this profile, the defaults or the top of the file",
+    ),
+    ["drive personal config unset max_text_chars", "drive personal config unset permissions.files --defaults"],
+  )
+    .argument("<key>", "the setting, permissions.<key> or models.<purpose>.<field>; any key, known or not")
+    .option("--defaults", "change the defaults instead of this profile")
+    .action((key: string, args: { defaults?: boolean }) => {
+      const file = editable()
+      // The unset `doctor` gives for a problem outside any profile: reached with no profile typed.
+      const root =
+        !args.defaults &&
+        profileWord() === undefined &&
+        fileIssues(file, keys()).some((issue) => issue.fix === `drive config unset ${key}`)
+      if ((root || args.defaults) && env.DRIVE_PROFILE_LOCK)
+        throw new CliError(
+          "permission_error",
+          `this process is locked to profile ${env.DRIVE_PROFILE_LOCK} (DRIVE_PROFILE_LOCK) — ${root ? key : "--defaults"} changes other profiles`,
+        )
+      const { at: scope, scope: name } = root ? { at: [], scope: "file" } : scopeOf(file, args.defaults)
+      const at = [...scope, ...(root ? key.split(".") : settingAt(key))]
+      refuseUnsafe(at)
+      const next: Node = isNode(file.raw) ? structuredClone(file.raw) : {}
+      const chain: Node[] = [next]
+      for (const part of at.slice(0, -1)) {
+        const child = chain.at(-1)?.[part]
+        if (!isNode(child)) break
+        chain.push(child)
+      }
+      const parent = chain.length === at.length ? chain.at(-1) : undefined
+      const last = at.at(-1) as string
+      const removed = parent !== undefined && Object.hasOwn(parent, last)
+      if (parent && removed) {
+        delete parent[last]
+        // A section the unset leaves empty goes too, so the file keeps no `{}` for a setting that is gone.
+        for (let depth = chain.length - 1; depth > 0; depth--) {
+          const holder = chain[depth - 1] as Node
+          const section = at[depth - 1] as string
+          if (Object.keys(chain[depth] as Node).length) break
+          delete holder[section]
+        }
+        saveConfigFile(file.path, next)
+      }
+      output(itemOf({ key, removed, scope: name }))
     })
 }
 

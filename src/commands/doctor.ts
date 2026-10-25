@@ -1,13 +1,14 @@
 import { existsSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { resolve } from "node:path"
 import { CliError } from "@wirecat/cli-base"
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
-import { application, paths, readConfig } from "../config.js"
+import { application, inspectConfig, paths } from "../config.js"
+import { publicIssue } from "../config-issues.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
-import { DRIVE_APP } from "../policy.js"
+import { DRIVE_APP, fileIssues } from "../policy.js"
 import { examples } from "../registry.js"
 import { VERSION } from "../version.js"
 import type { CommandContext } from "./context.js"
@@ -21,21 +22,15 @@ const failure = (error: unknown) => {
  * Answers when everything else is broken, since that is when it is run: an unreadable config or OAuth setting is a
  * field, never an exception. It reads no keyring and opens no database, because either can hang or prompt.
  */
-export const doctorReport = (env: NodeJS.ProcessEnv) => {
+export const doctorReport = (env: NodeJS.ProcessEnv, permissionKeys: ReadonlySet<string>) => {
   const where = paths(env)
-  const configPath = join(where.config, "config.json")
-  let config: { readable: boolean; path: string; error?: string }
-  let profiles: { profile: string; selected_folders: number; storage: string }[] | null = null
-  try {
-    profiles = Object.entries(readConfig(env).profiles).map(([name, profile]) => ({
-      profile: name,
-      selected_folders: profile.roots.length,
-      storage: profile.storage,
-    }))
-    config = { readable: true, path: configPath }
-  } catch (error) {
-    config = { readable: false, path: configPath, error: failure(error) }
-  }
+  const file = inspectConfig(env)
+  const config = { path: file.path, found: file.found, issues: fileIssues(file, permissionKeys).map(publicIssue) }
+  const profiles = Object.entries(file.config.profiles).map(([name, profile]) => ({
+    profile: name,
+    selected_folders: profile.roots.length,
+    storage: profile.storage,
+  }))
   let oauth: { client: "wirecat" | "own"; error?: string }
   try {
     application(env)
@@ -58,13 +53,13 @@ export const doctorReport = (env: NodeJS.ProcessEnv) => {
   }
 }
 
-const installDoctorCommandDefinition = (program: Command, { env, output }: CommandContext) => {
+const installDoctorCommandDefinition = (program: Command, { env, output, policyFlags }: CommandContext) => {
   examples(
     annotate(program.command("doctor"), { effects: LOCAL_READ }).description(
       "check this installation: config, profiles, paths; no keyring, store or network",
     ),
     ["drive doctor", "drive doctor --json"],
-  ).action(() => output(itemOf(doctorReport(env))))
+  ).action(() => output(itemOf(doctorReport(env, policyFlags().permissionKeys ?? new Set()))))
 }
 
 export const installDoctorCommand = (...args: Parameters<typeof installDoctorCommandDefinition>) => {

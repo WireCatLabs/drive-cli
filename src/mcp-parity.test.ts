@@ -82,10 +82,15 @@ describe("MCP parity and authority", () => {
       await invokeTool(createProgram, config, { key: "max_text_chars", json_value: "1000" }, t.options, "default"),
     ).not.toHaveProperty("isError", true)
     expect(readConfig(t.env).profiles.default?.max_text_chars).toBe(1000)
-    for (const key of ["permissions", "permissions.mcp.authority", "permissions.mcp", "read_only"]) {
+    const unset = t.tool("config unset")
+    for (const key of ["permissions", "permissions.mcp.authority", "permissions.mcp"]) {
       expect(
         await invokeTool(createProgram, config, { key, json_value: "{}", defaults: true }, t.options, "default"),
       ).toMatchObject({ isError: true, structuredContent: { error: { code: "permission_error" } } })
+      expect(await invokeTool(createProgram, unset, { key, defaults: true }, t.options, "default")).toMatchObject({
+        isError: true,
+        structuredContent: { error: { code: "permission_error" } },
+      })
     }
     expect(await invokeTool(createProgram, models, { provider: "off" }, t.options, "default")).not.toHaveProperty(
       "isError",

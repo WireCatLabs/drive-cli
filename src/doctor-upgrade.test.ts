@@ -1,5 +1,3 @@
-import { mkdirSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
@@ -21,21 +19,12 @@ describe("doctor", () => {
     const index = vi.fn(async () => f.index)
     const report = await run(f.env, ["doctor"], { index })
     expect(report).toMatchObject({
-      config: { readable: true },
+      config: { found: true, issues: [] },
       profiles: expect.arrayContaining([{ profile: "work", selected_folders: 1, storage: "keyring" }]),
       store: { exists: false },
       login: "not checked",
     })
     expect(index).not.toHaveBeenCalled()
-  })
-
-  it("answers with a broken config, naming the problem instead of failing", async () => {
-    const f = fixture()
-    mkdirSync(f.env.DRIVE_CONFIG_DIR as string, { recursive: true })
-    writeFileSync(join(f.env.DRIVE_CONFIG_DIR as string, "config.json"), "{not json")
-    const report = await run(f.env, ["doctor"])
-    expect(report.config).toMatchObject({ readable: false, error: expect.stringContaining("not valid JSON") })
-    expect(report.profiles).toBeNull()
   })
 })
 

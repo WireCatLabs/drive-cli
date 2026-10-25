@@ -198,6 +198,7 @@ describe("shared CLI policy and execution", () => {
     for (const args of [
       ["tags", "add", "doc-a", "tag"],
       ["files", "copy", "doc-a"],
+      ["config", "unset", "max_text_chars"],
     ]) {
       const program = createProgram({ env, api: { call: request }, index, streams: captureStreams() })
       const failure = await program.parseAsync(["default", ...args], { from: "user" }).catch((error) => error)
@@ -224,11 +225,11 @@ describe("shared CLI policy and execution", () => {
       return streams.stdout.join("")
     }
     await run("config", "set", "permissions", '{"api":"readonly"}', "--defaults")
-    await run("config", "set", "maxTextChars", "500000")
+    await run("config", "set", "max_text_chars", "500000")
     expect(readConfig(f.env).profiles.default?.max_text_chars).toBe(500000)
-    await expect(run("config", "set", "maxTextChars", "3000000")).rejects.toThrow("document readers return at most")
-    await expect(run("config", "set", "maxTextChars", "0")).rejects.toThrow("positive whole number")
-    await expect(run("config", "set", "maxTextChars", "1.5")).rejects.toThrow("positive whole number")
+    await expect(run("config", "set", "max_text_chars", "3000000")).rejects.toThrow("document readers return at most")
+    await expect(run("config", "set", "max_text_chars", "0")).rejects.toThrow("positive whole number")
+    await expect(run("config", "set", "max_text_chars", "1.5")).rejects.toThrow("positive whole number")
     expect(readConfig(f.env).defaults?.permissions?.api).toBe("readonly")
     expect(await run("complete", "--", "fil")).toContain("files")
     expect(await run("complete", "--help")).toContain("print a shell completion script")

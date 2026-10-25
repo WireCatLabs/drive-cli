@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- `doctor --json` reports the config file as `config: { path, found, issues }`, the shape the other WireCat tools use. Each issue is `{ kind, file, profile?, key?, line?, column?, what, fix? }`: `kind` is `invalid_json`, `unknown_setting`, `unknown_permission`, `missing_setting` or `invalid_value`, `what` says what the value has to be and never quotes it, and `fix` is a `drive … config unset …` command that runs as written. `config.readable` and `config.error` are removed, and `profiles` is always a list: the profiles that load. Doctor lists every problem in every profile and still exits 0.
+- drive reads setting names only as written. A camelCase key, `default_profile` or `read_only` is an unknown setting like any other: the file is refused with the first problem and its `config unset`, and drive no longer rewrites the file. `config set` takes the key as written too.
+- A permission key that names no command is refused wherever it is saved, in any profile or the defaults, not only in the profile a command runs as. The refusal names the `config unset` that removes it.
+- A profile's `roots` may be left out (no folders), and so may `profiles` (no profiles yet). `principal` and `storage` are still required; doctor reports either one missing.
+- cli-core 0.423.0.
+
+### Added
+
+- `config unset <key>` removes one setting from a profile, from the defaults (`--defaults`), or a key the file should not have at its top (`drive config unset <key>`, with no profile, as doctor's `fix` says).
+- `config show`, `config set` and `config unset` work on a file that is valid JSON but has problems (`show` also on one that is not). `show` prints what loads and names each problem with its fix; `set` is refused only when the change adds a problem or leaves the setting it writes invalid. Every other command still refuses the file.
+
 ## 0.34.0 — 25.10.2026
 
 ### Added
