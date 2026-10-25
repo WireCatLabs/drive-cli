@@ -6,6 +6,7 @@ import {
   pathsAreOverridden,
   systemKeyring,
 } from "@wirecat/cli-base"
+import { providerRequest } from "@wirecat/cli-core/cli"
 import {
   credentialStorage,
   driveSessionCodec,
@@ -18,7 +19,6 @@ import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
-import { providerEvent } from "./run-recording.js"
 import { READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
 
 export { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
@@ -231,33 +231,17 @@ export const observeRequests = (client: OAuth2Client): OAuth2Client => {
   const transporter = client.transporter
   const request = transporter.request.bind(transporter)
   transporter.request = (async (options: { method?: string; url?: string | URL }) => {
-    const operation = operationOf(options.method, options.url)
-    const started = performance.now()
-    const durationMs = () => Math.round(performance.now() - started)
-    providerEvent({ event: "request", operation })
+    const answered = providerRequest(operationOf(options.method, options.url))
     try {
       const response = await request(options as Parameters<typeof request>[0])
-      const failed = response.status >= 400
-      providerEvent({
-        event: "response",
-        operation,
-        status: response.status,
-        durationMs: durationMs(),
-        outcome: failed ? "error" : "ok",
-        ...(failed ? { errorCode: "provider_error" } : {}),
-      })
+      answered(
+        response.status >= 400 ? { status: response.status, errorCode: "provider_error" } : { status: response.status },
+      )
       return response
     } catch (error) {
       const { status, response } = (error ?? {}) as { status?: number; response?: { status?: number } }
       const code = status ?? response?.status
-      providerEvent({
-        event: "response",
-        operation,
-        ...(typeof code === "number" ? { status: code } : {}),
-        durationMs: durationMs(),
-        outcome: "error",
-        errorCode: googleError(error).code,
-      })
+      answered({ ...(typeof code === "number" ? { status: code } : {}), error, errorCode: googleError(error).code })
       throw error
     }
   }) as typeof transporter.request

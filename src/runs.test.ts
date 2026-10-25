@@ -1,12 +1,13 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
-import type { RequestEvent } from "@wirecat/cli-core/cli"
+import { findRun, listRuns, providerEvent, readEvents, recordRuns, runsDirFor } from "@wirecat/cli-core/cli"
+import { Command } from "commander"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
 import { googleApi, googleDownload } from "./google-api.js"
+import { DRIVE_APP } from "./policy.js"
 import { createProgram, type ProgramOptions } from "./program.js"
-import { providerEvent, withProviderEvents } from "./run-recording.js"
 import { commandResult, fixture } from "./testing.js"
 import { observeRequests, operationOf } from "./tokens.js"
 
@@ -153,24 +154,33 @@ describe("Google request events", () => {
       }),
     )
     client.setCredentials({ access_token: "SYNTHETIC", expiry_date: Date.now() + 3600000 })
-    const events: RequestEvent[] = []
-    await withProviderEvents(
-      (event) => events.push(event),
-      async () => {
-        await googleApi(client).call("drive.files.get", { fileId: "1AbCsynthetic" })
-        await googleDownload(client)("1AbCsynthetic")
-        await googleApi(client)
-          .call("drive.files.get", { fileId: "1AbCsynthetic" })
-          .catch(() => undefined)
-      },
-    )
+    const { env } = fixture()
+    const program = new Command("drive").exitOverride()
+    program.command("probe").action(async () => {
+      await googleApi(client).call("drive.files.get", { fileId: "1AbCsynthetic" })
+      await googleDownload(client)("1AbCsynthetic")
+      await googleApi(client)
+        .call("drive.files.get", { fileId: "1AbCsynthetic" })
+        .catch(() => undefined)
+    })
+    recordRuns(program, {
+      app: DRIVE_APP,
+      content: "document content",
+      settings: () => ({}),
+      env,
+      streams: captureStreams(),
+    })
+    await program.parseAsync(["probe", "--record"], { from: "user" })
+    const dir = runsDirFor(DRIVE_APP, env)
+    const run = findRun(dir, listRuns(dir)[0]?.runId ?? "")
+    const events = readEvents(run?.dir ?? "")
     expect(events.map(({ event, operation, status, outcome }) => [event, operation, status, outcome])).toEqual([
-      ["request", "GET /drive/v3/files/:id", undefined, undefined],
-      ["response", "GET /drive/v3/files/:id", 200, "ok"],
-      ["request", "GET /drive/v3/files/:id", undefined, undefined],
-      ["response", "GET /drive/v3/files/:id", 200, "ok"],
-      ["request", "GET /drive/v3/files/:id", undefined, undefined],
-      ["response", "GET /drive/v3/files/:id", 404, "error"],
+      ["provider.request", "GET /drive/v3/files/:id", undefined, undefined],
+      ["provider.response", "GET /drive/v3/files/:id", 200, "ok"],
+      ["provider.request", "GET /drive/v3/files/:id", undefined, undefined],
+      ["provider.response", "GET /drive/v3/files/:id", 200, "ok"],
+      ["provider.request", "GET /drive/v3/files/:id", undefined, undefined],
+      ["provider.response", "GET /drive/v3/files/:id", 404, "error"],
     ])
     expect(JSON.stringify(events)).not.toContain("synthetic")
   })
