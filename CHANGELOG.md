@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.38.0 — 25.10.2026
+
+### Changed — may break callers
+
+- cli-core 0.432.0 and cli-base 0.57.1.
 
 ### Fixed
 
