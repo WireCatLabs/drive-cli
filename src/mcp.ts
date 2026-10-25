@@ -20,7 +20,7 @@ import type { ProgramOptions } from "./commands/context.js"
 import { paths } from "./config.js"
 import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
-import { discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
+import { DRIVE_APP, discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
 import { profileDir } from "./state.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
@@ -327,7 +327,7 @@ export const buildMcpServer = (
       },
     ]),
   )
-  registerCommands(server, "drive", commands)
+  registerCommands(server, "drive", commands, undefined, undefined, DRIVE_APP.messenger)
   return { server, tools }
 }
 export const serveMcp = async (

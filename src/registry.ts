@@ -4,10 +4,12 @@ import {
   type CommandInfo,
   type CommandsDocument,
   describeProgram,
+  flatten,
   type OptionInfo,
   commandsDocument as sharedCommandsDocument,
 } from "@wirecat/cli-base/commands"
 import type { Effects } from "@wirecat/cli-base/standards"
+import { profileFree } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { VERSION } from "./version.js"
 
@@ -32,6 +34,11 @@ export const ACCOUNT_FREE_COMMANDS = new Set([
   "runs path",
 ])
 
+/** These read every profile or none, so they run without one; a profile typed before them is still checked. */
+export const ANY_PROFILE_COMMANDS = new Set(["commands", "commands info", "complete", "config show", "session list"])
+
+const PROFILE_FREE_COMMANDS = new Set([...ACCOUNT_FREE_COMMANDS, ...ANY_PROFILE_COMMANDS])
+
 /** Calls Google and keeps nothing on this machine, unlike cli-core's REMOTE_READ and REMOTE_WRITE. */
 export const GOOGLE_READ: Effects = { remote: "read", local: "none" }
 export const GOOGLE_WRITE: Effects = { remote: "write", local: "none" }
@@ -42,11 +49,21 @@ export const examples = (command: Command, lines: string[]): Command => annotate
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
 export const CONTRACT = 4
 
+/** Marks drive's housekeeping commands so help shows them without a profile word. */
+export const markProfileFree = (program: Command) => {
+  for (const info of flatten(describeProgram(program))) {
+    if (!PROFILE_FREE_COMMANDS.has(info.path.join(" "))) continue
+    let command = program
+    for (const word of info.path) command = command.commands.find((one) => one.name() === word) ?? command
+    profileFree(command)
+  }
+}
+
 /** Preserve shared registry paths/anchors while making executable usage show the account boundary. */
 export const describeDriveProgram = (program: Command): CommandInfo[] => {
   const scoped = (info: CommandInfo): CommandInfo => ({
     ...info,
-    usage: ACCOUNT_FREE_COMMANDS.has(info.path.join(" "))
+    usage: PROFILE_FREE_COMMANDS.has(info.path.join(" "))
       ? info.usage
       : info.usage.replace(/^drive /, "drive <profile> "),
     commands: info.commands.map(scoped),

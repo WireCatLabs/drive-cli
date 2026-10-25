@@ -68,7 +68,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
       annotate(session.command("list"), { effects: LOCAL_READ }).description(
         "list the configured profiles; credentials are never printed",
       ),
-      ["drive personal session list"],
+      ["drive session list"],
     ),
     SESSIONS_QUERY,
     sessionRow,

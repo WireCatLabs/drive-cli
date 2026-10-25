@@ -34,6 +34,7 @@ import {
   refuseCommandName,
   renderAnswer,
   runsCommand,
+  takesProfile,
 } from "@wirecat/cli-core/cli"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import { Command, Help } from "commander"
@@ -77,7 +78,7 @@ import {
 } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
-import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
+import { ACCOUNT_FREE_COMMANDS, ANY_PROFILE_COMMANDS, describeDriveProgram, markProfileFree } from "./registry.js"
 import { runRecording } from "./run-recording.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
@@ -311,6 +312,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         output(
           itemOf({
             dry_run: true,
+            action_invoked: false,
             method,
             mutates: descriptor.mutates,
             parameters: params,
@@ -352,7 +354,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       // The hook checked the command's own key (files.upload); creating a file has its own keys.
       for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, true, flags, askOnce)
       if (flags.dryRun) {
-        output(itemOf({ dry_run: true, method, mutates: true, path, ...args }))
+        output(itemOf({ dry_run: true, action_invoked: false, method, mutates: true, path, ...args }))
         throw new Preview()
       }
       const act = async () => {
@@ -391,6 +393,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       },
     ),
   )
+  markProfileFree(program)
   provide(program, {
     env,
     streams,
@@ -465,19 +468,32 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     }
     const path = pathOf(action)
     const words = path.join(" ")
+    const metadata = metaOf(action)
+    const preview = (): never => {
+      output(itemOf({ dry_run: true, command: words, effects: metadata.effects, action_invoked: false }))
+      throw new Preview()
+    }
+    // Every return below skips the dry-run check at the end, so a command that writes previews here first.
+    const previewWrite = () => {
+      if (program.opts().dryRun === true && (writes(metadata.effects) || changesAuthority(action))) preview()
+    }
     // Discovery is account-independent and must not load config, credentials or the store.
-    if (ACCOUNT_FREE_COMMANDS.has(words) && !options.mcp) return
+    if (ACCOUNT_FREE_COMMANDS.has(words) && !options.mcp) return previewWrite()
     await options.atStart?.(action)
-    // These read every profile or none, so they run without one; a named profile is still checked.
-    if (["commands", "commands info", "complete", "config show", "session list"].includes(words)) {
+    if (ANY_PROFILE_COMMANDS.has(words)) {
       if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
       return
     }
     // The action picks the profile, the defaults or the top of the file, so a broken file can still be repaired.
-    if (words === "config unset" && !options.mcp && !profileWord) return refuseUnderReadOnly(env, "change a setting")
+    if (words === "config unset" && !options.mcp && !profileWord) {
+      refuseUnderReadOnly(env, "change a setting")
+      return previewWrite()
+    }
     selected()
-    if ((words === "config set" || words === "config unset") && !options.mcp)
-      return refuseUnderReadOnly(env, "change a setting")
+    if ((words === "config set" || words === "config unset") && !options.mcp) {
+      refuseUnderReadOnly(env, "change a setting")
+      return previewWrite()
+    }
     if (options.mcp && changesAuthority(action)) {
       const authority = policySettings(env, selected(), policyFlags())
       if (!["ask", "allow"].includes(levelFor(authority.levels, "mcp.authority").level))
@@ -491,7 +507,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     const flags = policyFlags()
     // The server writes only through its tools, and each tool call runs this same check with these flags.
     if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
-    const metadata = metaOf(action)
     const rawMethod = words === "api call" ? action.args[0] : undefined
     const method = metadata.api_operation ?? rawMethod
     if (rawMethod) {
@@ -519,10 +534,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       })
     // A command that only calls Google previews the request itself, once its parameters are known.
     const googleOnly = metadata.effects?.local === "none" && metadata.effects.remote !== "none"
-    if (flags.dryRun && !googleOnly) {
-      output(itemOf({ dry_run: true, command: words, effects: metadata.effects }))
-      throw new Preview()
-    }
+    if (flags.dryRun && !googleOnly) preview()
     if (words === "session start") refuseCommandName(selected(), commandWords(program), "drive")
   })
   const parse = program.parseAsync.bind(program)
@@ -565,9 +577,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     command.configureHelp({
       commandUsage: (target) => {
         const usage = new Help().commandUsage(target)
-        return ACCOUNT_FREE_COMMANDS.has(pathOf(target).join(" "))
-          ? usage
-          : usage.replace(/^drive /, "drive <profile> ")
+        return takesProfile(target) ? usage.replace(/^drive /, "drive <profile> ") : usage
       },
     })
     command.exitOverride().configureOutput({

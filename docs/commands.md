@@ -56,7 +56,7 @@ drive <profile> session start [options]
 list the configured profiles; credentials are never printed
 
 ```sh
-drive <profile> session list [query]
+drive session list [query]
 ```
 
 | Argument | | What it is |
@@ -65,7 +65,7 @@ drive <profile> session list [query]
 
 **Returns:** drive session — profile, selected_folders, storage; every field: drive commands info session list
 
-**Example:** `drive personal session list`
+**Example:** `drive session list`
 
 ### `drive session end`
 
@@ -1105,7 +1105,7 @@ drive api list [query]
 
 **Returns:** api method — name, mutates, destructive, scope; every field: drive commands info api list
 
-**Example:** `drive personal api list`, `drive personal api list service:docs`
+**Example:** `drive api list`, `drive api list service:docs`
 
 ### `drive api show`
 
@@ -1121,7 +1121,7 @@ drive api show <method>
 
 **Returns:** show one method's request schema and contract, without calling Google
 
-**Example:** `drive personal api show docs.documents.batchUpdate --json`
+**Example:** `drive api show docs.documents.batchUpdate --json`
 
 ### `drive api call`
 
@@ -4159,12 +4159,12 @@ read and change settings; credentials are kept apart
 show the defaults and every profile's settings
 
 ```sh
-drive <profile> config show
+drive config show
 ```
 
 **Returns:** show the defaults and every profile's settings
 
-**Example:** `drive personal config show`
+**Example:** `drive config show`
 
 ### `drive config set`
 
@@ -4268,7 +4268,7 @@ drive models list [query]
 
 **Next usually:** `drive models download <model>`, `drive images models download <model>`
 
-**Example:** `drive personal models list`, `drive personal models list kind:text`
+**Example:** `drive models list`, `drive models list kind:text`
 
 ### `drive models download`
 
@@ -4293,7 +4293,7 @@ drive models download <model> [options]
 
 **Next usually:** `drive images models download <model>`
 
-**Example:** `drive personal models download e5-small`
+**Example:** `drive models download e5-small`
 
 ## `drive images`
 
@@ -4321,7 +4321,7 @@ drive images models download <model>
 
 **Next usually:** `drive models download <model>`
 
-**Example:** `drive personal images models download clip-b32`
+**Example:** `drive images models download clip-b32`
 
 ## `drive mcp`
 
@@ -4409,7 +4409,7 @@ drive doctor
 
 **Returns:** check this installation: config, profiles, paths; no keyring, store or network
 
-**Example:** `drive personal doctor`, `drive personal doctor --json`
+**Example:** `drive doctor`, `drive doctor --json`
 
 ## `drive upgrade`
 
@@ -4450,9 +4450,9 @@ drive runs list [query] [options]
 | `--limit <n>` | how many to show. Default: `20`. |
 | `--page <n>` | which page, starting at 1. Default: `1`. |
 
-**Returns:** run — run_id, command, profile, started_at, status, cli_version, completed_at, requests, and 15 more; every field: drive commands info runs list
+**Returns:** run — run_id, command, started_at, status, cli_version, profile, completed_at, requests, and 20 more; every field: drive commands info runs list
 
-**Example:** `drive personal runs list --limit 10`
+**Example:** `drive runs list --limit 10`
 
 ### `drive runs show`
 
@@ -4470,9 +4470,9 @@ drive runs show <run-id> [options]
 |---|---|
 | `--problems` | only failed responses, warnings and crashes. |
 
-**Returns:** run details — run_id, command, profile, started_at, status, cli_version, directory, event_count, and 14 more; every field: drive commands info runs show
+**Returns:** run details — run_id, command, started_at, status, cli_version, directory, event_count, events, and 19 more; every field: drive commands info runs show
 
-**Example:** `drive personal runs show run-101`
+**Example:** `drive runs show run-101`
 
 ### `drive runs path`
 
@@ -4488,7 +4488,7 @@ drive runs path <run-id>
 
 **Returns:** run location — path; every field: drive commands info runs path
 
-**Example:** `drive personal runs path run-101`
+**Example:** `drive runs path run-101`
 
 ## `drive guide`
 
@@ -4504,7 +4504,7 @@ drive guide [name]
 
 **Returns:** scenarios: the commands for a common task, in order, and why each
 
-**Example:** `drive guide`, `drive guide <name> --json`
+**Example:** `drive guide`, `drive guide agent-access --json`
 
 ## Exit codes
 

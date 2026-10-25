@@ -849,7 +849,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "path",
           required: false,
           variadic: true,
-          description: "one command path, for example: search messages; inspect other groups in separate calls",
+          description: "one command path, for example: commands info; inspect other groups in separate calls",
         },
       ],
       after: [
