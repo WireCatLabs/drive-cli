@@ -26,9 +26,6 @@ by path below.
 
 - **DRV-8 · P2 · YAML front matter in mirrored Markdown becomes a rule and a heading in the Doc.** cli-core's
   Markdown parser lacks the front-matter extension. Work in cli-core `documents`. cli-private journal BUG-356.
-- **DRV-9 · P2 · What the Docs editor writes back into a native `.md` file.** The API part is measured (cli-testing
-  `performance/documents/native-markdown/`): Docs reads `.md`, refuses API edits, a whole-file replace keeps comments.
-  Still open, needs a browser: does a person's edit in Docs keep front matter, task boxes, footnotes and spacing.
 - **DRV-10 · P2 · `mirrors watch`.** Keep mirrors in sync without a manual run, on cli-core's shared server (owner:
   NEED-1620 A). First move `mirrors` and its state into cli-core (IDEA-203); Drive's change feed missed a Docs API
   edit (RISK-1601). cli-private `plans/2026-10-21-document-push-sync.md`.
