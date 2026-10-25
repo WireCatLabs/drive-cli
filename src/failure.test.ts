@@ -91,6 +91,18 @@ describe("failure handler", () => {
     expect(mcpFailure(failure)).toMatchObject({ isError: true, structuredContent: errorObject(failure) })
   })
 
+  it("tells an agent that an expired sign-in is the owner's step", () => {
+    const expired = new CliError("authentication_error", "Google sign-in expired", { reason: "sign-in.expired" })
+    expect(mcpFailure(expired).structuredContent.error.next).toEqual([
+      {
+        kind: "user_action",
+        step: "owner.sign-in",
+        why: "the owner runs drive <profile> session start on the computer running drive; an agent cannot do it over MCP",
+        safe_to_auto_execute: false,
+      },
+    ])
+  })
+
   it("registers every reason drive raises", () => {
     const known = new Set([...REASONS, ...BASE_REASONS, ...CORE_REASONS].map((entry) => entry.reason))
     const raised = readdirSync("src", { recursive: true, encoding: "utf8" })

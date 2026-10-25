@@ -8,12 +8,12 @@ import {
   type Streams,
 } from "@wirecat/cli-base"
 import { metaOf } from "@wirecat/cli-base/commands"
-import { defineReasons, type Effects, type ErrorReason } from "@wirecat/cli-base/standards"
+import { defineReasons, defineSteps, type Effects, type ErrorReason } from "@wirecat/cli-base/standards"
 import { failureContext } from "@wirecat/cli-core"
 import { type Command, CommanderError } from "commander"
 import { VERSION } from "./version.js"
 
-type Entry = [reason: string, code: ErrorReason["code"], message: string, details?: string[]]
+type Entry = [reason: string, code: ErrorReason["code"], message: string, details?: string[], step?: string]
 
 const ENTRIES: Entry[] = [
   ["catalog.unavailable", "configuration_error", "the index has no shared catalog adapter"],
@@ -65,6 +65,8 @@ const ENTRIES: Entry[] = [
     "sign-in.expired",
     "authentication_error",
     "the Google sign-in is no longer valid; run drive <profile> session start",
+    [],
+    "owner.sign-in",
   ],
   ["sign-in.failed", "authentication_error", "the Google sign-in did not finish; run drive <profile> session start"],
   ["sign-in.not-saved", "configuration_error", "the sign-in could not be saved in the keyring"],
@@ -98,8 +100,23 @@ const ENTRIES: Entry[] = [
 
 /** Every reason drive raises; cli-base's base reasons are known to the handler already. */
 export const REASONS: ErrorReason[] = defineReasons(
-  ENTRIES.map(([reason, code, message, details = []]) => ({ reason, code, message, details })),
+  ENTRIES.map(([reason, code, message, details = [], step]) => ({
+    reason,
+    code,
+    message,
+    details,
+    ...(step ? { step } : {}),
+  })),
 )
+
+// A Google sign-in opens a browser on the computer running drive; an agent over MCP cannot do it for the owner.
+const STEPS = defineSteps([
+  {
+    id: "owner.sign-in",
+    kind: "user_action",
+    why: "the owner runs drive <profile> session start on the computer running drive; an agent cannot do it over MCP",
+  },
+])
 
 // Commander words the cause itself: unknown command with a suggestion, missing argument, missing option.
 const parseMessage = (error: CommanderError, fallback: string) =>
@@ -115,6 +132,7 @@ const recognisable = (error: unknown, invalidArguments: string): unknown =>
 
 const contextOf = (effects: Effects | undefined) => ({
   ...failureContext({ reasons: REASONS }),
+  steps: STEPS,
   ...(effects ? { effects } : {}),
 })
 
