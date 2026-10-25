@@ -6,6 +6,7 @@ import { activeProfile } from "./config.js"
 import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
 import { prepareStore } from "./store-transition.js"
+import { VERSION } from "./version.js"
 
 export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
   if (name) activeProfile(env, name)
@@ -18,7 +19,7 @@ export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = 
       "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
       { reason: "store.override-retired" },
     )
-  const store = await openStore({ path: storePath(env), env, command: "drive" })
+  const store = await openStore({ path: storePath(env), env, command: "drive", version: VERSION })
   const index = indexOver(store, env)
   try {
     if (name) await prepareStore(index, env, name, rescan)
@@ -35,7 +36,7 @@ export const indexOver = (
   pictureEmbedder?: PictureEmbedder,
 ): DocumentIndex => {
   const ingestion = documentIngestion(store, {
-    collectionName: (principal) => `google-drive:${principal}`,
+    provider: "google-drive",
     externalId: (id) => `${id}.md`,
     catalogInput,
     observed: (principal, file, id) => saveContributors(store, principal, file, id),
@@ -58,7 +59,7 @@ export const indexOver = (
     ...ingestion,
     registerProfile: async (name, principal) => {
       await folder(principal, true)
-      await store.accounts.saveProfile("drive", name, { provider: "folder", account: `google-drive:${principal}` })
+      await store.accounts.saveProfile("drive", name, { provider: "google-drive", account: principal })
     },
     linkMessages: (documents, since) => store.notes.linkMessages({ documents, ...(since ? { since } : {}) }),
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),

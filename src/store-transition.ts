@@ -7,6 +7,7 @@ import { activeProfile, paths } from "./config.js"
 import type { DocumentContent, DocumentIndex } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { readSnapshot, readState, saveState } from "./state.js"
+import { VERSION } from "./version.js"
 
 // Old row numbers are meaningful only in their original database, even when the new row happens to exist.
 export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv, name: string, rescan = false) => {
@@ -22,9 +23,9 @@ export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv,
     const state = readState(env, name, profile.principal)
     const previous = resolve(state.store ?? join(paths(env).state, "drive.db"))
     if (previous !== target && existsSync(previous)) {
-      const old = await openStore({ path: previous, env, command: "drive" })
+      const old = await openStore({ path: previous, env, command: "drive", version: VERSION })
       try {
-        const folder = (await old.notes.folders()).find((item) => item.name === `google-drive:${profile.principal}`)
+        const folder = await old.notes.documentsAccount({ provider: "google-drive", account: profile.principal })
         const counts = { tags: 0, notes: 0, memories: 0, facts: 0, links: 0 }
         if (folder) {
           for (let offset = 0; ; offset += 500) {

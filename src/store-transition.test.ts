@@ -62,10 +62,7 @@ describe("shared database transition", () => {
     expect((await old.notes.note(f.ref)).text).toBe(f.doc.text)
     await old.close()
     const shared = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
-    expect((await shared.accounts.profiles()).drive?.default).toEqual({
-      provider: "folder",
-      account: `google-drive:${principal}`,
-    })
+    expect((await shared.accounts.profiles()).drive?.default).toEqual({ provider: "google-drive", account: principal })
     expect((await shared.notes.note(unrelated.ref)).text).toBe("owner evidence")
     await shared.close()
   })

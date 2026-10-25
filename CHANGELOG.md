@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- Drive documents live in the store's Google Drive account (`google-drive` / your Google principal) instead of a notes folder named `google-drive:<principal>`, and the `drive` profile names that account. This needs the cli-core release that carries store versions 30 to 33: it moves existing documents on first open, keeping every `document:<id>` reference, and an older CLI then refuses the store until upgraded. Opening the store records drive's version, so an upgrade can name the CLIs it locks out.
+
 ### Fixed
 
 - Two drive processes using the same profile, such as `mirrors watch` and `drive mcp`, refresh its Google sign-in one at a time and share the result, instead of each refreshing on its own. Your saved sign-in stays as it is: nobody signs in again, and older drive versions still read it. `DRV-29`
