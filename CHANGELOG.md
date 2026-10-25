@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Every command starts faster: Google's client libraries load only when a command reaches Google. `drive --version`, `--help`, `config show` and `runs list` loaded about 1,380 module files; now about 1,180. `src/startup.test.ts` keeps them out of what the program imports at start.
+
 ## 0.35.0 — 25.10.2026
 
 ### Changed — may break callers

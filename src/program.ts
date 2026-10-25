@@ -39,6 +39,7 @@ import {
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import { Command, Help } from "commander"
 import { validateRequest } from "./api-contract.js"
+import { apiMethod } from "./api-methods.js"
 import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, offset, type ProgramOptions, positive } from "./commands/context.js"
@@ -61,8 +62,6 @@ import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { REASONS as CONTRACT_REASONS } from "./failure.js"
 import { guide, installFirstScreen } from "./first-screen.js"
-import { googleSource } from "./google.js"
-import { apiMethod, googleApi, googleDownload, googleUploadRequest } from "./google-api.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
@@ -83,7 +82,6 @@ import { runRecording } from "./run-recording.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
 import { localTimes } from "./time.js"
-import { authorizedClient, checkAuthorization } from "./tokens.js"
 import { uploadFile } from "./upload.js"
 import { VERSION } from "./version.js"
 
@@ -224,11 +222,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (shown.changed || answer.meta.timezone) buffered.data(`times in ${answer.meta.timezone ?? zone}`)
     })
   }
+  // Google's client libraries are about 80 ms of a start; only a command that reaches Google loads them.
+  const signedIn = async (name: string, scope?: string) => {
+    const { authorizedClient, checkAuthorization } = await import("./tokens.js")
+    const client = authorizedClient(env, name, options.keyring, activeSignal)
+    await checkAuthorization(client, scope)
+    return client
+  }
   const source = async () => {
     const name = selected()
     if (options.source) return options.source(name)
-    const client = authorizedClient(env, name, options.keyring, activeSignal)
-    await checkAuthorization(client)
+    const [{ googleSource }, client] = await Promise.all([import("./google.js"), signedIn(name)])
     return googleSource(client)
   }
   const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T> => {
@@ -324,8 +328,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const act = async () => {
         try {
           if (options.api) return await options.api.call(method, params, body)
-          const client = authorizedClient(env, selected(), options.keyring, activeSignal)
-          await checkAuthorization(client, descriptor.scope)
+          const [{ googleApi }, client] = await Promise.all([
+            import("./google-api.js"),
+            signedIn(selected(), descriptor.scope),
+          ])
           return await googleApi(client).call(method, params, body)
         } catch (error) {
           throw googleError(error)
@@ -344,8 +350,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const flags = policyFlags()
       for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, false, flags, askOnce)
       if (options.download) return options.download(id, mime)
-      const client = authorizedClient(env, selected(), options.keyring, activeSignal)
-      await checkAuthorization(client, apiMethod(method).scope)
+      const [{ googleDownload }, client] = await Promise.all([
+        import("./google-api.js"),
+        signedIn(selected(), apiMethod(method).scope),
+      ])
       return googleDownload(client)(id, mime)
     },
     upload: async (path, args) => {
@@ -360,8 +368,10 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const act = async () => {
         let request = options.uploadRequest
         if (!request) {
-          const client = authorizedClient(env, selected(), options.keyring, activeSignal)
-          await checkAuthorization(client, apiMethod(method).scope)
+          const [{ googleUploadRequest }, client] = await Promise.all([
+            import("./google-api.js"),
+            signedIn(selected(), apiMethod(method).scope),
+          ])
           request = googleUploadRequest(client)
         }
         return uploadFile({ path, ...args, stateDir: profileDir(env, selected()), request })
