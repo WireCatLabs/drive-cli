@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**226 ✅ · 951 ⛔ · 0 ❌** — 192 commands, 985 options.
+**227 ✅ · 951 ⛔ · 0 ❌** — 192 commands, 986 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1100,6 +1100,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files list` | `--limit` | ✅ |  |
 | `files list` | `--cursor` | ✅ |  |
 | `files list` | `--parent` | ✅ |  |
+| `files list` | `--timezone` | ✅ |  |
 | `files get` |  | ✅ |  |
 | `files copy` |  | ✅ |  |
 | `files copy` | `--name` | ✅ |  |
