@@ -4455,7 +4455,7 @@ drive upgrade [options]
 
 **Returns:** upgrade drive with the package manager that installed it; --check only looks
 
-**Example:** `drive upgrade --check`, `drive upgrade`
+**Example:** `drive upgrade --check`
 
 ## `drive runs`
 
