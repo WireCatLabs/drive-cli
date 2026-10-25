@@ -32,7 +32,5 @@ by path below.
 - **DRV-10 · P2 · `mirrors watch`.** Keep mirrors in sync without a manual run, on cli-core's shared server (owner:
   NEED-1620 A). First move `mirrors` and its state into cli-core (IDEA-203); Drive's change feed missed a Docs API
   edit (RISK-1601). cli-private `plans/2026-10-21-document-push-sync.md`.
-- **DRV-29 · P2 · A shared Google sign-in package** (PKCE loopback login, keyring tokens, grants) out of
-  `src/login.ts` and `src/tokens.ts`, so a future Google Meet CLI does not copy it. cli-base or a new package.
 - **DRV-28 · P2 · Mark fetched document text as untrusted** in MCP and JSON output. Waiting for
   [cli-core #1883](https://github.com/WireCatLabs/cli-core/issues/1883) and a published shared output contract.

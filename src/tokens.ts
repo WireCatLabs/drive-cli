@@ -6,7 +6,14 @@ import {
   pathsAreOverridden,
   systemKeyring,
 } from "@wirecat/cli-base"
-import { credentialStorage, driveSessionCodec, type OAuthProvider, tokenKeeper } from "@wirecat/cli-core/oauth"
+import {
+  credentialStorage,
+  driveSessionCodec,
+  type OAuthClient,
+  type OAuthProvider,
+  type TokenKeeper,
+  tokenKeeper,
+} from "@wirecat/cli-core/oauth"
 import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
@@ -39,7 +46,7 @@ const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", 
 })
 export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>
   new Credentials(credentialOptions(env, storage, keyring))
-const notSaved = () =>
+export const notSaved = () =>
   new CliError(
     "configuration_error",
     "could not save Google sign-in; use an available keyring or explicitly choose --credential-storage file",
@@ -72,6 +79,41 @@ export const saveSession = (
     throw notSaved()
   }
 }
+export const googleProvider = (client: OAuthClient): OAuthProvider => ({
+  id: "google",
+  name: "Google",
+  authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenUrl: "https://oauth2.googleapis.com/token",
+  revokeUrl: "https://oauth2.googleapis.com/revoke",
+  client,
+  redirect: { kind: "loopback" },
+  // Without offline access Google returns no refresh token; without consent it does not return one again.
+  authorizeParams: { access_type: "offline", prompt: "select_account consent" },
+})
+/** One profile's saved sign-in, refreshed and saved under a lock every drive process shares. */
+export const sessionKeeper = (options: {
+  env: NodeJS.ProcessEnv
+  name: string
+  storage: "keyring" | "file"
+  client: OAuthClient
+  keyring?: KeyringStore
+  signal?: AbortSignal
+  fetch?: typeof fetch
+}): TokenKeeper =>
+  tokenKeeper({
+    provider: googleProvider(options.client),
+    storage: credentialStorage({
+      credentials: { ...credentialOptions(options.env, options.storage), keyring: options.keyring ?? systemKeyring },
+      account: options.name,
+      codec: driveSessionCodec,
+    }),
+    lockDir: paths(options.env).config,
+    fetch: options.fetch ?? globalThis.fetch,
+    signInCommand: `drive ${options.name} session start`,
+    // Above the client's own 5-minute early refresh, so a token it asks to replace is replaced.
+    freshForMs: 6 * 60_000,
+    ...(options.signal ? { signal: options.signal } : {}),
+  })
 export const authorizedClient = (
   env: NodeJS.ProcessEnv,
   name: string,
@@ -98,27 +140,12 @@ export const authorizedClient = (
       reason: "sign-in.expired",
     })
   const session = parsed.output
-  const provider: OAuthProvider = {
-    id: "google",
-    name: "Google",
-    authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-    tokenUrl: "https://oauth2.googleapis.com/token",
-    revokeUrl: "https://oauth2.googleapis.com/revoke",
+  const keeper = sessionKeeper({
+    env,
+    name,
+    storage: profile.storage,
     client: { clientId: session.clientId, ...(session.clientSecret ? { clientSecret: session.clientSecret } : {}) },
-    redirect: { kind: "loopback" },
-  }
-  const keeper = tokenKeeper({
-    provider,
-    storage: credentialStorage({
-      credentials: { ...credentialOptions(env, profile.storage), keyring: keyring ?? systemKeyring },
-      account: name,
-      codec: driveSessionCodec,
-    }),
-    lockDir: paths(env).config,
-    fetch: globalThis.fetch,
-    signInCommand: `drive ${name} session start`,
-    // Above the client's own 5-minute early refresh, so a token it asks to replace is replaced.
-    freshForMs: 6 * 60_000,
+    ...(keyring ? { keyring } : {}),
     ...(signal ? { signal } : {}),
   })
   const client = new OAuth2Client({
