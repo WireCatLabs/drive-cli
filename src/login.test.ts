@@ -1,38 +1,36 @@
 import { CliError, memoryKeyring } from "@wirecat/cli-base"
-import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
 import { type LoginOptions, login } from "./login.js"
 import { fixture } from "./testing.js"
-import { authorizedClient } from "./tokens.js"
+import { authorizedClient, credentials } from "./tokens.js"
 
 const setup = () => {
   const f = fixture()
   const keyring = memoryKeyring()
   let redirect = ""
-  const client = new OAuth2Client("fixture-client", "fixture-client-secret")
-  Object.defineProperty(client, "getToken", {
-    value: vi.fn(async () => ({
-      tokens: {
-        access_token: "fixture-access-token",
-        refresh_token: "fixture-refresh-token",
-        expiry_date: Date.now() + 3600000,
-      },
-      res: null,
-    })),
-  })
+  const tokenEndpoint = vi.fn(
+    async (_url: string | URL | Request, _init?: RequestInit) =>
+      new Response(
+        JSON.stringify({
+          access_token: "fixture-access-token",
+          refresh_token: "fixture-refresh-token",
+          expires_in: 3600,
+          scope: "https://www.googleapis.com/auth/drive.readonly",
+        }),
+        { headers: { "content-type": "application/json" } },
+      ),
+  )
   const options: LoginOptions = {
     env: f.env,
     profile: "default",
     application: { clientId: "fixture-client", clientSecret: "fixture-client-secret" },
     storage: "keyring",
     keyring,
-    showUrl: vi.fn(),
-    makeClient: (callback) => {
-      redirect = callback
-      Object.defineProperty(client, "redirectUri", { value: callback })
-      return client
-    },
+    fetch: tokenEndpoint,
+    showUrl: vi.fn((url: string) => {
+      redirect = new URL(url).searchParams.get("redirect_uri") ?? ""
+    }),
     identity: async () => "synthetic-principal",
     timeoutMs: 1000,
     openBrowser: async (url) => {
@@ -40,7 +38,7 @@ const setup = () => {
       await fetch(`${redirect}?state=${state}&code=fixture-code`)
     },
   }
-  return { ...f, options, client, keyring, redirect: () => redirect }
+  return { ...f, options, tokenEndpoint, keyring, redirect: () => redirect }
 }
 describe("browser OAuth", () => {
   it("requests broader permissions only when write/activity options are explicit", async () => {
@@ -57,12 +55,30 @@ describe("browser OAuth", () => {
     const url = new URL(vi.mocked(f.options.showUrl).mock.calls[0]?.[0] ?? "")
     expect(url.searchParams.get("scope")).toBe("https://www.googleapis.com/auth/drive.readonly")
     expect(url.searchParams.get("code_challenge_method")).toBe("S256")
-    expect(f.client.getToken).toHaveBeenCalledWith(
-      expect.objectContaining({ code: "fixture-code", codeVerifier: expect.any(String) }),
-    )
+    expect(url.searchParams.get("access_type")).toBe("offline")
+    const exchange = String(f.tokenEndpoint.mock.calls[0]?.[1]?.body)
+    expect(exchange).toContain("code=fixture-code")
+    expect(exchange).toContain("code_verifier=")
     expect(authorizedClient(f.env, "default", f.keyring).credentials.access_token).toBe("fixture-access-token")
     expect(JSON.stringify(readConfig(f.env))).not.toContain("fixture-refresh-token")
     await expect(fetch(f.redirect())).rejects.toThrow()
+  })
+  it("refuses another account before saving, leaving the profile's sign-in as it was", async () => {
+    const f = setup()
+    await login(f.options)
+    const before = credentials(f.env, "keyring", f.keyring).read("default")?.secret
+    await expect(login({ ...f.options, identity: async () => "other-principal" })).rejects.toMatchObject({
+      details: { reason: "profile.wrong-account" },
+    })
+    expect(credentials(f.env, "keyring", f.keyring).read("default")?.secret).toBe(before)
+  })
+  it("drops the old client secret when signing in again with an app that has none", async () => {
+    const f = setup()
+    await login(f.options)
+    await login({ ...f.options, application: { clientId: "fixture-custom" } })
+    const saved = JSON.parse(credentials(f.env, "keyring", f.keyring).read("default")?.secret ?? "{}")
+    expect(saved).toMatchObject({ principal: "synthetic-principal", clientId: "fixture-custom" })
+    expect(saved).not.toHaveProperty("clientSecret")
   })
   it("rejects wrong-state requests while keeping the correct callback available", async () => {
     const f = setup()
@@ -85,7 +101,7 @@ describe("browser OAuth", () => {
     f.options.timeoutMs = 20
     f.options.openBrowser = async () => {}
     await expect(login(f.options)).rejects.toThrow("timed out")
-    expect(f.client.getToken).not.toHaveBeenCalled()
+    expect(f.tokenEndpoint).not.toHaveBeenCalled()
     await expect(fetch(f.redirect())).rejects.toThrow()
   })
   it("refuses an unavailable keyring before it shows the sign-in URL", async () => {
@@ -107,7 +123,7 @@ describe("browser OAuth", () => {
   })
   it("sanitizes token-exchange failures", async () => {
     const f = setup()
-    vi.mocked(f.client.getToken).mockRejectedValue(new Error("fixture-access-token"))
+    f.tokenEndpoint.mockResolvedValue(new Response(JSON.stringify({ error: "fixture-access-token" }), { status: 400 }))
     await expect(login(f.options)).rejects.toThrow("credential details were not logged")
   })
   it("cancels an in-progress sign-in and closes its listener", async () => {
