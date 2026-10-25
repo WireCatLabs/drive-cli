@@ -1,5 +1,5 @@
 import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
+import { itemOf, LOCAL_READ, LOCAL_WRITE, storeInfo } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { examples } from "../registry.js"
 import { checkStoreImport, importStore, transferBindings } from "../store-import.js"
@@ -8,8 +8,16 @@ import type { CommandContext } from "./context.js"
 export const installStoreCommands = (program: Command, context: CommandContext) => {
   const { env, selected, output } = context
   const store = annotate(program.command("store"), { effects: LOCAL_READ }).description(
-    "check and import this profile's previous document database",
+    "the shared store, and importing this profile's previous document database",
   )
+  examples(
+    annotate(store.command("info"), { effects: LOCAL_READ, output: { entity: "store_info" } })
+      .description(
+        "the shared store file: where it is, its size, its schema against the one drive speaks, which tools used it and how many rows it holds; changes nothing",
+      )
+      .summary("the shared store's format and size, and whether drive can read it"),
+    ["drive store info --json"],
+  ).action(async () => output(itemOf(await storeInfo(env))))
   examples(
     annotate(store.command("check"), { effects: LOCAL_READ })
       .description("preview documents, annotations and unresolved references without changing either database")

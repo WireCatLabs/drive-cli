@@ -63,6 +63,7 @@
 
 ### Added
 
+- `drive store info --json` describes the shared store: where it is, its schema against the one drive reads (`schema.reason`, and `schema.upgrade` — what drive's next run moves it to), and which tools used it. It opens the store read-only and needs no profile, so WireCat Desktop can tell whether drive can read the store. The `store` group's help now says it covers the shared store too.
 - When the Google sign-in has expired, the error's `next` says it is the owner's step: run `drive <profile> session start` on the computer running drive. An agent over MCP can't sign in, so it now knows to stop and ask instead of retrying.
 
 ## 0.32.0 — 25.10.2026
