@@ -134,8 +134,11 @@ the documents of one Drive profile:
 memo search notes "budget decision" --source drive:personal --json
 ```
 
-List several profiles separated by commas, such as `--source drive:personal,drive:work`. A profile
-that has not synced yet is refused with the profiles the store holds. `memo search all` ranks messages,
+Each Google account's documents are kept in their own account in the shared store, apart from your notes.
+`drive:personal` names that account by its drive profile; `google-drive:<id>` names the same account by its
+Google ID, the `principal` saved for the profile in `config.json`. List several profiles separated by commas,
+such as `--source drive:personal,drive:work`. A profile that has not synced yet is refused with the profiles
+the store holds. `memo search all` ranks messages,
 mail and notes together and has no source filter; `drive personal search` gives the same documents
 with Drive's own fields.
 
