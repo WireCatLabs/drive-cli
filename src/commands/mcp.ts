@@ -21,9 +21,9 @@ const installMcpCommandDefinition = (
       "serve drive's commands to an agent over MCP: search, then read or write",
     ),
     [
+      "drive personal mcp --tools",
       "drive personal mcp",
-      "drive personal mcp --http --public-url https://<name>.ts.net",
-      "drive personal mcp --revoke",
+      "drive personal mcp --http --public-url https://laptop.example.ts.net",
     ],
   )
     .option("--tools", "list the commands the server offers instead of starting it")

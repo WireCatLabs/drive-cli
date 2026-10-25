@@ -10,6 +10,10 @@
 
 - When the Google sign-in has expired, the error's `next` says it is the owner's step: run `drive <profile> session start` on the computer running drive. An agent over MCP can't sign in, so it now knows to stop and ask instead of retrying.
 
+### Fixed
+
+- Help and MCP text describe drive, not a messenger: the `command` argument of `drive_read` and `drive_write` gives `"session list"` as its example instead of `"messages list"`. The examples of `session list` and `config show` name a profile, and `mcp`'s examples start with `drive personal mcp --tools`, which lists the tools without starting a server, and use `https://laptop.example.ts.net` instead of a `<name>` placeholder. Needs cli-core 0.422.0.
+
 ## 0.32.0 — 25.10.2026
 
 ### Changed — may break callers

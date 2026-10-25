@@ -16,7 +16,7 @@ export const installConfigCommands = (program: Command, { env, selected, output 
     annotate(config.command("show"), { effects: LOCAL_READ }).description(
       "show the defaults and every profile's settings",
     ),
-    ["drive config show"],
+    ["drive personal config show"],
   ).action(() => output(itemOf(readConfig(env))))
   examples(
     annotate(grantsAuthority(config.command("set")), { effects: LOCAL_WRITE }).description(

@@ -251,9 +251,9 @@ export const SHELL_OVERRIDES: Readonly<{
       field: "examples",
       before: null,
       after: [
+        "drive personal mcp --tools",
         "drive personal mcp",
-        "drive personal mcp --http --public-url https://<name>.ts.net",
-        "drive personal mcp --revoke",
+        "drive personal mcp --http --public-url https://laptop.example.ts.net",
       ],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
