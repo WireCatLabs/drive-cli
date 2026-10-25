@@ -9,12 +9,13 @@
 - A permission key that names no command is refused wherever it is saved, in any profile or the defaults, not only in the profile a command runs as. The refusal names the `config unset` that removes it.
 - A profile's `roots` may be left out (no folders), and so may `profiles` (no profiles yet). `principal` and `storage` are still required; doctor reports either one missing.
 - `commands --json` gives `config show` and `session list` a usage line without `<profile>` (`drive config show`), like `doctor` and `api list`; they read every profile or none.
+- Every drive `--dry-run` preview says `action_invoked: false`, beside `dry_run: true`, so a caller can check that nothing ran.
+- `runs list`, `runs show` and `run.json` gain `cli_command`, `argv` (values that may be content written `[redacted]`), `unknown_command`, `agent` and, for a failed run, `error`; `profile` is left out when the command named none. From cli-core 0.426.0.
 - cli-core 0.426.0.
 
 ### Added
 
 - `config unset <key>` removes one setting from a profile, from the defaults (`--defaults`), or a key the file should not have at its top (`drive config unset <key>`, with no profile, as doctor's `fix` says).
-- Every drive `--dry-run` preview says `action_invoked: false`, beside `dry_run: true`, so a caller can check that nothing ran.
 - `config show`, `config set` and `config unset` work on a file that is valid JSON but has problems (`show` also on one that is not). `show` prints what loads and names each problem with its fix; `set` is refused only when the change adds a problem or leaves the setting it writes invalid. Every other command still refuses the file.
 
 ### Fixed
