@@ -30,7 +30,7 @@ Failures leave pending work, and the cursor advances after the batch finishes. S
 require a complete rescan. Folder scope exits invalidate descendants without requiring individual
 document events. The heartbeat lock permits only one sync per profile.
 
-An account has one profile and a notes folder keyed by its Google principal. File ID determines
+An account has one profile and a documents account (`google-drive`) keyed by its Google principal. File ID determines
 identity independently of title or ancestry. Hashes reuse embeddings for unchanged text. A
 profile without an indexed folder returns an explicit empty search: the shared service interprets
 an empty folder filter as unfiltered search.

@@ -225,7 +225,7 @@ export const invokeTool = async (
         "configuration_error",
         "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
       )
-    audit = await openStore({ path: storePath(env), env })
+    audit = await openStore({ path: storePath(env), env, command: "drive", version: VERSION })
   } catch (error) {
     return mcpFailure(error)
   }

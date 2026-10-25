@@ -5,6 +5,7 @@ import { applyDocumentTransfer, openStore, previewDocumentTransfer, storePath } 
 import { activeProfile } from "./config.js"
 import { lockProfile } from "./profile-lock.js"
 import { readSnapshot, readState, saveState } from "./state.js"
+import { VERSION } from "./version.js"
 
 export const transferBindings = (path?: string): Record<string, string> => {
   if (path === undefined) return {}
@@ -90,12 +91,9 @@ export const importStore = async (
       state.documents[id] = { ...document, reference, picture: undefined }
     }
     lock.assertHeld()
-    const store = await openStore({ path: options.destination, env, command: "drive" })
+    const store = await openStore({ path: options.destination, env, command: "drive", version: VERSION })
     try {
-      await store.accounts.saveProfile("drive", name, {
-        provider: "folder",
-        account: `google-drive:${profile.principal}`,
-      })
+      await store.accounts.saveProfile("drive", name, { provider: "google-drive", account: profile.principal })
     } finally {
       await store.close()
     }

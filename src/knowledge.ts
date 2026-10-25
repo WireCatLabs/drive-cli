@@ -79,8 +79,9 @@ export const documentKnowledge = (
       )
       // Identity decisions leave already-imported file links pointing at the former person.
       // Refresh observed Google roles without touching the owner's relationships or names.
-      for (const sourceFolder of await store.notes.folders()) {
-        if (!sourceFolder.name.startsWith("google-drive:")) continue
+      for (const sourceFolder of await store.notes.documentsAccounts()) {
+        if (sourceFolder.account?.provider !== "google-drive") continue
+        const principal = sourceFolder.account.account
         for (let offset = 0; offset <= 10000; offset += 500) {
           const page = await store.notes.notes({ folderId: sourceFolder.id, source: "file", limit: 500, offset })
           for (const source of page.items) {
@@ -97,7 +98,7 @@ export const documentKnowledge = (
             if (!contributors.some((user) => googleUserId(user) === googleId)) continue
             await saveContributors(
               store,
-              sourceFolder.name.slice("google-drive:".length),
+              principal,
               {
                 id: data.fileId,
                 owners: data.owners,
