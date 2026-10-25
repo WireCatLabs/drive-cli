@@ -8,7 +8,7 @@ import { factItem, memoryItem } from "./knowledge-query.js"
 import type { FileMetadata, GoogleUser } from "./model.js"
 export interface DocumentKnowledge extends SharedDocumentKnowledge {
   context(principal: string, ref: string): Promise<unknown>
-  people(principal: string, ref: string): Promise<unknown>
+  people(principal: string, ref: string, filter?: { google_id?: string; role?: string }): Promise<unknown>
   linkPerson(principal: string, ref: string, googleId: string, personRef: string): Promise<PersonRecord>
 }
 export const googleUserId = (user: GoogleUser): string | undefined =>
@@ -34,13 +34,17 @@ export const documentKnowledge = (
         people: await port.people(principal, ref),
       }
     },
-    people: async (principal, ref) => {
+    people: async (principal, ref, filter = {}) => {
       const note = await document(principal, ref)
       const metadata = note.frontMatter as { owners?: GoogleUser[]; lastModifiedBy?: GoogleUser }
       const contributors = [
         ...(metadata.owners ?? []).map((user) => ({ ...user, role: "owner" })),
         ...(metadata.lastModifiedBy ? [{ ...metadata.lastModifiedBy, role: "last-editor" }] : []),
-      ]
+      ].filter(
+        (user) =>
+          (filter.role === undefined || user.role === filter.role) &&
+          (filter.google_id === undefined || googleUserId(user) === filter.google_id),
+      )
       return {
         items: await Promise.all(
           contributors.map(async (user) => {

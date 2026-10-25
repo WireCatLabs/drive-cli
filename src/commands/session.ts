@@ -2,7 +2,8 @@ import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { activeProfile, application, readConfig, writeConfig } from "../config.js"
+import { activeProfile, application, configuredSessions, readConfig, writeConfig } from "../config.js"
+import { bindQuery, SESSIONS_QUERY, sessionRow, termsOf } from "../list-queries.js"
 import { login } from "../login.js"
 import { examples } from "../registry.js"
 import { credentials } from "../tokens.js"
@@ -62,23 +63,24 @@ export const installSessionCommands = (program: Command, context: CommandContext
         ),
       )
     })
-  examples(
-    annotate(session.command("list"), { effects: LOCAL_READ }).description(
-      "list the configured profiles; credentials are never printed",
+  bindQuery(
+    examples(
+      annotate(session.command("list"), { effects: LOCAL_READ }).description(
+        "list the configured profiles; credentials are never printed",
+      ),
+      ["drive session list"],
     ),
-    ["drive session list"],
-  ).action(() =>
-    output(
+    SESSIONS_QUERY,
+    sessionRow,
+  ).action((words: string[]) => {
+    const filter = termsOf(words, SESSIONS_QUERY, "session list")
+    return output(
       itemOf({
         scope: "all-configured-profiles",
-        items: Object.entries(readConfig(env).profiles).map(([name, p]) => ({
-          profile: name,
-          selected_folders: p.roots.length,
-          storage: p.storage,
-        })),
+        items: configuredSessions(env, filter),
       }),
-    ),
-  )
+    )
+  })
   examples(
     annotate(session.command("end"), { mcp: false, effects: LOCAL_WRITE }).description(
       "sign this profile out; imported documents stay",

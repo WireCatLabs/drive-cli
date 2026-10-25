@@ -10,7 +10,6 @@ import {
   queryTerms,
   REMOTE_WRITE,
   sharedCommandTemplate,
-  termField,
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { extractDocumentMemories } from "@wirecat/cli-core/documents"
@@ -27,11 +26,20 @@ import {
   memoryItem,
   memorySearch,
 } from "../knowledge-query.js"
+import {
+  bindQuery,
+  IDENTITIES_QUERY,
+  identityRow,
+  LINKS_QUERY,
+  linkRow,
+  NOTES_QUERY,
+  TAGS_QUERY,
+  tagRow,
+  termsOf,
+} from "../list-queries.js"
 import type { DocumentContent } from "../model.js"
 import { allOf } from "../output.js"
 import { examples } from "../registry.js"
-
-const NOTE_QUERY = defineQuery({ entity: "note", backend: "native", fields: [termField("text", "txt", "text:review")] })
 
 export interface KnowledgeCommands {
   document(input: string): { id: string; ref: string; hash: string; snapshot: DocumentContent }
@@ -63,20 +71,38 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
         .argument("<document>", documentArgument),
       [`drive personal tags ${action} DOC_ID${action === "list" ? "" : " budget q3"}`],
     )
-    if (action !== "list") command.argument("<tags...>", "one or more tags")
-    command.action(async (doc: string, values: string[] = []) =>
-      output(itemOf({ tags: await run(doc, (k, p, ref) => k.tags(p, ref, action, action === "list" ? [] : values)) })),
-    )
+    if (action === "list") {
+      bindQuery(command, TAGS_QUERY, tagRow).action(async (doc: string, words: string[]) => {
+        const filter = termsOf(words, TAGS_QUERY, "tags list")
+        output(allOf((await run(doc, (k, p, ref) => k.tags(p, ref, "list", [], filter))).map((tag) => ({ tag }))))
+      })
+    } else
+      command
+        .argument("<tags...>", "one or more tags")
+        .action(async (doc: string, values: string[]) =>
+          output(itemOf({ tags: await run(doc, (k, p, ref) => k.tags(p, ref, action, values)) })),
+        )
   }
   const relationships = annotate(program.command("relationships"), { effects: LOCAL_READ }).description(
     "connect a document to people, projects, notes and other references",
   )
-  examples(
-    annotate(relationships.command("list"), { effects: LOCAL_READ }).description("list a document's relationships"),
-    ["drive personal relationships list DOC_ID"],
-  )
-    .argument("<document>", documentArgument)
-    .action(async (doc: string) => output(allOf(await run(doc, (k, p, ref) => k.links(p, ref)))))
+  bindQuery(
+    examples(
+      annotate(relationships.command("list"), { effects: LOCAL_READ }).description("list a document's relationships"),
+      ["drive personal relationships list DOC_ID"],
+    ).argument("<document>", documentArgument),
+    LINKS_QUERY,
+    linkRow,
+  ).action(async (doc: string, words: string[]) => {
+    const { confirmed, ...filter } = termsOf(words, LINKS_QUERY, "relationships list")
+    output(
+      allOf(
+        await run(doc, (k, p, ref) =>
+          k.links(p, ref, { ...filter, ...(confirmed === undefined ? {} : { confirmed: confirmed === "true" }) }),
+        ),
+      ),
+    )
+  })
   examples(
     annotate(relationships.command("add"), { effects: LOCAL_WRITE }).description(
       "connect a document to another reference",
@@ -127,18 +153,17 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
     .action(async (doc: string, text: string, args) =>
       output(itemOf(await run(doc, (k, p, ref) => k.addNote(p, ref, text, args.title)))),
     )
-  examples(
-    annotate(notes.command("list"), { effects: LOCAL_READ, output: { entity: "note" }, query: NOTE_QUERY }).description(
-      "list a document's notes",
-    ),
-    ["drive personal notes list DOC_ID", "drive personal notes list DOC_ID text:review --limit 10"],
+  withQuery(
+    examples(annotate(notes.command("list"), { effects: LOCAL_READ }).description("list a document's notes"), [
+      "drive personal notes list DOC_ID",
+      "drive personal notes list DOC_ID text:review --limit 10",
+    ]).argument("<document>", documentArgument),
+    NOTES_QUERY,
   )
-    .argument("<document>", documentArgument)
-    .argument("[query...]", 'text:word or text:"a phrase" a note must contain')
     .option("--limit <n>", "how many notes to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)
     .action(async (doc: string, words: string[], { page, limit }: { limit: number; page: number }) => {
-      const query = queryTerms(words, NOTE_QUERY, "notes list").get("text")
+      const query = termsOf(words, NOTES_QUERY, "notes list").text
       const found = await run(doc, (k, p, ref) =>
         k.notes(p, ref, { ...(query ? { search: query } : {}), limit, offset: (page - 1) * limit }),
       )
@@ -148,7 +173,7 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
           limit,
           has_more: found.hasMore,
           page,
-          args: { document: doc, query },
+          args: { document: doc, query: words.join(" ") },
         }),
       )
     })
@@ -359,14 +384,19 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
   const identities = annotate(program.command("identities"), { effects: LOCAL_READ }).description(
     "the Google accounts seen on a document, and the people they belong to",
   )
-  examples(
-    annotate(identities.command("list"), { effects: LOCAL_READ }).description(
-      "list the owners and last editor Google shows for a document",
-    ),
-    ["drive personal identities list DOC_ID"],
-  )
-    .argument("<document>", documentArgument)
-    .action(async (doc: string) => output(itemOf(await run(doc, (k, p, ref) => k.people(p, ref)))))
+  bindQuery(
+    examples(
+      annotate(identities.command("list"), { effects: LOCAL_READ }).description(
+        "list the owners and last editor Google shows for a document",
+      ),
+      ["drive personal identities list DOC_ID"],
+    ).argument("<document>", documentArgument),
+    IDENTITIES_QUERY,
+    identityRow,
+  ).action(async (doc: string, words: string[]) => {
+    const filter = termsOf(words, IDENTITIES_QUERY, "identities list")
+    output(itemOf(await run(doc, (k, p, ref) => k.people(p, ref, filter))))
+  })
   examples(
     annotate(identities.command("link"), { effects: LOCAL_WRITE }).description(
       "record that a Google account belongs to a known person",

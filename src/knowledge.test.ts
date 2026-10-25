@@ -35,6 +35,12 @@ describe("shared document knowledge", () => {
       expect((await f.k.memory(f.principal, f.ref, memory.ref)).status).toBe("confirmed")
       expect(await f.k.tags(f.principal, f.ref, "list")).toEqual(["budget", "review"])
       expect((await f.k.links(f.principal, f.ref)).some((item) => item.id === link.id)).toBe(true)
+      expect(await f.k.tags(f.principal, f.ref, "list", [], { tag: "review" })).toEqual(["review"])
+      expect(await f.k.links(f.principal, f.ref, { id: link.id })).toEqual([link])
+      expect(await f.k.people(f.principal, f.ref, { role: "owner" })).toMatchObject({
+        items: [{ google_id: "owner-user", role: "owner" }],
+      })
+      expect(await f.k.people(f.principal, f.ref, { google_id: "missing" })).toMatchObject({ items: [] })
       expect((await f.k.note(f.principal, f.ref, note.ref)).title).toBe("Review")
       await f.index.save(f.principal, content(f.metadata, "Revised decision"), "hash-two")
       expect((await f.k.memory(f.principal, f.ref, memory.ref)).status).toBe("stale")

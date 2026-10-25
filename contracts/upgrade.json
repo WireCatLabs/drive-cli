@@ -40,9 +40,7 @@
       "stream": "stdout",
       "kind": "json",
       "json": {
-        "item": {
-          "tags": ["budget"]
-        }
+        "items": [{ "tag": "budget" }]
       }
     },
     {

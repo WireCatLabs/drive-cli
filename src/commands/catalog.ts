@@ -6,6 +6,7 @@ import { CATALOG_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { catalogFiles, catalogOutput, catalogTree, type SourceCatalog } from "../catalog.js"
 import { activeProfile, fileId } from "../config.js"
+import { bindQuery, TAGS_QUERY, tagRow, termsOf } from "../list-queries.js"
 import type { DocumentIndex } from "../model.js"
 import { allOf } from "../output.js"
 import { lockProfile } from "../profile-lock.js"
@@ -155,17 +156,26 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
       local(tags.command(action).description(`${action} local tags on a cached file or folder`), action !== "list"),
       [`drive personal catalog tags ${action} FOLDER_ID${action === "list" ? "" : " project"} --offline`],
     ).argument("<file>", "Google file or folder id, or its Drive URL")
-    if (action !== "list") command.argument("<tags...>", "local tag names")
-    command.action(async (id: string, values?: string[]) =>
-      output(
-        allOf(
+    if (action === "list") bindQuery(command, TAGS_QUERY, tagRow)
+    else command.argument("<tags...>", "local tag names")
+    command.action(async (id: string, values: string[] = []) => {
+      const filter = action === "list" ? termsOf(values, TAGS_QUERY, "catalog tags list") : undefined
+      return output(
+        allOf<unknown>(
           await run(async (index, principal) => {
             const found = await entry(index, principal, id)
             if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
-            return index.knowledge.tags(principal, found.ref, action, action === "list" ? undefined : values)
+            const tags = await index.knowledge.tags(
+              principal,
+              found.ref,
+              action,
+              action === "list" ? undefined : values,
+              filter,
+            )
+            return action === "list" ? tags.map((tag) => ({ tag })) : tags
           }, action !== "list"),
         ),
-      ),
-    )
+      )
+    })
   }
 }

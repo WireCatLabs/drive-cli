@@ -13,7 +13,7 @@ drive personal tags list DOC_ID
 drive personal documents list tag:review
 drive personal tags remove DOC_ID review
 drive personal notes add DOC_ID 'Check the assumptions' --title Review
-drive personal notes list DOC_ID assumptions
+drive personal notes list DOC_ID text:assumptions
 drive personal notes show DOC_ID note:NOTE_ID
 drive personal notes edit DOC_ID note:NOTE_ID 'Assumptions reviewed' --revision 1
 drive personal relationships add DOC_ID project:PROJECT_ID --kind about

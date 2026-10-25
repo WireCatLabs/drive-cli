@@ -32,7 +32,7 @@ describe("document knowledge commands", () => {
     }
     await call("sync")
     expect((await call("tags", "add", "doc-a", "budget")).tags).toEqual(["budget"])
-    expect((await call("tags", "list", "doc-a")).tags).toEqual(["budget"])
+    expect((await call("tags", "list", "doc-a")).items).toEqual([{ tag: "budget" }])
     expect((await call("documents", "list", "tag:Budget")).items).toHaveLength(1)
     expect((await call("documents", "list", "tag:missing")).items).toHaveLength(0)
     await call("tags", "remove", "doc-a", "budget")

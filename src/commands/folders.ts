@@ -2,7 +2,8 @@ import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { activeProfile, fileId, readConfig, writeConfig } from "../config.js"
+import { activeProfile, fileId, readConfig, selectedFolders, writeConfig } from "../config.js"
+import { bindQuery, FOLDERS_QUERY, folderRow, termsOf } from "../list-queries.js"
 import { FOLDER } from "../model.js"
 import { allOf } from "../output.js"
 import { examples } from "../registry.js"
@@ -32,9 +33,17 @@ export const installFolderCommands = (program: Command, context: CommandContext)
     writeConfig(env, config)
     output(itemOf({ id: metadata.id, name: metadata.name, added: true }))
   })
-  examples(annotate(folders.command("list"), { effects: LOCAL_READ }).description("list the folder ids sync imports"), [
-    "drive personal folders list",
-  ]).action(() => output(allOf(activeProfile(env, selected()).roots.map((id) => ({ id })))))
+  bindQuery(
+    examples(
+      annotate(folders.command("list"), { effects: LOCAL_READ }).description("list the folder ids sync imports"),
+      ["drive personal folders list"],
+    ),
+    FOLDERS_QUERY,
+    folderRow,
+  ).action((words: string[]) => {
+    const filter = termsOf(words, FOLDERS_QUERY, "folders list")
+    output(allOf(selectedFolders(env, selected(), filter)))
+  })
   examples(
     annotate(folders.command("remove"), { effects: LOCAL_WRITE })
       .argument("<folder>", folderArgument)

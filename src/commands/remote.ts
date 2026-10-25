@@ -14,7 +14,10 @@ import {
   NO_EFFECTS,
   queryTerms,
   readApiBody,
+  snakeKeys,
   termField,
+  typedQuery,
+  unfilteredQuery,
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
@@ -23,6 +26,7 @@ import { jsonObject, operationOf, operations, schemas } from "../api-contract.js
 import { fileId } from "../config.js"
 import { type Download, EXPORT_FORMATS, saveDownload } from "../download.js"
 import { apiMethods, validateApiParams } from "../google-api.js"
+import { bindQuery, driveFileQuery, FILES_QUERY, fileRow } from "../list-queries.js"
 import { allOf } from "../output.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
 import { requestSchema } from "../schema.js"
@@ -179,39 +183,38 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       },
     )
   }
-  page(
-    examples(
-      annotate(files.command("list"), { effects: GOOGLE_READ }).description(
-        "list files in Google Drive, one page at a time",
-      ),
-      ["drive personal files list --parent FOLDER_ID", `drive personal files list "name contains 'plan'" --limit 20`],
-    ),
-  )
-    .argument(
-      "[query...]",
-      "Google Drive query the files match; trashed = false when omitted. A time without a zone is read in this computer's zone and sent as UTC",
-    )
-    .option("--parent <id>", "only the files directly inside this folder id")
-    .action(async (words: string[], args) => {
-      const typed = words.length ? words.join(" ") : "trashed = false"
-      const { query, timezone } = utcDriveQuery(typed)
-      return output({
-        ...pageOf(
-          "files list",
-          await call("drive.files.list", {
-            q: args.parent ? `'${fileId(args.parent)}' in parents and (${query})` : query,
-            pageSize: args.limit,
-            ...(args.cursor ? { pageToken: args.cursor } : {}),
-            supportsAllDrives: true,
-            includeItemsFromAllDrives: true,
-            fields: "nextPageToken,incompleteSearch,files(*)",
-          }),
-          "files",
-          args.limit,
-          { query: typed, parent: args.parent },
+  bindQuery(
+    page(
+      examples(
+        annotate(files.command("list"), { effects: GOOGLE_READ }).description(
+          "list files in Google Drive, one page at a time",
         ),
-        ...(timezone ? { meta: { timezone } } : {}),
-      })
+        ["drive personal files list --parent FOLDER_ID", `drive personal files list 'name:"Example plan"' --limit 20`],
+      ),
+    ),
+    FILES_QUERY,
+    fileRow,
+  )
+    .option("--parent <id>", "only the files directly inside this folder id")
+    .option("--timezone <zone>", "zone for query dates without an offset")
+    .action(async (words: string[], args) => {
+      const { query, timezone } = driveFileQuery(words, args.timezone)
+      const typed = typedQuery(words)
+      const found = pageOf(
+        "files list",
+        await call("drive.files.list", {
+          q: args.parent ? `'${fileId(args.parent)}' in parents and (${query})` : query,
+          pageSize: args.limit,
+          ...(args.cursor ? { pageToken: args.cursor } : {}),
+          supportsAllDrives: true,
+          includeItemsFromAllDrives: true,
+          fields: "nextPageToken,incompleteSearch,files(*)",
+        }),
+        "files",
+        args.limit,
+        { query: typed, parent: args.parent, timezone: args.timezone },
+      )
+      return output({ ...found, items: found.items.map(snakeKeys), meta: { timezone } })
     })
   examples(
     annotate(files.command("get"), { effects: GOOGLE_READ })
@@ -422,15 +425,22 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         })
       }
     }
-    page(
-      examples(
-        annotate(group.command("list"), { effects: GOOGLE_READ })
-          .description(`list a file's ${resource}`)
-          .argument("<file>", fileArgument),
-        [`drive personal ${resource} list FILE_ID`],
+    const rowSchema = v.looseObject({ id: v.optional(v.string()) })
+    const query = unfilteredQuery(`drive_remote_${one}`, rowSchema)
+    bindQuery(
+      page(
+        examples(
+          annotate(group.command("list"), { effects: GOOGLE_READ })
+            .description(`list a file's ${resource}`)
+            .argument("<file>", fileArgument),
+          [`drive personal ${resource} list FILE_ID`],
+        ),
       ),
-    ).action(async (id: string, args) =>
-      output(
+      query,
+      rowSchema,
+    ).action(async (id: string, words: string[], args) => {
+      queryTerms(words, query, `${resource} list`)
+      return output(
         pageOf(
           `${resource} list`,
           await call(`drive.${resource}.list`, {
@@ -444,8 +454,8 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           args.limit,
           { file: id },
         ),
-      ),
-    )
+      )
+    })
     examples(
       annotate(group.command("get"), { effects: GOOGLE_READ })
         .description(`show one ${one} of a file`)
