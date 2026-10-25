@@ -11,6 +11,10 @@
 
 - Lists declare schema-derived native queries for configured folders, mirrors, profiles, document tags, notes, relationships, contributors and remote files. Provider lists without predicates advertise their fields and reject filters before requests.
 
+### Fixed
+
+- **A renamed command names its replacement.** `drive personal models text download` now answers "`drive models text download` is not here — use `models download`" instead of "unknown command 'text'", as tg, max and zm do.
+
 ## 0.30.0 — 25.10.2026
 
 ### Removed

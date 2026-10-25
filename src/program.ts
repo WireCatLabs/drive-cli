@@ -27,6 +27,7 @@ import {
   itemOf,
   liftJson,
   liftProfile,
+  movedCommandError,
   overrideSharedContract,
   parseDuration,
   provide,
@@ -520,6 +521,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       )
     profileWord = lifted.profile ? profileName(lifted.profile) : undefined
     const rest = lifted.rest
+    const moved = movedCommandError(program, rest)
+    if (moved) throw moved
     try {
       const running = parse([...prefix, ...rest], settings)
       return deadline ? await deadline.race(async () => running) : await running

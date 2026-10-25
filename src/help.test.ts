@@ -84,9 +84,10 @@ describe("help without a profile or an account", () => {
     })
   })
 
-  it("refuses the retired models text download spelling", async () => {
+  it("refuses the retired models text download spelling and names the new one", async () => {
     await expect(run(["models", "text", "download", "e5-small"])).rejects.toMatchObject({
-      code: "commander.unknownCommand",
+      code: "validation_error",
+      message: "`drive models text download` is not here — use `models download`",
     })
   })
 })
