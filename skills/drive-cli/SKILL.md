@@ -1,6 +1,14 @@
 ---
 name: drive-cli
 description: Search and read the owner's chosen Google Drive folders offline through drive — Docs, Sheets, PDF and docx as local text, with tags, notes, memories and editors. Use when a question needs what a Drive document says, who changed it, or to note or tag one; not for files outside the imported folders or for editing documents unless asked.
+metadata:
+  openclaw:
+    requires:
+      bins: [drive]
+    install:
+      - kind: node
+        package: "@wirecat/drive-cli"
+        bins: [drive]
 ---
 
 # drive
