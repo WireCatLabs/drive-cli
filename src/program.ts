@@ -25,6 +25,7 @@ import {
   environmentOf,
   hasSharedContract,
   itemOf,
+  LOCAL_READ,
   liftJson,
   liftProfile,
   overrideSharedContract,
@@ -32,6 +33,7 @@ import {
   provide,
   refuseCommandName,
   renderAnswer,
+  runsCommand,
 } from "@wirecat/cli-core/cli"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import { Command, Help } from "commander"
@@ -64,6 +66,7 @@ import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
   checkPolicy,
+  DRIVE_APP,
   discoveryAvailability,
   guardedGoogleWrite,
   methodPolicyKeys,
@@ -75,6 +78,7 @@ import {
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
 import { ACCOUNT_FREE_COMMANDS, describeDriveProgram } from "./registry.js"
+import { runRecording } from "./run-recording.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
 import { localTimes } from "./time.js"
@@ -381,6 +385,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installSkillCommand(program, context)
   installDoctorCommand(program, context)
   installUpgradeCommand(program, context)
+  program.addCommand(
+    overrideSharedContract(
+      runsCommand(DRIVE_APP),
+      "Every drive command declares its effects, groups included; the shared runs group reads only local files.",
+      (runs) => {
+        annotate(runs, { effects: LOCAL_READ })
+      },
+    ),
+  )
   provide(program, {
     env,
     streams,
@@ -418,6 +431,22 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       )
     else annotate(command, metadata)
   }
+  const recording = runRecording(program, {
+    env,
+    streams,
+    agent: options.mcp === true,
+    profile: () => {
+      try {
+        return selected()
+      } catch {
+        return undefined
+      }
+    },
+    settings: () => {
+      const defaults = readConfig(env).defaults
+      return { record: defaults?.record, keepRunsForDays: defaults?.keep_runs_for_days }
+    },
+  })
   const pathOf = (command: Command) => {
     const path: string[] = []
     for (let at: Command | null = command; at?.parent; at = at.parent) path.unshift(at.name())
@@ -528,6 +557,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       deadline?.dispose()
     }
   }
+  recording.wrap()
   // Imported generated children have their own Commander exit/output configuration.
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program

@@ -7,6 +7,7 @@ larger import or changing permissions. Keep the error code and profile name for 
 | Symptom | What to do |
 | --- | --- |
 | Not sure what is set up | Run `drive doctor`: version, whether the settings file reads, the profiles here and the paths. It needs no profile and reads no keyring or store. |
+| A command failed earlier and you need what it did | Run `drive runs list status:failed`, then `drive runs show <run-id>`: the Google calls it made, their status and timing, and its error code. No profile is needed; document names, ids and text are never kept. |
 | `drive` is not found | Reopen the terminal/agent; check the npm global executable directory is on PATH and repeat [installation](installation.md). |
 | Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
 | `google-api.disabled` | The OAuth project's owner must enable the requested API; see [API setup](#google-api-is-disabled). Reconnecting or granting write access does not enable it. |

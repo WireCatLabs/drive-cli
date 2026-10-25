@@ -18,6 +18,7 @@ import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
+import { providerEvent } from "./run-recording.js"
 
 export const READ_SCOPE = "https://www.googleapis.com/auth/drive.readonly"
 export const WRITE_SCOPE = "https://www.googleapis.com/auth/drive"
@@ -169,7 +170,7 @@ export const authorizedClient = (
   }
   const { refresh_token: _refresh, ...current } = session.tokens
   client.setCredentials(current)
-  return client
+  return observeRequests(client)
 }
 export const covers = (granted: readonly string[], required: string): boolean =>
   granted.includes(required) || (required === READ_SCOPE && granted.includes(WRITE_SCOPE))
@@ -201,4 +202,65 @@ export const checkAuthorization = async (client: OAuth2Client, required = READ_S
   } catch (error) {
     throw googleError(error)
   }
+}
+
+const WORD = /^[a-z][a-z_]{0,23}$/
+// Google's custom methods (`:batchUpdate`, `:export`) are fixed names from the API, never the caller's words.
+const VERB = /^[a-z][A-Za-z]{0,31}$/
+const segment = (part: string): string => {
+  if (/^v\d+$/.test(part) || WORD.test(part)) return part
+  const verb = part.split(":")[1]
+  return verb !== undefined && VERB.test(verb) ? `:id:${verb}` : ":id"
+}
+
+/** `GET /drive/v3/files/:id`: host, query, ids and names dropped, so a run log never holds what was asked for. */
+export const operationOf = (method: string | undefined, url: string | URL | undefined): string => {
+  let path = ""
+  try {
+    path = new URL(String(url ?? "")).pathname
+  } catch {}
+  const template = path
+    .split("/")
+    .filter(Boolean)
+    .map((part) => segment(decodeURIComponent(part)))
+    .join("/")
+  return `${(method ?? "GET").toUpperCase()} /${template}`
+}
+
+/** Every Google call a signed-in client makes goes through its transporter, the SDK's and our own alike. */
+export const observeRequests = (client: OAuth2Client): OAuth2Client => {
+  const transporter = client.transporter
+  const request = transporter.request.bind(transporter)
+  transporter.request = (async (options: { method?: string; url?: string | URL }) => {
+    const operation = operationOf(options.method, options.url)
+    const started = performance.now()
+    const durationMs = () => Math.round(performance.now() - started)
+    providerEvent({ event: "request", operation })
+    try {
+      const response = await request(options as Parameters<typeof request>[0])
+      const failed = response.status >= 400
+      providerEvent({
+        event: "response",
+        operation,
+        status: response.status,
+        durationMs: durationMs(),
+        outcome: failed ? "error" : "ok",
+        ...(failed ? { errorCode: "provider_error" } : {}),
+      })
+      return response
+    } catch (error) {
+      const { status, response } = (error ?? {}) as { status?: number; response?: { status?: number } }
+      const code = status ?? response?.status
+      providerEvent({
+        event: "response",
+        operation,
+        ...(typeof code === "number" ? { status: code } : {}),
+        durationMs: durationMs(),
+        outcome: "error",
+        errorCode: googleError(error).code,
+      })
+      throw error
+    }
+  }) as typeof transporter.request
+  return client
 }

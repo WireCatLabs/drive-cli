@@ -13,7 +13,13 @@ const Common = {
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
   max_text_chars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
 }
-export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search"])
+/** Whether and how long runs are kept: one choice for the whole tool, since a failure may come before a profile. */
+const RunSettings = {
+  record: v.optional(v.boolean()),
+  keep_runs_for_days: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
+}
+export const DEFAULTS_ONLY = new Set(Object.keys(RunSettings))
+export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])
 const snakeSetting = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase()
 export const configKey = (key: string) => {
   const [head = "", ...parts] = key.split(".")
@@ -36,7 +42,7 @@ const Profile = v.strictObject({
 })
 export const ConfigSchema = v.strictObject({
   profiles: v.record(v.string(), Profile),
-  defaults: v.optional(v.strictObject(Common)),
+  defaults: v.optional(v.strictObject({ ...Common, ...RunSettings })),
   default_profile: v.optional(v.string()),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
