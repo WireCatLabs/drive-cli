@@ -52,10 +52,10 @@ Show the saved change; do not change Google files.
 For manual use:
 
 ```sh
-drive personal config show --json
+drive config show --json
 drive personal config set permissions.files '"readonly"'
 drive personal config set permissions.documents '"readonly"'
-drive personal config show --json
+drive config show --json
 ```
 
 These permissions restrict the live file/Doc command families. Local sync and local notes use
@@ -68,7 +68,7 @@ you want to import or tag documents. Inspect the [command reference](commands.md
 ```sh
 drive personal config set permissions.files '"readonly"' --defaults
 drive work config set permissions.files '"deny"'
-drive personal config show --json
+drive config show --json
 ```
 
 The first line changes the shared default; the second overrides it for `work`.
@@ -168,7 +168,7 @@ Configure extraction once, then preview the result before saving memories:
 ```sh
 drive personal config set models.memories.provider '"openai"'
 drive personal config set models.memories.model '"YOUR_MODEL_ID"'
-drive personal config show --json
+drive config show --json
 ```
 
 Replace `YOUR_MODEL_ID` with the provider's identifier. Supply its key through the environment;
