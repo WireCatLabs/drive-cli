@@ -4,6 +4,18 @@ Use a mirror when you keep Markdown or tabular files locally and want colleagues
 in Google Docs or Sheets. A sync sends local changes and brings supported Google edits back.
 It reports conflicts before choosing between competing edits.
 
+## When a Markdown file in Drive is enough
+
+Google Docs now opens `.md` files directly: people read, edit and comment on them in Docs, and the file
+stays Markdown. Put the file in Drive with `drive personal files upload` or Google's desktop app, and
+`drive personal sync` reads it like any other document. No mirror is needed when people do the editing.
+
+Use a mirror when a program, or you from a local editor, keeps changing a document while people
+edit it in Google too. Google lets programs change a Markdown file only by replacing all of it, while a
+mirror's Google Doc takes small edits next to theirs. A mirror also turns a CSV file into a Sheet.
+[The test behind this](https://github.com/WireCatLabs/cli-testing/tree/main/performance/documents/native-markdown)
+lists what was and was not checked.
+
 ## Connect a folder
 
 Sign in to the profile with the Google write grant, then choose a local folder and its destination:
