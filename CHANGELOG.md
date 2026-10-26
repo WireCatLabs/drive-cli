@@ -1,11 +1,5 @@
 # Changelog
 
-## Unreleased
-
-### Changed
-
-- Runtime dependencies on their latest releases: `@googleapis/drive` 27.0.0, `@googleapis/docs` 14.1.1, `google-auth-library` 11.3.1 and `unpdf` 1.9.1 (PDF text reading).
-
 ## 0.39.0 — 26.10.2026
 
 ### Changed — may break callers
