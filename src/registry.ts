@@ -57,10 +57,14 @@ export const examples = (command: Command, lines: string[]): Command => annotate
 /** The major version of the JSON drive's commands print; raise it when a field is removed or renamed. */
 export const CONTRACT = 4
 
+/** A group is free of a profile when every command under it is: `drive runs`, `drive store`. */
+const isProfileFree = (info: CommandInfo): boolean =>
+  PROFILE_FREE_COMMANDS.has(info.path.join(" ")) || (info.commands.length > 0 && info.commands.every(isProfileFree))
+
 /** Marks drive's housekeeping commands so help shows them without a profile word. */
 export const markProfileFree = (program: Command) => {
   for (const info of flatten(describeProgram(program))) {
-    if (!PROFILE_FREE_COMMANDS.has(info.path.join(" "))) continue
+    if (!isProfileFree(info)) continue
     let command = program
     for (const word of info.path) command = command.commands.find((one) => one.name() === word) ?? command
     profileFree(command)
@@ -71,9 +75,7 @@ export const markProfileFree = (program: Command) => {
 export const describeDriveProgram = (program: Command): CommandInfo[] => {
   const scoped = (info: CommandInfo): CommandInfo => ({
     ...info,
-    usage: PROFILE_FREE_COMMANDS.has(info.path.join(" "))
-      ? info.usage
-      : info.usage.replace(/^drive /, "drive <profile> "),
+    usage: isProfileFree(info) ? info.usage : info.usage.replace(/^drive /, "drive <profile> "),
     commands: info.commands.map(scoped),
   })
   return describeProgram(program).map(scoped)
