@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.39.0 — 26.10.2026
+
+### Changed — may break callers
+
+- **cli-core 0.435.0 moves the shared store to version 34**, which keeps an index for search by meaning (sqlite-vec, shipped in `@wirecat/cli-core-sqlite` 1.1.0). Once drive, or any WireCat CLI on cli-core 0.434.0 or later, has opened the store, drive 0.38 and older refuse it and ask to be upgraded, so upgrade every WireCat CLI together.
+- **`drive upgrade`'s help shows only `drive upgrade --check` as its example.** Copied and run, the bare `drive upgrade` example upgraded drive.
+
 ## 0.38.0 — 25.10.2026
 
 ### Changed — may break callers
