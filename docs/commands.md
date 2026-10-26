@@ -4399,7 +4399,7 @@ drive skill show [options]
 
 ### `drive skill install`
 
-write SKILL.md to \~/.claude/skills/drive-cli/ (Claude Code) and \~/.agents/skills/drive-cli/ (Codex, Gemini CLI)
+write SKILL.md to \~/.claude/skills/drive-cli/ (Claude Code) and \~/.agents/skills/drive-cli/ (Codex, Gemini CLI, OpenClaw); --for hermes also has Hermes read \~/.agents/skills, which changes Hermes's own settings, so all leaves it out
 
 This command changes local state.
 
@@ -4409,7 +4409,7 @@ drive skill install [options]
 
 | Option | What it does |
 |---|---|
-| `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `all`. Default: `all`. |
+| `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `hermes`, `all`. Default: `all`. |
 
 **Returns:** put SKILL.md where Claude Code, Codex and Gemini CLI look
 
@@ -4417,7 +4417,7 @@ drive skill install [options]
 
 ### `drive skill status`
 
-for each place `drive skill install` writes to: the path, the version installed there, and whether it is current, stale, missing or unversioned
+for each place `drive skill install` writes to, and for the copy Hermes reads: the path, the version installed there, and whether it is current, stale, missing or unversioned
 
 ```sh
 drive skill status
