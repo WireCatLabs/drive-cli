@@ -536,6 +536,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   program.parseAsync = async (argv = process.argv, settings) => {
     const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
     const args = settings?.from === "user" ? argv : argv.slice(2)
+    // recordRuns reads the typed words from the environment, which only cli-core's run() fills.
+    provide(program, { ...environmentOf(program), argv: args })
     const valued = new Set(
       program.options
         .filter((option) => option.required)
@@ -566,12 +568,15 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   recordRuns(program, {
     app: DRIVE_APP,
-    content: "document content",
     agent: options.mcp === true,
     profile: selected,
     settings: () => {
       const defaults = readConfig(env).defaults
-      return { record: defaults?.record, keepRunsForDays: defaults?.keep_runs_for_days }
+      return {
+        record: defaults?.record,
+        keepRunsForDays: defaults?.keep_runs_for_days,
+        recordInput: defaults?.record_input,
+      }
     },
     env,
     streams,
