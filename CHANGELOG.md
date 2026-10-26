@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Search by meaning runs 2–3× faster on Linux and Apple-silicon Macs (cli-core 0.448.0).** After the next
+  `drive models download`, the text and reranking models run on the native ONNX Runtime; where it is not
+  installed, they still run on WebAssembly.
+
 ## 0.41.0 — 26.10.2026
 
 ### Security
