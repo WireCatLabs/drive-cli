@@ -7,15 +7,15 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**240 ✅ · 951 ⛔ · 0 ❌** — 198 commands, 993 options.
+**242 ✅ · 949 ⛔ · 0 ❌** — 198 commands, 993 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
-| `session start` |  | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
-| `session start` | `--client-file` | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
-| `session start` | `--credential-storage` | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
-| `session start` | `--no-browser` | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
-| `session start` | `--grant` | ⛔ | signs in through Google's consent page in a browser and stores the token in the OS keyring |
+| `session start` |  | ✅ |  |
+| `session start` | `--client-file` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
+| `session start` | `--credential-storage` | ✅ |  |
+| `session start` | `--no-browser` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
+| `session start` | `--grant` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
 | `session list` |  | ✅ |  |
 | `session end` |  | ⛔ | revokes the stored Google token and removes it from the OS keyring |
 | `folders add` |  | ✅ |  |

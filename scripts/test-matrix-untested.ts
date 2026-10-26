@@ -17,10 +17,13 @@ const generatedOptions = [
 export const UNTESTED: { command: string; option?: string; reason: string }[] = [
   { command: "api *", reason: GENERATED },
   ...generatedOptions.map((option) => ({ command: "api *", option, reason: GENERATED })),
-  {
+  ...["--client-file", "--no-browser", "--grant"].map((option) => ({
     command: "session start",
-    reason: "signs in through Google's consent page in a browser and stores the token in the OS keyring",
-  },
+    option,
+    reason:
+      "a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it " +
+      "only to a declined consent",
+  })),
   { command: "session end", reason: "revokes the stored Google token and removes it from the OS keyring" },
   {
     command: "sync",
