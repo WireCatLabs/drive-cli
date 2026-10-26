@@ -73,6 +73,33 @@ describe("run records", () => {
     expect(runsOf(env)).toHaveLength(1)
   })
 
+  const typed = ["default", "search", "documents", "Kai Sample +34612345678", "--api-key", "fake-key-123", "--nonsense"]
+  const argvOf = (env: NodeJS.ProcessEnv): string[] => {
+    const [run] = runsOf(env)
+    return JSON.parse(readFileSync(join(run as string, "run.json"), "utf8")).argv
+  }
+
+  it("keeps the command as typed, with a secret and a phone number hidden", async () => {
+    const { env } = fixture()
+    await drive(env, typed)
+    const argv = argvOf(env)
+    expect(argv).toContain("--nonsense")
+    expect(argv.join(" ")).toContain("Kai Sample")
+    expect(argv.join(" ")).not.toContain("612345678")
+    expect(argv.join(" ")).not.toContain("fake-key-123")
+  })
+
+  it("leaves the typed words out under record_input false", async () => {
+    const { env } = fixture()
+    const { failure } = await drive(env, ["default", "config", "set", "record_input", "false", "--defaults", "--json"])
+    expect(failure).toBeUndefined()
+    await drive(env, typed)
+    const argv = argvOf(env)
+    expect(argv).toContain("search")
+    expect(argv.join(" ")).not.toContain("Kai Sample")
+    expect(argv.join(" ")).not.toContain("fake-key-123")
+  })
+
   it("refuses record for one profile: it is one choice for the whole tool", async () => {
     const { env } = fixture()
     const { failure } = await drive(env, ["default", "config", "set", "record", "true", "--json"])
@@ -165,7 +192,6 @@ describe("Google request events", () => {
     })
     recordRuns(program, {
       app: DRIVE_APP,
-      content: "document content",
       settings: () => ({}),
       env,
       streams: captureStreams(),

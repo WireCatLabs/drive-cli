@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **A run keeps the command as typed (cli-core 0.440.0).** `drive runs show` and `run.json` now carry `argv`, the
+  words after `drive`, so the owner can read back what was run: a search, a file's name. A secret is still
+  `[redacted]` (an option named for a token, password or API key, a password in a URL, a long opaque string), and so is
+  a phone number. `drive config set record_input false --defaults` writes every value that may be content as
+  `[redacted]`. `--record` help says so; it read "ids and timings, never document content".
+
 ## 0.40.0 — 26.10.2026
 
 ### Added
