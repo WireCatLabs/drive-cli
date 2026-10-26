@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive <profile> session start --json` also gives the Google sign-in page as one `open_url` line on stderr
+  (cli-core 0.443.0)**, before the plain `Open Google sign-in:` line, so WireCat Desktop can show it as a button.
+
 ### Changed — may break callers
 
 - **A run keeps the command as typed (cli-core 0.440.0).** `drive runs show` and `run.json` now carry `argv`, the

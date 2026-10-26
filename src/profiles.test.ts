@@ -147,4 +147,28 @@ describe("explicit account selection", () => {
     ).rejects.toMatchObject({ code: "validation_error" })
     expect(openBrowser).not.toHaveBeenCalled()
   })
+  it("with --json, gives the sign-in page as one open_url line before the plain one", async () => {
+    const f = fixture()
+    const streams = captureStreams()
+    const openBrowser = vi.fn(async (url: string) => {
+      const back = new URL(new URL(url).searchParams.get("redirect_uri") ?? "")
+      back.search = new URLSearchParams({
+        error: "access_denied",
+        state: new URL(url).searchParams.get("state") ?? "",
+      }).toString()
+      await fetch(back).catch(() => {})
+    })
+    await expect(
+      createProgram({ env: f.env, openBrowser, streams }).parseAsync(
+        ["default", "session", "start", "--json", "--credential-storage", "file"],
+        {
+          from: "user",
+        },
+      ),
+    ).rejects.toMatchObject({ details: { reason: "sign-in.declined" } })
+    const lines = streams.stderr.flatMap((text) => text.split("\n")).filter(Boolean)
+    const event = JSON.parse(lines[0] ?? "{}")
+    expect(event).toMatchObject({ event: "open_url", url: expect.stringMatching(/^https:\/\/accounts\.google\.com\//) })
+    expect(lines[1]).toBe(`Open Google sign-in: ${event.url}`)
+  })
 })
