@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "dev.wirecat/drive-cli",
+  "title": "WireCat Google Drive",
+  "description": "Google Drive and Docs for agents: search, read and write a local copy. Sign in with drive first.",
+  "websiteUrl": "https://wirecat.dev/en/docs/drive",
+  "repository": {
+    "url": "https://github.com/WireCatLabs/drive-cli",
+    "source": "github"
+  },
+  "version": "0.41.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@wirecat/drive-cli",
+      "version": "0.41.1",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "profile",
+          "description": "The drive profile you signed in with",
+          "isRequired": true
+        },
+        {
+          "type": "positional",
+          "value": "mcp"
+        }
+      ]
+    }
+  ]
+}
