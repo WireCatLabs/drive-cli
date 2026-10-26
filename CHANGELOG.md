@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Security
+
+- **A run record hides a secret by what it looks like, not only by the option's name (cli-core 0.446.0).** A token in
+  a known format (GitHub, OpenAI, Anthropic, Slack, AWS, Google, Stripe, npm, Telegram, a JWT, a private key), a
+  `Bearer` credential, the value after `password=`, `pin 1234` or another secret name, and a random-looking string are
+  `[redacted]` inside the word, with the words around it kept: `drive work search documents "Kai password=tulip42"`
+  keeps `Kai password=[redacted]`. A config that will not load now hides every typed value, as `record_input` false
+  does.
+
 ### Added
 
 - **`drive <profile> session start --json` also gives the Google sign-in page as one `open_url` line on stderr
