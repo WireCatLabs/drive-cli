@@ -4,6 +4,10 @@ const GENERATED =
   "generated from Google's discovery documents; src/alignment.test.ts checks every operation's flags against them " +
   "and `api call` drives the shared executor"
 
+const MCP_SERVER =
+  "starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake " +
+  "system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server"
+
 type Node = { name(): string; commands: readonly Node[]; options: readonly { long?: string }[] }
 const api = (createProgram() as unknown as Node).commands.find((command) => command.name() === "api")
 const generatedOptions = [
@@ -25,6 +29,12 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
       "only to a declined consent",
   })),
   { command: "session end", reason: "revokes the stored Google token and removes it from the OS keyring" },
+  ...[undefined, "--port", "--public-url", "--permission"].map((option) => ({
+    command: "mcp server start",
+    ...(option ? { option } : {}),
+    reason: MCP_SERVER,
+  })),
+  { command: "mcp server stop", reason: MCP_SERVER },
   {
     command: "sync",
     option: "--embed",

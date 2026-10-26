@@ -1,12 +1,13 @@
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
-import { itemOf, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/cli"
+import { itemOf, mcpServerCommand, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { allOf } from "../output.js"
 import { DRIVE_APP } from "../policy.js"
 import { portOf, publicUrlOf } from "../public-url.js"
 import { examples } from "../registry.js"
+import { httpTokenFile } from "../state.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
 
 const DEFAULT_PORT = 8765
@@ -34,8 +35,23 @@ const installMcpCommandDefinition = (
     .option("--port <port>", `the local port for --http (default ${DEFAULT_PORT})`)
     .option("--public-url <url>", "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net")
     .option("--revoke", "forget every login given to a browser app; each must log in again")
+    .addCommand(
+      mcpServerCommand({
+        example: "drive personal",
+        target: () => ({
+          invocation: `drive ${selected()}`,
+          profile: selected(),
+          envPrefix: DRIVE_APP.envPrefix,
+          env,
+          tokenFile: httpTokenFile(env, selected()),
+          argv: [selected(), "mcp", "--http"],
+          version: DRIVE_APP.version,
+        }),
+        answer: (_self, item) => output(itemOf(item)),
+      }),
+    )
     .action(async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string; revoke?: boolean }) => {
-      const { httpTokenFile, mcpTools, serveMcp, serveMcpOverHttp } = await import("../mcp.js")
+      const { mcpTools, serveMcp, serveMcpOverHttp } = await import("../mcp.js")
       if (args.revoke) {
         const { revokeAll } = await import("@wirecat/cli-core/mcp")
         revokeAll(httpTokenFile(env, selected()))

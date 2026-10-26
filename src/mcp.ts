@@ -8,6 +8,7 @@ import { writes } from "@wirecat/cli-base/standards"
 import { changesAuthorityAt } from "@wirecat/cli-core/cli"
 import {
   type CommandAvailability,
+  httpLockFile,
   MCP_PATH,
   type McpCommand,
   registerCommands,
@@ -22,7 +23,7 @@ import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { DRIVE_APP, discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
-import { profileDir } from "./state.js"
+import { httpTokenFile } from "./state.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
@@ -354,8 +355,7 @@ export const serveMcp = async (
 }
 
 /** Where `mcp --http` keeps the hashes of the logins it gave out, per profile. */
-export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>
-  join(profileDir(env, profile), "mcp-http.json")
+export { httpTokenFile } from "./state.js"
 
 export interface HttpServing {
   publicUrl: URL
@@ -376,10 +376,15 @@ export const serveMcpOverHttp = async (
     publicUrl,
     port,
     tokenFile: httpTokenFile(env, profile),
+    lockFile: httpLockFile(httpTokenFile(env, profile)),
+    version: DRIVE_APP.version,
     appName: "drive",
+    // Started by `mcp server start`, its log is a file: the code goes only to the lock that status reads.
     onCode: (code, expires) =>
       note(
-        `login code for a new browser app: ${code} (until ${expires.toTimeString().slice(0, 5)}; a new one after each login)`,
+        env[`${DRIVE_APP.envPrefix}_MCP_HTTP`] === undefined
+          ? `login code for a new browser app: ${code} (until ${expires.toTimeString().slice(0, 5)}; a new one after each login)`
+          : `a new login code for a browser app: \`drive ${profile} mcp server status\``,
       ),
     onError: (error) => note(`mcp: ${error.message}`),
   }).catch((error: unknown) => {

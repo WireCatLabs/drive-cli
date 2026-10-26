@@ -146,14 +146,6 @@ export const SHELL_OVERRIDES: Readonly<{
     },
     {
       command: ["mcp"],
-      field: "runnable",
-      before: true,
-      after: null,
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
-    },
-    {
-      command: ["mcp"],
       field: "options",
       before: [
         {
@@ -228,8 +220,8 @@ export const SHELL_OVERRIDES: Readonly<{
     {
       command: ["mcp"],
       field: "children",
-      before: ["config", "add", "check"],
-      after: [],
+      before: ["server", "config", "add", "check"],
+      after: ["server"],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
