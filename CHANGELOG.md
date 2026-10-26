@@ -6,6 +6,12 @@
 
 - **`drive <profile> session start --json` also gives the Google sign-in page as one `open_url` line on stderr
   (cli-core 0.443.0)**, before the plain `Open Google sign-in:` line, so WireCat Desktop can show it as a button.
+- **`drive <profile> mcp server start|stop|status` runs the HTTP MCP server in the background (cli-core 0.446.0).**
+  `start` takes `--public-url`, `--port` and `--permission` and answers once it listens; `status --json` gives the
+  port, the connector address, the current login code with when it runs out, and the apps logged in, each by the
+  name it gave itself; `stop` ends only a server `start` started. `mcp --http` now keeps a lock beside the profile's
+  token file, so a second server for the profile is refused, and its login code renews when it runs out. WireCat
+  Desktop uses these.
 
 ### Changed — may break callers
 

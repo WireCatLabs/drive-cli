@@ -106,6 +106,19 @@ A temporary Quick Tunnel (`cloudflared tunnel --url …`) does not work:
 [Quick Tunnels do not support SSE](https://developers.cloudflare.com/tunnel/get-started/quick-tunnels/),
 the way the HTTP MCP server streams answers.
 
+To keep the server running after its window closes, start it in the background instead. It answers once it listens,
+with the connector address and the login code:
+
+```sh
+drive personal mcp server start --port 8765 --public-url https://<device>.<network>.ts.net
+drive personal mcp server status   # running, port, connector address, the current login code, apps logged in
+drive personal mcp server stop     # stops only a server that `mcp server start` started
+```
+
+The code is kept beside the profile's token file (`mcp-http.lock`, mode 600) and renews every ten minutes; a server
+started this way does not write it to its log. WireCat Desktop shows the same status under Tools → Google Drive →
+MCP server.
+
 ## Connect the app
 
 The address for the app is your tunnel origin with `/mcp` at the end, for example

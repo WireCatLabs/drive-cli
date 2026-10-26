@@ -4353,9 +4353,55 @@ drive <profile> mcp [options]
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
 | `--revoke` | forget every login given to a browser app; each must log in again. |
 
-**Returns:** serve drive's commands to an agent over MCP: search, then read or write
+### `drive mcp server`
 
-**Example:** `drive personal mcp --tools`, `drive personal mcp`, `drive personal mcp --http --public-url https://laptop.example.ts.net`
+start, stop and check `mcp --http` in the background; status shows the login code for a browser app
+
+#### `drive mcp server start`
+
+start `mcp --http` apart from this shell and answer once it listens, with its login code
+
+This command changes local state.
+
+```sh
+drive <profile> mcp server start [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--port <port>` | the local port (default 8765). |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
+
+**Returns:** start the HTTP MCP server in the background
+
+**Example:** `drive personal mcp server start --public-url https://laptop.example.ts.net`
+
+#### `drive mcp server stop`
+
+stop `mcp --http` — only one that `mcp server start` started
+
+This command changes local state.
+
+```sh
+drive <profile> mcp server stop
+```
+
+**Returns:** stop the background HTTP MCP server
+
+**Example:** `drive personal mcp server stop`
+
+#### `drive mcp server status`
+
+whether `mcp --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
+
+```sh
+drive <profile> mcp server status
+```
+
+**Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
+
+**Example:** `drive personal mcp server status --json`
 
 ## `drive commands`
 

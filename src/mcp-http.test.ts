@@ -126,6 +126,39 @@ describe("drive mcp --http", () => {
     expect(existsSync(httpTokenFile(f.env, "default"))).toBe(true)
   })
 
+  it("shows a running server and its current login code in mcp server status, and frees the lock when it stops", async () => {
+    const f = fixture()
+    const port = await freePort()
+    const stop = new AbortController()
+    const base = new URL(`http://127.0.0.1:${port}`)
+    const { streams, running } = await run(
+      f,
+      ["default", "mcp", "--http", "--public-url", base.href, "--port", String(port)],
+      { signal: stop.signal },
+    )
+    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving on"))
+    const code = /login code for a new browser app: (\S+)/.exec(streams.stderr.join("\n"))?.[1]
+    const status = async () => {
+      const asked = await run(f, ["default", "mcp", "server", "status", "--json"])
+      await asked.running
+      return JSON.parse(asked.streams.stdout.join("")).item
+    }
+    try {
+      expect(await status()).toMatchObject({
+        profile: "default",
+        running: true,
+        by: "hand",
+        port,
+        connector_url: new URL("/mcp", base).href,
+        login_code: { code },
+      })
+    } finally {
+      stop.abort()
+      await running
+    }
+    expect(await status()).toMatchObject({ running: false })
+  })
+
   it("forgets every browser login on --revoke", async () => {
     const f = fixture()
     ensureProfileDir(f.env, "default")

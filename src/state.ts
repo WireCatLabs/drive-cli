@@ -150,3 +150,7 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
     })
   }
 }
+
+/** Where `mcp --http` keeps the hashes of the tokens it issued; its lock and log sit beside it. */
+export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>
+  join(profileDir(env, profile), "mcp-http.json")
