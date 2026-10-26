@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`drive runs --help` shows no profile**, as `drive runs list` already did: every command under `runs` reads the run log without one. A group shows the profile word only when a command under it needs a profile (`drive <profile> store`, for `store import`).
+
 ## 0.39.0 — 26.10.2026
 
 ### Changed — may break callers

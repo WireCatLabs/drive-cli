@@ -30,6 +30,11 @@ describe("help without a profile or an account", () => {
     expect(await run(["--help-all"])).toContain("--max-output-bytes")
   })
 
+  it("shows a group without a profile only when every command in it runs without one", async () => {
+    expect(await run(["runs", "--help"])).toContain("Usage: drive runs [options]")
+    expect(await run(["store", "--help"])).toContain("Usage: drive <profile> store")
+  })
+
   it("reads help as a command, never as a profile", async () => {
     expect(await run(["help", "options"])).toContain("--read-only")
     expect(await run(["help", "documents", "context"])).toContain("Usage: drive <profile> documents context")
