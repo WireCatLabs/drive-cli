@@ -10,6 +10,8 @@
   `drive mcp revoke` still act on the server of every profile. No old spelling is kept: update a client set up with
   `claude mcp add drive -- drive personal mcp` to end in `mcp serve`. `mcp server start` runs `mcp serve --http`,
   and the MCP registry entry (`server.json`) passes `mcp serve`. `mcp revoke` is refused under `--read-only`.
+- **The shared store moves to schema 35 (cli-core 0.463.0).** The first run upgrades it and says so; every other
+  WireCat CLI that uses the same store then needs a version that speaks schema 35 — run `<cli> upgrade` for each.
 
 ### Security
 
