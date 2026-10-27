@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **A Drive file attached to a calendar event is linked to that event (cli-core 0.453.0).** When gcal and drive keep
+  one local store, the event's attachment points to the document drive saved for that file. The two can sync in either
+  order: the link is made when the second one stores its side.
+
 ## 0.43.0 — 27.10.2026
 
 ### Added
