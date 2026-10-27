@@ -37,7 +37,7 @@ describe("command data effects", () => {
     expect(effects("files export")).toEqual({ remote: "read", local: "write" })
     expect(effects("sync")).toEqual({ remote: "read", local: "write" })
     expect(effects("session start")).toEqual({ remote: "write", local: "write" })
-    expect(commands.find((command) => command.path.join(" ") === "mcp")).toMatchObject({
+    expect(commands.find((command) => command.path.join(" ") === "mcp serve")).toMatchObject({
       effects: { remote: "write", local: "write" },
       lifetime: "persistent",
     })

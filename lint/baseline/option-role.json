@@ -1,6 +1,6 @@
 [
   "documents history --activity",
-  "mcp --tools",
+  "mcp serve --tools",
   "memories extract --tab",
   "models set --purpose",
   "session start --client-file",

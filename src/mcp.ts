@@ -356,7 +356,7 @@ export const serveMcp = async (
   }
 }
 
-/** Where `mcp --http` keeps the hashes of the logins it gave out, per profile. */
+/** Where `mcp serve --http` keeps the hashes of the logins it gave out, per profile. */
 export { httpTokenFile } from "./state.js"
 
 export interface HttpServing {
@@ -417,14 +417,14 @@ export interface EveryProfile {
 }
 
 /**
- * `drive mcp` with no profile: one server for every profile, each call run in that profile's own `drive <profile>
- * mcp` (cli-core's all-profiles module). Nothing picks a profile: every tool takes one.
+ * `drive mcp serve` with no profile: one server for every profile, each call run in that profile's own `drive <profile>
+ * mcp serve` (cli-core's all-profiles module). Nothing picks a profile: every tool takes one.
  */
 export const serveEveryProfile = async ({ env, profiles, permissions, note, signal, http }: EveryProfile) => {
   if (profiles().length === 0)
     throw new CliError(
       "configuration_error",
-      "no drive profile here yet; create one with drive personal session start, then run drive mcp again",
+      "no drive profile here yet; create one with drive personal session start, then run drive mcp serve again",
     )
   const { serveAllProfilesOverHttp, serveAllProfilesOverStdio } = await import("@wirecat/cli-core/mcp")
   const script = realpathSync(process.argv[1] ?? "")
@@ -434,7 +434,11 @@ export const serveEveryProfile = async ({ env, profiles, permissions, note, sign
     version: VERSION,
     name: "Google Drive",
     profiles,
-    child: (profile: string) => ({ command: process.execPath, args: [script, profile, "mcp", ...tightened], env }),
+    child: (profile: string) => ({
+      command: process.execPath,
+      args: [script, profile, "mcp", "serve", ...tightened],
+      env,
+    }),
     instructions:
       `Google Drive accounts, one per profile: ${profiles().join(", ")}. Every tool takes "profile": if the owner did ` +
       "not name the account, ask which — never guess. Find a command with drive_tools_search, then run it with " +

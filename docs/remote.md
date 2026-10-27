@@ -8,11 +8,11 @@ you know how to stop it or take its access back.
 
 Terms used on this page:
 
-- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `drive personal mcp`
+- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `drive personal mcp serve`
   is the MCP server that comes with `drive`; [use a local MCP client](recipes.md#use-a-local-mcp-client)
   covers apps on your own computer.
 - **Remote connection** means the app connects from its own servers, over the internet, to the
-  address you give it. `drive personal mcp --http` serves the same tools over HTTP on `127.0.0.1` for this.
+  address you give it. `drive personal mcp serve --http` serves the same tools over HTTP on `127.0.0.1` for this.
 - **HTTPS tunnel** is a program that gives a port on your computer a public HTTPS address.
   This page uses [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel); Cloudflare
   Tunnel also works. You do not need to buy a domain for Funnel.
@@ -22,7 +22,7 @@ Terms used on this page:
   for it, so only a person who sees that terminal can connect an app.
 
 ```text
-ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ drive personal mcp --http (login) ──▶ Google Drive
+ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ drive personal mcp serve --http (login) ──▶ Google Drive
 ```
 
 If your Tailscale connection already works, keep it; you do not need a second tunnel. The local
@@ -31,7 +31,7 @@ stdin/stdout connection keeps working as before.
 ## Before you start
 
 - **Whoever logs in reads your documents.** The login needs the access code from your terminal.
-  Never put a tunnel in front of `drive personal mcp` without `--http`: that mode has no login at all.
+  Never put a tunnel in front of `drive personal mcp serve` without `--http`: that mode has no login at all.
 - **Profile permissions decide what the app may change.** `deny` and `readonly` block writes;
   `ask` and `allow` let a requested MCP write go through without a form on the server. The app's own
   approval is separate and depends on its settings. Google sign-in and file roles stay independent:
@@ -85,11 +85,11 @@ On Windows, in PowerShell run as Administrator:
 Second window, as your normal user, without `sudo` (on Windows, `drive.cmd`):
 
 ```sh
-drive personal mcp --http --port 8765 --public-url https://<device>.<network>.ts.net
+drive personal mcp serve --http --port 8765 --public-url https://<device>.<network>.ts.net
 ```
 
 To run `drive` beside `tg` or `max`, give each server its own local port and public HTTPS port: for
-example, a second Funnel with `--https=8443 8766` and `drive personal mcp --http --port 8766
+example, a second Funnel with `--https=8443 8766` and `drive personal mcp serve --http --port 8766
 --public-url https://<device>.<network>.ts.net:8443`. Funnel supports public ports `443`, `8443` and
 `10000` ([Funnel command reference](https://tailscale.com/docs/reference/tailscale-cli/funnel)).
 
@@ -99,7 +99,7 @@ A [named Cloudflare tunnel](https://developers.cloudflare.com/tunnel/get-started
 hostname such as `mcp.example.com` and local service `http://127.0.0.1:8765` works the same way:
 
 ```sh
-drive personal mcp --http --port 8765 --public-url https://mcp.example.com
+drive personal mcp serve --http --port 8765 --public-url https://mcp.example.com
 ```
 
 A temporary Quick Tunnel (`cloudflared tunnel --url …`) does not work:
@@ -158,7 +158,7 @@ If you started Funnel with `--bg`, Ctrl-C does not stop that background route: c
 To log out every app for a profile:
 
 ```sh
-drive personal mcp --revoke --json
+drive personal mcp revoke --json
 ```
 
 Those apps must log in again with a new code. This does not sign `drive` out of Google.
@@ -169,7 +169,7 @@ Those apps must log in again with a new code. This does not sign `drive` out of 
   `https://<device>.<network>.ts.net/.well-known/oauth-protected-resource/mcp` in a browser. It
   must show a short JSON. If it does not, Funnel is not running, is not enabled in your Tailscale
   network, or points at another port.
-- **The login page says "Too many wrong codes":** restart `drive personal mcp --http`. If you did not
+- **The login page says "Too many wrong codes":** restart `drive personal mcp serve --http`. If you did not
   type them, someone found your address: think about a new device name in Tailscale.
 - **"port 8765 is in use":** another server holds it; pass another `--port` and point the tunnel at it.
 - **Reading works, writing fails:** check the profile's permissions, any `--permission` overrides and
