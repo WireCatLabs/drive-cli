@@ -52,7 +52,7 @@ export const SHELL_OVERRIDES: Readonly<{
       command: ["skill", "install"],
       field: "summary",
       before: "install the tool's instructions for AI agents",
-      after: "put SKILL.md where Claude Code, Codex and Gemini CLI look",
+      after: "put SKILL.md for Claude Code, Codex, Gemini CLI, OpenClaw, and Hermes on request",
       reason: "Drive binds agent installation to its own output renderer and provider skill locations.",
     },
     {

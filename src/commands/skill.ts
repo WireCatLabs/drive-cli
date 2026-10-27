@@ -30,7 +30,7 @@ const installSkillCommandDefinition = (program: Command, { env, streams, output 
   for (const child of skill.commands) {
     if (child.name() === "install")
       annotate(grantsAuthority(child), { effects: LOCAL_WRITE, examples: ["drive skill install --for all"] }).summary(
-        "put SKILL.md where Claude Code, Codex and Gemini CLI look",
+        "put SKILL.md for Claude Code, Codex, Gemini CLI, OpenClaw, and Hermes on request",
       )
     if (child.name() === "show") annotate(child, { examples: ["drive skill show"] }).summary("print drive's SKILL.md")
   }

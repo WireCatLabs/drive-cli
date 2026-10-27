@@ -4457,7 +4457,7 @@ drive skill install [options]
 |---|---|
 | `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `hermes`, `all`. Default: `all`. |
 
-**Returns:** put SKILL.md where Claude Code, Codex and Gemini CLI look
+**Returns:** put SKILL.md for Claude Code, Codex, Gemini CLI, OpenClaw, and Hermes on request
 
 **Example:** `drive skill install --for all`
 
