@@ -226,22 +226,58 @@ export const operationOf = (method: string | undefined, url: string | URL | unde
   return `${(method ?? "GET").toUpperCase()} /${template}`
 }
 
-/** Every Google call a signed-in client makes goes through its transporter, the SDK's and our own alike. */
+/** Google's own key for a refusal, `rateLimitExceeded`, from an answer's parsed body; nothing else is read. */
+const reasonOf = (data: unknown): string | undefined => {
+  const error = (data as { error?: { errors?: { reason?: unknown }[]; status?: unknown } } | null)?.error
+  const reason = error?.errors?.[0]?.reason ?? error?.status
+  return typeof reason === "string" ? reason : undefined
+}
+
+type GaxiosOptions = NonNullable<Parameters<OAuth2Client["transporter"]["request"]>[0]>
+type Adapter = NonNullable<GaxiosOptions["adapter"]>
+
+/**
+ * Every Google call a signed-in client makes goes through its transporter, the SDK's and our own alike. Each attempt
+ * is its own request line: gaxios retries inside one `request`, so the line is written from its per-attempt adapter.
+ */
 export const observeRequests = (client: OAuth2Client): OAuth2Client => {
   const transporter = client.transporter
   const request = transporter.request.bind(transporter)
-  transporter.request = (async (options: { method?: string; url?: string | URL }) => {
-    const answered = providerRequest(operationOf(options.method, options.url))
+  transporter.request = (async (options: GaxiosOptions) => {
+    const method = (options.method ?? "GET").toUpperCase()
+    const operation = operationOf(method, options.url)
+    const call = { method, endpointTemplate: operation.slice(method.length + 1), transport: "http" as const }
+    let ended: number | undefined
+    const adapter: Adapter = async (prepared, next) => {
+      const attempt = (prepared.retryConfig?.currentRetryAttempt ?? 0) + 1
+      const waitMs = ended === undefined ? undefined : Math.round(performance.now() - ended)
+      const answered = providerRequest(operation, undefined, {
+        ...call,
+        attempt,
+        ...(waitMs === undefined ? {} : { waitMs }),
+      })
+      try {
+        const response = await (options.adapter ? options.adapter(prepared, next) : next(prepared))
+        const failed = !(prepared.validateStatus?.(response.status) ?? response.status < 400)
+        const providerError = failed ? reasonOf(response.data) : undefined
+        answered({
+          status: response.status,
+          ...(failed ? { errorCode: "provider_error" } : {}),
+          ...(providerError ? { providerError } : {}),
+        })
+        return response
+      } catch (error) {
+        answered({ error, errorCode: googleError(error).code })
+        throw error
+      } finally {
+        ended = performance.now()
+      }
+    }
     try {
-      const response = await request(options as Parameters<typeof request>[0])
-      answered(
-        response.status >= 400 ? { status: response.status, errorCode: "provider_error" } : { status: response.status },
-      )
-      return response
+      return await request({ ...options, adapter })
     } catch (error) {
-      const { status, response } = (error ?? {}) as { status?: number; response?: { status?: number } }
-      const code = status ?? response?.status
-      answered({ ...(typeof code === "number" ? { status: code } : {}), error, errorCode: googleError(error).code })
+      if (ended === undefined)
+        providerRequest(operation, undefined, { ...call, attempt: 1 })({ error, errorCode: googleError(error).code })
       throw error
     }
   }) as typeof transporter.request
