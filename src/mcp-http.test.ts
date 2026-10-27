@@ -12,7 +12,7 @@ import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 import { httpTokenFile } from "./mcp.js"
 import { createProgram } from "./program.js"
-import { ensureProfileDir, everyProfileTokenFile } from "./state.js"
+import { ensureProfileDir, profileSetTokenFile } from "./state.js"
 import { fixture } from "./testing.js"
 
 const REDIRECT = "http://localhost/callback"
@@ -85,6 +85,12 @@ const run = async (f: ReturnType<typeof fixture>, argv: string[], options: { sig
   return { streams, call, running }
 }
 
+const addWork = (f: ReturnType<typeof fixture>) => {
+  const config = readConfig(f.env)
+  const { default: profile } = config.profiles
+  if (profile) writeConfig(f.env, { ...config, profiles: { ...config.profiles, work: profile } })
+}
+
 describe("drive mcp serve --http", () => {
   it("serves the guarded commands behind the owner login, with saved and per-server permissions", async () => {
     const f = fixture()
@@ -113,7 +119,7 @@ describe("drive mcp serve --http", () => {
       ],
       { signal: stop.signal },
     )
-    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving on"))
+    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving profile default on"))
     const code = () => /login code for a new browser app: (\S+)/.exec(streams.stderr.join("\n"))?.[1] ?? ""
     const client = await loggedInClient(base, code)
     try {
@@ -148,7 +154,7 @@ describe("drive mcp serve --http", () => {
       ["default", "mcp", "serve", "--http", "--public-url", base.href, "--port", String(port)],
       { signal: stop.signal },
     )
-    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving on"))
+    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving profile default on"))
     const code = /login code for a new browser app: (\S+)/.exec(streams.stderr.join("\n"))?.[1]
     const status = async () => {
       const asked = await run(f, ["default", "mcp", "server", "status", "--json"])
@@ -181,35 +187,78 @@ describe("drive mcp serve --http", () => {
     expect(existsSync(httpTokenFile(f.env, "default"))).toBe(false)
   })
 
-  it("forgets every browser login of the server of every profile on drive mcp revoke", async () => {
+  it("forgets the logins of the server of every profile on drive mcp revoke --profiles all", async () => {
     const f = fixture()
-    mkdirSync(dirname(everyProfileTokenFile(f.env)), { recursive: true })
-    writeFileSync(everyProfileTokenFile(f.env), "{}")
-    const { streams, running } = await run(f, ["mcp", "revoke", "--json"])
+    mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
+    writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
+    const { streams, running } = await run(f, ["mcp", "revoke", "--profiles", "all", "--json"])
     await running
-    expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ item: { revoked: true, profile: null } })
-    expect(existsSync(everyProfileTokenFile(f.env))).toBe(false)
+    expect(JSON.parse(streams.stdout.join(""))).toMatchObject({
+      item: { revoked: true, profile: null, profiles: "all" },
+    })
+    expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(false)
+  })
+
+  it("keeps a list's login apart from every profile's", async () => {
+    const f = fixture()
+    addWork(f)
+    mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
+    writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
+    writeFileSync(profileSetTokenFile(f.env, "default,work"), "{}")
+    const { streams, running } = await run(f, ["mcp", "revoke", "--profiles", "work,default", "--json"])
+    await running
+    expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ item: { profiles: "default,work" } })
+    expect(existsSync(profileSetTokenFile(f.env, "default,work"))).toBe(false)
+    expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(true)
+  })
+
+  it.each([
+    [["mcp", "serve"], "validation_error", /name the profiles to serve: .*profiles here: default, work/],
+    [["default", "mcp", "serve", "--profiles", "work"], "validation_error", /not both/],
+    [["mcp", "serve", "--profiles", "work,nobody"], "validation_error", /no profile named "nobody"/],
+    [["mcp", "serve", "--profiles", "all,work"], "validation_error", /`all` alone/],
+    [["mcp", "revoke"], "validation_error", /name the profiles to serve/],
+    [["mcp", "server", "status", "--profiles", "nobody"], "validation_error", /no profile named "nobody"/],
+    [["mcp", "serve", "--profiles", "work", "--tools"], "validation_error", /--tools lists one profile/],
+  ])("refuses %j", async (argv, code, message) => {
+    const f = fixture()
+    addWork(f)
+    const { running } = await run(f, [...argv, "--json"])
+    await expect(running).rejects.toMatchObject({ code, message: expect.stringMatching(message) })
+  })
+
+  it("lets --profiles name only the locked profile", async () => {
+    const f = fixture()
+    addWork(f)
+    const { running } = await run({ ...f, env: { ...f.env, DRIVE_PROFILE_LOCK: "default" } }, [
+      "mcp",
+      "revoke",
+      "--profiles",
+      "work",
+      "--json",
+    ])
+    await expect(running).rejects.toMatchObject({ code: "permission_error" })
   })
 
   it.each([[["--read-only"]], [["default", "--read-only"]]])(
     "refuses mcp revoke after %j and keeps the logins",
     async (before) => {
       const f = fixture()
-      mkdirSync(dirname(everyProfileTokenFile(f.env)), { recursive: true })
-      writeFileSync(everyProfileTokenFile(f.env), "{}")
+      mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
+      writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
       ensureProfileDir(f.env, "default")
       writeFileSync(httpTokenFile(f.env, "default"), "{}")
       const { running } = await run(f, [...before, "mcp", "revoke", "--json"])
       await expect(running).rejects.toMatchObject({ code: "permission_error" })
-      expect(existsSync(everyProfileTokenFile(f.env))).toBe(true)
+      expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(true)
       expect(existsSync(httpTokenFile(f.env, "default"))).toBe(true)
     },
   )
 
-  it("says so when drive mcp serve has no profile to serve", async () => {
+  it("says so when drive mcp serve --profiles all has no profile to serve", async () => {
     const f = fixture()
     writeConfig(f.env, { profiles: {} })
-    const { running } = await run(f, ["mcp", "serve", "--json"])
+    const { running } = await run(f, ["mcp", "serve", "--profiles", "all", "--json"])
     await expect(running).rejects.toThrow(/no drive profile here yet/)
   })
 

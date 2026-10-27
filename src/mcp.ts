@@ -24,7 +24,7 @@ import { mcpFailure } from "./failure.js"
 import { apiMethod } from "./google-api.js"
 import { DRIVE_APP, discoveryAvailability, type PolicyFlags, permissionKeys, policySettings } from "./policy.js"
 import { describeDriveProgram, GOOGLE_WRITE } from "./registry.js"
-import { everyProfileTokenFile, httpTokenFile } from "./state.js"
+import { httpTokenFile, profileSetTokenFile } from "./state.js"
 import { covers, grantedScopes, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 import { VERSION } from "./version.js"
 
@@ -394,7 +394,9 @@ export const serveMcpOverHttp = async (
       throw new CliError("configuration_error", `port ${port} is in use — pass another with --port`)
     throw error
   })
-  note(`serving on ${listening.url.href} — point your tunnel at it; connectors use ${mcpUrlOf(publicUrl).href}`)
+  note(
+    `serving profile ${profile} on ${listening.url.href} — point your tunnel at it; connectors use ${mcpUrlOf(publicUrl).href}`,
+  )
   try {
     await new Promise<void>((resolve) => {
       if (!options.signal) return
@@ -406,9 +408,23 @@ export const serveMcpOverHttp = async (
   }
 }
 
-export interface EveryProfile {
-  env: NodeJS.ProcessEnv
+/** What `--profiles` names: `all`, read again on each session, or a fixed sorted list. */
+export interface ProfileSet {
+  /** What `--profiles` takes to name this set again: `all`, or the names comma-separated. */
+  option: string
   profiles: () => readonly string[]
+}
+
+/** How the startup line names a set, so the owner sees which accounts an agent reaches. */
+export const profileSetLabel = ({ option, profiles }: ProfileSet) => {
+  const names = profiles().join(", ")
+  if (option === "all") return `every profile (${names || "none yet"})`
+  return profiles().length === 1 ? `profile ${names}` : `profiles ${names}`
+}
+
+export interface ServedProfiles {
+  env: NodeJS.ProcessEnv
+  set: ProfileSet
   /** `--permission` entries, passed on to each profile's server: they only tighten. */
   permissions: readonly string[]
   note: (text: string) => void
@@ -417,14 +433,15 @@ export interface EveryProfile {
 }
 
 /**
- * `drive mcp serve` with no profile: one server for every profile, each call run in that profile's own `drive <profile>
- * mcp serve` (cli-core's all-profiles module). Nothing picks a profile: every tool takes one.
+ * `drive mcp serve --profiles <a,b|all>`: one server for those profiles, each call run in that profile's own
+ * `drive <profile> mcp serve` (cli-core's all-profiles module). Nothing picks a profile: every tool takes one.
  */
-export const serveEveryProfile = async ({ env, profiles, permissions, note, signal, http }: EveryProfile) => {
+export const serveProfiles = async ({ env, set, permissions, note, signal, http }: ServedProfiles) => {
+  const { profiles } = set
   if (profiles().length === 0)
     throw new CliError(
       "configuration_error",
-      "no drive profile here yet; create one with drive personal session start, then run drive mcp serve again",
+      "no drive profile here yet; create one with drive personal session start, then run drive mcp serve --profiles all again",
     )
   const { serveAllProfilesOverHttp, serveAllProfilesOverStdio } = await import("@wirecat/cli-core/mcp")
   const script = realpathSync(process.argv[1] ?? "")
@@ -446,8 +463,11 @@ export const serveEveryProfile = async ({ env, profiles, permissions, note, sign
       " Not signed in: the owner runs the command the error names or signs in from WireCat Desktop; never ask for codes or passwords.",
     note,
   }
-  if (!http) return serveAllProfilesOverStdio(options, signal ? { signal } : {})
-  const tokenFile = everyProfileTokenFile(env)
+  if (!http) {
+    note(`serving ${profileSetLabel(set)} over MCP on stdin and stdout`)
+    return serveAllProfilesOverStdio(options, signal ? { signal } : {})
+  }
+  const tokenFile = profileSetTokenFile(env, set.option)
   const listening = await serveAllProfilesOverHttp(options, {
     publicUrl: http.publicUrl,
     port: http.port,
@@ -458,14 +478,14 @@ export const serveEveryProfile = async ({ env, profiles, permissions, note, sign
       note(
         env[`${DRIVE_APP.envPrefix}_MCP_HTTP`] === undefined
           ? `login code for a new browser app: ${code} (until ${expires.toTimeString().slice(0, 5)}; a new one after each login)`
-          : "a new login code for a browser app: `drive mcp server status`",
+          : `a new login code for a browser app: \`drive mcp server status --profiles ${set.option}\``,
       ),
   }).catch((error: unknown) => {
     if ((error as NodeJS.ErrnoException).code === "EADDRINUSE")
       throw new CliError("configuration_error", `port ${http.port} is in use — pass another with --port`)
     throw error
   })
-  note(`serving every profile on ${listening.url.href}; connectors use ${mcpUrlOf(http.publicUrl).href}`)
+  note(`serving ${profileSetLabel(set)} on ${listening.url.href}; connectors use ${mcpUrlOf(http.publicUrl).href}`)
   try {
     await new Promise<void>((resolve) => {
       if (!signal) return

@@ -1,3 +1,4 @@
+import { CliError } from "@wirecat/cli-base"
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
 import {
@@ -12,10 +13,11 @@ import {
 import type { Command } from "commander"
 import { readConfig } from "../config.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import type { ProfileSet } from "../mcp.js"
 import { allOf } from "../output.js"
 import { DRIVE_APP, permissionNames, refuseUnderReadOnly } from "../policy.js"
 import { examples } from "../registry.js"
-import { everyProfileTokenFile, httpTokenFile } from "../state.js"
+import { httpTokenFile, profileSetTokenFile } from "../state.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
 
 const DEFAULT_PORT = 8765
@@ -25,20 +27,73 @@ const installMcpCommandDefinition = (
   { env, streams, options, selected, output, policyFlags, signal, profileWord }: CommandContext,
   createProgram: (options: ProgramOptions) => Command,
 ) => {
-  // No profile named anywhere: `drive mcp serve` serves every profile, and each tool takes one.
-  const every = () => !(profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)
   const profiles = () =>
     Object.keys(readConfig(env, permissionNames(policyFlags().permissionKeys ?? new Set())).profiles).sort()
+  // The handbook rule WC-MCP-9: the profiles a server serves are always named, as cli-core's `servedProfiles` does.
+  const served = (given: string | undefined, words: string): { profile: string } | { set: ProfileSet } => {
+    const word = profileWord()
+    const listed = () => `profiles here: ${profiles().join(", ") || "none"}`
+    if (given === undefined && (word ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)) return { profile: selected() }
+    if (given !== undefined && word !== undefined)
+      throw new CliError(
+        "validation_error",
+        `name one profile or --profiles, not both: \`drive ${word} ${words}\` or \`drive ${words} --profiles ${given}\``,
+        { profiles: profiles() },
+      )
+    if (given === undefined) {
+      if (profiles().length === 0)
+        throw new CliError(
+          "configuration_error",
+          "no drive profile here yet; create one with drive personal session start (any name in place of personal)",
+        )
+      throw new CliError(
+        "validation_error",
+        `name the profiles to serve: \`drive <profile> ${words}\`, or \`drive ${words} --profiles <a,b>\` or ` +
+          `\`--profiles all\` — ${listed()}`,
+        { profiles: profiles() },
+      )
+    }
+    const names = [...new Set(given.split(",").map((one) => one.trim()))].filter(Boolean).sort()
+    const lock = env.DRIVE_PROFILE_LOCK?.trim()
+    if (lock && names.some((one) => one !== lock))
+      throw new CliError(
+        "permission_error",
+        `this process is locked to profile ${lock} (DRIVE_PROFILE_LOCK) — --profiles may name only ${lock}`,
+        { reason: "profile.lock-refused" },
+      )
+    if (lock) return { set: { option: lock, profiles: () => [lock] } }
+    if (names.length === 1 && names[0] === "all") return { set: { option: "all", profiles } }
+    if (names.length === 0 || names.includes("all"))
+      throw new CliError(
+        "validation_error",
+        "--profiles takes profile names, comma-separated, or `all` alone for every profile — a profile named all " +
+          `is served as \`drive all ${words}\`; ${listed()}`,
+        { profiles: profiles() },
+      )
+    const unknown = names.filter((one) => !profiles().includes(one))
+    if (unknown.length > 0)
+      throw new CliError(
+        "validation_error",
+        `no profile named ${unknown.map((one) => `"${one}"`).join(", ")} — ${listed()}`,
+        { profiles: profiles() },
+      )
+    return { set: { option: names.join(","), profiles: () => names } }
+  }
+  const withProfiles = (command: Command) =>
+    command.option(
+      "--profiles <names|all>",
+      "serve several profiles from one server instead of one: names, comma-separated, or all for every profile",
+    )
   const group = annotate(program.command("mcp"), { effects: LOCAL_READ, mcp: false })
     .summary("serve this profile's commands to an AI agent, and set that up")
     .description(
       "serve this profile to an agent over MCP and set it up — `claude mcp add drive -- drive <profile> mcp serve`",
     )
-  examples(
+  const serve = examples(
     annotate(group.command("serve"), { effects: REMOTE_WRITE, lifetime: "persistent", mcp: false })
       .summary("serve this profile's commands to an AI agent")
       .description(
-        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; with no profile, `drive mcp serve` serves every profile and each tool asks which",
+        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which",
       ),
     [
       "drive personal mcp serve --tools",
@@ -56,16 +111,23 @@ const installMcpCommandDefinition = (
       "--public-url <url>",
       "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive",
     )
-    .action(async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string }) => {
-      const { mcpTools, serveMcp, serveMcpOverHttp, serveEveryProfile } = await import("../mcp.js")
+  withProfiles(serve).action(
+    async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string; profiles?: string }) => {
+      const { mcpTools, serveMcp, serveMcpOverHttp, serveProfiles } = await import("../mcp.js")
       const { portOf, publicUrlOf } = await import("@wirecat/cli-core/mcp")
       const tunnel = () =>
         publicUrlOf(args.publicUrl, { missing: "--http", reaches: "the browser apps reach drive", path: true })
-      if (every() && !args.tools) {
+      const one = served(args.profiles, "mcp serve")
+      if ("set" in one) {
+        if (args.tools)
+          throw new CliError(
+            "validation_error",
+            "--tools lists one profile's commands: `drive <profile> mcp serve --tools`",
+          )
         const active = signal()
-        await serveEveryProfile({
+        await serveProfiles({
           env,
-          profiles,
+          set: one.set,
           permissions: policyFlags().permission ?? [],
           note: (text) => streams.diagnostic(text),
           ...(active ? { signal: active } : {}),
@@ -76,7 +138,7 @@ const installMcpCommandDefinition = (
         await serveMcpOverHttp(
           createProgram,
           { ...options, env, ...(active ? { signal: active } : {}) },
-          selected(),
+          one.profile,
           policyFlags(),
           {
             publicUrl: tunnel(),
@@ -87,7 +149,7 @@ const installMcpCommandDefinition = (
       } else if (args.tools)
         output(
           allOf(
-            mcpTools(createProgram, { ...options, env }, selected(), policyFlags()).map(
+            mcpTools(createProgram, { ...options, env }, one.profile, policyFlags()).map(
               ({ schema, command, availability }) => ({
                 command: command.path.join(" "),
                 writes: writes(command.effects),
@@ -103,51 +165,66 @@ const installMcpCommandDefinition = (
         await serveMcp(
           createProgram,
           { ...options, env, ...(active ? { signal: active } : {}) },
-          selected(),
+          one.profile,
           policyFlags(),
         )
       }
-    })
-  examples(
-    annotate(group.command("revoke"), { effects: LOCAL_WRITE, mcp: false })
-      .summary("forget every login given to a browser app")
-      .description(
-        "forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again",
-      ),
-    ["drive personal mcp revoke"],
-  ).action(async () => {
+    },
+  )
+  withProfiles(
+    examples(
+      annotate(group.command("revoke"), { effects: LOCAL_WRITE, mcp: false })
+        .summary("forget every login given to a browser app")
+        .description(
+          "forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again",
+        ),
+      ["drive personal mcp revoke"],
+    ),
+  ).action(async (args: { profiles?: string }) => {
     refuseUnderReadOnly(env, "forget the browser logins")
     if (policyFlags().readOnly) throw readOnlyRefusal("--read-only", "forget the browser logins")
     const { revokeAll } = await import("@wirecat/cli-core/mcp")
-    const profile = every() ? null : selected()
-    revokeAll(profile === null ? everyProfileTokenFile(env) : httpTokenFile(env, profile))
-    output(itemOf({ revoked: true, profile }))
+    const one = served(args.profiles, "mcp revoke")
+    if ("set" in one) {
+      revokeAll(profileSetTokenFile(env, one.set.option))
+      output(itemOf({ revoked: true, profile: null, profiles: one.set.option }))
+    } else {
+      revokeAll(httpTokenFile(env, one.profile))
+      output(itemOf({ revoked: true, profile: one.profile }))
+    }
   })
-  group.addCommand(
-    mcpServerCommand({
-      example: "drive personal",
-      target: () =>
-        every()
-          ? {
-              invocation: "drive",
-              envPrefix: DRIVE_APP.envPrefix,
-              env,
-              tokenFile: everyProfileTokenFile(env),
-              argv: ["mcp", "serve", "--http"],
-              version: DRIVE_APP.version,
-            }
-          : {
-              invocation: `drive ${selected()}`,
-              profile: selected(),
-              envPrefix: DRIVE_APP.envPrefix,
-              env,
-              tokenFile: httpTokenFile(env, selected()),
-              argv: [selected(), "mcp", "serve", "--http"],
-              version: DRIVE_APP.version,
-            },
-      answer: (_self, item) => output(itemOf(item)),
-    }),
-  )
+  const server = mcpServerCommand({
+    example: "drive personal",
+    target: (self) => {
+      const one = served(self.opts<{ profiles?: string }>().profiles, `mcp server ${self.name()}`)
+      if ("set" in one)
+        return {
+          invocation: "drive",
+          envPrefix: DRIVE_APP.envPrefix,
+          env,
+          tokenFile: profileSetTokenFile(env, one.set.option),
+          argv: ["mcp", "serve", "--http", "--profiles", one.set.option],
+          version: DRIVE_APP.version,
+        }
+      return {
+        invocation: `drive ${one.profile}`,
+        profile: one.profile,
+        envPrefix: DRIVE_APP.envPrefix,
+        env,
+        tokenFile: httpTokenFile(env, one.profile),
+        argv: [one.profile, "mcp", "serve", "--http"],
+        version: DRIVE_APP.version,
+      }
+    },
+    // cli-core 0.469.0 answers `profile: null` for a set; name the set as `--profiles` takes it.
+    answer: (self, item) => {
+      const given = self.opts<{ profiles?: string }>().profiles
+      const one = given === undefined ? undefined : served(given, `mcp server ${self.name()}`)
+      output(itemOf(one && "set" in one ? { ...item, profiles: one.set.option } : item))
+    },
+  })
+  for (const leaf of server.commands) withProfiles(leaf)
+  group.addCommand(server)
 }
 
 export const installMcpCommand = (...args: Parameters<typeof installMcpCommandDefinition>) =>

@@ -115,6 +115,11 @@ drive personal mcp server status   # running, port, connector address, the curre
 drive personal mcp server stop     # stops only a server that `mcp server start` started
 ```
 
+One server can serve several profiles: `drive mcp serve --http --profiles work,personal`, or `--profiles all` for
+every profile on this computer. Each tool call then names its profile. A list has its own login, apart from each
+profile's and from `--profiles all`; `mcp server start|stop|status` and `mcp revoke` take the same `--profiles`.
+With neither a profile nor `--profiles`, drive refuses and lists the profiles.
+
 The code is kept beside the profile's token file (`mcp-http.lock`, mode 600) and renews every ten minutes; a server
 started this way does not write it to its log. WireCat Desktop shows the same status under Tools → Google Drive →
 MCP server.
@@ -155,10 +160,11 @@ Press Ctrl-C in both windows to stop the server and the tunnel. App logins survi
 If you started Funnel with `--bg`, Ctrl-C does not stop that background route: check
 `tailscale funnel status` and turn off only its port, for example `tailscale funnel --https=443 off`.
 
-To log out every app for a profile:
+To log out every app for a profile, or for the server of several profiles:
 
 ```sh
 drive personal mcp revoke --json
+drive mcp revoke --profiles all --json
 ```
 
 Those apps must log in again with a new code. This does not sign `drive` out of Google.

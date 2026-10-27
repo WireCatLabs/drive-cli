@@ -4341,7 +4341,7 @@ serve this profile to an agent over MCP and set it up — `claude mcp add drive 
 
 ### `drive mcp serve`
 
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; with no profile, `drive mcp serve` serves every profile and each tool asks which
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which
 
 This command can change Google data or send data to the configured model.
 
@@ -4355,6 +4355,7 @@ drive <profile> mcp serve [options]
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 **Returns:** serve this profile's commands to an AI agent
 
@@ -4362,13 +4363,17 @@ drive <profile> mcp serve [options]
 
 ### `drive mcp revoke`
 
-forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again
+forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again
 
 This command changes local state.
 
 ```sh
-drive <profile> mcp revoke
+drive <profile> mcp revoke [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 **Returns:** forget every login given to a browser app
 
@@ -4392,6 +4397,7 @@ drive <profile> mcp server start [options]
 |---|---|
 | `--port <port>` | the local port (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 **Returns:** start the HTTP MCP server in the background
 
@@ -4404,8 +4410,12 @@ stop `mcp serve --http` — only one that `mcp server start` started
 This command changes local state.
 
 ```sh
-drive <profile> mcp server stop
+drive <profile> mcp server stop [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 **Returns:** stop the background HTTP MCP server
 
@@ -4416,8 +4426,12 @@ drive <profile> mcp server stop
 whether `mcp serve --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
 
 ```sh
-drive <profile> mcp server status
+drive <profile> mcp server status [options]
 ```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
 
 **Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
 
