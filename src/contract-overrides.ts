@@ -139,7 +139,7 @@ export const SHELL_OVERRIDES: Readonly<{
       command: ["mcp"],
       field: "description",
       before:
-        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp`",
+        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp`; with no profile, `drive mcp` serves every profile and each tool asks which",
       after: "serve drive's commands to an agent over MCP: search, then read or write",
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
@@ -170,7 +170,8 @@ export const SHELL_OVERRIDES: Readonly<{
         },
         {
           flags: "--public-url <url>",
-          description: "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net",
+          description:
+            "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg",
           takes_value: true,
           mandatory: false,
         },
@@ -203,7 +204,8 @@ export const SHELL_OVERRIDES: Readonly<{
         },
         {
           flags: "--public-url <url>",
-          description: "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net",
+          description:
+            "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive",
           takes_value: true,
           mandatory: false,
         },
@@ -233,6 +235,7 @@ export const SHELL_OVERRIDES: Readonly<{
         "drive personal mcp --tools",
         "drive personal mcp",
         "drive personal mcp --http --public-url https://laptop.example.ts.net",
+        "drive mcp",
       ],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",

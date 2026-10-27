@@ -4350,7 +4350,7 @@ drive <profile> mcp [options]
 | `--tools` | list the commands the server offers instead of starting it. |
 | `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
 | `--port <port>` | the local port for --http (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive. |
 | `--revoke` | forget every login given to a browser app; each must log in again. |
 
 ### `drive mcp server`
@@ -4370,7 +4370,7 @@ drive <profile> mcp server start [options]
 | Option | What it does |
 |---|---|
 | `--port <port>` | the local port (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net. |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
 | `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
 
 **Returns:** start the HTTP MCP server in the background

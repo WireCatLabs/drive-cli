@@ -151,6 +151,9 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
   }
 }
 
+/** `drive mcp --http` for every profile: its own login, beside the profiles' folders, not one of them. */
+export const everyProfileTokenFile = (env: NodeJS.ProcessEnv) => join(paths(env).state, "mcp-http-all.json")
+
 /** Where `mcp --http` keeps the hashes of the tokens it issued; its lock and log sit beside it. */
 export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>
   join(profileDir(env, profile), "mcp-http.json")
