@@ -490,7 +490,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    // `drive mcp` with no profile serves every profile; each profile's own `drive <profile> mcp` checks its policy.
+    // `drive mcp serve` with no profile serves every profile; each profile's own `drive <profile> mcp serve` checks its policy.
     if (
       EVERY_PROFILE_COMMANDS.has(words) &&
       !options.mcp &&
@@ -514,7 +514,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     }
     const flags = policyFlags()
     // The server writes only through its tools, and each tool call runs this same check with these flags.
-    if (words === "mcp") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
+    if (words === "mcp serve") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
     const rawMethod = words === "api call" ? action.args[0] : undefined
     const method = metadata.api_operation ?? rawMethod
     if (rawMethod) {

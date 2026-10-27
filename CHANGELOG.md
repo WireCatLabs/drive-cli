@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **The MCP server is `drive <profile> mcp serve`; `drive mcp` only shows help (cli-core 0.463.0).** `mcp` is now a
+  group, like `session` and `skill`: `mcp serve` starts the server (stdio, or `--http`), `mcp serve --tools` lists
+  the commands it offers, and `mcp revoke` replaces `mcp --revoke`. With no profile, `drive mcp serve` and
+  `drive mcp revoke` still act on the server of every profile. No old spelling is kept: update a client set up with
+  `claude mcp add drive -- drive personal mcp` to end in `mcp serve`. `mcp server start` runs `mcp serve --http`,
+  and the MCP registry entry (`server.json`) passes `mcp serve`. `mcp revoke` is refused under `--read-only`.
+- **The shared store moves to schema 35 (cli-core 0.463.0).** The first run upgrades it and says so; every other
+  WireCat CLI that uses the same store then needs a version that speaks schema 35 — run `<cli> upgrade` for each.
+
 ### Security
 
 - **The secret scan catches Google OAuth tokens.** gitleaks' own rules know Google API keys only, so an access token

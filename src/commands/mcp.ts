@@ -1,11 +1,19 @@
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { writes } from "@wirecat/cli-base/standards"
-import { itemOf, mcpServerCommand, REMOTE_WRITE, sharedCommandTemplate } from "@wirecat/cli-core/cli"
+import {
+  itemOf,
+  LOCAL_READ,
+  LOCAL_WRITE,
+  mcpServerCommand,
+  REMOTE_WRITE,
+  readOnlyRefusal,
+  sharedCommandTemplate,
+} from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { readConfig } from "../config.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import { allOf } from "../output.js"
-import { DRIVE_APP, permissionNames } from "../policy.js"
+import { DRIVE_APP, permissionNames, refuseUnderReadOnly } from "../policy.js"
 import { examples } from "../registry.js"
 import { everyProfileTokenFile, httpTokenFile } from "../state.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
@@ -17,19 +25,25 @@ const installMcpCommandDefinition = (
   { env, streams, options, selected, output, policyFlags, signal, profileWord }: CommandContext,
   createProgram: (options: ProgramOptions) => Command,
 ) => {
-  // No profile named anywhere: `drive mcp` serves every profile, and each tool takes one.
+  // No profile named anywhere: `drive mcp serve` serves every profile, and each tool takes one.
   const every = () => !(profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)
   const profiles = () =>
     Object.keys(readConfig(env, permissionNames(policyFlags().permissionKeys ?? new Set())).profiles).sort()
+  const group = annotate(program.command("mcp"), { effects: LOCAL_READ, mcp: false })
+    .summary("serve this profile's commands to an AI agent, and set that up")
+    .description(
+      "serve this profile to an agent over MCP and set it up — `claude mcp add drive -- drive <profile> mcp serve`",
+    )
   examples(
-    annotate(program.command("mcp"), { effects: REMOTE_WRITE, lifetime: "persistent", mcp: false }).description(
-      "serve drive's commands to an agent over MCP: search, then read or write",
-    ),
+    annotate(group.command("serve"), { effects: REMOTE_WRITE, lifetime: "persistent", mcp: false })
+      .summary("serve this profile's commands to an AI agent")
+      .description(
+        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; with no profile, `drive mcp serve` serves every profile and each tool asks which",
+      ),
     [
-      "drive personal mcp --tools",
-      "drive personal mcp",
-      "drive personal mcp --http --public-url https://laptop.example.ts.net",
-      "drive mcp",
+      "drive personal mcp serve --tools",
+      "drive personal mcp serve",
+      "drive personal mcp serve --http --public-url https://laptop.example.ts.net",
     ],
   )
     .option("--tools", "list the commands the server offers instead of starting it")
@@ -42,44 +56,12 @@ const installMcpCommandDefinition = (
       "--public-url <url>",
       "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive",
     )
-    .option("--revoke", "forget every login given to a browser app; each must log in again")
-    .addCommand(
-      mcpServerCommand({
-        example: "drive personal",
-        target: () =>
-          every()
-            ? {
-                invocation: "drive",
-                envPrefix: DRIVE_APP.envPrefix,
-                env,
-                tokenFile: everyProfileTokenFile(env),
-                argv: ["mcp", "--http"],
-                version: DRIVE_APP.version,
-              }
-            : {
-                invocation: `drive ${selected()}`,
-                profile: selected(),
-                envPrefix: DRIVE_APP.envPrefix,
-                env,
-                tokenFile: httpTokenFile(env, selected()),
-                argv: [selected(), "mcp", "--http"],
-                version: DRIVE_APP.version,
-              },
-        answer: (_self, item) => output(itemOf(item)),
-      }),
-    )
-    .action(async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string; revoke?: boolean }) => {
+    .action(async (args: { tools?: boolean; http?: boolean; port?: string; publicUrl?: string }) => {
       const { mcpTools, serveMcp, serveMcpOverHttp, serveEveryProfile } = await import("../mcp.js")
       const { portOf, publicUrlOf } = await import("@wirecat/cli-core/mcp")
       const tunnel = () =>
         publicUrlOf(args.publicUrl, { missing: "--http", reaches: "the browser apps reach drive", path: true })
       if (every() && !args.tools) {
-        if (args.revoke) {
-          const { revokeAll } = await import("@wirecat/cli-core/mcp")
-          revokeAll(everyProfileTokenFile(env))
-          output(itemOf({ revoked: true, profile: null }))
-          return
-        }
         const active = signal()
         await serveEveryProfile({
           env,
@@ -89,12 +71,6 @@ const installMcpCommandDefinition = (
           ...(active ? { signal: active } : {}),
           ...(args.http ? { http: { publicUrl: tunnel(), port: portOf(args.port, DEFAULT_PORT) } } : {}),
         })
-        return
-      }
-      if (args.revoke) {
-        const { revokeAll } = await import("@wirecat/cli-core/mcp")
-        revokeAll(httpTokenFile(env, selected()))
-        output(itemOf({ revoked: true, profile: selected() }))
       } else if (args.http) {
         const active = signal()
         await serveMcpOverHttp(
@@ -132,6 +108,46 @@ const installMcpCommandDefinition = (
         )
       }
     })
+  examples(
+    annotate(group.command("revoke"), { effects: LOCAL_WRITE, mcp: false })
+      .summary("forget every login given to a browser app")
+      .description(
+        "forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again",
+      ),
+    ["drive personal mcp revoke"],
+  ).action(async () => {
+    refuseUnderReadOnly(env, "forget the browser logins")
+    if (policyFlags().readOnly) throw readOnlyRefusal("--read-only", "forget the browser logins")
+    const { revokeAll } = await import("@wirecat/cli-core/mcp")
+    const profile = every() ? null : selected()
+    revokeAll(profile === null ? everyProfileTokenFile(env) : httpTokenFile(env, profile))
+    output(itemOf({ revoked: true, profile }))
+  })
+  group.addCommand(
+    mcpServerCommand({
+      example: "drive personal",
+      target: () =>
+        every()
+          ? {
+              invocation: "drive",
+              envPrefix: DRIVE_APP.envPrefix,
+              env,
+              tokenFile: everyProfileTokenFile(env),
+              argv: ["mcp", "serve", "--http"],
+              version: DRIVE_APP.version,
+            }
+          : {
+              invocation: `drive ${selected()}`,
+              profile: selected(),
+              envPrefix: DRIVE_APP.envPrefix,
+              env,
+              tokenFile: httpTokenFile(env, selected()),
+              argv: [selected(), "mcp", "serve", "--http"],
+              version: DRIVE_APP.version,
+            },
+      answer: (_self, item) => output(itemOf(item)),
+    }),
+  )
 }
 
 export const installMcpCommand = (...args: Parameters<typeof installMcpCommandDefinition>) =>
