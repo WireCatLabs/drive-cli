@@ -23,7 +23,7 @@ These options apply to the selected profile and current invocation.
 | `--yes` | answer a policy confirmation; cannot override deny or readonly. |
 | `--allow-dangerous` | answer a permanent-deletion confirmation. |
 | `--permission <key=level>` | temporary policy override; repeat to add keys. |
-| `--record` | keep this run, with the command as typed and secrets hidden; record_input false leaves the typed words out. |
+| `--record` | keep this run even where the config says record false; record_input false leaves the typed words out. |
 | `--no-record` | do not keep this run, even if it fails. |
 
 ## `drive session`
@@ -4190,7 +4190,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, record, record_input, keep_runs_for_days, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |

@@ -30,9 +30,11 @@ before moving or deleting them.
 | --- | --- | --- |
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
 | `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
-| `record` | `true` keeps every run in `drive runs list`; default `false`, which keeps only failed runs. `false` set here keeps none | `defaults` only |
-| `record_input` | A kept run holds the command as typed, a secret or phone number written `[redacted]`; `false` writes every value that may be content as `[redacted]` too | `defaults` only |
-| `keep_runs_for_days` | How many days a kept run stays; default `30` | `defaults` only |
+| `record` | `false` keeps only failed runs in `drive runs list`; default `true`, every run | `defaults` only |
+| `record_input` | A kept run holds the command as typed, a secret or phone number written `[redacted]`; `"failed"` keeps the typed words only in a failed run; `false` writes every value that may be content as `[redacted]` too | `defaults` only |
+| `keep_runs_for_days` | How many days a failed run stays; default `30` | `defaults` only |
+| `keep_successful_runs_for_days` | How many days a successful run stays; default `7` | `defaults` only |
+| `runs_size_limit_mb` | The most the run log may hold; the oldest successful runs go first; default `200` | `defaults` only |
 | `picture_search` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
