@@ -6,8 +6,6 @@
   "files mkdir",
   "files trash",
   "files upload",
-  "mcp revoke",
-  "mcp serve",
   "memories stale",
   "permissions get",
   "revisions get",
