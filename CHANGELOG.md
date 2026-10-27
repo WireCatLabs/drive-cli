@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive mcp` with no profile serves every profile, on stdio and with `--http` (cli-core 0.450).** An AI app needs
+  one connector for Drive, not one per profile. Each tool takes a required `profile` (every profile here, no default)
+  and the agent is told to ask when you did not name the account; the call runs in that profile's own
+  `drive <profile> mcp`, so its permissions and Google grant apply as before. `drive mcp --revoke` and
+  `drive mcp server start|stop|status` work without a profile too, with their own login. `--public-url` takes a path,
+  `https://<name>.ts.net/drive`, so several tools share one tunnel address. The MCP Registry entry starts
+  `drive mcp` with no profile.
+
 ### Fixed
 
 - **`drive skill install` names every agent it installs for.** Its Returns line said only Claude Code, Codex and

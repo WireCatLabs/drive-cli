@@ -1,5 +1,6 @@
-import { existsSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
+import { dirname } from "node:path"
 import {
   Client,
   type OAuthClientProvider,
@@ -11,7 +12,7 @@ import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 import { httpTokenFile } from "./mcp.js"
 import { createProgram } from "./program.js"
-import { ensureProfileDir } from "./state.js"
+import { ensureProfileDir, everyProfileTokenFile } from "./state.js"
 import { fixture } from "./testing.js"
 
 const REDIRECT = "http://localhost/callback"
@@ -169,10 +170,27 @@ describe("drive mcp --http", () => {
     expect(existsSync(httpTokenFile(f.env, "default"))).toBe(false)
   })
 
+  it("forgets every browser login of the server of every profile on drive mcp --revoke", async () => {
+    const f = fixture()
+    mkdirSync(dirname(everyProfileTokenFile(f.env)), { recursive: true })
+    writeFileSync(everyProfileTokenFile(f.env), "{}")
+    const { streams, running } = await run(f, ["mcp", "--revoke", "--json"])
+    await running
+    expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ item: { revoked: true, profile: null } })
+    expect(existsSync(everyProfileTokenFile(f.env))).toBe(false)
+  })
+
+  it("says so when drive mcp has no profile to serve", async () => {
+    const f = fixture()
+    writeConfig(f.env, { profiles: {} })
+    const { running } = await run(f, ["mcp", "--json"])
+    await expect(running).rejects.toThrow(/no drive profile here yet/)
+  })
+
   it.each([
     [["--http"], "configuration_error"],
     [["--http", "--public-url", "http://device.example"], "validation_error"],
-    [["--http", "--public-url", "https://device.example/mcp"], "validation_error"],
+    [["--http", "--public-url", "https://device.example/drive?x=1"], "validation_error"],
     [["--http", "--public-url", "https://device.example", "--port", "70000"], "validation_error"],
   ])("refuses %j before listening", async (args, code) => {
     const { running } = await run(fixture(), ["default", "mcp", ...args, "--json"])
