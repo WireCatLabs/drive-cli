@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+
+- **Not signed in, the MCP answer and instructions also offer WireCat Desktop.** An expired or missing Google
+  sign-in tells the agent the owner runs `drive <profile> session start` or signs in from WireCat Desktop, and never to
+  ask for codes or passwords. The skill says the same.
+
 ### Fixed
 
 - **Search by meaning answers in a fraction of a second on a large store (cli-core 0.451.0).** Ranking files by meaning

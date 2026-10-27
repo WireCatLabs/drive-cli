@@ -32,6 +32,8 @@ Find your way with the tool itself, not this file:
   `--grant activity`.
 - An empty result means nothing matched in the imported folders, not that Drive has no such document.
   `drive personal status` shows what is imported and pending.
+- Not signed in: the owner runs `drive <profile> session start` on the computer running drive, or signs in from
+  WireCat Desktop (Tools → Google Drive → Manage). Never ask for codes or passwords in the chat.
 
 ## Change
 
