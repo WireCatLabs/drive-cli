@@ -1,31 +1,22 @@
 import { execFileSync } from "node:child_process"
-import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
 import { resolve } from "node:path"
 import {
+  adaptDiscovery,
   coverageGenerator,
   definitionsGenerator,
   generate,
   manifestGenerator,
+  readDiscovery,
   typesGenerator,
   valibotGenerator,
   writeArtifacts,
 } from "@wirecat/cli-base/codegen"
-import { adaptDiscovery } from "./discovery-adapter.ts"
 
 const root = resolve(import.meta.dirname, "..")
-const provenance = JSON.parse(readFileSync(`${root}/spec/google/provenance.json`, "utf8")) as Record<
-  string,
-  { sha256: string }
->
-const documents: Record<string, unknown> = {}
-for (const [service, source] of Object.entries(provenance)) {
-  const raw = readFileSync(`${root}/spec/google/${service}.json`)
-  if (createHash("sha256").update(raw).digest("hex") !== source.sha256)
-    throw new Error(`Discovery hash mismatch: ${service}`)
-  documents[service] = JSON.parse(raw.toString("utf8"))
-}
-const { model, metadata } = adaptDiscovery(documents)
+const { model, metadata } = adaptDiscovery(readDiscovery(`${root}/spec/google`), {
+  sourceRevision: "spec/google/provenance.json",
+})
+const read = (reason: string) => ({ effect: "read" as const, reason })
 const artifacts = generate(
   model,
   [
@@ -39,7 +30,17 @@ const artifacts = generate(
       command: (op) => `drive <profile> api ${op.command}`,
     }),
   ],
-  { banner: ["Source: spec/google/*.json, verified by provenance.json", "Run: pnpm generate"] },
+  {
+    banner: ["Source: spec/google/*.json, verified by provenance.json", "Run: pnpm generate"],
+    overrides: {
+      "driveactivity.activity.query": read("a POST that only searches the activity history"),
+      "drive.files.download": read("a POST that starts a download; it changes no file"),
+      "sheets.spreadsheets.getByDataFilter": read("a POST that only reads cells matching the filters"),
+      "sheets.spreadsheets.values.batchGetByDataFilter": read("a POST that only reads values matching the filters"),
+      "sheets.spreadsheets.developerMetadata.search": read("a POST that only searches developer metadata"),
+      "drive.files.emptyTrash": { effect: "destructive", reason: "permanently deletes every trashed file" },
+    },
+  },
 )
 artifacts.push({
   path: "src/generated/metadata.ts",

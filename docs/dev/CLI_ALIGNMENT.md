@@ -10,7 +10,7 @@ The offline pipeline is:
 
 ```text
 spec/google/*.json + provenance.json
-  -> scripts/discovery-adapter.ts -> cli-base ApiModel
+  -> cli-base adaptDiscovery (+ drive's effect overrides in scripts/generate.ts) -> ApiModel
   -> shared types, Valibot schemas, manifest, definitions and coverage generators
   -> cli-core generatedApiCommand
   -> cli-base command registry and generated reference
