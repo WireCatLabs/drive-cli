@@ -129,23 +129,29 @@ export const SHELL_OVERRIDES: Readonly<{
   mcp: [
     {
       command: ["mcp"],
-      field: "summary",
-      before: "serve this profile's commands to an AI agent",
-      after: null,
+      field: "children",
+      before: ["serve", "revoke", "server", "config", "add", "check"],
+      after: ["serve", "revoke", "server"],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
-      command: ["mcp"],
-      field: "description",
-      before:
-        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp`; with no profile, `drive mcp` serves every profile and each tool asks which",
-      after: "serve drive's commands to an agent over MCP: search, then read or write",
+      command: ["mcp", "serve"],
+      field: "examples",
+      before: [
+        "drive personal mcp serve",
+        "drive personal mcp serve --http --public-url https://laptop.example.ts.net",
+      ],
+      after: [
+        "drive personal mcp serve --tools",
+        "drive personal mcp serve",
+        "drive personal mcp serve --http --public-url https://laptop.example.ts.net",
+      ],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
-      command: ["mcp"],
+      command: ["mcp", "serve"],
       field: "options",
       before: [
         {
@@ -173,12 +179,6 @@ export const SHELL_OVERRIDES: Readonly<{
           description:
             "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg",
           takes_value: true,
-          mandatory: false,
-        },
-        {
-          flags: "--revoke",
-          description: "forget every login given to a browser app; each must log in again",
-          takes_value: false,
           mandatory: false,
         },
       ],
@@ -209,33 +209,48 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
-        {
-          flags: "--revoke",
-          description: "forget every login given to a browser app; each must log in again",
-          takes_value: false,
-          mandatory: false,
-        },
       ],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
     },
     {
-      command: ["mcp"],
-      field: "children",
-      before: ["server", "config", "add", "check"],
-      after: ["server"],
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
-    },
-    {
-      command: ["mcp"],
-      field: "examples",
-      before: null,
+      command: ["mcp", "server", "start"],
+      field: "options",
+      before: [
+        {
+          flags: "--port <port>",
+          description: "the local port (default 8765)",
+          takes_value: true,
+          mandatory: false,
+        },
+        {
+          flags: "--public-url <url>",
+          description:
+            "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg",
+          takes_value: true,
+          mandatory: false,
+        },
+        {
+          flags: "--permission <key=level>",
+          description: "make a permission stricter for this server only; repeat for more keys",
+          takes_value: true,
+          mandatory: false,
+        },
+      ],
       after: [
-        "drive personal mcp --tools",
-        "drive personal mcp",
-        "drive personal mcp --http --public-url https://laptop.example.ts.net",
-        "drive mcp",
+        {
+          flags: "--port <port>",
+          description: "the local port (default 8765)",
+          takes_value: true,
+          mandatory: false,
+        },
+        {
+          flags: "--public-url <url>",
+          description:
+            "the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg",
+          takes_value: true,
+          mandatory: false,
+        },
       ],
       reason:
         "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",

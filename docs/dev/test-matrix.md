@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**243 ✅ · 954 ⛔ · 0 ❌** — 201 commands, 996 options.
+**243 ✅ · 953 ⛔ · 0 ❌** — 202 commands, 994 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1162,17 +1162,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models download` | `--offline` | ✅ |  |
 | `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
-| `mcp` |  | ✅ |  |
-| `mcp` | `--tools` | ✅ |  |
-| `mcp` | `--http` | ✅ |  |
-| `mcp` | `--port` | ✅ |  |
-| `mcp` | `--public-url` | ✅ |  |
-| `mcp` | `--revoke` | ✅ |  |
-| `mcp server start` |  | ⛔ | starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--port` | ⛔ | starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--public-url` | ⛔ | starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--permission` | ⛔ | starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server stop` |  | ⛔ | starts or signals a background `mcp --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp serve` |  | ✅ |  |
+| `mcp serve` | `--tools` | ✅ |  |
+| `mcp serve` | `--http` | ✅ |  |
+| `mcp serve` | `--port` | ✅ |  |
+| `mcp serve` | `--public-url` | ✅ |  |
+| `mcp revoke` |  | ✅ |  |
+| `mcp server start` |  | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--port` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--public-url` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server stop` |  | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
 | `mcp server status` |  | ✅ |  |
 | `commands` |  | ✅ |  |
 | `commands info` |  | ✅ |  |

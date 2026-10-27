@@ -36,8 +36,14 @@ export const ACCOUNT_FREE_COMMANDS = new Set([
 ])
 
 /** These read every profile or none, so they run without one; a profile typed before them is still checked. */
-/** With no profile named, these serve every profile: `drive mcp`. */
-export const EVERY_PROFILE_COMMANDS = new Set(["mcp", "mcp server start", "mcp server stop", "mcp server status"])
+/** With no profile named, these serve every profile: `drive mcp serve`. */
+export const EVERY_PROFILE_COMMANDS = new Set([
+  "mcp serve",
+  "mcp revoke",
+  "mcp server start",
+  "mcp server stop",
+  "mcp server status",
+])
 
 export const ANY_PROFILE_COMMANDS = new Set([
   "commands",

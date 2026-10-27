@@ -306,9 +306,12 @@ describe("shared CLI policy and execution", () => {
     })
     expect(request).not.toHaveBeenCalled()
     const listed = captureStreams()
-    await createProgram({ env: f.env, streams: listed }).parseAsync(["default", "--read-only", "mcp", "--tools"], {
-      from: "user",
-    })
+    await createProgram({ env: f.env, streams: listed }).parseAsync(
+      ["default", "--read-only", "mcp", "serve", "--tools"],
+      {
+        from: "user",
+      },
+    )
     const offered = JSON.parse(listed.stdout.join("")).items as {
       effects: Effects
       availability: { available: boolean }

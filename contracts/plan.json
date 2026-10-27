@@ -90,7 +90,7 @@
     }
   ],
   "mcp": {
-    "args": ["default", "--read-only", "mcp"],
+    "args": ["default", "--read-only", "mcp", "serve"],
     "snapshot": "mcp-tools.json"
   }
 }
