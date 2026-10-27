@@ -36,13 +36,6 @@
   },
   {
     "rule": "unknown-verb",
-    "target": "comments resolve",
-    "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-24"
-  },
-  {
-    "rule": "unknown-verb",
     "target": "comments reopen",
     "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
     "owner": "@WireCatLabs",

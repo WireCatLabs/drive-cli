@@ -14,11 +14,13 @@ import { observeRequests, operationOf } from "./tokens.js"
 const runsOf = (env: NodeJS.ProcessEnv): string[] => {
   const root = join(env.DRIVE_STATE_DIR as string, "runs")
   try {
-    return readdirSync(root).flatMap((day) =>
-      readdirSync(join(root, day))
-        .filter((id) => !id.includes("."))
-        .map((id) => join(root, day, id)),
-    )
+    return readdirSync(root)
+      .filter((day) => !day.startsWith("."))
+      .flatMap((day) =>
+        readdirSync(join(root, day))
+          .filter((id) => !id.includes("."))
+          .map((id) => join(root, day, id)),
+      )
   } catch {
     return []
   }
@@ -42,7 +44,7 @@ describe("run records", () => {
     expect(failure).toBeDefined()
     const [run] = runsOf(env)
     const metadata = JSON.parse(readFileSync(join(run as string, "run.json"), "utf8"))
-    expect(metadata).toMatchObject({ command: "documents list", status: "failed", kept_because_failed: true })
+    expect(metadata).toMatchObject({ command: "documents list", status: "failed" })
   })
 
   it("keeps a usage error that never reached a command", async () => {
@@ -51,26 +53,22 @@ describe("run records", () => {
     expect(runsOf(env)).toHaveLength(1)
   })
 
-  it("keeps a successful command only with --record", async () => {
+  it("keeps every command, successes too, and only failures under record false", async () => {
     const { env } = fixture()
+    const kept = () => listRuns(runsDirFor(DRIVE_APP, env)).map((run) => `${run.command} ${run.status}`)
     await drive(env, ["default", "config", "show", "--json"])
-    expect(runsOf(env)).toHaveLength(0)
-    await drive(env, ["default", "config", "show", "--json", "--record"])
-    const [run] = runsOf(env)
-    expect(JSON.parse(readFileSync(join(run as string, "run.json"), "utf8"))).toMatchObject({
-      command: "config show",
-      profile: "default",
-      status: "success",
-    })
+    expect(kept()).toEqual(["config show success"])
+    await drive(env, ["default", "config", "set", "record", "false", "--defaults", "--json"])
+    const before = kept().length
+    await drive(env, ["default", "config", "show", "--json"])
+    await drive(env, ["missing", "documents", "list", "--json"])
+    expect(kept().slice(0, kept().length - before)).toEqual(["documents list failed"])
   })
 
-  it("keeps every command when the defaults say record, and nothing with --no-record", async () => {
+  it("keeps nothing with --no-record, even a failure", async () => {
     const { env } = fixture()
-    await drive(env, ["default", "config", "set", "record", "true", "--defaults", "--json"])
-    await drive(env, ["default", "config", "show", "--json"])
-    expect(runsOf(env)).toHaveLength(1)
     await drive(env, ["missing", "documents", "list", "--json", "--no-record"])
-    expect(runsOf(env)).toHaveLength(1)
+    expect(listRuns(runsDirFor(DRIVE_APP, env))).toEqual([])
   })
 
   const typed = ["default", "search", "documents", "Kai Sample +34612345678", "--api-key", "fake-key-123", "--nonsense"]
@@ -98,6 +96,20 @@ describe("run records", () => {
     expect(argv).toContain("search")
     expect(argv.join(" ")).not.toContain("Kai Sample")
     expect(argv.join(" ")).not.toContain("fake-key-123")
+  })
+
+  it("takes record_input failed and the success retention and size limit as defaults", async () => {
+    const { env } = fixture()
+    for (const [key, value] of [
+      ["record_input", '"failed"'],
+      ["keep_successful_runs_for_days", "3"],
+      ["runs_size_limit_mb", "50"],
+    ] as const)
+      expect(
+        (await drive(env, ["default", "config", "set", key, value, "--defaults", "--json"])).failure,
+      ).toBeUndefined()
+    await drive(env, typed)
+    expect(argvOf(env).join(" ")).toContain("Kai Sample")
   })
 
   it("refuses record for one profile: it is one choice for the whole tool", async () => {
@@ -209,5 +221,58 @@ describe("Google request events", () => {
       ["provider.response", "GET /drive/v3/files/:id", 404, "error"],
     ])
     expect(JSON.stringify(events)).not.toContain("synthetic")
+  })
+
+  it("writes each retry as its own line: the 429 with Google's reason, then attempt 2 with the wait", async () => {
+    const answers = [
+      {
+        status: 429,
+        body: { error: { code: 429, errors: [{ reason: "rateLimitExceeded" }], message: "Kai's quota" } },
+      },
+      { status: 200, body: { id: "synthetic" } },
+    ]
+    const client = observeRequests(
+      new OAuth2Client({
+        transporterOptions: {
+          retryConfig: { retry: 1, retryDelay: 5 },
+          fetchImplementation: async () => {
+            const { status, body } = answers.shift() ?? { status: 200, body: {} }
+            return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } })
+          },
+        },
+      }),
+    )
+    client.setCredentials({ access_token: "SYNTHETIC", expiry_date: Date.now() + 3600000 })
+    const { env } = fixture()
+    const program = new Command("drive").exitOverride()
+    program.command("probe").action(async () => {
+      await googleApi(client).call("drive.files.get", { fileId: "1AbCsynthetic", fields: "name" })
+    })
+    recordRuns(program, { app: DRIVE_APP, settings: () => ({}), env, streams: captureStreams() })
+    await program.parseAsync(["probe"], { from: "user" })
+    const dir = runsDirFor(DRIVE_APP, env)
+    const events = readEvents(findRun(dir, listRuns(dir)[0]?.runId ?? "")?.dir ?? "")
+    expect(
+      events.map(({ event, attempt, status, outcome, provider_error }) => [
+        event,
+        attempt,
+        status,
+        outcome,
+        provider_error,
+      ]),
+    ).toEqual([
+      ["provider.request", 1, undefined, undefined, undefined],
+      ["provider.response", 1, 429, "error", "rateLimitExceeded"],
+      ["provider.request", 2, undefined, undefined, undefined],
+      ["provider.response", 2, 200, "ok", undefined],
+    ])
+    expect(events[2]).toMatchObject({
+      level: "wire",
+      method: "GET",
+      endpoint_template: "/drive/v3/files/:id",
+      transport: "http",
+    })
+    expect(events[2]?.wait_ms).toBeGreaterThanOrEqual(0)
+    expect(JSON.stringify(events)).not.toMatch(/synthetic|fields|Kai|SYNTHETIC/)
   })
 })

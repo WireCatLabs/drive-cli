@@ -16,7 +16,9 @@ const Common = {
 const RunSettings = {
   record: v.optional(v.boolean()),
   keep_runs_for_days: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
-  record_input: v.optional(v.boolean()),
+  keep_successful_runs_for_days: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  runs_size_limit_mb: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  record_input: v.optional(v.union([v.boolean(), v.literal("failed")])),
 }
 export const DEFAULTS_ONLY = new Set(Object.keys(RunSettings))
 export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])

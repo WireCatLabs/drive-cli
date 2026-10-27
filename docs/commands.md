@@ -23,7 +23,7 @@ These options apply to the selected profile and current invocation.
 | `--yes` | answer a policy confirmation; cannot override deny or readonly. |
 | `--allow-dangerous` | answer a permanent-deletion confirmation. |
 | `--permission <key=level>` | temporary policy override; repeat to add keys. |
-| `--record` | keep this run, with the command as typed and secrets hidden; record_input false leaves the typed words out. |
+| `--record` | keep this run even where the config says record false; record_input false leaves the typed words out. |
 | `--no-record` | do not keep this run, even if it fails. |
 
 ## `drive session`
@@ -4190,7 +4190,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, record, record_input, keep_runs_for_days, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |
@@ -4449,7 +4449,7 @@ the instructions an agent is given for this tool
 
 ### `drive skill show`
 
-print SKILL.md — `drive skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
+print SKILL.md — `drive skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
 
 ```sh
 drive skill show [options]
@@ -4544,7 +4544,7 @@ drive runs list [query] [options]
 | `--limit <n>` | how many to show. Default: `20`. |
 | `--page <n>` | which page, starting at 1. Default: `1`. |
 
-**Returns:** run — run_id, command, started_at, status, cli_version, profile, completed_at, requests, and 20 more; every field: drive commands info runs list
+**Returns:** run — run_id, command, started_at, status, cli_version, profile, completed_at, requests, and 23 more; every field: drive commands info runs list
 
 **Example:** `drive runs list --limit 10`
 
@@ -4564,7 +4564,7 @@ drive runs show <run-id> [options]
 |---|---|
 | `--problems` | only failed responses, warnings and crashes. |
 
-**Returns:** run details — run_id, command, started_at, status, cli_version, directory, event_count, events, and 19 more; every field: drive commands info runs show
+**Returns:** run details — run_id, command, started_at, status, cli_version, directory, event_count, events, and 22 more; every field: drive commands info runs show
 
 **Example:** `drive runs show run-101`
 
