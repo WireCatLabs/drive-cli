@@ -97,7 +97,7 @@ describe("failure handler", () => {
       {
         kind: "user_action",
         step: "owner.sign-in",
-        why: "the owner runs drive <profile> session start on the computer running drive; an agent cannot do it over MCP",
+        why: "the owner runs drive <profile> session start or signs in from WireCat Desktop; an agent cannot do it over MCP",
         safe_to_auto_execute: false,
       },
     ])

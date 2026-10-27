@@ -22,7 +22,7 @@ const STEPS = defineSteps([
   {
     id: "owner.sign-in",
     kind: "user_action",
-    why: "the owner runs drive <profile> session start on the computer running drive; an agent cannot do it over MCP",
+    why: "the owner runs drive <profile> session start or signs in from WireCat Desktop; an agent cannot do it over MCP",
   },
 ])
 
