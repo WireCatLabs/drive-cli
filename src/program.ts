@@ -586,6 +586,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       return {
         record: defaults?.record,
         keepRunsForDays: defaults?.keep_runs_for_days,
+        keepSuccessfulRunsForDays: defaults?.keep_successful_runs_for_days,
+        runsSizeLimitMb: defaults?.runs_size_limit_mb,
         recordInput: defaults?.record_input,
       }
     },

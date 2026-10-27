@@ -1,9 +1,13 @@
 # Changelog
 
-## Unreleased
+## 0.44.0 — 27.10.2026
 
 ### Changed — may break callers
 
+- **cli-core 0.467.0 and cli-base 0.64.0.** cli-core accepts only cli-base 0.64, so both pins move together.
+- **A `drive search` hit marks the text someone else wrote (cli-core 0.464.0).** A document's title and excerpt come
+  from a shared drive, so each hit carries `untrusted: ["title", "excerpt"]` and an agent reads them as data. A caller
+  that checks hits against an older, strict copy of their shape refuses the new field.
 - **The MCP server is `drive <profile> mcp serve`; `drive mcp` only shows help (cli-core 0.463.0).** `mcp` is now a
   group, like `session` and `skill`: `mcp serve` starts the server (stdio, or `--http`), `mcp serve --tools` lists
   the commands it offers, and `mcp revoke` replaces `mcp --revoke`. With no profile, `drive mcp serve` and
@@ -12,6 +16,21 @@
   and the MCP registry entry (`server.json`) passes `mcp serve`. `mcp revoke` is refused under `--read-only`.
 - **The shared store moves to schema 35 (cli-core 0.463.0).** The first run upgrades it and says so; every other
   WireCat CLI that uses the same store then needs a version that speaks schema 35 — run `<cli> upgrade` for each.
+- **Every run is now kept, successes too (cli-core record-every-run).** Before, only failed runs were kept unless
+  `--record` or `record: true`. A successful run stays 7 days (`keep_successful_runs_for_days`), a failed one 30
+  (`keep_runs_for_days`), and the run log stays under `runs_size_limit_mb` (200 MB; the oldest successes go first).
+  **Privacy:** a kept run holds the command as typed (secrets and phone numbers hidden), so a successful `search` now
+  leaves its words in a local, 0600 file for 7 days. `record_input: "failed"` keeps them only in a failed run,
+  `record_input: false` everywhere masks them; `record: false` now keeps failed runs (before: nothing); `--no-record`
+  keeps nothing. `mcp serve` keeps a success only under `--record`.
+- **Re-run `drive <profile> mcp add` or `drive <profile> mcp config`** after this upgrade, so your AI app starts
+  `mcp serve`.
+- **`drive skill show`, `skill status` and `skill install` answer `--json` as `{ item, meta }` (cli-core
+  0.462.0).** What was the whole answer is now under `item`, like every other single-thing answer.
+- **A run says who asked for it (cli-core).** `run.json` gains `via` (`cli`, `mcp-stdio`, `mcp-http`, `desktop`),
+  `mcp` (tool, request and connection ids) and `agent.client` (the AI app's name and version). Over HTTP the agent
+  is the browser app's MCP session, no longer whichever agent started `mcp serve --http`. A reader that checks a run
+  against an older copy of its shape refuses the new fields.
 
 ### Security
 
@@ -21,6 +40,15 @@
 
 ### Added
 
+- **Each Google request in a run is one line per attempt.** A request line now carries the method, the path with
+  every id as `:id`, `transport: "http"`, `attempt` (2 and up when the Google client retried) and `wait_ms`, the time
+  waited before the retry; a refused answer names Google's reason (`rateLimitExceeded`). A 429 shows as an error
+  answer, then the retry. Never the URL as sent, its query, or a body.
+- **`config set keep_successful_runs_for_days`, `runs_size_limit_mb` and `record_input "failed"`** (`--defaults`).
+- **`drive upgrade` restarts the HTTP MCP server and names the stdio MCP sessions still on the old version**
+  (cli-core). After an install it restarts each `mcp serve --http` that `mcp server start` launched, with the same
+  port, address and limits, and lists this install's stdio `mcp serve` processes as `stale_sessions` to restart from
+  your AI app. It works from the next upgrade on.
 - **A Drive file attached to a calendar event is linked to that event (cli-core 0.453.0).** When gcal and drive keep
   one local store, the event's attachment points to the document drive saved for that file. The two can sync in either
   order: the link is made when the second one stores its side.
