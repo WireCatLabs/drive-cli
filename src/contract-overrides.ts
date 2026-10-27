@@ -28,27 +28,6 @@ export const SHELL_OVERRIDES: Readonly<{
       reason: "Drive binds agent installation to its own output renderer and provider skill locations.",
     },
     {
-      command: ["skill", "show"],
-      field: "examples",
-      before: ["drive skill show", "drive skill show follow-ups"],
-      after: ["drive skill show"],
-      reason: "Drive binds agent installation to its own output renderer and provider skill locations.",
-    },
-    {
-      command: ["skill", "show"],
-      field: "arguments",
-      before: [
-        {
-          name: "name",
-          required: false,
-          variadic: false,
-          description: "one of the skills shipped for a task: follow-ups, link-conversations",
-        },
-      ],
-      after: [],
-      reason: "Drive binds agent installation to its own output renderer and provider skill locations.",
-    },
-    {
       command: ["skill", "install"],
       field: "summary",
       before: "install the tool's instructions for AI agents",
