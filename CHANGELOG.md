@@ -4,6 +4,9 @@
 
 ### Changed — may break callers
 
+- **cli-core 0.464.0 and cli-base 0.64.0.** cli-core 0.464 accepts only cli-base 0.64, so both pins move together.
+  `upgrade` now restarts the HTTP MCP server that `mcp server start` started, on the new version, and names the MCP
+  sessions over stdio that still run the old one (cli-core #2117). Every search hit kind carries `untrusted`.
 - **The MCP server is `drive <profile> mcp serve`; `drive mcp` only shows help (cli-core 0.463.0).** `mcp` is now a
   group, like `session` and `skill`: `mcp serve` starts the server (stdio, or `--http`), `mcp serve --tools` lists
   the commands it offers, and `mcp revoke` replaces `mcp --revoke`. With no profile, `drive mcp serve` and

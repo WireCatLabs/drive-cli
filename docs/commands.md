@@ -4449,7 +4449,7 @@ the instructions an agent is given for this tool
 
 ### `drive skill show`
 
-print SKILL.md — `drive skill install` puts it where Claude Code, Codex and Gemini CLI look for it; --for prints the copy already there
+print SKILL.md — `drive skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
 
 ```sh
 drive skill show [options]
