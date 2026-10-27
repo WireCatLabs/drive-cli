@@ -410,7 +410,9 @@ it does not convert local Markdown into a formatted Google Doc.
 Add `--read-only` when this server should refuse writes.
 
 For an agent without terminal access, set executable `drive` and arguments
-`personal mcp serve`. The connected account must be on the computer running this server.
+`personal mcp serve`. The connected account must be on the computer running this server. To give one agent
+several accounts, use `mcp serve --profiles work,personal` or `--profiles all`; each tool call then names its
+profile. Plain `drive mcp serve`, with no profile, refuses and lists the profiles.
 
 ```sh
 drive personal mcp serve --tools --json

@@ -151,8 +151,12 @@ export const readSnapshot = (env: NodeJS.ProcessEnv, name: string, id: string): 
   }
 }
 
-/** `drive mcp serve --http` for every profile: its own login, beside the profiles' folders, not one of them. */
-export const everyProfileTokenFile = (env: NodeJS.ProcessEnv) => join(paths(env).state, "mcp-http-all.json")
+/**
+ * `drive mcp serve --http --profiles <a,b|all>`: each set its own login, beside the profiles' folders, so a list's
+ * login never opens the server of other profiles. `all` is `mcp-http-all.json`, the file it always had.
+ */
+export const profileSetTokenFile = (env: NodeJS.ProcessEnv, option: string) =>
+  join(paths(env).state, `mcp-http-${option}.json`)
 
 /** Where `mcp serve --http` keeps the hashes of the tokens it issued; its lock and log sit beside it. */
 export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>

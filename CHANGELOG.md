@@ -4,6 +4,15 @@
 
 ### Changed — may break callers
 
+- **`drive mcp serve` no longer serves every profile by default.** A server serves one named
+  profile (`drive personal mcp serve`), a list (`drive mcp serve --profiles work,personal`) or every profile
+  (`--profiles all`). With neither it exits 2 (`validation_error`) and lists the profiles; a profile word together
+  with `--profiles`, an unknown name, or `all` inside a list is refused the same way, and under `DRIVE_PROFILE_LOCK`
+  `--profiles` may name only the locked profile (exit 5). `mcp revoke` and `mcp server start|stop|status` take the
+  same `--profiles`. Update a client set up with plain `drive mcp serve` to add `--profiles all`; the MCP registry
+  entry (`server.json`) now passes it. `--profiles all` keeps the browser login it had, so connected apps stay logged
+  in; a list gets a login of its own. The startup line names the profiles served. The Glama image runs
+  `drive glama mcp serve` again, not the help-only `mcp`.
 - **cli-core 0.469.0 and cli-base 0.65.0.** cli-core 0.469 accepts only cli-base 0.65, so both pins move together.
   cli-base 0.65 knows the verbs `serve` and `revoke`, so their lint baseline entries are gone, and its `cli-dev bundle`
   finds a server started with a flag before `mcp serve`. From cli-core 0.468, an MCP server offers a command that only

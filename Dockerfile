@@ -4,4 +4,4 @@ FROM node:24-slim
 # hadolint ignore=DL3016
 RUN npm install -g @wirecat/drive-cli && npm cache clean --force
 USER node
-CMD ["drive", "glama", "mcp"]
+CMD ["drive", "glama", "mcp", "serve"]

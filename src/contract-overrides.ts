@@ -1,5 +1,22 @@
 import type { SharedContractOverride } from "@wirecat/cli-base/commands"
 
+const MCP_REASON =
+  "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands."
+
+const NOTES_REASON =
+  "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope."
+
+const SEARCH_REASON =
+  "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific."
+
+const PROFILES_OPTION = {
+  flags: "--profiles <names|all>",
+  description:
+    "serve several profiles from one server instead of one: names, comma-separated, or all for every profile",
+  takes_value: true,
+  mandatory: false,
+}
+
 // Reviewed differences from Core. A changed default requires reviewing this declaration.
 export const SHELL_OVERRIDES: Readonly<{
   skill: readonly SharedContractOverride[]
@@ -111,8 +128,16 @@ export const SHELL_OVERRIDES: Readonly<{
       field: "children",
       before: ["serve", "revoke", "server", "config", "add", "check"],
       after: ["serve", "revoke", "server"],
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
+      reason: MCP_REASON,
+    },
+    {
+      command: ["mcp", "serve"],
+      field: "description",
+      before:
+        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; with no profile, `drive mcp serve` serves every profile and each tool asks which",
+      after:
+        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which",
+      reason: MCP_REASON,
     },
     {
       command: ["mcp", "serve"],
@@ -126,8 +151,7 @@ export const SHELL_OVERRIDES: Readonly<{
         "drive personal mcp serve",
         "drive personal mcp serve --http --public-url https://laptop.example.ts.net",
       ],
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
+      reason: MCP_REASON,
     },
     {
       command: ["mcp", "serve"],
@@ -188,9 +212,25 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
+        PROFILES_OPTION,
       ],
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
+      reason: MCP_REASON,
+    },
+    {
+      command: ["mcp", "revoke"],
+      field: "description",
+      before:
+        "forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again",
+      after:
+        "forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again",
+      reason: MCP_REASON,
+    },
+    {
+      command: ["mcp", "revoke"],
+      field: "options",
+      before: [],
+      after: [PROFILES_OPTION],
+      reason: MCP_REASON,
     },
     {
       command: ["mcp", "server", "start"],
@@ -230,9 +270,23 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
+        PROFILES_OPTION,
       ],
-      reason:
-        "Drive exposes Google document tools over stdio and HTTP using OAuth grants and its document permission adapter; its tool listing and command catalogue replace the messenger setup commands.",
+      reason: MCP_REASON,
+    },
+    {
+      command: ["mcp", "server", "stop"],
+      field: "options",
+      before: [],
+      after: [PROFILES_OPTION],
+      reason: MCP_REASON,
+    },
+    {
+      command: ["mcp", "server", "status"],
+      field: "options",
+      before: [],
+      after: [PROFILES_OPTION],
+      reason: MCP_REASON,
     },
   ],
   notes: [
@@ -241,8 +295,7 @@ export const SHELL_OVERRIDES: Readonly<{
       field: "description",
       before: "notes kept in the shared store",
       after: "write notes about an imported document",
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes"],
@@ -255,24 +308,21 @@ export const SHELL_OVERRIDES: Readonly<{
         remote: "none",
         local: "read",
       },
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes"],
       field: "children",
       before: ["list", "show", "add", "edit", "remove"],
       after: ["add", "list", "show", "edit", "remove"],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "add"],
       field: "description",
       before: "write a note",
       after: "write a note about a document",
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "add"],
@@ -299,8 +349,7 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "the note's text",
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "add"],
@@ -321,24 +370,21 @@ export const SHELL_OVERRIDES: Readonly<{
           mandatory: false,
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "add"],
       field: "examples",
       before: null,
       after: ['drive personal notes add DOC_ID "Check the numbers" --title Review'],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "list"],
       field: "description",
       before: "list stored notes",
       after: "list a document's notes",
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "list"],
@@ -602,8 +648,7 @@ export const SHELL_OVERRIDES: Readonly<{
           },
         ],
       },
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "list"],
@@ -630,8 +675,7 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "field:value terms that narrow the list — the fields are below",
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "list"],
@@ -653,16 +697,14 @@ export const SHELL_OVERRIDES: Readonly<{
           default: 1,
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "list"],
       field: "examples",
       before: null,
       after: ["drive personal notes list DOC_ID", "drive personal notes list DOC_ID text:review --limit 10"],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "show"],
@@ -689,24 +731,21 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "note:<id> reference, as notes list prints it",
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "show"],
       field: "examples",
       before: null,
       after: ["drive personal notes show DOC_ID note:NOTE_ID"],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "edit"],
       field: "description",
       before: "change a note",
       after: "replace a note's text",
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "edit"],
@@ -745,8 +784,7 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "the note's new text",
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "edit"],
@@ -760,24 +798,21 @@ export const SHELL_OVERRIDES: Readonly<{
           mandatory: true,
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "edit"],
       field: "examples",
       before: null,
       after: ['drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2'],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "remove"],
       field: "description",
       before: "remove a note",
       after: "delete one note",
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "remove"],
@@ -804,16 +839,14 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "note:<id> reference, as notes list prints it",
         },
       ],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
     {
       command: ["notes", "remove"],
       field: "examples",
       before: null,
       after: ["drive personal notes remove DOC_ID note:NOTE_ID"],
-      reason:
-        "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
+      reason: NOTES_REASON,
     },
   ],
   commands: [
@@ -884,8 +917,7 @@ export const SHELL_OVERRIDES: Readonly<{
       field: "summary",
       before: "search the local archive",
       after: null,
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
@@ -893,8 +925,7 @@ export const SHELL_OVERRIDES: Readonly<{
       before:
         "find things by text: one resource when you know it (messages, notes), or search all across messages and notes; for mail, the separate memo CLI: memo search mail",
       after: "search imported documents by words, and by meaning when indexed",
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
@@ -908,8 +939,7 @@ export const SHELL_OVERRIDES: Readonly<{
           description: "words to look for",
         },
       ],
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
@@ -937,16 +967,14 @@ export const SHELL_OVERRIDES: Readonly<{
           mandatory: false,
         },
       ],
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
       field: "children",
       before: ["all", "messages", "notes", "conversations", "runs"],
       after: [],
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
@@ -956,16 +984,14 @@ export const SHELL_OVERRIDES: Readonly<{
         remote: "none",
         local: "read",
       },
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
     {
       command: ["search"],
       field: "examples",
       before: null,
       after: ["drive personal search budget", 'drive personal search "quarterly plan" --exact --limit 5'],
-      reason:
-        "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
+      reason: SEARCH_REASON,
     },
   ],
 }

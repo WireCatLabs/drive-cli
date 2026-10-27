@@ -83,8 +83,8 @@ import {
   ACCOUNT_FREE_COMMANDS,
   ANY_PROFILE_COMMANDS,
   describeDriveProgram,
-  EVERY_PROFILE_COMMANDS,
   markProfileFree,
+  PROFILE_SET_COMMANDS,
 } from "./registry.js"
 import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
@@ -490,11 +490,11 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    // `drive mcp serve` with no profile serves every profile; each profile's own `drive <profile> mcp serve` checks its policy.
+    // The action names the profiles or refuses; each profile's own `drive <profile> mcp serve` checks its policy.
     if (
-      EVERY_PROFILE_COMMANDS.has(words) &&
+      PROFILE_SET_COMMANDS.has(words) &&
       !options.mcp &&
-      !(profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)
+      (action.opts().profiles !== undefined || !(profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK))
     )
       return
     selected()
