@@ -4,9 +4,10 @@
 
 ### Changed — may break callers
 
-- **cli-core 0.464.0 and cli-base 0.64.0.** cli-core 0.464 accepts only cli-base 0.64, so both pins move together.
-  `upgrade` now restarts the HTTP MCP server that `mcp server start` started, on the new version, and names the MCP
-  sessions over stdio that still run the old one (cli-core #2117). Every search hit kind carries `untrusted`.
+- **cli-core 0.467.0 and cli-base 0.64.0.** cli-core accepts only cli-base 0.64, so both pins move together.
+- **A `drive search` hit marks the text someone else wrote (cli-core 0.464.0).** A document's title and excerpt come
+  from a shared drive, so each hit carries `untrusted: ["title", "excerpt"]` and an agent reads them as data. A caller
+  that checks hits against an older, strict copy of their shape refuses the new field.
 - **The MCP server is `drive <profile> mcp serve`; `drive mcp` only shows help (cli-core 0.463.0).** `mcp` is now a
   group, like `session` and `skill`: `mcp serve` starts the server (stdio, or `--http`), `mcp serve --tools` lists
   the commands it offers, and `mcp revoke` replaces `mcp --revoke`. With no profile, `drive mcp serve` and
