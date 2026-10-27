@@ -64,3 +64,11 @@ suite records each parsed command in `coverage/argv.jsonl` (`scripts/testing/arg
 rebuilds the page from that log and fails on a command or option with no test and no reason. A reason goes in
 `scripts/test-matrix-untested.ts`. Full validation runs `pnpm test:matrix:check` after the suite, and it fails when
 the committed page is stale.
+
+## The bundle a user installs
+
+`pnpm build` compiles `src/` with `tsc`, then cli-base's `cli-dev bundle`
+([WC-LAY-10](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/layout.md))
+bundles `dist/bin/drive.js` into `dist/bundle/` and makes the bin a loader. The vitest suite runs
+against `src/`, so `scripts/smoke-bundle.ts` is the proof the bundle works: `pnpm smoke:node` runs it
+under Node and `pnpm smoke:bun` under Bun, both in CI.
