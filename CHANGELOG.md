@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Security
+
+- **The secret scan catches Google OAuth tokens.** gitleaks' own rules know Google API keys only, so an access token
+  (`ya29.…`) or a refresh token (`1//…`) with no keyword beside it reached a commit unnoticed. `.gitleaks.toml` now
+  has a rule for each; the pre-commit hook and CI use it.
+
 ### Added
 
 - **A Drive file attached to a calendar event is linked to that event (cli-core 0.453.0).** When gcal and drive keep
