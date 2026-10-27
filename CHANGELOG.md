@@ -21,6 +21,12 @@
   keeps nothing. `mcp serve` keeps a success only under `--record`.
 - **Re-run `drive <profile> mcp add` or `drive <profile> mcp config`** after this upgrade, so your AI app starts
   `mcp serve`.
+- **`drive skill show`, `skill status` and `skill install` answer `--json` as `{ item, meta }` (cli-core
+  0.462.0).** What was the whole answer is now under `item`, like every other single-thing answer.
+- **A run says who asked for it (cli-core).** `run.json` gains `via` (`cli`, `mcp-stdio`, `mcp-http`, `desktop`),
+  `mcp` (tool, request and connection ids) and `agent.client` (the AI app's name and version). Over HTTP the agent
+  is the browser app's MCP session, no longer whichever agent started `mcp serve --http`. A reader that checks a run
+  against an older copy of its shape refuses the new fields.
 
 ### Security
 
