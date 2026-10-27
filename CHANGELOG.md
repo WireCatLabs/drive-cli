@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Search by meaning answers in a fraction of a second on a large store (cli-core 0.451.0).** Ranking files by meaning
+  now uses the vector index instead of reading every chunk in the store: on one archive with 600,000 chunks it took
+  7–18 s a query and now about 0.05 s, with the same results. It still reads every chunk when the index is not ready.
+- **Meaning search runs on the native ONNX Runtime on Windows too.** After `drive models download e5-small`, the model
+  uses the native library on Windows x64 and arm64, as it already did on Linux and macOS: 2–3× faster than
+  WebAssembly. The download takes `onnxruntime.dll` from the `onnxruntime-node` npm package (113.5 MB, once, checked
+  by sha256). Picture models (`drive images models download`) use the native library as well.
+
 ## 0.42.0 — 27.10.2026
 
 ### Added
