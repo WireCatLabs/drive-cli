@@ -4397,7 +4397,7 @@ drive <profile> mcp server start [options]
 |---|---|
 | `--port <port>` | the local port (default 8765). |
 | `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
-| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 **Returns:** start the HTTP MCP server in the background
 
@@ -4415,7 +4415,7 @@ drive <profile> mcp server stop [options]
 
 | Option | What it does |
 |---|---|
-| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 **Returns:** stop the background HTTP MCP server
 
@@ -4431,7 +4431,7 @@ drive <profile> mcp server status [options]
 
 | Option | What it does |
 |---|---|
-| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
 
 **Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
 

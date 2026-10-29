@@ -161,3 +161,17 @@ export const profileSetTokenFile = (env: NodeJS.ProcessEnv, option: string) =>
 /** Where `mcp serve --http` keeps the hashes of the tokens it issued; its lock and log sit beside it. */
 export const httpTokenFile = (env: NodeJS.ProcessEnv, profile: string) =>
   join(profileDir(env, profile), "mcp-http.json")
+
+/** What `--profiles` names: `all`, read again on each session, or a fixed sorted list. */
+export interface ProfileSet {
+  /** What `--profiles` takes to name this set again: `all`, or the names comma-separated. */
+  option: string
+  profiles: () => readonly string[]
+}
+
+/** How the startup line names a set, so the owner sees which accounts an agent reaches. */
+export const profileSetLabel = ({ option, profiles }: ProfileSet) => {
+  const names = profiles().join(", ")
+  if (option === "all") return `every profile (${names || "none yet"})`
+  return profiles().length === 1 ? `profile ${names}` : `profiles ${names}`
+}

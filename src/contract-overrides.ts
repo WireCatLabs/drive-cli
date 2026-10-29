@@ -17,6 +17,13 @@ const PROFILES_OPTION = {
   mandatory: false,
 }
 
+const SERVER_PROFILES_OPTION = {
+  flags: "--profiles <names|all>",
+  description: "the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all",
+  takes_value: true,
+  mandatory: false,
+}
+
 // Reviewed differences from Core. A changed default requires reviewing this declaration.
 export const SHELL_OVERRIDES: Readonly<{
   skill: readonly SharedContractOverride[]
@@ -132,18 +139,10 @@ export const SHELL_OVERRIDES: Readonly<{
     },
     {
       command: ["mcp", "serve"],
-      field: "description",
-      before:
-        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; with no profile, `drive mcp serve` serves every profile and each tool asks which",
-      after:
-        "serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which",
-      reason: MCP_REASON,
-    },
-    {
-      command: ["mcp", "serve"],
       field: "examples",
       before: [
         "drive personal mcp serve",
+        "drive mcp serve --profiles work,personal",
         "drive personal mcp serve --http --public-url https://laptop.example.ts.net",
       ],
       after: [
@@ -164,6 +163,7 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
+        PROFILES_OPTION,
         {
           flags: "--http",
           description:
@@ -218,18 +218,9 @@ export const SHELL_OVERRIDES: Readonly<{
     },
     {
       command: ["mcp", "revoke"],
-      field: "description",
-      before:
-        "forget every login `mcp serve --http` gave a browser app, of this profile or, with no profile, of the server of every profile; each app must log in again",
-      after:
-        "forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again",
-      reason: MCP_REASON,
-    },
-    {
-      command: ["mcp", "revoke"],
-      field: "options",
-      before: [],
-      after: [PROFILES_OPTION],
+      field: "examples",
+      before: ["drive personal mcp revoke", "drive mcp revoke --profiles all"],
+      after: ["drive personal mcp revoke"],
       reason: MCP_REASON,
     },
     {
@@ -255,6 +246,7 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
+        SERVER_PROFILES_OPTION,
       ],
       after: [
         {
@@ -270,22 +262,8 @@ export const SHELL_OVERRIDES: Readonly<{
           takes_value: true,
           mandatory: false,
         },
-        PROFILES_OPTION,
+        SERVER_PROFILES_OPTION,
       ],
-      reason: MCP_REASON,
-    },
-    {
-      command: ["mcp", "server", "stop"],
-      field: "options",
-      before: [],
-      after: [PROFILES_OPTION],
-      reason: MCP_REASON,
-    },
-    {
-      command: ["mcp", "server", "status"],
-      field: "options",
-      before: [],
-      after: [PROFILES_OPTION],
       reason: MCP_REASON,
     },
   ],
