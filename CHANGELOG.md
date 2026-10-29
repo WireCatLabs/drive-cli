@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **An error about a server of several profiles repeats its `--profiles`.** When `mcp server start` or `stop` tells
+  you to run `mcp server status` or `start` again, the command it shows now keeps `--profiles all` (or the list),
+  so it runs as written. This comes with cli-core 0.473.0 (cli-base stays 0.65.0), which now provides `--profiles`
+  for `mcp server start|stop|status`; its help reads "the server of several profiles that `mcp serve --profiles`
+  serves". Answers are unchanged, and a server of several profiles that drive 0.45.0 started is still stopped by
+  `mcp server stop --profiles`. `drive --help` lists `mail` under "Works with".
+
 ## 0.45.0 — 27.10.2026
 
 ### Changed — may break callers

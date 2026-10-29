@@ -13,11 +13,10 @@ import {
 import type { Command } from "commander"
 import { readConfig } from "../config.js"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
-import type { ProfileSet } from "../mcp.js"
 import { allOf } from "../output.js"
 import { DRIVE_APP, permissionNames, refuseUnderReadOnly } from "../policy.js"
 import { examples } from "../registry.js"
-import { httpTokenFile, profileSetTokenFile } from "../state.js"
+import { httpTokenFile, type ProfileSet, profileSetLabel, profileSetTokenFile } from "../state.js"
 import type { CommandContext, ProgramOptions } from "./context.js"
 
 const DEFAULT_PORT = 8765
@@ -195,11 +194,14 @@ const installMcpCommandDefinition = (
   })
   const server = mcpServerCommand({
     example: "drive personal",
+    profiles: true,
     target: (self) => {
       const one = served(self.opts<{ profiles?: string }>().profiles, `mcp server ${self.name()}`)
       if ("set" in one)
         return {
           invocation: "drive",
+          // drive 0.45 marked every set's server "default"; a new key would leave those servers unstoppable.
+          profiles: { option: one.set.option, key: "default", label: profileSetLabel(one.set) },
           envPrefix: DRIVE_APP.envPrefix,
           env,
           tokenFile: profileSetTokenFile(env, one.set.option),
@@ -216,14 +218,8 @@ const installMcpCommandDefinition = (
         version: DRIVE_APP.version,
       }
     },
-    // cli-core 0.469.0 answers `profile: null` for a set; name the set as `--profiles` takes it.
-    answer: (self, item) => {
-      const given = self.opts<{ profiles?: string }>().profiles
-      const one = given === undefined ? undefined : served(given, `mcp server ${self.name()}`)
-      output(itemOf(one && "set" in one ? { ...item, profiles: one.set.option } : item))
-    },
+    answer: (_self, item) => output(itemOf(item)),
   })
-  for (const leaf of server.commands) withProfiles(leaf)
   group.addCommand(server)
 }
 
