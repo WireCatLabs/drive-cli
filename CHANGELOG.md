@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.45.0 — 27.10.2026
 
 ### Changed — may break callers
 
@@ -17,6 +17,15 @@
   cli-base 0.65 knows the verbs `serve` and `revoke`, so their lint baseline entries are gone, and its `cli-dev bundle`
   finds a server started with a flag before `mcp serve`. From cli-core 0.468, an MCP server offers a command that only
   fetches into the store through its read tool.
+
+### Fixed
+
+- **`drive` starts in about half the time: the package runs from a bundle.** A command loaded about a thousand module
+  files before doing any work; it now loads a few dozen that hold the same code, built by cli-base's
+  `cli-dev bundle`. Warm `drive search --help` went from 453 to 219 ms, `drive --version` from 44 to 20 ms. Output is
+  unchanged; the Google client libraries still load from the package's own dependencies. A running `drive mcp serve`
+  loads all of its code soon after it starts, so upgrading `drive` in place does not break it. The package is larger:
+  3.3 MB to download instead of 0.57 MB.
 
 ## 0.44.0 — 27.10.2026
 
