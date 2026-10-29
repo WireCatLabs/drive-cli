@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-### Changed
+### Changed — may break callers
 
 - **The agent skill is listed on ClawHub as `wirecat-drive`.** Install it with
   `openclaw skills install @wirecat/wirecat-drive`. The `drive-cli` listing is no longer updated.
