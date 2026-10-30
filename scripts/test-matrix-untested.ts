@@ -34,7 +34,6 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     ...(option ? { option } : {}),
     reason: MCP_SERVER,
   })),
-  { command: "mcp server stop", reason: MCP_SERVER },
   {
     command: "sync",
     option: "--embed",

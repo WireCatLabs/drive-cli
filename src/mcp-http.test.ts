@@ -225,6 +225,7 @@ describe("drive mcp serve --http", () => {
     [["mcp", "server", "stop"], "validation_error", /name the profiles whose server to stop/],
     [["mcp", "server", "status"], "validation_error", /name the profiles whose server to check/],
     [["mcp", "server", "status", "--profiles", "nobody"], "validation_error", /no profile named "nobody"/],
+    [["mcp", "server", "stop", "--profiles", "nobody"], "validation_error", /no profile named "nobody"/],
     [["mcp", "serve", "--profiles", "work", "--tools"], "validation_error", /--tools lists one profile/],
   ])("refuses %j", async (argv, code, message) => {
     const f = fixture()
