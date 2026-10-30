@@ -21,6 +21,11 @@ import type { CommandContext, ProgramOptions } from "./context.js"
 
 const DEFAULT_PORT = 8765
 
+const SERVER_PURPOSE: Readonly<Record<string, string>> = {
+  stop: "whose server to stop",
+  status: "whose server to check",
+}
+
 const installMcpCommandDefinition = (
   program: Command,
   { env, streams, options, selected, output, policyFlags, signal, profileWord }: CommandContext,
@@ -29,7 +34,11 @@ const installMcpCommandDefinition = (
   const profiles = () =>
     Object.keys(readConfig(env, permissionNames(policyFlags().permissionKeys ?? new Set())).profiles).sort()
   // The handbook rule WC-MCP-9: the profiles a server serves are always named, as cli-core's `servedProfiles` does.
-  const served = (given: string | undefined, words: string): { profile: string } | { set: ProfileSet } => {
+  const served = (
+    given: string | undefined,
+    words: string,
+    purpose = "to serve",
+  ): { profile: string } | { set: ProfileSet } => {
     const word = profileWord()
     const listed = () => `profiles here: ${profiles().join(", ") || "none"}`
     if (given === undefined && (word ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)) return { profile: selected() }
@@ -47,7 +56,7 @@ const installMcpCommandDefinition = (
         )
       throw new CliError(
         "validation_error",
-        `name the profiles to serve: \`drive <profile> ${words}\`, or \`drive ${words} --profiles <a,b>\` or ` +
+        `name the profiles ${purpose}: \`drive <profile> ${words}\`, or \`drive ${words} --profiles <a,b>\` or ` +
           `\`--profiles all\` — ${listed()}`,
         { profiles: profiles() },
       )
@@ -183,7 +192,7 @@ const installMcpCommandDefinition = (
     refuseUnderReadOnly(env, "forget the browser logins")
     if (policyFlags().readOnly) throw readOnlyRefusal("--read-only", "forget the browser logins")
     const { revokeAll } = await import("@wirecat/cli-core/mcp")
-    const one = served(args.profiles, "mcp revoke")
+    const one = served(args.profiles, "mcp revoke", "whose browser logins to forget")
     if ("set" in one) {
       revokeAll(profileSetTokenFile(env, one.set.option))
       output(itemOf({ revoked: true, profile: null, profiles: one.set.option }))
@@ -196,7 +205,11 @@ const installMcpCommandDefinition = (
     example: "drive personal",
     profiles: true,
     target: (self) => {
-      const one = served(self.opts<{ profiles?: string }>().profiles, `mcp server ${self.name()}`)
+      const one = served(
+        self.opts<{ profiles?: string }>().profiles,
+        `mcp server ${self.name()}`,
+        SERVER_PURPOSE[self.name()],
+      )
       if ("set" in one)
         return {
           invocation: "drive",
