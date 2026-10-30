@@ -85,7 +85,7 @@ drive personal status --json
 drive commands sync --json
 ```
 
-Search results include the original Google URL. `documents show` includes each tab's text, ID
+Search results include the original Google URL. `documents show`, `list` and `export` print `synced_at` and `age_days`; a copy older than a day adds `missing`, `next` and `meta.complete: false`. `documents show` includes each tab's text, ID
 and title. Native Markdown exports are saved separately from the all-tab text used for indexing.
 Export refuses to overwrite an existing destination file.
 

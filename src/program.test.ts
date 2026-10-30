@@ -59,6 +59,48 @@ describe("standalone command workflow", () => {
       ),
     ).rejects.toMatchObject({ code: "validation_error", details: { reason: "export.exists" } })
   })
+  it("dates a local copy and warns only when it is older than a day", async () => {
+    const f = fixture()
+    const options = { env: f.env, source: async () => f.source }
+    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
+    const show = async () => {
+      const streams = captureStreams()
+      await createProgram({ ...options, streams }).parseAsync(["default", "documents", "show", "doc-a", "--json"], {
+        from: "user",
+      })
+      return JSON.parse(streams.stdout.join(""))
+    }
+    const fresh = await show()
+    expect(fresh.item).toMatchObject({ synced_at: expect.any(String), age_days: 0 })
+    expect(fresh.meta.complete).toBe(true)
+    expect(fresh.missing).toBeUndefined()
+    expect(fresh.next).toBeUndefined()
+
+    const state = readState(f.env, "default", "synthetic-principal")
+    saveState(f.env, "default", { ...state, lastSync: new Date(Date.now() - 2 * 86_400_000).toISOString() })
+    const stale = await show()
+    expect(stale.item.age_days).toBe(2)
+    expect(stale.meta.complete).toBe(false)
+    expect(stale.missing).toEqual([expect.objectContaining({ field: "synced_at", step: "sync.run" })])
+    expect(stale.next).toEqual([expect.objectContaining({ step: "sync.run", command: "sync" })])
+
+    const target = join(f.directory, "stale.md")
+    const exported = captureStreams()
+    await createProgram({ ...options, streams: exported }).parseAsync(
+      ["default", "documents", "export", "doc-a", "--output", target, "--json"],
+      { from: "user" },
+    )
+    expect(JSON.parse(exported.stdout.join(""))).toMatchObject({ item: { age_days: 2 }, meta: { complete: false } })
+    const listed = captureStreams()
+    await createProgram({ ...options, streams: listed }).parseAsync(["default", "documents", "list", "--json"], {
+      from: "user",
+    })
+    expect(JSON.parse(listed.stdout.join(""))).toMatchObject({
+      items: [{ age_days: 2 }, { age_days: 2 }],
+      meta: { complete: false },
+      missing: [{ field: "synced_at" }],
+    })
+  })
   it("canonicalizes root aliases when selecting folders", async () => {
     const f = fixture([])
     const streams = captureStreams()
