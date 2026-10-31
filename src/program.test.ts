@@ -2,11 +2,11 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { flatten, parseCommandsDocument } from "@wirecat/cli-base/commands"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { createProgram } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
 import { readState, saveState } from "./state.js"
-import { commandResult, file, fixture } from "./testing.js"
+import { commandResult, content, file, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
   it("prints the version without a trailing blank line", async () => {
@@ -100,6 +100,63 @@ describe("standalone command workflow", () => {
       meta: { complete: false },
       missing: [{ field: "synced_at" }],
     })
+  })
+  it("asks Google once whether a stored document changed, and says what to run when it did", async () => {
+    const f = fixture()
+    const stored = "2026-10-01T10:00:00.000Z"
+    f.source.content = async (id) => content({ ...file(id), modifiedAt: stored })
+    const sourceOptions = { env: f.env, source: async () => f.source }
+    await createProgram({ ...sourceOptions, streams: captureStreams() }).parseAsync(["default", "sync"], {
+      from: "user",
+    })
+    const check = async (modifiedTime: string, ...flags: string[]) => {
+      const call = vi.fn(async () => ({ modifiedTime }))
+      const streams = captureStreams()
+      await createProgram({ env: f.env, api: { call }, streams }).parseAsync(
+        ["default", ...flags, "documents", "check", "doc-a", "--json"],
+        { from: "user" },
+      )
+      return { call, body: JSON.parse(streams.stdout.join("")) }
+    }
+    const same = await check(stored)
+    expect(same.call).toHaveBeenCalledExactlyOnceWith(
+      "drive.files.get",
+      { fileId: "doc-a", fields: "modifiedTime", supportsAllDrives: true },
+      undefined,
+    )
+    expect(same.body.item).toEqual({
+      id: "doc-a",
+      changed: false,
+      remote_modified_at: stored,
+      local_modified_at: stored,
+    })
+    expect(same.body.meta.complete).toBe(true)
+    expect(same.body.missing).toBeUndefined()
+
+    const edited = await check("2026-10-02T09:30:00.000Z")
+    expect(edited.body.item).toMatchObject({ changed: true, local_modified_at: stored })
+    expect(edited.body.meta.complete).toBe(false)
+    expect(edited.body.missing).toEqual([expect.objectContaining({ field: "modified_at", step: "sync.run" })])
+    expect(edited.body.next).toEqual([expect.objectContaining({ step: "sync.run", command: "sync" })])
+
+    const sameInstant = await check("2026-10-01T12:00:00+02:00")
+    expect(sameInstant.body.item.changed).toBe(false)
+  })
+  it("refuses documents check offline and for a document that is not imported", async () => {
+    const f = fixture()
+    const call = vi.fn(async () => ({ modifiedTime: "2026-10-01T10:00:00.000Z" }))
+    const run = (...words: string[]) =>
+      createProgram({ env: f.env, api: { call }, streams: captureStreams() }).parseAsync(["default", ...words], {
+        from: "user",
+      })
+    await expect(run("documents", "check", "never-imported")).rejects.toMatchObject({
+      code: "not_found",
+      details: { reason: "document.not-imported" },
+    })
+    await expect(run("--offline", "documents", "check", "doc-a")).rejects.toMatchObject({
+      details: { reason: "offline.refused" },
+    })
+    expect(call).not.toHaveBeenCalled()
   })
   it("starts every next line with the profile the command ran with", async () => {
     const f = fixture()

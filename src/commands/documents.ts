@@ -12,19 +12,26 @@ import { examples } from "../registry.js"
 import { readSnapshot, readState } from "../state.js"
 import { type CommandContext, positive } from "./context.js"
 
-export const importedDocument =
+export const storedDocument =
   ({ env, selected }: Pick<CommandContext, "env" | "selected">) =>
   (input: string) => {
     const id = fileId(input)
     const profile = activeProfile(env, selected())
-    const state = readState(env, selected(), profile.principal)
-    if (!state.documents[id])
+    const doc = readState(env, selected(), profile.principal).documents[id]
+    if (!doc)
       throw new CliError("not_found", "this source is not imported in the selected profile", {
         reason: "document.not-imported",
       })
-    const doc = state.documents[id]
-    return { id, ref: doc.reference, hash: doc.hash, snapshot: readSnapshot(env, selected(), id) }
+    return { id, doc }
   }
+
+export const importedDocument = (context: Pick<CommandContext, "env" | "selected">) => {
+  const stored = storedDocument(context)
+  return (input: string) => {
+    const { id, doc } = stored(input)
+    return { id, ref: doc.reference, hash: doc.hash, snapshot: readSnapshot(context.env, context.selected(), id) }
+  }
+}
 
 export const installDocumentCommands = (program: Command, context: CommandContext) => {
   const { env, selected, output, withIndex } = context

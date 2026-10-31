@@ -320,6 +320,22 @@ drive <profile> documents get <document>
 
 **Example:** `drive personal documents get DOC_ID --json`
 
+### `drive documents check`
+
+ask Google whether an imported document changed since its local copy was made
+
+```sh
+drive <profile> documents check <document>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required | document id or Google Docs URL. |
+
+**Returns:** ask Google whether an imported document changed since its local copy was made
+
+**Example:** `drive personal documents check DOC_ID`
+
 ### `drive documents create`
 
 create an empty Google Doc
