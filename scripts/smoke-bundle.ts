@@ -19,7 +19,8 @@ const check = (what: string, condition: boolean) => {
   if (!condition) failures.push(what)
 }
 
-// Overridden directories also move the keyring entry, so nothing here reads the owner's accounts or store.
+// A moved run still reads the owner's keyring entry: `disabled:` keeps the keyring out of reach, where an unset
+// variable would fall back to `$XDG_RUNTIME_DIR/bus`.
 const isolated = mkdtempSync(join(tmpdir(), `${COMMAND}-bundle-smoke-`))
 const run = (args: string[], env: Record<string, string> = {}) =>
   spawnSync(process.execPath, [`dist/bin/${COMMAND}.js`, ...args], {
@@ -31,6 +32,7 @@ const run = (args: string[], env: Record<string, string> = {}) =>
       [`${PREFIX}_CACHE_DIR`]: join(isolated, "cache"),
       [`${PREFIX}_NO_UPDATE_CHECK`]: "1",
       MESSAGING_STORE: join(isolated, "store.db"),
+      DBUS_SESSION_BUS_ADDRESS: "disabled:",
       ...env,
     },
   })

@@ -65,6 +65,9 @@ drive personal session end
 ```
 
 This removes the profile's local sign-in credentials and retains settings and cached documents.
+A run with moved folders (`DRIVE_CONFIG_DIR` and the other `DRIVE_*_DIR` variables, or a different `HOME` or XDG
+folder) uses your own sign-in but never removes it: there `session end` answers `signed_out: false` and
+`kept: "owners-sign-in"`, and removes only a sign-in made in that run.
 Remove the application from [Google Account connections](https://myaccount.google.com/connections)
 to revoke its Google access. Removing an import root and syncing reconciles managed source
 records and snapshots; separate notes, memories, exports and backups can remain.

@@ -1,11 +1,4 @@
-import {
-  CliError,
-  Credentials,
-  isCliError,
-  type KeyringStore,
-  pathsAreOverridden,
-  systemKeyring,
-} from "@wirecat/cli-base"
+import { CliError, Credentials, isCliError, isMovedRun, type KeyringStore, systemKeyring } from "@wirecat/cli-base"
 import { providerRequest } from "@wirecat/cli-core/cli"
 import {
   credentialStorage,
@@ -41,7 +34,7 @@ const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", 
   service: "drive-cli",
   storage,
   env,
-  isolated: pathsAreOverridden({ appName: "drive-cli", prefix: "DRIVE", env }),
+  isolated: isMovedRun({ appName: "drive-cli", prefix: "DRIVE", env }),
   ...(keyring ? { keyring } : {}),
 })
 export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>

@@ -28,7 +28,6 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
       "a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it " +
       "only to a declined consent",
   })),
-  { command: "session end", reason: "revokes the stored Google token and removes it from the OS keyring" },
   ...[undefined, "--port", "--public-url"].map((option) => ({
     command: "mcp server start",
     ...(option ? { option } : {}),
