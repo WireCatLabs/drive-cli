@@ -565,6 +565,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         "the profile is the first word: drive <profile> <command>; there is no --profile",
       )
     profileWord = lifted.profile ? profileName(lifted.profile) : undefined
+    // cli-core writes the profile into each next[].line from this root option; drive reads it as a first word.
+    program.setOptionValue("profile", profileWord)
     const rest = lifted.rest
     try {
       const running = parse([...prefix, ...rest], settings)
