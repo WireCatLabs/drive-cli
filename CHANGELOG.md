@@ -1,12 +1,19 @@
 # Changelog
 
-## 0.54.0 — 31.10.2026
+## Unreleased
 
 ### Added
 
 - **`drive doctor --online`**, from cli-core 0.507.0: also connects once, sending nothing, and says whether npm has a
   newer drive (`online.version`). Without the flag `doctor` is as before and connects to nothing. Its summary is now
   the one every WireCat CLI shares.
+
+## 0.54.0 — 31.10.2026
+
+### Added
+
+- **`drive doctor --online`**, from cli-core 0.507.0: also connects once and reads the account, sending nothing.
+  Without the flag `doctor` is as before and connects to nothing.
 
 ### Fixed
 
