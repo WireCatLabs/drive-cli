@@ -64,6 +64,11 @@ drive personal sync --embed
 drive personal search 'what did we agree to spend?' --json
 ```
 
+Fields in the query hold for every hit, found by words or by meaning: `budget tag:follow-up` finds by meaning only
+documents tagged `follow-up`, and `-tag:draft` leaves out tagged ones. Only the words are searched by meaning, so a
+query of fields alone (`date>=30d`, `tag:follow-up`) lists just the matching documents, newest first. `date:` reads
+the document's last edit on Google Drive, the same time a hit shows as `updated_at`.
+
 The model download uses the network; embedding runs locally. Drive does not download a missing
 model automatically. Embedding processes pending notes and documents across the shared database,
 including other profiles; Drive search still reads only the selected Google account. Word search works without it. Empty results mean no match in the imported

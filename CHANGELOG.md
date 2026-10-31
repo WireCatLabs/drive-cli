@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`search` keeps the query's fields for documents found by meaning.** `tag:work` or `date>=30d` without `--exact`
+  returned about 20 documents that matched neither; now every field and every excluded word holds for every hit, and
+  a query of fields alone lists the matching documents, newest first. `date:` reads a document's last edit on Google
+  Drive, the time its hit shows as `updated_at`, where it read when drive last imported it (cli-core 0.496.0).
+
 ## 0.50.0 — 31.10.2026
 
 ### Security

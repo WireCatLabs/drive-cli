@@ -67,7 +67,7 @@
     "@googleapis/sheets": "18.1.1",
     "@modelcontextprotocol/server": "2.4.0",
     "@wirecat/cli-base": "0.65.5",
-    "@wirecat/cli-core": "0.494.0",
+    "@wirecat/cli-core": "0.496.0",
     "commander": "15.0.0",
     "google-auth-library": "11.3.1",
     "mammoth": "1.13.0",
