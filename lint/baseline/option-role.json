@@ -2,6 +2,5 @@
   "documents history --activity",
   "memories extract --tab",
   "models set --purpose",
-  "session start --client-file",
-  "session start --credential-storage"
+  "session start --client-file"
 ]

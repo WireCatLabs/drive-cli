@@ -22,6 +22,11 @@ const SHARED_MCP = "cli-core's appMcpCommand; its app-mcp-command tests drive it
 const SHARED_GLOBAL = "cli-core's global option, read by its program; its program tests drive it"
 
 export const UNTESTED: { command: string; option?: string; reason: string }[] = [
+  {
+    command: "doctor",
+    option: "--online",
+    reason: "connects to Google and npm; cli-core's appDoctorCommand, whose app-mcp-command tests drive --online",
+  },
   ...[undefined, "--allow-writes", "--permission"].map((option) => ({
     command: "mcp add",
     ...(option ? { option } : {}),

@@ -7,11 +7,12 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**252 ✅ · 965 ⛔ · 0 ❌** — 206 commands, 1011 options.
+**252 ✅ · 966 ⛔ · 0 ❌** — 206 commands, 1012 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
 | `doctor` |  | ✅ |  |
+| `doctor` | `--online` | ⛔ | connects to Google and npm; cli-core's appDoctorCommand, whose app-mcp-command tests drive --online |
 | `skill show` |  | ✅ |  |
 | `skill show` | `--for` | ✅ |  |
 | `skill install` |  | ✅ |  |
