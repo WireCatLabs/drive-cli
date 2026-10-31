@@ -43,6 +43,11 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     reason: SHARED_GLOBAL,
   })),
   {
+    command: "doctor",
+    option: "--online",
+    reason: "asks npm for the newest version; cli-core's app-doctor-command tests drive it, and it was run by hand",
+  },
+  {
     command: "",
     option: "--dry-run",
     reason: "drive previews in its own hook, before cli-core logs the parsed words; src/dry-run.test.ts checks it",

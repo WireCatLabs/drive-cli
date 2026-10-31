@@ -3,10 +3,9 @@ import { outputFor, upgradeCommand } from "@wirecat/cli-core/cli"
 import { appUpdate } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { paths } from "../config.js"
+import { PACKAGE } from "../identity.js"
 import { DRIVE_APP, refuseUnderReadOnly } from "../policy.js"
 import type { CommandContext } from "./context.js"
-
-const PACKAGE = "@wirecat/drive-cli"
 
 const update = appUpdate({
   packageName: PACKAGE,
