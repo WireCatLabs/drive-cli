@@ -12,6 +12,13 @@
   is per document, not the profile's last sync. It needs the network, so `--offline` refuses it, and a document that
   is not imported fails with `document.not-imported`.
 
+### Fixed
+
+- **Every `next[].line` starts with the profile the command ran with.** `drive personal documents list --limit 1`
+  gave `drive documents list --page 2 --limit 1` and `drive sync`, and running such a line failed with
+  `profile.required`. Now the lines read `drive personal documents list --page 2 --limit 1` and `drive personal sync`,
+  for every step, in answers and in errors.
+
 ## 0.48.0 — 31.10.2026
 
 ### Changed — may break callers

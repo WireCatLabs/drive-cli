@@ -158,6 +158,29 @@ describe("standalone command workflow", () => {
     })
     expect(call).not.toHaveBeenCalled()
   })
+  it("starts every next line with the profile the command ran with", async () => {
+    const f = fixture()
+    const options = { env: f.env, source: async () => f.source }
+    await createProgram({ ...options, streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
+    const listed = captureStreams()
+    await createProgram({ ...options, streams: listed }).parseAsync(
+      ["default", "documents", "list", "--limit", "1", "--json"],
+      { from: "user" },
+    )
+    const page = JSON.parse(listed.stdout.join("")).next.find((step: { step: string }) => step.step === "page.next")
+    expect(page.line).toMatch(/^drive default documents list .*--page 2/)
+    const state = readState(f.env, "default", "synthetic-principal")
+    saveState(f.env, "default", { ...state, lastSync: new Date(Date.now() - 2 * 86_400_000).toISOString() })
+    const shown = captureStreams()
+    await createProgram({ ...options, streams: shown }).parseAsync(
+      ["default", "documents", "show", "doc-a", "--json"],
+      {
+        from: "user",
+      },
+    )
+    const sync = JSON.parse(shown.stdout.join("")).next.find((step: { step: string }) => step.step === "sync.run")
+    expect(sync.line).toBe("drive default sync")
+  })
   it("canonicalizes root aliases when selecting folders", async () => {
     const f = fixture([])
     const streams = captureStreams()
