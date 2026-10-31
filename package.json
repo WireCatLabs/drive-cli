@@ -53,11 +53,13 @@
     "docs:spell": "cspell lint --config cspell.json --no-progress README.md",
     "prepare": "lefthook install || true",
     "lint:commands": "pnpm build && cli-dev lint --cli dist/bin/drive.js",
+    "audit:commands": "pnpm build && bash scripts/audit.sh",
     "version:check": "cli-dev version",
     "version:sync": "cli-dev version --sync",
     "package:check": "node --experimental-strip-types scripts/package-check.ts",
     "test:matrix:check": "cli-dev test-matrix --program scripts/command-program.ts --untested scripts/test-matrix-untested.ts --name drive --check && git diff --exit-code -- docs/dev/test-matrix.md",
-    "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && pnpm test:matrix:check"
+    "test:matrix": "vitest run >/dev/null && pnpm build >/dev/null && pnpm test:matrix:check",
+    "release:check": "pnpm standards:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commands && pnpm audit:commands && pnpm contracts:check && pnpm contracts:upgrade && pnpm test:matrix:check && pnpm docs:check && pnpm generate:check && pnpm version:check && pnpm security:no-leak && pnpm package:check"
   },
   "dependencies": {
     "@bomb.sh/tab": "0.0.22",
