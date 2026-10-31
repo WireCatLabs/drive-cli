@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`session start` falls back to a private file when the keyring fails, and never asks** (WC-SECR-4). It used to
+  stop with `sign-in.not-saved`. Now it signs in, says once on stderr that it used the private file, records
+  `storage: "file"` for the profile and answers it. `--credential-storage file` still chooses the file outright;
+  the keyring is still the default and the safer choice. `sign-in.not-saved` now means the file cannot be read.
+
 ## 0.52.0 — 31.10.2026
 
 ### Added

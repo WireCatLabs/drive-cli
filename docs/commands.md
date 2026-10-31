@@ -43,7 +43,7 @@ drive <profile> session start [options]
 | Option | What it does |
 |---|---|
 | `--client-file <file>` | path to your own Desktop OAuth client JSON, used instead of WireCat's. |
-| `--credential-storage <storage>` | where the sign-in is kept: keyring, or file for a private file. Default: `keyring`. |
+| `--credential-storage <storage>` | where the sign-in is kept: keyring (the default, which falls back to a private file by itself when no keyring works), or file, not recommended. Default: `keyring`. |
 | `--no-browser` | print the sign-in URL instead of opening a browser. |
 | `--grant <scopes>` | also ask for these permissions, comma-separated: write (change Drive files and Docs), activity (read Drive Activity history), apps (see installed Drive apps). |
 

@@ -29,36 +29,31 @@ const Session = v.object({
   }),
 })
 export type Session = v.InferOutput<typeof Session>
+// cli-base warns once per Credentials, and a run over several profiles makes one per profile.
+const warnedRuns = new WeakSet<NodeJS.ProcessEnv>()
+const warnOnce = (env: NodeJS.ProcessEnv) => (message: string) => {
+  if (warnedRuns.has(env)) return
+  warnedRuns.add(env)
+  process.stderr.write(`${message}\n`)
+}
 const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore) => ({
   configDir: paths(env).config,
   service: "drive-cli",
-  storage,
+  // The keyring falls back to the private file by itself (WC-SECR-4); `file` skips the keyring.
+  storage: storage === "keyring" ? ("auto" as const) : storage,
   env,
   isolated: isMovedRun({ appName: "drive-cli", prefix: "DRIVE", env }),
   ...(keyring ? { keyring } : {}),
+  warn: warnOnce(env),
 })
 export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>
   new Credentials(credentialOptions(env, storage, keyring))
 export const notSaved = () =>
   new CliError(
     "configuration_error",
-    "could not save Google sign-in; use an available keyring or explicitly choose --credential-storage file",
+    "could not save Google sign-in: the private credentials file cannot be read; move it aside and sign in again",
     { reason: "sign-in.not-saved" },
   )
-/** Before the browser opens: a missing keyring found only after consent makes the owner sign in twice. */
-export const checkSessionStorage = (
-  env: NodeJS.ProcessEnv,
-  name: string,
-  storage: "keyring" | "file",
-  keyring?: KeyringStore,
-): void => {
-  if (storage === "file") return
-  try {
-    credentials(env, storage, keyring).read(name)
-  } catch {
-    throw notSaved()
-  }
-}
 export const saveSession = (
   env: NodeJS.ProcessEnv,
   name: string,

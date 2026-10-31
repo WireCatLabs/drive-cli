@@ -2,7 +2,7 @@ import { CliError, isCliError, type KeyringStore } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import { type OAuthApplication, profileName, readConfig, writeConfig } from "./config.js"
 import { googleSource } from "./google.js"
-import { ACTIVITY_SCOPE, APPS_SCOPE, notSaved, READ_SCOPE, sessionKeeper, WRITE_SCOPE } from "./tokens.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, credentials, notSaved, READ_SCOPE, sessionKeeper, WRITE_SCOPE } from "./tokens.js"
 
 export interface LoginOptions {
   env: NodeJS.ProcessEnv
@@ -45,6 +45,8 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     ...(options.signal ? { signal: options.signal } : {}),
     ...(options.fetch ? { fetch: options.fetch } : {}),
   })
+  const fileEntry = () => credentials(options.env, "file").read(name)?.secret
+  const fileBefore = fileEntry()
   let principal = ""
   try {
     await keeper.signIn({
@@ -85,8 +87,10 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
   } catch (error) {
     throw signInError(error)
   }
+  // A new sign-in always changes the saved entry, so a changed file means the keyring failed and cli-base used the file.
+  const storage = options.storage === "file" || fileEntry() !== fileBefore ? "file" : "keyring"
   const config = readConfig(options.env)
-  config.profiles[name] = { principal, roots: config.profiles[name]?.roots ?? [], storage: options.storage }
+  config.profiles[name] = { principal, roots: config.profiles[name]?.roots ?? [], storage }
   writeConfig(options.env, config)
-  return { profile: name, signed_in: true, storage: options.storage }
+  return { profile: name, signed_in: true, storage }
 }

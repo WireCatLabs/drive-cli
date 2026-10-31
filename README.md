@@ -60,8 +60,8 @@ Sign-in opens the system browser and receives Google's callback on a temporary l
 scope limits ingestion. Sync reads remote files. Optional remote management commands need a
 new sign-in with `session start --grant write`; history events need `session start --grant activity`.
 
-Credentials use the OS keyring. Without one, explicitly choose `--credential-storage file`;
-the shared helper writes an owner-only private file. Tokens never enter regular config, output
+Credentials use the OS keyring. Where it fails, drive uses an owner-only private file without
+asking and says so once; `--credential-storage file` chooses the file outright, not recommended. Tokens never enter regular config, output
 or diagnostics. `DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET` can provide application
 settings instead of the bundled application; `--client-file` takes priority. The included Desktop
 client identity is public application metadata, separate from private user tokens. If you create

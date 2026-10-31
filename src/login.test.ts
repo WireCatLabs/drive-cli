@@ -104,7 +104,7 @@ describe("browser OAuth", () => {
     expect(f.tokenEndpoint).not.toHaveBeenCalled()
     await expect(fetch(f.redirect())).rejects.toThrow()
   })
-  it("refuses an unavailable keyring before it shows the sign-in URL", async () => {
+  it("falls back to the private file without asking when the keyring is unavailable", async () => {
     const f = setup()
     const broken = new Error("no Secret Service")
     f.options.keyring = {
@@ -118,8 +118,14 @@ describe("browser OAuth", () => {
         throw broken
       },
     }
-    await expect(login(f.options)).rejects.toMatchObject({ details: { reason: "sign-in.not-saved" } })
-    expect(f.options.showUrl).not.toHaveBeenCalled()
+    const stderr = vi.spyOn(process.stderr, "write").mockImplementation(() => true)
+    const answer = await login(f.options)
+    const warnings = stderr.mock.calls.filter(([text]) => String(text).includes("could not reach the OS keyring"))
+    stderr.mockRestore()
+    expect(answer).toEqual({ profile: "default", signed_in: true, storage: "file" })
+    expect(warnings).toHaveLength(1)
+    expect(readConfig(f.env).profiles.default?.storage).toBe("file")
+    expect(authorizedClient(f.env, "default", f.options.keyring).credentials.access_token).toBe("fixture-access-token")
   })
   it("sanitizes token-exchange failures", async () => {
     const f = setup()

@@ -56,7 +56,7 @@ const ENTRIES: Entry[] = [
     "owner.sign-in",
   ],
   ["sign-in.failed", "authentication_error", "the Google sign-in did not finish; run drive <profile> session start"],
-  ["sign-in.not-saved", "configuration_error", "the sign-in could not be saved in the keyring"],
+  ["sign-in.not-saved", "configuration_error", "the sign-in could not be saved: its private file cannot be read"],
   ["sign-in.scope-missing", "permission_error", "the sign-in lacks the Google permission this command needs"],
   ["source.changed", "provider_error", "the document changed during export; retry the sync"],
   [
