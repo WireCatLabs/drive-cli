@@ -4,14 +4,13 @@ import { captureStreams } from "@wirecat/cli-base"
 import { openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it, vi } from "vitest"
 import { activeProfile } from "./config.js"
-import { errorObject } from "./failure.js"
 import { lockProfile } from "./profile-lock.js"
-import { createProgram } from "./program.js"
+
 import { readState, saveSnapshot, saveState, statePath } from "./state.js"
 import { indexOver, openIndex } from "./store.js"
 import { prepareStore } from "./store-transition.js"
 import { sync } from "./sync.js"
-import { content, file, fixture } from "./testing.js"
+import { content, testProgram as createProgram, errorObject, file, fixture } from "./testing.js"
 
 const principal = "synthetic-principal"
 const legacy = async () => {

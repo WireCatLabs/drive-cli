@@ -6,7 +6,7 @@ import { createProgram } from "../dist/program.js"
 import { describeDriveProgram } from "../dist/registry.js"
 
 const root = resolve(import.meta.dirname, "..")
-const program = createProgram({ env: {} })
+const program = createProgram()
 const content = commandsPage({
   cli: "drive",
   commands: describeDriveProgram(program),

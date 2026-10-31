@@ -80,8 +80,8 @@ Google actions and AI extraction; cached-document and knowledge reads remain ava
 ```sh
 drive complete zsh
 drive complete -- api drive-files-g
-drive personal --read-only mcp serve --tools --json
-drive personal --read-only mcp
+drive personal commands --json
+drive personal --read-only mcp serve
 ```
 
 Completion uses cli-base's registry and suggestion engine plus the same shell-script library as
@@ -181,7 +181,7 @@ drive personal api drive-files-get --help
 drive api show docs.documents.batchUpdate --json
 drive personal --dry-run api drive-files-get --file-id synthetic-doc --json
 drive complete zsh
-drive personal --read-only mcp serve --tools --json
+drive personal commands --json
 ```
 
 Profiles are the first word, `drive work ...`, or `DRIVE_PROFILE`. Shared permission levels are deny,

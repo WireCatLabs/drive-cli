@@ -407,7 +407,7 @@ it does not convert local Markdown into a formatted Google Doc.
 
 ## Use a local MCP client
 
-Add `--read-only` when this server should refuse writes.
+Add `--read-only` when this server should refuse writes: every tool call then runs as under `DRIVE_READ_ONLY=1`.
 
 For an agent without terminal access, set executable `drive` and arguments
 `personal mcp serve`. The connected account must be on the computer running this server. To give one agent
@@ -415,13 +415,16 @@ several accounts, use `mcp serve --profiles work,personal` or `--profiles all`; 
 profile. Plain `drive mcp serve`, with no profile, refuses and lists the profiles.
 
 ```sh
-drive personal mcp serve --tools --json
+drive personal commands --json
+drive personal mcp check
 drive personal mcp serve
 ```
 
 The server offers three tools: `drive_tools_search` finds a command and shows its arguments, and
 `drive_read` or `drive_write` runs it with `{ command, arguments }`. The first command above lists
-those commands, so inspect it before starting the stdio server. MCP argument names use snake_case
+those commands with their availability for the profile; `mcp check` starts the server once and counts the tools
+it offers. `drive personal mcp config` prints the entry for an agent's settings, and `drive personal mcp add`
+writes it for Claude Code, Codex or Gemini CLI. MCP argument names use snake_case
 (for example `file_id`); the matching CLI flag is `--file-id`. It uses the same command tree,
 profile and guards. Denied commands and their arguments remain discoverable, with
 `availability.available: false`, a reason and the relevant permission key. The write tool remains

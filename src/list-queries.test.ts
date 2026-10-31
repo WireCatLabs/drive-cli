@@ -1,8 +1,8 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { expect, it, vi } from "vitest"
 import { configuredMirrors, configuredSessions, readConfig, selectedFolders, writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 it("selects configured folders, mirrors and profiles without changing their saved state", () => {
   const f = fixture(["root", "other"])

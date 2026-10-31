@@ -1,5 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs"
-import { dirname } from "node:path"
+import { writeFileSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, LOCAL_WRITE, listOf, listQuery, typedQuery, withQuery } from "@wirecat/cli-core/cli"
@@ -115,7 +114,6 @@ export const installDocumentCommands = (program: Command, context: CommandContex
     .requiredOption("--output <file>", "path of the Markdown file to write; an existing file is refused")
     .action((input: string, args: { output: string }) => {
       const { id, snapshot } = imported(input)
-      if (context.options.mcp) mkdirSync(dirname(args.output), { recursive: true, mode: 0o700 })
       try {
         writeFileSync(args.output, snapshot.markdown, { flag: "wx", mode: 0o600 })
       } catch (error) {

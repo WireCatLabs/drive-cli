@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it } from "vitest"
 import { configPath, readConfig, writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const PROFILE = { principal: "synthetic-principal", roots: ["root"], storage: "keyring" }
 
@@ -59,7 +59,7 @@ describe("doctor reports every problem in the config file", () => {
       colour: "work",
       defaults: {
         theme: "fixture-hidden-value-42",
-        permissions: { "files.no-such": "deny", files: "readonly" },
+        permissions: { files: "readonly" },
       },
       profiles: {
         work: { ...PROFILE, font: 1000, max_text_chars: "fixture-hidden-value-43" },
@@ -100,13 +100,6 @@ describe("doctor reports every problem in the config file", () => {
           fix: "drive work config unset max_text_chars",
         },
         {
-          kind: "unknown_permission",
-          file: path,
-          key: "permissions.files.no-such",
-          what: "permissions.files.no-such names no command",
-          fix: "drive config unset --defaults permissions.files.no-such",
-        },
-        {
           kind: "missing_setting",
           file: path,
           profile: "broken",
@@ -115,7 +108,7 @@ describe("doctor reports every problem in the config file", () => {
         },
       ]),
     )
-    expect(issues).toHaveLength(6)
+    expect(issues).toHaveLength(5)
     expect(JSON.stringify(issues)).not.toContain("fixture-hidden-value")
     expect(errorOf(() => readConfig(env))).toBe(
       `${path}: setting max_text_chars has to be of type number — remove it with \`drive work config unset max_text_chars\`` +

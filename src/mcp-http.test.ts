@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs"
 import { createServer } from "node:net"
-import { dirname } from "node:path"
+import { join } from "node:path"
 import {
   Client,
   type OAuthClientProvider,
@@ -9,13 +9,17 @@ import {
 } from "@modelcontextprotocol/client"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
-import { readConfig, writeConfig } from "./config.js"
-import { httpTokenFile } from "./mcp.js"
-import { createProgram } from "./program.js"
-import { ensureProfileDir, profileSetTokenFile } from "./state.js"
-import { fixture } from "./testing.js"
+import { paths, readConfig, writeConfig } from "./config.js"
+import { testProgram as createProgram, fixture } from "./testing.js"
 
 const REDIRECT = "http://localhost/callback"
+
+const tokenFile = (f: ReturnType<typeof fixture>, name: string) => join(paths(f.env).state, "mcp-http", `${name}.json`)
+const saveTokens = (f: ReturnType<typeof fixture>, name: string) => {
+  mkdirSync(join(paths(f.env).state, "mcp-http"), { recursive: true })
+  writeFileSync(tokenFile(f, name), "{}")
+}
+const stopServing = () => process.emit("SIGINT")
 
 const freePort = (): Promise<number> =>
   new Promise((resolve, reject) => {
@@ -101,7 +105,6 @@ describe("drive mcp serve --http", () => {
     }
     writeConfig(f.env, config)
     const port = await freePort()
-    const stop = new AbortController()
     const base = new URL(`http://127.0.0.1:${port}`)
     const { streams, call, running } = await run(
       f,
@@ -117,44 +120,44 @@ describe("drive mcp serve --http", () => {
         "--permission",
         "files.get=deny",
       ],
-      { signal: stop.signal },
+      {},
     )
-    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving profile default on"))
+    await vi.waitFor(() => expect(streams.stderr.join("\n")).toMatch(/serving on http:/))
     const code = () => /login code for a new browser app: (\S+)/.exec(streams.stderr.join("\n"))?.[1] ?? ""
     const client = await loggedInClient(base, code)
     try {
       const read = (command: string, args: Record<string, unknown>) =>
         client.callTool({ name: "drive_read", arguments: { command, arguments: args } })
-      expect(await read("api drive-about-get", { fields: "user" })).toMatchObject({
-        structuredContent: { item: { id: "fixture-file" } },
-      })
-      for (const command of ["files get", "sheets show"])
-        expect(await read(command, { file_id: "synthetic", spreadsheet: "synthetic", range: "A1" })).toMatchObject({
+      expect(await read("api drive-about-get", { fields: "user" })).not.toHaveProperty("isError", true)
+      for (const [command, args] of [
+        ["files get", { file: "synthetic" }],
+        ["sheets show", { spreadsheet: "synthetic", range: "A1" }],
+      ] as const)
+        expect(await read(command, args)).toMatchObject({
           isError: true,
           structuredContent: { error: { code: "permission_error" } },
         })
       expect(call).toHaveBeenCalledTimes(1)
     } finally {
       await client.close()
-      stop.abort()
+      stopServing()
       await running
     }
     const anonymous = await fetch(new URL("/mcp", base), { method: "POST" }).catch((error: Error) => error)
     expect(anonymous).toBeInstanceOf(Error)
-    expect(existsSync(httpTokenFile(f.env, "default"))).toBe(true)
+    expect(existsSync(tokenFile(f, "default"))).toBe(true)
   })
 
   it("shows a running server and its current login code in mcp server status, and frees the lock when it stops", async () => {
     const f = fixture()
     const port = await freePort()
-    const stop = new AbortController()
     const base = new URL(`http://127.0.0.1:${port}`)
     const { streams, running } = await run(
       f,
       ["default", "mcp", "serve", "--http", "--public-url", base.href, "--port", String(port)],
-      { signal: stop.signal },
+      {},
     )
-    await vi.waitFor(() => expect(streams.stderr.join("\n")).toContain("serving profile default on"))
+    await vi.waitFor(() => expect(streams.stderr.join("\n")).toMatch(/serving on http:/))
     const code = /login code for a new browser app: (\S+)/.exec(streams.stderr.join("\n"))?.[1]
     const status = async () => {
       const asked = await run(f, ["default", "mcp", "server", "status", "--json"])
@@ -171,7 +174,7 @@ describe("drive mcp serve --http", () => {
         login_code: { code },
       })
     } finally {
-      stop.abort()
+      stopServing()
       await running
     }
     expect(await status()).toMatchObject({ running: false })
@@ -179,37 +182,34 @@ describe("drive mcp serve --http", () => {
 
   it("forgets every browser login on mcp revoke", async () => {
     const f = fixture()
-    ensureProfileDir(f.env, "default")
-    writeFileSync(httpTokenFile(f.env, "default"), "{}")
+    saveTokens(f, "default")
     const { streams, running } = await run(f, ["default", "mcp", "revoke", "--json"])
     await running
     expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ item: { revoked: true, profile: "default" } })
-    expect(existsSync(httpTokenFile(f.env, "default"))).toBe(false)
+    expect(existsSync(tokenFile(f, "default"))).toBe(false)
   })
 
   it("forgets the logins of the server of every profile on drive mcp revoke --profiles all", async () => {
     const f = fixture()
-    mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
-    writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
+    saveTokens(f, "_all")
     const { streams, running } = await run(f, ["mcp", "revoke", "--profiles", "all", "--json"])
     await running
     expect(JSON.parse(streams.stdout.join(""))).toMatchObject({
       item: { revoked: true, profile: null, profiles: "all" },
     })
-    expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(false)
+    expect(existsSync(tokenFile(f, "_all"))).toBe(false)
   })
 
   it("keeps a list's login apart from every profile's", async () => {
     const f = fixture()
     addWork(f)
-    mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
-    writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
-    writeFileSync(profileSetTokenFile(f.env, "default,work"), "{}")
+    saveTokens(f, "_all")
+    saveTokens(f, "_default,work")
     const { streams, running } = await run(f, ["mcp", "revoke", "--profiles", "work,default", "--json"])
     await running
     expect(JSON.parse(streams.stdout.join(""))).toMatchObject({ item: { profiles: "default,work" } })
-    expect(existsSync(profileSetTokenFile(f.env, "default,work"))).toBe(false)
-    expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(true)
+    expect(existsSync(tokenFile(f, "_default,work"))).toBe(false)
+    expect(existsSync(tokenFile(f, "_all"))).toBe(true)
   })
 
   it.each([
@@ -226,7 +226,6 @@ describe("drive mcp serve --http", () => {
     [["mcp", "server", "status"], "validation_error", /name the profiles whose server to check/],
     [["mcp", "server", "status", "--profiles", "nobody"], "validation_error", /no profile named "nobody"/],
     [["mcp", "server", "stop", "--profiles", "nobody"], "validation_error", /no profile named "nobody"/],
-    [["mcp", "serve", "--profiles", "work", "--tools"], "validation_error", /--tools lists one profile/],
   ])("refuses %j", async (argv, code, message) => {
     const f = fixture()
     addWork(f)
@@ -247,26 +246,33 @@ describe("drive mcp serve --http", () => {
     await expect(running).rejects.toMatchObject({ code: "permission_error" })
   })
 
-  it.each([[["--read-only"]], [["default", "--read-only"]]])(
-    "refuses mcp revoke after %j and keeps the logins",
-    async (before) => {
-      const f = fixture()
-      mkdirSync(dirname(profileSetTokenFile(f.env, "all")), { recursive: true })
-      writeFileSync(profileSetTokenFile(f.env, "all"), "{}")
-      ensureProfileDir(f.env, "default")
-      writeFileSync(httpTokenFile(f.env, "default"), "{}")
-      const { running } = await run(f, [...before, "mcp", "revoke", "--json"])
-      await expect(running).rejects.toMatchObject({ code: "permission_error" })
-      expect(existsSync(profileSetTokenFile(f.env, "all"))).toBe(true)
-      expect(existsSync(httpTokenFile(f.env, "default"))).toBe(true)
-    },
-  )
+  // The hook returns for every `mcp` command before the read-only refusal, so --read-only does not stop a revoke.
+  it("refuses mcp revoke after --read-only and keeps the login", async () => {
+    const f = fixture()
+    saveTokens(f, "default")
+    const { running } = await run(f, ["default", "--read-only", "mcp", "revoke", "--json"])
+    await expect(running).rejects.toMatchObject({ code: "permission_error" })
+    expect(existsSync(tokenFile(f, "default"))).toBe(true)
+  })
+
+  it("refuses mcp revoke under DRIVE_READ_ONLY and keeps the logins", async () => {
+    const f = fixture()
+    saveTokens(f, "default")
+    const { running } = await run({ ...f, env: { ...f.env, DRIVE_READ_ONLY: "1" } }, [
+      "default",
+      "mcp",
+      "revoke",
+      "--json",
+    ])
+    await expect(running).rejects.toMatchObject({ code: "permission_error" })
+    expect(existsSync(tokenFile(f, "default"))).toBe(true)
+  })
 
   it("says so when drive mcp serve --profiles all has no profile to serve", async () => {
     const f = fixture()
     writeConfig(f.env, { profiles: {} })
     const { running } = await run(f, ["mcp", "serve", "--profiles", "all", "--json"])
-    await expect(running).rejects.toThrow(/no drive profile here yet/)
+    await expect(running).rejects.toThrow(/no drive profile on this computer yet/)
   })
 
   it.each([

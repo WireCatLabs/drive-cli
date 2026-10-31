@@ -4,8 +4,8 @@ import { dirname } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { configPath, readConfig, writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const run = async (env: NodeJS.ProcessEnv, args: string[], options: Parameters<typeof createProgram>[0] = {}) => {
   const streams = captureStreams()
@@ -23,9 +23,12 @@ describe("doctor", () => {
     const report = await run(f.env, ["doctor"], { index })
     expect(report).toMatchObject({
       config: { found: true, issues: [] },
-      profiles: expect.arrayContaining([{ profile: "work", selected_folders: 1, storage: "keyring" }]),
+      profiles: ["default", "work"],
       store: { exists: false },
-      login: "not checked",
+      oauth_client: { client: "wirecat" },
+    })
+    expect(await run(f.env, ["session", "list"])).toMatchObject({
+      items: expect.arrayContaining([{ profile: "work", selected_folders: 1, storage: "keyring" }]),
     })
     expect(index).not.toHaveBeenCalled()
   })

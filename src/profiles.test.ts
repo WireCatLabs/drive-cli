@@ -3,8 +3,8 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 describe("explicit account selection", () => {
   it("refuses omitted profiles before providers and stores", async () => {
@@ -66,7 +66,7 @@ describe("explicit account selection", () => {
     ])
       await expect(
         createProgram({ env: f.env, streams: captureStreams() }).parseAsync(args, { from: "user" }),
-      ).rejects.toThrow("there is no --profile")
+      ).rejects.toThrow("unknown option '--profile")
     await expect(
       createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["../escape", "status"], { from: "user" }),
     ).rejects.toThrow("profile name")
@@ -129,11 +129,7 @@ describe("explicit account selection", () => {
     ])
       await createProgram({ env: f.env, streams: captureStreams() }).parseAsync(args, { from: "user" })
     const help = captureStreams()
-    await expect(
-      createProgram({ env: f.env, streams: help }).parseAsync(["session", "start", "--help"], {
-        from: "user",
-      }),
-    ).rejects.toMatchObject({ exitCode: 0 })
+    await createProgram({ env: f.env, streams: help }).parseAsync(["session", "start", "--help"], { from: "user" })
     expect(help.stdout.join("")).toContain("drive <profile> session start")
   })
   it("refuses a sign-in grant it does not know before opening a browser", async () => {

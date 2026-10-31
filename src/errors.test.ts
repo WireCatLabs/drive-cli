@@ -2,8 +2,9 @@ import { captureStreams } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
 import { googleError } from "./errors.js"
-import { errorObject, mcpFailure, reportFailure } from "./failure.js"
 import { googleApi } from "./google-api.js"
+import { run } from "./program.js"
+import { errorObject, fixture } from "./testing.js"
 
 const info = {
   "@type": "type.googleapis.com/google.rpc.ErrorInfo",
@@ -69,22 +70,19 @@ describe("Google API setup failures", () => {
     }
     expect(failure).toBeDefined()
     const streams = captureStreams()
-    expect(
-      reportFailure(failure, {
-        args: ["verification", "sheets", "info", "synthetic-sheet", "--json", "--debug"],
-        streams,
-        tty: false,
-      }),
-    ).toBe(3)
+    const code = await run(["default", "sheets", "info", "synthetic-sheet", "--json", "--debug"], {
+      env: fixture().env,
+      streams,
+      tty: false,
+      api: { call: async () => Promise.reject(failure) },
+    })
+    expect(code).toBe(3)
     const [answer] = streams.stderr
       .join("")
       .trim()
       .split("\n")
       .map((line) => JSON.parse(line))
     expect(answer.error.reason).toBe("google-api.disabled")
-    expect(JSON.stringify(mcpFailure(failure))).toContain("google-api.disabled")
-    expect(JSON.stringify({ stdout: streams.stdout, stderr: streams.stderr, mcp: mcpFailure(failure) })).not.toContain(
-      "DO_NOT_LOG",
-    )
+    expect(JSON.stringify({ stdout: streams.stdout, stderr: streams.stderr })).not.toContain("DO_NOT_LOG")
   })
 })

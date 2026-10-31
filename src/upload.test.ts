@@ -5,8 +5,8 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { afterAll, describe, expect, it, vi } from "vitest"
 import { writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { fixture } from "./testing.js"
+
+import { testProgram as createProgram, fixture } from "./testing.js"
 import { type UploadRequest, type UploadResponse, uploadFile } from "./upload.js"
 
 const QUANTUM = 256 * 1024

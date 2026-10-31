@@ -18,7 +18,30 @@ const generatedOptions = [
   ),
 ].filter((name) => name && name !== "--help")
 
+const SHARED_MCP = "cli-core's appMcpCommand; its app-mcp-command tests drive it"
+const SHARED_GLOBAL = "cli-core's global option, read by its program; its program tests drive it"
+
 export const UNTESTED: { command: string; option?: string; reason: string }[] = [
+  ...[undefined, "--allow-writes", "--permission"].map((option) => ({
+    command: "mcp add",
+    ...(option ? { option } : {}),
+    reason: `writes Codex's or Claude Code's own MCP settings; ${SHARED_MCP}`,
+  })),
+  ...[undefined, "--permission"].map((option) => ({
+    command: "mcp check",
+    ...(option ? { option } : {}),
+    reason: `starts the installed drive as a child process, as the agent would; ${SHARED_MCP}`,
+  })),
+  ...["--verbose", "--trace", "--no-input", "--max-input-bytes", "--brief", "--full"].map((option) => ({
+    command: "",
+    option,
+    reason: SHARED_GLOBAL,
+  })),
+  {
+    command: "",
+    option: "--dry-run",
+    reason: "drive previews in its own hook, before cli-core logs the parsed words; src/dry-run.test.ts checks it",
+  },
   { command: "api *", reason: GENERATED },
   ...generatedOptions.map((option) => ({ command: "api *", option, reason: GENERATED })),
   ...["--client-file", "--no-browser", "--grant"].map((option) => ({

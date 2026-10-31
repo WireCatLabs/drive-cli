@@ -104,8 +104,21 @@ try {
   writeFileSync(
     join(configDir, "config.json"),
     JSON.stringify({
-      profiles: { default: { principal: "synthetic-principal", roots: [], storage: "keyring", mirrors: [mirror] } },
+      // Every kind of setting drive 0.51 wrote, so the upgrade proves the file loads unchanged.
+      defaults: { record: true, keep_runs_for_days: 14, max_text_chars: 50000, permissions: { "files.trash": "ask" } },
+      profiles: {
+        default: {
+          principal: "synthetic-principal",
+          roots: [],
+          storage: "keyring",
+          mirrors: [mirror],
+          picture_search: false,
+          permissions: { "api.drive.files.delete": "deny", "mcp.authority": "deny" },
+        },
+        work: { principal: "synthetic-work", roots: ["synthetic-folder"], storage: "file" },
+      },
     }),
+    { mode: 0o600 },
   )
   process.stdout.write(`${JSON.stringify({ seeded: true, document: note.ref })}\n`)
 } finally {

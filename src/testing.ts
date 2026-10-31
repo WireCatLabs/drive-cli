@@ -2,11 +2,17 @@ import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { crc32 } from "node:zlib"
+import { errorObjectOf } from "@wirecat/cli-base"
 import { itemEnvelopeSchema, listEnvelopeSchema } from "@wirecat/cli-base/standards"
+import { failureContext } from "@wirecat/cli-core"
+import { type RunOptions, run } from "@wirecat/cli-core/cli"
+import type { Command } from "commander"
 import * as v from "valibot"
 import { vi } from "vitest"
 import { writeConfig } from "./config.js"
+import { DRIVE_APP } from "./identity.js"
 import { DOC, type DocumentContent, type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource } from "./model.js"
+import { createProgram, definition, type ProgramOptions } from "./program.js"
 
 export const file = (id: string, parents = ["root"], mime = DOC): FileMetadata => ({
   id,
@@ -175,3 +181,26 @@ export const commandResult = (text: string) => {
   v.parse(v.union([itemEnvelopeSchema(v.unknown()), listEnvelopeSchema(v.unknown())]), data)
   return Object.hasOwn(data, "item") ? data.item : data
 }
+
+/**
+ * The program's command tree, whose `parseAsync` runs the real program as the binary does and throws what the command
+ * threw instead of returning its exit code, so a test can match the error itself.
+ */
+export const testProgram = (options: ProgramOptions = {}): Command => {
+  const shared = definition()
+  const program = createProgram()
+  program.parseAsync = async (argv) => {
+    let failure: unknown
+    const onFailure = async (error: unknown, failed: Command) => {
+      failure = error
+      await shared.onFailure?.(error, failed)
+    }
+    await run([...(argv ?? [])], { ...shared, onFailure }, options as RunOptions)
+    if (failure !== undefined) throw failure
+    return program
+  }
+  return program
+}
+
+/** The error object a failure becomes, as `run` reports it. */
+export const errorObject = (error: unknown) => errorObjectOf(error, failureContext(DRIVE_APP.errors))

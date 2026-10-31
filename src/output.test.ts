@@ -3,8 +3,8 @@ import { listEnvelopeSchema } from "@wirecat/cli-base/standards"
 import * as v from "valibot"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { snakeKeys } from "./output.js"
-import { createProgram } from "./program.js"
-import { fixture } from "./testing.js"
+
+import { testProgram as createProgram, fixture } from "./testing.js"
 
 const drive = async (call: (method: string) => Promise<unknown>, ...args: string[]) => {
   const f = fixture()

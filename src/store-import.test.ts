@@ -3,12 +3,12 @@ import { join, resolve } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { openStore } from "@wirecat/cli-core/store"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { createProgram } from "./program.js"
+
 import * as stateFiles from "./state.js"
 import { readState, saveSnapshot, saveState, statePath } from "./state.js"
 import { indexOver, openIndex } from "./store.js"
 import { checkStoreImport, transferBindings } from "./store-import.js"
-import { content, file, fixture } from "./testing.js"
+import { content, testProgram as createProgram, file, fixture } from "./testing.js"
 
 const principal = "synthetic-principal"
 afterEach(() => vi.restoreAllMocks())

@@ -1,8 +1,8 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, content, file, fixture } from "./testing.js"
+
+import { commandResult, content, testProgram as createProgram, file, fixture } from "./testing.js"
 
 describe("document knowledge commands", () => {
   it("runs notes, tags, links, memories and extraction through the released shared store", async () => {

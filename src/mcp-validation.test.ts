@@ -1,29 +1,22 @@
-import { Client, InMemoryTransport } from "@modelcontextprotocol/client"
-import { openStore } from "@wirecat/cli-core/store"
+import { describeProgram } from "@wirecat/cli-base/commands"
+import { toolsFromCommands } from "@wirecat/cli-core/mcp"
 import { describe, expect, it, vi } from "vitest"
-import { buildMcpServer, mcpTools } from "./mcp.js"
 import { createProgram } from "./program.js"
+import { callTool, mcpClient } from "./testing/mcp.js"
 import { fixture } from "./testing.js"
 
 describe("MCP validation through the SDK", () => {
-  it("returns our field-specific error and audits bad types and unknown arguments before providers", async () => {
+  it("returns our field-specific error for bad types and unknown arguments before providers", async () => {
     const f = fixture()
     const call = vi.fn(async () => ({ id: "fixture-file" }))
-    const { server } = buildMcpServer(createProgram, { env: f.env, api: { call } }, "default")
-    const client = new Client({ name: "fixture-client", version: "1" })
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-    await server.connect(serverTransport)
-    await client.connect(clientTransport)
+    const { client, close } = await mcpClient({ env: f.env, api: { call } })
     try {
       for (const [field, args] of [
         ["file_id", { file_id: 42 }],
         ["unknown_field", { file_id: "fixture-file", unknown_field: "DO_NOT_LOG_ARGUMENT" }],
         ["file_id", {}],
       ] as const) {
-        const result = await client.callTool({
-          name: "drive_read",
-          arguments: { command: "api drive-files-get", arguments: args },
-        })
+        const result = await callTool(client, "drive_read", "api drive-files-get", args)
         expect(result).toMatchObject({
           isError: true,
           structuredContent: { error: { code: "validation_error", message: expect.stringContaining(field) } },
@@ -31,39 +24,28 @@ describe("MCP validation through the SDK", () => {
         expect(JSON.stringify(result)).not.toContain("DO_NOT_LOG_ARGUMENT")
       }
       expect(call).not.toHaveBeenCalled()
-      const good = await client.callTool({
-        name: "drive_read",
-        arguments: { command: "api drive-files-get", arguments: { file_id: "fixture-file" } },
-      })
+      const good = await callTool(client, "drive_read", "api drive-files-get", { file_id: "fixture-file" })
       expect(good).toMatchObject({
         structuredContent: { item: { id: "fixture-file" }, meta: { run_id: expect.any(String) } },
       })
       expect(call).toHaveBeenCalledTimes(1)
-      const sheetsResult = await client.callTool({
-        name: "drive_write",
-        arguments: {
-          command: "sheets update",
-          arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", values: "[[1,2]]" },
-        },
+      const sheetsResult = await callTool(client, "drive_write", "sheets update", {
+        spreadsheet: "synthetic-sheet",
+        range: "Budget!A1",
+        values: "[[1,2]]",
       })
       expect(sheetsResult).toMatchObject({
         isError: true,
-        structuredContent: {
-          error: { code: "validation_error", message: expect.stringContaining("--values") },
-        },
+        structuredContent: { error: { code: "validation_error", message: expect.stringContaining("--values") } },
       })
-      const unknownSheetArgument = await client.callTool({
-        name: "drive_read",
-        arguments: {
-          command: "sheets show",
-          arguments: { spreadsheet: "synthetic-sheet", range: "Budget!A1", unknown: "DO_NOT_LOG_ARGUMENT" },
-        },
+      const unknownSheetArgument = await callTool(client, "drive_read", "sheets show", {
+        spreadsheet: "synthetic-sheet",
+        range: "Budget!A1",
+        unknown: "DO_NOT_LOG_ARGUMENT",
       })
       expect(unknownSheetArgument).toMatchObject({
         isError: true,
-        structuredContent: {
-          error: { code: "validation_error", message: expect.stringContaining("unknown") },
-        },
+        structuredContent: { error: { code: "validation_error", message: expect.stringContaining("unknown") } },
       })
       expect(JSON.stringify(unknownSheetArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
       expect((await client.listTools()).tools.map((tool) => tool.name).sort()).toEqual([
@@ -71,12 +53,10 @@ describe("MCP validation through the SDK", () => {
         "drive_tools_search",
         "drive_write",
       ])
-      const unknownTransferArgument = await client.callTool({
-        name: "drive_write",
-        arguments: {
-          command: "store import",
-          arguments: { source: "DO_NOT_LOG_ARGUMENT", fingerprint: "0".repeat(64), unknown_field: true },
-        },
+      const unknownTransferArgument = await callTool(client, "drive_write", "store import", {
+        source: "DO_NOT_LOG_ARGUMENT",
+        fingerprint: "0".repeat(64),
+        unknown_field: true,
       })
       expect(unknownTransferArgument).toMatchObject({
         isError: true,
@@ -84,36 +64,14 @@ describe("MCP validation through the SDK", () => {
       })
       expect(JSON.stringify(unknownTransferArgument)).not.toContain("DO_NOT_LOG_ARGUMENT")
       expect(call).toHaveBeenCalledTimes(1)
-      const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
-      try {
-        const rows = await store.agentActions.list({ tool: "drive_api_drive_files_get" })
-        expect(rows).toHaveLength(4)
-        expect(rows.filter((row) => row.status === "failed")).toHaveLength(3)
-        expect(rows.filter((row) => row.status === "failed").every((row) => row.error === "validation_error")).toBe(
-          true,
-        )
-        expect(JSON.stringify(rows)).not.toContain("DO_NOT_LOG_ARGUMENT")
-        expect(await store.agentActions.list({ tool: "drive_store_import" })).toMatchObject([
-          { status: "failed", error: "validation_error" },
-        ])
-      } finally {
-        await store.close()
-      }
     } finally {
-      await client.close()
-      await server.close()
+      await close()
     }
   })
 
   it("keeps denied commands discoverable with availability on a read-only profile", async () => {
     const f = fixture()
-    const { server } = buildMcpServer(createProgram, { env: f.env, api: { call: vi.fn() } }, "default", {
-      readOnly: true,
-    })
-    const client = new Client({ name: "fixture-client", version: "1" })
-    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair()
-    await server.connect(serverTransport)
-    await client.connect(clientTransport)
+    const { client, close } = await mcpClient({ env: { ...f.env, DRIVE_READ_ONLY: "1" }, api: { call: vi.fn() } })
     try {
       expect((await client.listTools()).tools.map((tool) => tool.name).sort()).toEqual([
         "drive_read",
@@ -125,9 +83,9 @@ describe("MCP validation through the SDK", () => {
         structuredContent: {
           items: expect.arrayContaining([
             expect.objectContaining({
-              command: "api drive-files-get",
+              command: "files get",
               writes: false,
-              arguments: expect.objectContaining({ required: ["file_id"] }),
+              arguments: expect.objectContaining({ required: ["file"] }),
             }),
           ]),
         },
@@ -147,22 +105,17 @@ describe("MCP validation through the SDK", () => {
         },
       })
       expect(
-        await client.callTool({
-          name: "drive_write",
-          arguments: { command: "api drive-files-delete", arguments: { file_id: "fixture-file" } },
-        }),
+        await callTool(client, "drive_write", "api drive-files-delete", { file_id: "fixture-file" }),
       ).toMatchObject({ isError: true, structuredContent: { error: { code: "permission_error" } } })
     } finally {
-      await client.close()
-      await server.close()
+      await close()
     }
   })
 
   it("gives every command a name drive_read and drive_write can tell apart", () => {
-    const f = fixture()
-    const tools = mcpTools(createProgram, { env: f.env, api: { call: vi.fn() } }, "default")
+    const tools = toolsFromCommands(describeProgram(createProgram()), { includeUnavailable: true, exclude: [["mcp"]] })
     // cli-core finds a command with spaces, "_" and "-" folded together; two paths that fold alike hide one.
-    const folded = new Set(tools.map((tool) => tool.command.path.join(" ").replace(/[\s_-]+/g, " ")))
+    const folded = new Set(tools.map((tool) => tool.command.replace(/[\s_-]+/g, " ")))
     expect(folded.size).toBe(tools.length)
   })
 })

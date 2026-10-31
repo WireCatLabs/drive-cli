@@ -3,11 +3,10 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { captureStreams, isCliError } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
-import { mcpTools } from "./mcp.js"
 import { parseDelimited, typed } from "./mirror-sheets.js"
 import { FOLDER, SHEET } from "./model.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture, workbook } from "./testing.js"
+import { mcpClient } from "./testing/mcp.js"
+import { commandResult, testProgram as createProgram, fixture, workbook } from "./testing.js"
 
 type Cell = string | number
 interface FakeFile {
@@ -385,12 +384,18 @@ describe("mirrors watch", () => {
     t.write("budget.csv", "a\n1\n")
     await t.run("mirrors", "add", t.local, "--parent", "root-folder")
     const streams = captureStreams()
+    const guard = new AbortController()
+    const timer = setTimeout(() => guard.abort(), 4000)
+    const started = Date.now()
     await createProgram({
       env: t.env,
       streams,
       source: async () => t.source,
       api: { call: t.google.call },
+      signal: guard.signal,
     }).parseAsync(["default", "--timeout", "1s", "mirrors", "watch", "--jsonl"], { from: "user" })
+    clearTimeout(timer)
+    expect(Date.now() - started).toBeLessThan(3000)
     const printed = streams.stdout.join("\n").trim().split("\n")
     expect(JSON.parse(printed.at(-1) as string)).toMatchObject({ type: "end", complete: true })
   })
@@ -427,11 +432,17 @@ describe("mirrors watch", () => {
     await t.run("mirrors", "add", t.local, "--parent", "root-folder")
     const { error } = await watching(t, [], () => {}, { ...t.env, DRIVE_READ_ONLY: "1" })
     expect(error).toMatchObject({ code: "permission_error" })
-    const tools = mcpTools(createProgram, { env: t.env, api: { call: t.google.call } }, "default").map(
-      (tool) => tool.name,
-    )
-    expect(tools).toContain("drive_mirrors_sync")
-    expect(tools).not.toContain("drive_mirrors_watch")
+    const { client, close } = await mcpClient({ env: t.env, api: { call: t.google.call } })
+    try {
+      const search = async (query: string) => {
+        const found = await client.callTool({ name: "drive_tools_search", arguments: { query } })
+        return (found.structuredContent as { items: { command: string }[] }).items.map((one) => one.command)
+      }
+      expect(await search("mirrors sync")).toContain("mirrors sync")
+      expect(await search("mirrors watch")).not.toContain("mirrors watch")
+    } finally {
+      await close()
+    }
   })
 
   it("refuses a poll more often than every 10 seconds", async () => {

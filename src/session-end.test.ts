@@ -1,8 +1,8 @@
 import { captureStreams, pathsAreOverridden, systemKeyring } from "@wirecat/cli-base"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult } from "./testing.js"
+
+import { commandResult, testProgram as createProgram } from "./testing.js"
 import { credentials } from "./tokens.js"
 
 const OWNER = "drive-cli\u0000default"

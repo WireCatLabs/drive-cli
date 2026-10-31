@@ -217,7 +217,7 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
     const name = selected()
     const profile = activeProfile(env, name)
     const chosen = chosenOf(name, id)
-    const signal = context.signal() ?? new AbortController().signal
+    const signal = context.endsOnStop() ?? new AbortController().signal
     const google = await source()
     const states = stateOf(name, profile.principal)
     let token = await google.startToken()
@@ -236,7 +236,6 @@ export const installMirrorCommands = (program: Command, context: CommandContext,
         .filter((mirror) => Object.values(states(mirror).read().entries).some((entry) => changed.has(entry.id)))
         .map((mirror) => mirror.id)
     }
-    context.endsOnStop()
     let cycles = 0
     for await (const event of watchMirrors(
       (mirrors) => syncMirrors({ ...syncing(name, profile.principal, google), mirrors }),
