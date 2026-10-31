@@ -18,6 +18,7 @@ describe("released shared store and search", () => {
     try {
       expect(await index.search("empty-account", "budget", { limit: 5, offset: 0, exact: true })).toMatchObject({
         hits: [],
+        total: { value: 0, relation: "eq" },
         has_more: false,
         meaning_skipped: "this Google account has no imported sources",
       })
@@ -25,6 +26,7 @@ describe("released shared store and search", () => {
       const found = await index.search("synthetic-principal", "budget", { limit: 5, offset: 0, exact: true })
       expect(found).toMatchObject({
         has_more: false,
+        total: { value: 1, relation: "eq" },
         hits: [
           { updated_at: expect.any(String), excerpt: expect.any(String), found_by: expect.arrayContaining(["words"]) },
         ],

@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`search` says how many documents match in all: `total`.** The answer carries `total: { value, relation }`, shaped
+  as Elasticsearch's `hits.total`: `eq` is the exact count, `gte` a lower bound (counting stops at 10,000). It counts
+  the documents the words find and those found by meaning, every page together.
+
+### Fixed
+
+- **Search by meaning inside a filter finds the filter's own documents.** With a filter of at most 2,000 documents,
+  every one of them is ranked by meaning, instead of the 50 nearest overall cut to the filter: `budget date>=30d`
+  went from 7 hits to a full page on the owner's store (cli-core 0.501.0). drive requires cli-base 0.67.0.
+
 ## 0.51.0 — 31.10.2026
 
 ### Fixed

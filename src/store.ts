@@ -79,6 +79,7 @@ export const indexOver = (
           by: "words",
           hits: [],
           linked: [],
+          total: { value: 0, relation: "eq" },
           has_more: false,
           meaning_skipped: "this Google account has no imported sources",
         }
