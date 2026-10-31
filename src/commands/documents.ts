@@ -5,6 +5,7 @@ import { annotate } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, LOCAL_WRITE, listOf, listQuery, typedQuery, withQuery } from "@wirecat/cli-core/cli"
 import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
+import { ageOf, staleCopy } from "../age.js"
 import { activeProfile, fileId } from "../config.js"
 import { metadataJson } from "../model.js"
 import { examples } from "../registry.js"
@@ -59,14 +60,16 @@ export const installDocumentCommands = (program: Command, context: CommandContex
         return index.knowledge.documents(profile.principal, ast, { limit, offset: (page - 1) * limit })
       })
       const state = readState(env, selected(), profile.principal)
+      const age = ageOf(state)
       output(
         listOf("documents list", {
+          ...staleCopy(state),
           items: found.items.map((note) => {
             const id = (note.path ?? "").replace(/\.md$/, "")
             const doc = state.documents[id]
             return doc
-              ? { ...metadataJson(doc.metadata), reference: doc.reference, tabs: doc.tabs }
-              : { id, name: note.title, reference: note.ref, tabs: 0 }
+              ? { ...metadataJson(doc.metadata), reference: doc.reference, tabs: doc.tabs, ...age }
+              : { id, name: note.title, reference: note.ref, tabs: 0, ...age }
           }),
           limit,
           has_more: found.hasMore,
@@ -82,13 +85,18 @@ export const installDocumentCommands = (program: Command, context: CommandContex
     ["drive personal documents show DOC_ID"],
   ).action((input: string) => {
     const { snapshot } = imported(input)
+    const state = readState(env, selected(), activeProfile(env, selected()).principal)
     output(
-      itemOf({
-        metadata: metadataJson(snapshot.metadata),
-        text: snapshot.text,
-        tabs: snapshot.tabs,
-        ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
-      }),
+      itemOf(
+        {
+          metadata: metadataJson(snapshot.metadata),
+          ...ageOf(state),
+          text: snapshot.text,
+          tabs: snapshot.tabs,
+          ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
+        },
+        staleCopy(state),
+      ),
     )
   })
   examples(
@@ -111,6 +119,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
           })
         throw error
       }
-      output(itemOf({ id, path: args.output, format: "markdown" }))
+      const state = readState(env, selected(), activeProfile(env, selected()).principal)
+      output(itemOf({ id, path: args.output, format: "markdown", ...ageOf(state) }, staleCopy(state)))
     })
 }

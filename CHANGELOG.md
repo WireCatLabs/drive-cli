@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **`documents show`, `list` and `export` say when the local copy was made, and warn when it is old.** Each answer
+  now carries `synced_at` (the profile's last sync, `null` if it has none) and `age_days`: on `show` and `export`
+  inside `item`, on `list` on every row. When the copy is older than a day, or has no sync time, the answer also has
+  `missing` (`synced_at`, with the age), `next` (`drive <profile> sync`) and `meta.complete: false`; exit code stays 0.
+  A caller that treated `meta.complete` as always `true` here must read `missing` and `next`. Drive still reads only
+  the local store; it does not ask Google whether the document changed.
+
 ### Fixed
 
 - **`drive mcp revoke`, `mcp server stop` and `mcp server status` with no profile say what the profile is for.** They
