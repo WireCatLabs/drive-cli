@@ -7,8 +7,8 @@ import { flatten } from "@wirecat/cli-base/commands"
 import { checkGuide } from "@wirecat/cli-core/cli"
 import { validateSkill } from "@wirecat/cli-core/skill-validation"
 import { describe, expect, it, vi } from "vitest"
-import { createProgram } from "./program.js"
 import { describeDriveProgram } from "./registry.js"
+import { testProgram as createProgram } from "./testing.js"
 import { VERSION } from "./version.js"
 
 const run = async (args: string[], env: NodeJS.ProcessEnv = {}) => {
@@ -79,7 +79,8 @@ describe("help without a profile or an account", () => {
 
   it("keeps every scenario step runnable", async () => {
     const packageRoot = fileURLToPath(new URL("..", import.meta.url))
-    expect(await checkGuide(() => createProgram({ env: {} }), { packageRoot })).toEqual([])
+    const problems = await checkGuide(() => createProgram({ env: {} }), { packageRoot })
+    expect(JSON.stringify(problems)).toBe("[]")
   })
 
   it("refuses a model download under --offline before anything is fetched", async () => {
@@ -91,7 +92,8 @@ describe("help without a profile or an account", () => {
 
   it("refuses the retired models text download spelling", async () => {
     await expect(run(["models", "text", "download", "e5-small"])).rejects.toMatchObject({
-      code: "commander.unknownCommand",
+      code: "validation_error",
+      message: expect.stringContaining("unknown command 'text'"),
     })
   })
 })

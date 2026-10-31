@@ -3,8 +3,8 @@ import { captureStreams } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { googleApi } from "./google-api.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 type Cell = { value: string | number; format: Record<string, unknown> }
 const setup = () => {

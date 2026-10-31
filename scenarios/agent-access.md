@@ -4,8 +4,10 @@ goal: Let an agent search and read the imported documents while nothing it runs 
 steps:
   - run: drive skill install
     why: puts drive's instructions where Claude Code, Codex and Gemini CLI look for them
-  - run: drive personal mcp serve --tools --read-only
-    why: lists commands with their current availability; writes stay visible but are refused
+  - run: drive personal commands --json
+    why: lists commands with their current availability; the server offers the same ones to the agent
+  - run: drive personal mcp check
+    why: starts the server once and counts the tools it offers and the ones that may write
   - run: drive personal mcp serve --read-only
     why: serves three tools on stdio — drive_tools_search, drive_read and drive_write; writes remain refused
 look:

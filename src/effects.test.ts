@@ -1,9 +1,9 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { flatten } from "@wirecat/cli-base/commands"
 import { describe, expect, it, vi } from "vitest"
-import { createProgram } from "./program.js"
+
 import { commandsDocument } from "./registry.js"
-import { fixture } from "./testing.js"
+import { testProgram as createProgram, fixture } from "./testing.js"
 
 describe("command data effects", () => {
   it("distinguishes provider reads, cached reads, discovery and writes", () => {
@@ -42,7 +42,8 @@ describe("command data effects", () => {
       effects: { remote: "write", local: "write" },
       lifetime: "persistent",
     })
-    expect(commands.filter((command) => !command.effects).map((command) => command.path.join(" "))).toEqual([])
+    // cli-core's shared skill group declares none, as in every other CLI; its commands do.
+    expect(commands.filter((command) => !command.effects).map((command) => command.path.join(" "))).toEqual(["skill"])
   })
 
   it("runs provider-only reads without opening the content store and still refuses them offline", async () => {

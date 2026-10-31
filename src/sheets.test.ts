@@ -3,8 +3,8 @@ import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it, vi } from "vitest"
 import { apiMethod, googleApi } from "./google-api.js"
 import { methodPolicyKeys } from "./policy.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 import { READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 
 const setup = () => {

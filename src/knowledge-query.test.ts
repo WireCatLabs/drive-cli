@@ -4,9 +4,8 @@ import { Command } from "commander"
 import { describe, expect, it, vi } from "vitest"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { documentKnowledge } from "./knowledge.js"
-import { mcpTools, toolArgv } from "./mcp.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+import { callTool, mcpClient } from "./testing/mcp.js"
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const ref = "document:1"
 const stubStore = () => {
@@ -95,29 +94,37 @@ describe("api list", () => {
     expect(docs.items.length).toBeGreaterThan(0)
     expect(docs.items.length).toBeLessThan(all.items.length)
     expect(docs.items.every((method: { name: string }) => method.name.startsWith("docs."))).toBe(true)
-    await expect(list("--service", "docs")).rejects.toMatchObject({ code: "commander.unknownOption" })
+    await expect(list("--service", "docs")).rejects.toMatchObject({
+      code: "validation_error",
+      message: expect.stringContaining("--service"),
+    })
     await expect(list("service:unknown-service")).rejects.toMatchObject({ code: "validation_error" })
   })
 })
 
 describe("MCP list tools", () => {
-  it("take the query as one string, as the CLI list takes it after its arguments", () => {
+  it("take the query as one string, as the CLI list takes it after its arguments", async () => {
     const f = fixture()
-    const tools = mcpTools(createProgram, { env: f.env, streams: captureStreams() }, "default")
-    for (const name of ["drive_facts_list", "drive_memories_list", "drive_memories_search", "drive_catalog_list"]) {
-      const properties = tools.find((one) => one.name === name)?.schema.properties as
-        | Record<string, { type: string }>
-        | undefined
-      expect(properties?.query?.type, name).toBe("string")
+    const { client, close } = await mcpClient({ env: f.env })
+    try {
+      for (const command of ["facts list", "memories list", "memories search", "catalog list"]) {
+        const found = await client.callTool({ name: "drive_tools_search", arguments: { query: command } })
+        const tool = (
+          found.structuredContent as { items: { command: string; arguments: { properties: object } }[] }
+        ).items.find((one) => one.command === command)
+        const query = ((tool?.arguments.properties ?? {}) as Record<string, { anyOf: { type: string }[] }>).query
+        expect(
+          query?.anyOf.map((one) => one.type),
+          command,
+        ).toContain("string")
+      }
+      const answer = await callTool(client, "drive_read", "catalog list", { query: "kind:nonsense" })
+      expect(answer.structuredContent.error).toMatchObject({
+        code: "validation_error",
+        message: expect.stringContaining("kind"),
+      })
+    } finally {
+      await close()
     }
-    const facts = tools.find((tool) => tool.name === "drive_facts_list")
-    if (!facts) throw new Error("missing facts list tool")
-    expect(toolArgv(facts, { document: "doc-a", query: "kind:decision status:proposed" })).toEqual([
-      "facts",
-      "list",
-      "--",
-      "doc-a",
-      "kind:decision status:proposed",
-    ])
   })
 })

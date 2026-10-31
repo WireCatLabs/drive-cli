@@ -7,10 +7,41 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**250 ✅ · 952 ⛔ · 0 ❌** — 203 commands, 999 options.
+**252 ✅ · 965 ⛔ · 0 ❌** — 206 commands, 1011 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
+| `doctor` |  | ✅ |  |
+| `skill show` |  | ✅ |  |
+| `skill show` | `--for` | ✅ |  |
+| `skill install` |  | ✅ |  |
+| `skill install` | `--for` | ✅ |  |
+| `skill status` |  | ✅ |  |
+| `mcp serve` |  | ✅ |  |
+| `mcp serve` | `--permission` | ✅ |  |
+| `mcp serve` | `--profiles` | ✅ |  |
+| `mcp serve` | `--http` | ✅ |  |
+| `mcp serve` | `--port` | ✅ |  |
+| `mcp serve` | `--public-url` | ✅ |  |
+| `mcp revoke` |  | ✅ |  |
+| `mcp revoke` | `--profiles` | ✅ |  |
+| `mcp server start` |  | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--port` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--public-url` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--permission` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server start` | `--profiles` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
+| `mcp server stop` |  | ✅ |  |
+| `mcp server stop` | `--profiles` | ✅ |  |
+| `mcp server status` |  | ✅ |  |
+| `mcp server status` | `--profiles` | ✅ |  |
+| `mcp config` |  | ✅ |  |
+| `mcp config` | `--permission` | ✅ |  |
+| `mcp config` | `--profiles` | ✅ |  |
+| `mcp add` |  | ⛔ | writes Codex's or Claude Code's own MCP settings; cli-core's appMcpCommand; its app-mcp-command tests drive it |
+| `mcp add` | `--allow-writes` | ⛔ | writes Codex's or Claude Code's own MCP settings; cli-core's appMcpCommand; its app-mcp-command tests drive it |
+| `mcp add` | `--permission` | ⛔ | writes Codex's or Claude Code's own MCP settings; cli-core's appMcpCommand; its app-mcp-command tests drive it |
+| `mcp check` |  | ⛔ | starts the installed drive as a child process, as the agent would; cli-core's appMcpCommand; its app-mcp-command tests drive it |
+| `mcp check` | `--permission` | ⛔ | starts the installed drive as a child process, as the agent would; cli-core's appMcpCommand; its app-mcp-command tests drive it |
 | `session start` |  | ✅ |  |
 | `session start` | `--client-file` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
 | `session start` | `--credential-storage` | ✅ |  |
@@ -1163,30 +1194,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models download` | `--offline` | ✅ |  |
 | `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
-| `mcp serve` |  | ✅ |  |
-| `mcp serve` | `--tools` | ✅ |  |
-| `mcp serve` | `--http` | ✅ |  |
-| `mcp serve` | `--port` | ✅ |  |
-| `mcp serve` | `--public-url` | ✅ |  |
-| `mcp serve` | `--profiles` | ✅ |  |
-| `mcp revoke` |  | ✅ |  |
-| `mcp revoke` | `--profiles` | ✅ |  |
-| `mcp server start` |  | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--port` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--public-url` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server start` | `--profiles` | ⛔ | starts or signals a background `mcp serve --http` process; cli-core's mcp-server-command tests cover it with a fake system, and mcp-http.test.ts checks this CLI's `mcp server status` against a running server |
-| `mcp server stop` |  | ✅ |  |
-| `mcp server stop` | `--profiles` | ✅ |  |
-| `mcp server status` |  | ✅ |  |
-| `mcp server status` | `--profiles` | ✅ |  |
 | `commands` |  | ✅ |  |
 | `commands info` |  | ✅ |  |
-| `skill show` |  | ✅ |  |
-| `skill show` | `--for` | ✅ |  |
-| `skill install` |  | ✅ |  |
-| `skill install` | `--for` | ✅ |  |
-| `skill status` |  | ✅ |  |
-| `doctor` |  | ✅ |  |
 | `upgrade` |  | ✅ |  |
 | `upgrade` | `--check` | ✅ |  |
 | `runs list` |  | ✅ |  |
@@ -1198,18 +1207,24 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `guide` |  | ✅ |  |
 | `help` |  | ✅ |  |
 | *global* | `--version` | ⛔ | Commander answers before any command runs, so the trace never sees it; `pnpm version:check` checks it |
+| *global* | `--verbose` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
 | *global* | `--json` | ✅ |  |
 | *global* | `--jsonl` | ✅ |  |
 | *global* | `--quiet` | ✅ |  |
+| *global* | `--trace` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
 | *global* | `--debug` | ✅ |  |
 | *global* | `--timeout` | ✅ |  |
-| *global* | `--max-output-bytes` | ✅ |  |
-| *global* | `--read-only` | ✅ |  |
 | *global* | `--offline` | ✅ |  |
-| *global* | `--dry-run` | ✅ |  |
+| *global* | `--no-input` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
+| *global* | `--max-input-bytes` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
+| *global* | `--max-output-bytes` | ✅ |  |
+| *global* | `--brief` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
+| *global* | `--full` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
+| *global* | `--dry-run` | ⛔ | drive previews in its own hook, before cli-core logs the parsed words; src/dry-run.test.ts checks it |
 | *global* | `--yes` | ✅ |  |
-| *global* | `--allow-dangerous` | ✅ |  |
-| *global* | `--permission` | ✅ |  |
 | *global* | `--record` | ✅ |  |
 | *global* | `--no-record` | ✅ |  |
+| *global* | `--read-only` | ✅ |  |
+| *global* | `--allow-dangerous` | ✅ |  |
+| *global* | `--permission` | ✅ |  |
 | *global* | `--help-all` | ⛔ | Commander answers before any command runs, so the trace never sees it; src/help.test.ts checks it |

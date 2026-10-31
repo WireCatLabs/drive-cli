@@ -3,10 +3,10 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { flatten, parseCommandsDocument } from "@wirecat/cli-base/commands"
 import { describe, expect, it, vi } from "vitest"
-import { createProgram } from "./program.js"
+
 import { describeDriveProgram } from "./registry.js"
 import { readState, saveState } from "./state.js"
-import { commandResult, content, file, fixture } from "./testing.js"
+import { commandResult, content, testProgram as createProgram, file, fixture } from "./testing.js"
 
 describe("standalone command workflow", () => {
   it("prints the version without a trailing blank line", async () => {

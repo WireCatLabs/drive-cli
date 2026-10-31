@@ -3,8 +3,8 @@ import { captureStreams } from "@wirecat/cli-base"
 import { SendJournal } from "@wirecat/cli-core/sends"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const setup = () => {
   const f = fixture()

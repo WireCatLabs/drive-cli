@@ -4,7 +4,7 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { openStore } from "@wirecat/cli-core/store"
 import { expect, it } from "vitest"
-import { createProgram } from "./program.js"
+import { testProgram as createProgram } from "./testing.js"
 
 const environment = () => {
   const directory = mkdtempSync(join(tmpdir(), "drive-test-store-info-"))

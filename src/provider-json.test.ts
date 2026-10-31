@@ -1,10 +1,10 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { FOLDER } from "./model.js"
-import { createProgram } from "./program.js"
+
 import { commandsDocument } from "./registry.js"
 import { saveState } from "./state.js"
-import { file, fixture } from "./testing.js"
+import { testProgram as createProgram, file, fixture } from "./testing.js"
 
 describe("provider result fields", () => {
   it("selects catalog names for items and lists, retaining envelope metadata", async () => {
@@ -33,7 +33,7 @@ describe("provider result fields", () => {
       item: { id: "file", name: "Synthetic source" },
       meta: { complete: true },
     })
-    const selected = (await call("catalog", "list", "kind:file", "--json", "id,name"))[0]
+    const selected = (await call("catalog", "list", "kind:file", "--json=id,name"))[0]
     expect(selected.items).toEqual([{ id: "file", name: "Synthetic source" }])
     expect(selected.page.mode).toBe("page")
     const lines = await call("catalog", "list", "kind:file", "--json=id,name", "--jsonl")

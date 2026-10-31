@@ -1,6 +1,5 @@
 import { join } from "node:path"
-import { createRenderer } from "@wirecat/cli-base"
-import { upgradeCommand } from "@wirecat/cli-core/cli"
+import { outputFor, upgradeCommand } from "@wirecat/cli-core/cli"
 import { appUpdate } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { paths } from "../config.js"
@@ -19,17 +18,13 @@ const update = appUpdate({
   offVariables: ["DRIVE_NO_UPDATE_CHECK"],
 })
 
-export const installUpgradeCommand = (program: Command, { env, streams, options }: CommandContext) => {
-  const environment = options.update ?? {}
+export const installUpgradeCommand = (program: Command, { env, options }: CommandContext) => {
   program.addCommand(
     upgradeCommand(DRIVE_APP, PACKAGE, (command) => {
+      const environment = options.update ?? {}
       if (!command.opts().check) refuseUnderReadOnly(env, "install a newer drive")
-      const globals = program.opts()
-      const format = globals.jsonl ? "jsonl" : globals.json || !process.stdout.isTTY ? "json" : "pretty"
       return {
-        renderer: createRenderer({ format, color: false, streams, quiet: globals.quiet === true }),
-        format,
-        streams,
+        ...outputFor(command),
         installer: () => update.installer(environment),
         latest: () => update.latest(environment),
         install: (argv) => update.runUpdate(argv, environment),

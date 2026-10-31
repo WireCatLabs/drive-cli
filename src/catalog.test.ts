@@ -4,11 +4,11 @@ import { expect, it, vi } from "vitest"
 import { catalogFiles, catalogTree } from "./catalog.js"
 import { writeConfig } from "./config.js"
 import { FOLDER, type SyncState } from "./model.js"
-import { createProgram } from "./program.js"
+
 import { readState, saveState } from "./state.js"
 import { openIndex } from "./store.js"
 import { sync } from "./sync.js"
-import { commandResult, content, file, fixture } from "./testing.js"
+import { commandResult, content, testProgram as createProgram, file, fixture } from "./testing.js"
 
 it("sync catalogs folders and unreadable files before downloading text, retaining references and owner tags", async () => {
   const f = fixture()

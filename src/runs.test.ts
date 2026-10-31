@@ -7,8 +7,8 @@ import { OAuth2Client } from "google-auth-library"
 import { describe, expect, it } from "vitest"
 import { googleApi, googleDownload } from "./google-api.js"
 import { DRIVE_APP } from "./policy.js"
-import { createProgram, type ProgramOptions } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+import type { ProgramOptions } from "./program.js"
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 import { observeRequests, operationOf } from "./tokens.js"
 
 const runsOf = (env: NodeJS.ProcessEnv): string[] => {

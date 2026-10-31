@@ -17,7 +17,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/**", "!**/*.test.ts"],
+      "includes": ["src/**", "!**/*.test.ts", "!src/testing/mcp.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -31,7 +31,7 @@
                   },
                   {
                     "group": ["@modelcontextprotocol/**"],
-                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                    "message": "cli-core serves MCP; drive's commands and services do not know the protocol, only the test client src/testing/mcp.ts does"
                   },
                   {
                     "group": ["proper-lockfile"],
@@ -62,7 +62,7 @@
                 "patterns": [
                   {
                     "group": ["@modelcontextprotocol/**"],
-                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                    "message": "cli-core serves MCP; drive's commands and services do not know the protocol, only the test client src/testing/mcp.ts does"
                   },
                   {
                     "group": ["proper-lockfile"],
@@ -76,7 +76,7 @@
       }
     },
     {
-      "includes": ["src/mcp.ts", "!**/*.test.ts"],
+      "includes": ["src/testing/mcp.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -114,7 +114,7 @@
                   },
                   {
                     "group": ["@modelcontextprotocol/**"],
-                    "message": "only src/mcp.ts serves MCP; commands and services do not know the protocol"
+                    "message": "cli-core serves MCP; drive's commands and services do not know the protocol, only the test client src/testing/mcp.ts does"
                   }
                 ]
               }

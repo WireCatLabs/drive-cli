@@ -1,74 +1,67 @@
 import { randomUUID } from "node:crypto"
-import { readFileSync } from "node:fs"
-import {
-  CliError,
-  createDeadline,
-  createOutputBuffer,
-  createRenderer,
-  fieldsOf,
-  isCliError,
-  processStreams,
-  projectFields,
-  type Renderer,
-  type RenderFormat,
-  type Streams,
-} from "@wirecat/cli-base"
+import { mkdirSync, readFileSync } from "node:fs"
+import { join } from "node:path"
+import { CliError, isCliError, processStreams, type Streams } from "@wirecat/cli-base"
 import { annotate, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { timezoneOf } from "@wirecat/cli-base/query"
-import { writes } from "@wirecat/cli-base/standards"
+import { type Effects, writes } from "@wirecat/cli-base/standards"
 import {
   addContractInfo,
-  assertSharedContracts,
+  appDoctorCommand,
+  appMcpCommand,
+  type BaseEnvironment,
   type Body,
+  type CommandAvailability,
+  type CommandRuns,
   changesAuthority,
+  commandRuns,
   commandWords,
+  createProgram as createSharedProgram,
+  type EventSink,
   environmentOf,
   hasSharedContract,
+  inRun,
   itemOf,
   LOCAL_READ,
-  liftJson,
-  liftProfile,
+  outputFor,
   overrideSharedContract,
+  type ProgramDefinition,
   parseDuration,
-  provide,
-  recordRuns,
+  readOnlyRefusal,
   refuseCommandName,
   renderAnswer,
+  rootOf,
+  run as runShared,
   runsCommand,
-  takesProfile,
+  skillCommand,
 } from "@wirecat/cli-core/cli"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
-import { Command, Help } from "commander"
+import type { Command } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { apiMethod } from "./api-methods.js"
 import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
-import { type CommandContext, offset, type ProgramOptions, positive } from "./commands/context.js"
+import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
-import { installDoctorCommand } from "./commands/doctor.js"
 import { importedDocument, installDocumentCommands, storedDocument } from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
-import { installMcpCommand } from "./commands/mcp.js"
 import { installMirrorCommands } from "./commands/mirrors.js"
 import { installRemoteCommands, type RemoteCommands } from "./commands/remote.js"
 import { installSearchCommand } from "./commands/search.js"
 import { installSessionCommands } from "./commands/session.js"
-import { installSkillCommand } from "./commands/skill.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, fileId, profileName, readConfig } from "./config.js"
+import { activeProfile, application, configuration, fileId, paths, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
-import { REASONS as CONTRACT_REASONS } from "./failure.js"
-import { guide, installFirstScreen } from "./first-screen.js"
+import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
   checkPolicy,
   DRIVE_APP,
-  discoveryAvailability,
   guardedGoogleWrite,
   methodPolicyKeys,
   type PolicyFlags,
@@ -79,6 +72,7 @@ import {
 } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
 import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
+import { REASONS } from "./reasons.js"
 import {
   ACCOUNT_FREE_COMMANDS,
   ANY_PROFILE_COMMANDS,
@@ -90,63 +84,66 @@ import { profileDir } from "./state.js"
 import { openIndex } from "./store.js"
 import { localTimes } from "./time.js"
 import { uploadFile } from "./upload.js"
-import { VERSION } from "./version.js"
 
-export type { ProgramOptions }
+export type ProgramOptions = DriveEnvironment
+
+const SKILL = new URL("../skills/drive-cli/SKILL.md", import.meta.url)
 
 const eachItem = (body: Body, change: (item: unknown) => unknown): Body =>
   "items" in body ? { ...body, items: body.items.map(change) } : { ...body, item: change(body.item) }
-const commandIn = (root: Command, words: readonly string[]) => {
-  let at: Command | undefined = root
-  for (const word of words) {
-    if (word.startsWith("-")) continue
-    const child: Command | undefined = at?.commands.find((command) => command.name() === word)
-    if (child) at = child
-  }
-  return at === root ? undefined : at
-}
+
 class Preview extends Error {}
-export const createProgram = (options: ProgramOptions = {}): Command => {
+
+// An agent names only a file, which lands in the profile's export folder, never a path of its choosing.
+const EXPORTS = new Set(["documents export", "files download", "files export"])
+
+const googleOnly = (effects: Effects | undefined) => effects?.local === "none" && effects.remote !== "none"
+
+/**
+ * The commands are built inside `createProgram`, before `run` hands the program its environment, so what they read
+ * from it is looked up when they run.
+ */
+const lateEnv = (environment: () => DriveEnvironment): NodeJS.ProcessEnv => {
+  const current = () => environment().env ?? process.env
+  return new Proxy({} as NodeJS.ProcessEnv, {
+    get: (_, key) => Reflect.get(current(), key),
+    has: (_, key) => Reflect.has(current(), key),
+    ownKeys: () => Reflect.ownKeys(current()),
+    getOwnPropertyDescriptor: (_, key) => Reflect.getOwnPropertyDescriptor(current(), key),
+  })
+}
+
+const lateStreams = (environment: () => DriveEnvironment): Streams => ({
+  data: (text) => (environment().streams ?? processStreams).data(text),
+  diagnostic: (text) => (environment().streams ?? processStreams).diagnostic(text),
+})
+
+const runsOf = new WeakMap<Command, CommandRuns>()
+
+const installDrive = (program: Command) => {
   const startedAt = Date.now()
-  const env = options.env ?? process.env
-  const streams = options.streams ?? processStreams
-  const program = new Command("drive")
-    .description("manage Google Drive and Docs, local Markdown, shared knowledge and search")
-    .version(VERSION)
-    .usage("<profile> [options] <command>")
-    .option("--json", "print machine-readable JSON; --json=id,name keeps only those fields")
-    .option("--jsonl", "print machine-readable JSON lines")
-    .option("--quiet", "suppress optional diagnostics")
-    .option("--debug", "on failure, show the full error record: cause and stack")
-    .option("--timeout <duration>", "whole-command deadline, e.g. 30s", (raw: string) =>
-      parseDuration(raw, "--timeout"),
-    )
-    .option("--max-output-bytes <bytes>", "largest result to print, in bytes; 0 for no limit", offset, 4 * 1024 * 1024)
+  const environment = () => environmentOf<DriveEnvironment>(program)
+  const env = lateEnv(environment)
+  const streams = lateStreams(environment)
+  program
     .option("--read-only", "refuse local and remote mutations")
-    .option("--offline", "answer only operations that use local cached data")
-    .option("--dry-run", "validate command/policy and preview without acting")
-    .option("--yes", "answer a policy confirmation; cannot override deny or readonly")
     .option("--allow-dangerous", "answer a permanent-deletion confirmation")
     .option(
       "--permission <key=level>",
-      "temporary policy override; repeat to add keys",
+      "make a permission stricter for this run only; repeat to add keys",
       (value: string, previous: string[] = []) => [...previous, value],
     )
-  program
-    .configureOutput({
-      writeOut: (text) => streams.data(text.replace(/\n$/, "")),
-      writeErr: (text) => streams.diagnostic(text.replace(/\n$/, "")),
-      outputError: () => undefined,
-    })
-    .exitOverride()
-  let profileWord: string | undefined
+  const profileWord = (): string | undefined => {
+    const word = program.opts<{ profile?: string }>().profile
+    return word === undefined ? undefined : profileName(word)
+  }
   /**
    * The profile is the first word, or DRIVE_PROFILE; nothing picks one. DRIVE_PROFILE_LOCK pins the process: a
    * word or variable naming another profile is refused, so an agent cannot reach a profile with fewer guards.
    */
   const selected = (): string => {
     const lock = env.DRIVE_PROFILE_LOCK || undefined
-    const named = profileWord ?? (env.DRIVE_PROFILE || undefined)
+    const named = profileWord() ?? (env.DRIVE_PROFILE || undefined)
     if (lock !== undefined) {
       profileName(lock)
       if (named !== undefined && profileName(named) !== lock)
@@ -170,41 +167,35 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   let currentAction: Command | undefined
   let checkedMethod: string | undefined
-  let fields: string | undefined
-  let activeSignal = options.signal
-  let deadline: ReturnType<typeof createDeadline> | undefined
-  let stopEnds = false
+  let stopSignal: AbortSignal | undefined
+  let previewsRequest = false
+  const agent = () => environment().agent !== undefined
   const confirmations = new Set<string>()
   const askOnce = async (key: string) => {
+    // Nobody is at a terminal over MCP, and the profile's levels already allowed `ask` (WC-MCP-7).
+    if (agent()) return true
     if (confirmations.has(key)) return true
-    const answered = (await options.ask?.(key)) ?? false
+    const answered = (await environment().ask?.(key)) ?? false
     if (answered) confirmations.add(key)
     return answered
   }
   let knownKeys: Set<string> | undefined
   const policyFlags = (): PolicyFlags & { offline?: boolean } => {
     knownKeys ??= permissionKeys(flatten(describeDriveProgram(program)).map((info) => info.path))
+    const flags = program.opts()
     return {
-      ...program.opts(),
-      allowDangerous: program.opts().allowDangerous || currentAction?.opts().allowDelete,
+      ...flags,
+      permission: [...(environment().agent?.overrides ?? []), ...(flags.permission ?? [])],
+      allowDangerous: flags.allowDangerous || currentAction?.opts().allowDelete,
+      dryRun: flags.dryRun || previewsRequest,
       permissionKeys: knownKeys,
     }
   }
   const runId = randomUUID()
-  const print = (render: (renderer: Renderer, format: RenderFormat, streams: Streams) => void) => {
-    const format: RenderFormat = program.opts().jsonl
-      ? "jsonl"
-      : program.opts().json || !process.stdout.isTTY
-        ? "json"
-        : "pretty"
-    const buffer = createOutputBuffer({ maxOutputBytes: program.opts().maxOutputBytes })
-    const buffered = { ...streams, data: (text: string) => buffer.data(text) }
-    render(
-      createRenderer({ format, color: false, streams: buffered, quiet: program.opts().quiet === true }),
-      format,
-      buffered,
-    )
-    buffer.flush((text) => streams.data(text))
+  const shown = () => outputFor(currentAction ?? program)
+  const print: CommandContext["print"] = (render) => {
+    const { renderer, format, streams: out } = shown()
+    render(renderer, format, out)
   }
   const output = (body: Body) => {
     const snaked = eachItem(body, (item) => snakeKeys(item))
@@ -217,55 +208,95 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         ...body.meta,
       },
     }
+    const fields = program.opts<{ fields?: string }>().fields
     if (fields && currentAction) checkResultFields(currentAction, whole, fields)
-    const paths = fields ? fieldsOf(fields) : undefined
-    const answer = paths ? (projectFields(whole, paths) as typeof whole) : whole
-    print((renderer, format, buffered) => {
-      const command = currentAction ?? program
-      if (format !== "pretty") return renderAnswer(command, { renderer, format, streams: buffered }, answer)
-      const zone = timezoneOf()
-      const shown = localTimes(answer, zone)
-      renderAnswer(command, { renderer, format, streams: buffered }, shown.value as typeof answer)
-      if (shown.changed || answer.meta.timezone) buffered.data(`times in ${answer.meta.timezone ?? zone}`)
-    })
+    const command = currentAction ?? program
+    const out = shown()
+    if (out.format !== "pretty") return renderAnswer(command, out, whole)
+    const zone = timezoneOf()
+    const local = localTimes(whole, zone)
+    renderAnswer(command, out, local.value as typeof whole)
+    if (local.changed || whole.meta.timezone) out.streams.data(`times in ${whole.meta.timezone ?? zone}`)
   }
+  const signal = () => environment().signal
   // Google's client libraries are about 80 ms of a start; only a command that reaches Google loads them.
   const signedIn = async (name: string, scope?: string) => {
     const { authorizedClient, checkAuthorization } = await import("./tokens.js")
-    const client = authorizedClient(env, name, options.keyring, activeSignal)
+    const client = authorizedClient(env, name, environment().keyring, signal())
     await checkAuthorization(client, scope)
     return client
   }
   const source = async () => {
     const name = selected()
-    if (options.source) return options.source(name)
+    const fake = environment().source
+    if (fake) return fake(name)
     const [{ googleSource }, client] = await Promise.all([import("./google.js"), signedIn(name)])
     return googleSource(client)
   }
   const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T> => {
-    const index = await (options.index?.() ?? openIndex(env, selected(), currentAction?.opts().rescan === true))
+    const index = await (environment().index?.() ?? openIndex(env, selected(), currentAction?.opts().rescan === true))
     try {
       return await fn(index)
     } finally {
       await index.close()
     }
   }
+  const options = {
+    get keyring() {
+      return environment().keyring
+    },
+    get openBrowser() {
+      return environment().openBrowser
+    },
+    get update() {
+      return environment().update
+    },
+    get mcp() {
+      return agent()
+    },
+  }
   const context: CommandContext = {
     env,
     streams,
     options,
     selected,
-    signal: () => activeSignal,
+    signal,
     output,
     print,
     source,
     withIndex,
     policyFlags,
-    profileWord: () => profileWord,
+    profileWord,
     endsOnStop: () => {
-      stopEnds = true
+      // cli-core bounds a persistent command by nothing, so its --timeout is drive's to keep.
+      const timeout = program.opts<{ timeout?: string }>().timeout
+      stopSignal = AbortSignal.any(
+        [
+          environment().untilStopped?.(),
+          signal(),
+          timeout === undefined ? undefined : AbortSignal.timeout(parseDuration(timeout, "--timeout")),
+        ].filter((one): one is AbortSignal => one !== undefined),
+      )
+      return stopSignal
     },
   }
+  const runs = commandRuns({
+    app: DRIVE_APP,
+    profile: () => profileWord() ?? (env.DRIVE_PROFILE_LOCK || env.DRIVE_PROFILE || undefined),
+    settings: () => {
+      const defaults = readConfig(env).defaults
+      return {
+        record: defaults?.record,
+        keepRunsForDays: defaults?.keep_runs_for_days,
+        keepSuccessfulRunsForDays: defaults?.keep_successful_runs_for_days,
+        runsSizeLimitMb: defaults?.runs_size_limit_mb,
+        recordInput: defaults?.record_input,
+      }
+    },
+    env,
+    streams,
+  })
+  runsOf.set(program, runs)
   const imported = importedDocument(context)
   installSessionCommands(program, context)
   installFolderCommands(program, context)
@@ -278,7 +309,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
     document: imported,
     output,
     positive,
-    complete: () => options.complete ?? memoryModel(env, selected(), activeSignal),
+    complete: () => environment().complete ?? memoryModel(env, selected(), signal()),
     run: async (input, fn) =>
       withIndex(async (index) => {
         const lock = await lockProfile(env, selected())
@@ -297,22 +328,24 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }),
   })
   const remote: RemoteCommands = {
-    mcp: options.mcp,
+    get mcp() {
+      return agent()
+    },
     stored: storedDocument(context),
     output,
     positive,
-    readBody:
-      options.readBody ??
-      ((path) => {
-        try {
-          return readFileSync(path, "utf8")
-        } catch {
-          throw new CliError("validation_error", "the request body file could not be read", {
-            reason: "body.unreadable",
-            param: "--body-file",
-          })
-        }
-      }),
+    readBody: (path) => {
+      const fake = environment().readBody
+      if (fake) return fake(path)
+      try {
+        return readFileSync(path, "utf8")
+      } catch {
+        throw new CliError("validation_error", "the request body file could not be read", {
+          reason: "body.unreadable",
+          param: "--body-file",
+        })
+      }
+    },
     call: async (method, params, body) => {
       const descriptor = apiMethod(method)
       validateRequest(method, params, body)
@@ -335,7 +368,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }
       const act = async () => {
         try {
-          if (options.api) return await options.api.call(method, params, body)
+          const fake = environment().api
+          if (fake) return await fake.call(method, params, body)
           const [{ googleApi }, client] = await Promise.all([
             import("./google-api.js"),
             signedIn(selected(), descriptor.scope),
@@ -357,7 +391,8 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       const method = mime ? "drive.files.export" : "drive.files.get"
       const flags = policyFlags()
       for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, false, flags, askOnce)
-      if (options.download) return options.download(id, mime)
+      const fake = environment().download
+      if (fake) return fake(id, mime)
       const [{ googleDownload }, client] = await Promise.all([
         import("./google-api.js"),
         signedIn(selected(), apiMethod(method).scope),
@@ -374,7 +409,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
         throw new Preview()
       }
       const act = async () => {
-        let request = options.uploadRequest
+        let request = environment().uploadRequest
         if (!request) {
           const [{ googleUploadRequest }, client] = await Promise.all([
             import("./google-api.js"),
@@ -397,10 +432,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   installConfigCommands(program, context)
   installCompleteCommand(program, context)
   installModelCommands(program, context)
-  installMcpCommand(program, context, createProgram)
   installCommandsCommand(program, context)
-  installSkillCommand(program, context)
-  installDoctorCommand(program, context)
   installUpgradeCommand(program, context)
   program.addCommand(
     overrideSharedContract(
@@ -411,33 +443,16 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       },
     ),
   )
-  markProfileFree(program)
-  provide(program, {
-    env,
-    streams,
-    discoveryAvailability: (info) => {
-      if (!(profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK)) return undefined
-      try {
-        const command = flatten(describeDriveProgram(program)).find((one) => one.path.join(" ") === info.path.join(" "))
-        return command ? discoveryAvailability(command, policySettings(env, selected(), policyFlags())) : undefined
-      } catch {
-        return undefined
-      }
-    },
-  })
-  for (const info of flatten(describeDriveProgram(program))) {
-    if (info.commands.length) continue
-    let command = program
-    for (const word of info.path) command = command.commands.find((one) => one.name() === word) ?? command
-    command.addHelpText("after", () => {
-      const availability = environmentOf(program).discoveryAvailability?.(info)
-      return availability?.available === false ? `\nAvailability: unavailable — ${availability.reason}\n` : ""
-    })
-  }
   program.addCommand(guide())
+  markProfileFree(program)
   for (const info of flatten(describeDriveProgram(program))) {
     let command = program
     for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
+    if (!info.commands.length)
+      command.addHelpText("after", () => {
+        const availability = environment().discoveryAvailability?.(info)
+        return availability?.available === false ? `\nAvailability: unavailable — ${availability.reason}\n` : ""
+      })
     const metadata = { origin: metaOf(command).origin ?? "handwritten", state: "beta" as const }
     if (hasSharedContract(command))
       overrideSharedContract(
@@ -449,6 +464,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       )
     else annotate(command, metadata)
   }
+  placeInSections(program)
   const pathOf = (command: Command) => {
     const path: string[] = []
     for (let at: Command | null = command; at?.parent; at = at.parent) path.unshift(at.name())
@@ -456,21 +472,17 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   }
   program.hook("preAction", async (_root, action) => {
     currentAction = action
+    runs.start(action)
+    const fields = program.opts<{ fields?: string }>().fields
     checkProviderJson(
       action,
       { json: program.opts().json === true, ...(fields ? { fields } : {}) },
-      process.stdout.isTTY,
+      environment().tty ?? process.stdout.isTTY,
     )
-    if (program.opts().timeout !== undefined && !deadline) {
-      deadline = createDeadline({
-        timeoutMs: program.opts().timeout,
-        ...(options.signal ? { signal: options.signal } : {}),
-      })
-      activeSignal = deadline.signal
-    }
     const path = pathOf(action)
     const words = path.join(" ")
     const metadata = metaOf(action)
+    // cli-core's own preview runs after this hook, for every command this one lets through.
     const preview = (): never => {
       output(itemOf({ dry_run: true, command: words, effects: metadata.effects, action_invoked: false }))
       throw new Preview()
@@ -480,30 +492,44 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       if (program.opts().dryRun === true && (writes(metadata.effects) || changesAuthority(action))) preview()
     }
     // Discovery is account-independent and must not load config, credentials or the store.
-    if (ACCOUNT_FREE_COMMANDS.has(words) && !options.mcp) return previewWrite()
-    await options.atStart?.(action)
+    if (ACCOUNT_FREE_COMMANDS.has(words) && !agent()) return previewWrite()
     if (ANY_PROFILE_COMMANDS.has(words)) {
-      if (profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
+      if (profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
       return
     }
     // The action picks the profile, the defaults or the top of the file, so a broken file can still be repaired.
-    if (words === "config unset" && !options.mcp && !profileWord) {
+    if (words === "config unset" && !agent() && !profileWord()) {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    // The action names the profiles or refuses; each profile's own `drive <profile> mcp serve` checks its policy.
-    if (
-      PROFILE_SET_COMMANDS.has(words) &&
-      !options.mcp &&
-      (action.opts().profiles !== undefined || !(profileWord ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK))
-    )
+    if (words === "mcp serve" && program.opts().readOnly) {
+      // The server's tools are runs of their own, which read the lock from the environment and not this flag.
+      const served = environment().env ?? process.env
+      served.DRIVE_READ_ONLY = "1"
+    }
+    if (words === "mcp revoke" && program.opts().readOnly)
+      throw readOnlyRefusal("--read-only", "forget the browser logins")
+    // The shared `mcp` names its profiles or refuses; each tool call runs this hook for its own profile.
+    if (PROFILE_SET_COMMANDS.has(words) || path[0] === "mcp") {
+      const named = profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK
+      if (words === "mcp serve" && named && action.opts().profiles === undefined)
+        await checkPolicy(env, selected(), "mcp", false, policyFlags(), askOnce)
       return
+    }
     selected()
-    if ((words === "config set" || words === "config unset") && !options.mcp) {
+    if ((words === "config set" || words === "config unset") && !agent()) {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    if (options.mcp && changesAuthority(action)) {
+    if (agent() && EXPORTS.has(words)) {
+      const name = action.opts().output
+      if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
+        throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")
+      const directory = join(paths(env).cache, "exports", selected())
+      mkdirSync(directory, { recursive: true, mode: 0o700 })
+      action.setOptionValue("output", join(directory, name))
+    }
+    if (agent() && changesAuthority(action)) {
       const authority = policySettings(env, selected(), policyFlags())
       if (!["ask", "allow"].includes(levelFor(authority.levels, "mcp.authority").level))
         throw new CliError("permission_error", "MCP authority changes require the owner's mcp.authority permission")
@@ -514,8 +540,6 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       }
     }
     const flags = policyFlags()
-    // The server writes only through its tools, and each tool call runs this same check with these flags.
-    if (words === "mcp serve") return checkPolicy(env, selected(), "mcp", false, flags, askOnce)
     const rawMethod = words === "api call" ? action.args[0] : undefined
     const method = metadata.api_operation ?? rawMethod
     if (rawMethod) {
@@ -541,83 +565,92 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
       throw new CliError("permission_error", "this command may require network access; --offline was requested", {
         reason: "offline.refused",
       })
-    // A command that only calls Google previews the request itself, once its parameters are known.
-    const googleOnly = metadata.effects?.local === "none" && metadata.effects.remote !== "none"
-    if (flags.dryRun && !googleOnly) preview()
+    if (flags.dryRun && !googleOnly(metadata.effects)) preview()
+    // A command that only calls Google previews the request itself, once its parameters are known; cli-core, whose
+    // hook runs after this one, would preview the bare command instead.
+    if (flags.dryRun) {
+      previewsRequest = true
+      program.setOptionValue("dryRun", false)
+    }
     if (words === "session start") refuseCommandName(selected(), commandWords(program), "drive")
   })
+  program.hook("postAction", () => runs.succeed())
   const parse = program.parseAsync.bind(program)
-  program.parseAsync = async (argv = process.argv, settings) => {
-    const prefix = settings?.from === "user" ? [] : argv.slice(0, 2)
-    const args = settings?.from === "user" ? argv : argv.slice(2)
-    const valued = new Set(
-      program.options
-        .filter((option) => option.required)
-        .flatMap((option) => [option.long, option.short].filter((flag) => flag !== undefined)),
-    )
-    const profiled = liftProfile([...args], commandWords(program), valued)
-    const requested = liftJson(profiled.rest, (words) => commandIn(program, words), providerJsonFields)
-    fields = requested.fields
-    const lifted = { ...profiled, rest: requested.argv }
-    const flags = lifted.rest.slice(0, lifted.rest.indexOf("--") < 0 ? lifted.rest.length : lifted.rest.indexOf("--"))
-    if (flags.some((arg) => arg === "--profile" || arg.startsWith("--profile=")))
-      throw new CliError(
-        "validation_error",
-        "the profile is the first word: drive <profile> <command>; there is no --profile",
-      )
-    profileWord = lifted.profile ? profileName(lifted.profile) : undefined
-    // cli-core writes the profile into each next[].line from this root option; drive reads it as a first word.
-    program.setOptionValue("profile", profileWord)
-    const rest = lifted.rest
+  // Google's clients report each request with `providerEvent`, which lands in the run this scope names.
+  const scope = {
+    get runId() {
+      return runs.runId() ?? runId
+    },
+    command: "",
+    startedAt,
+    events: ((event) => {
+      if (event.event === "request" || event.event === "response") runs.events(event)
+    }) satisfies EventSink,
+  }
+  program.parseAsync = async (argv, settings) => {
     try {
-      const running = parse([...prefix, ...rest], settings)
-      return deadline ? await deadline.race(async () => running) : await running
+      return await inRun(scope, () => parse(argv, settings))
     } catch (error) {
-      if (error instanceof Preview) return program
-      if (stopEnds && activeSignal?.aborted && (!isCliError(error) || error.code !== "outcome_unknown")) return program
-      throw error
-    } finally {
-      deadline?.dispose()
+      const stopped = stopSignal?.aborted && (!isCliError(error) || error.code !== "outcome_unknown")
+      if (!(error instanceof Preview) && !stopped) throw error
+      await runs.succeed()
+      return program
     }
   }
-  recordRuns(program, {
-    app: DRIVE_APP,
-    agent: options.mcp === true,
-    profile: selected,
-    settings: () => {
-      const defaults = readConfig(env).defaults
-      return {
-        record: defaults?.record,
-        keepRunsForDays: defaults?.keep_runs_for_days,
-        keepSuccessfulRunsForDays: defaults?.keep_successful_runs_for_days,
-        runsSizeLimitMb: defaults?.runs_size_limit_mb,
-        recordInput: defaults?.record_input,
-      }
-    },
-    env,
-    streams,
-  })
-  // Imported generated children have their own Commander exit/output configuration.
-  for (const info of flatten(describeDriveProgram(program))) {
-    let command = program
-    for (const part of info.path) command = command.commands.find((child) => child.name() === part) ?? command
-    command.configureHelp({
-      commandUsage: (target) => {
-        const usage = new Help().commandUsage(target)
-        return takesProfile(target) ? usage.replace(/^drive /, "drive <profile> ") : usage
-      },
-    })
-    command.exitOverride().configureOutput({
-      writeOut: (text) => streams.data(text.replace(/\n$/, "")),
-      writeErr: (text) => streams.diagnostic(text.replace(/\n$/, "")),
-      outputError: () => {},
-    })
-  }
-  installFirstScreen(program)
   addContractInfo(program, (value) => streams.data(JSON.stringify(value)), {
     fields: providerJsonFields,
-    errors: { reasons: CONTRACT_REASONS },
+    errors: { reasons: REASONS },
   })
-  assertSharedContracts(program)
-  return program
 }
+
+// cli-core reports a missing OAuth client only by throwing, so a broken one is the owner's own.
+const oauthClient = (env: NodeJS.ProcessEnv) => {
+  application(env)
+  return { client: env.DRIVE_GOOGLE_CLIENT_ID ? ("own" as const) : ("wirecat" as const) }
+}
+
+const mcpCommand = () => {
+  // Read when the server starts: the run's keyring and Google fakes are its, and the availability hook takes no command.
+  let availability: ((path: readonly string[], profile: string) => CommandAvailability | undefined) | undefined
+  const mcp = appMcpCommand(DRIVE_APP, configuration, {
+    name: "Google Drive",
+    untrusted: ["document text", "file names", "comments", "author and editor names", "folder names"],
+    permissionExample: "files.trash=deny",
+    skill: SKILL,
+    availability: (path, profile) => availability?.(path, profile),
+    // A profile enters the file only when its sign-in succeeds; the keyring is never opened here.
+    signedIn: (profile, env) => {
+      try {
+        return Object.hasOwn(readConfig(env).profiles, profile)
+      } catch {
+        return false
+      }
+    },
+  })
+  return mcp.hook("preAction", async (root, action) => {
+    const environment = environmentOf<DriveEnvironment>(action)
+    // An injected API never asks Google for a token, so there is no grant to read, as at call time.
+    if (environment.api) return
+    const { grantAvailability } = await import("./grants.js")
+    availability = grantAvailability(rootOf(root), environment.env ?? process.env, environment.keyring)
+  })
+}
+
+export const definition = (): ProgramDefinition => ({
+  app: DRIVE_APP,
+  configuration,
+  firstScreen: FIRST_SCREEN,
+  commands: () => [
+    appDoctorCommand(DRIVE_APP, configuration, { oauthClient }),
+    skillCommand(DRIVE_APP, SKILL),
+    mcpCommand(),
+  ],
+  configure: installDrive,
+  onFailure: (error, program) => runsOf.get(program)?.fail(error),
+})
+
+/** The command tree, for discovery and the contract checks; a command runs through `run`. */
+export const createProgram = (): Command => createSharedProgram(definition())
+
+export const run = (argv: string[], options: ProgramOptions = {}): Promise<number> =>
+  runShared(argv, definition(), options as BaseEnvironment & Record<string, unknown>)

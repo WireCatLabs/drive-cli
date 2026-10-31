@@ -27,9 +27,6 @@ importers:
       '@googleapis/sheets':
         specifier: 18.1.1
         version: 18.1.1
-      '@modelcontextprotocol/server':
-        specifier: 2.4.0
-        version: 2.4.0
       '@wirecat/cli-base':
         specifier: 0.67.0
         version: 0.67.0(commander@15.0.0)(esbuild@0.28.2)(typescript@7.0.2)(vitest@5.0.5)

@@ -11,20 +11,247 @@ These options apply to the selected profile and current invocation.
 | Option | What it does |
 |---|---|
 | `-V, --version` | output the version number. |
-| `--json` | print machine-readable JSON; --json=id,name keeps only those fields. |
-| `--jsonl` | print machine-readable JSON lines. |
-| `--quiet` | suppress optional diagnostics. |
-| `--debug` | on failure, show the full error record: cause and stack. |
-| `--timeout <duration>` | whole-command deadline, e.g. 30s. |
-| `--max-output-bytes <bytes>` | largest result to print, in bytes; 0 for no limit. Default: `4194304`. |
-| `--read-only` | refuse local and remote mutations. |
-| `--offline` | answer only operations that use local cached data. |
-| `--dry-run` | validate command/policy and preview without acting. |
-| `--yes` | answer a policy confirmation; cannot override deny or readonly. |
-| `--allow-dangerous` | answer a permanent-deletion confirmation. |
-| `--permission <key=level>` | temporary policy override; repeat to add keys. |
+| `-v, --verbose` | more detail in what is shown: -v ids, -vv everything we know. Default: `0`. |
+| `--json` | machine-readable output: one JSON value on stdout; --json=id,text keeps only those fields. |
+| `--jsonl` | machine-readable output: one JSON object per line, for streaming and jq. |
+| `--quiet` | diagnostics off; a failure is still said. |
+| `--trace` | the connection's own log lines on stderr — never content. |
+| `--debug` | on a failure, its whole record — cause and stack — in place of the short line. |
+| `--timeout <duration>` | give up on the whole command after this — 30s, 2m, 500ms. |
+| `--offline` | answer from what was recorded and never connect; fails if nothing was. |
+| `--no-input` | never prompt or open interactive login; piped input remains available. |
+| `--max-input-bytes <bytes>` | maximum buffered input bytes (default: 16777216). |
+| `--max-output-bytes <bytes>` | maximum machine output bytes (default: 4194304; 0 disables). |
+| `--brief` | found items as reference, title, time, author and excerpt only. |
+| `--full` | found items with their whole text and every provider field. |
+| `--dry-run` | preview parsed arguments and permissions before running the action. |
+| `--yes` | go ahead without the question an ask level puts before a write. |
 | `--record` | keep this run even where the config says record false; record_input false leaves the typed words out. |
 | `--no-record` | do not keep this run, even if it fails. |
+| `--read-only` | refuse local and remote mutations. |
+| `--allow-dangerous` | answer a permanent-deletion confirmation. |
+| `--permission <key=level>` | make a permission stricter for this run only; repeat to add keys. |
+
+## `drive doctor`
+
+check this installation: version, paths, config, profiles, store; no keyring or network
+
+```sh
+drive doctor
+```
+
+**Returns:** check this installation: version, paths, config, profiles, store; no keyring…
+
+**Example:** `drive doctor`, `drive doctor --json`
+
+## `drive skill`
+
+the instructions an agent is given for this tool
+
+### `drive skill show`
+
+print SKILL.md — `drive skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
+
+```sh
+drive skill show [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--for <agents>` | print the copy installed for these agents instead of this version's. One of: `claude`, `agents`. |
+
+**Returns:** print the tool's instructions for AI agents
+
+**Example:** `drive skill show`
+
+### `drive skill install`
+
+write SKILL.md to \~/.claude/skills/drive-cli/ (Claude Code) and \~/.agents/skills/drive-cli/ (Codex, Gemini CLI, OpenClaw); --for hermes also has Hermes read \~/.agents/skills, which changes Hermes's own settings, so all leaves it out
+
+This command changes local state.
+
+```sh
+drive skill install [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `hermes`, `all`. Default: `all`. |
+
+**Returns:** install the tool's instructions for AI agents
+
+**Example:** `drive skill install --for agents`
+
+### `drive skill status`
+
+for each place `drive skill install` writes to, and for the copy Hermes reads: the path, the version installed there, and whether it is current, stale, missing or unversioned
+
+```sh
+drive skill status
+```
+
+**Returns:** whether the installed instructions for AI agents match this version
+
+**Example:** `drive skill status`, `drive skill status --json`
+
+## `drive mcp`
+
+serve this profile to an agent over MCP and set it up — `claude mcp add drive -- drive <profile> mcp serve`
+
+### `drive mcp serve`
+
+serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> mcp serve [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | make a permission stricter for this server only, like files.trash=deny; it never loosens the profile; repeat for more keys. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+| `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
+| `--port <port>` | the local port for --http (default 8765). |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
+
+**Returns:** serve this profile's commands to an AI agent
+
+**Example:** `drive personal mcp serve`, `drive mcp serve --profiles work,personal`, `drive personal mcp serve --http --public-url https://laptop.example.ts.net`
+
+### `drive mcp revoke`
+
+forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again
+
+This command changes local state.
+
+```sh
+drive <profile> mcp revoke [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+
+**Returns:** forget every login given to a browser app
+
+**Example:** `drive personal mcp revoke`, `drive mcp revoke --profiles all`
+
+### `drive mcp server`
+
+start, stop and check `mcp serve --http` in the background; status shows the login code for a browser app
+
+#### `drive mcp server start`
+
+start `mcp serve --http` apart from this shell and answer once it listens, with its login code
+
+This command changes local state.
+
+```sh
+drive <profile> mcp server start [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--port <port>` | the local port (default 8765). |
+| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
+| `--permission <key=level>` | make a permission stricter for this server only; repeat for more keys. |
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
+
+**Returns:** start the HTTP MCP server in the background
+
+**Example:** `drive personal mcp server start --public-url https://laptop.example.ts.net`
+
+#### `drive mcp server stop`
+
+stop `mcp serve --http` — only one that `mcp server start` started
+
+This command changes local state.
+
+```sh
+drive <profile> mcp server stop [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
+
+**Returns:** stop the background HTTP MCP server
+
+**Example:** `drive personal mcp server stop`
+
+#### `drive mcp server status`
+
+whether `mcp serve --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
+
+```sh
+drive <profile> mcp server status [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
+
+**Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
+
+**Example:** `drive personal mcp server status --json`
+
+### `drive mcp config`
+
+print the mcpServers entry for Claude Desktop, Cursor and others, with full paths; writes nothing
+
+```sh
+drive <profile> mcp config [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | make a permission stricter for this server only, like files.trash=deny; it never loosens the profile; repeat for more keys. |
+| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
+
+**Returns:** print the local MCP configuration of this profile, or of those --profiles names
+
+**Example:** `drive personal mcp config`, `drive mcp config --profiles all`
+
+### `drive mcp add`
+
+add this profile's local MCP server to Codex or Claude Code
+
+This command changes local state.
+
+```sh
+drive <profile> mcp add <client> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `client` | required | codex or claude-code. |
+
+| Option | What it does |
+|---|---|
+| `--allow-writes` | acknowledge that this profile offers writing tools. |
+| `--permission <key=level>` | make a permission stricter for this server only, like files.trash=deny; it never loosens the profile; repeat for more keys. |
+
+**Returns:** add this profile's local MCP server to Codex or Claude Code
+
+**Example:** `drive personal mcp add codex --allow-writes`
+
+### `drive mcp check`
+
+check this profile's local MCP handshake and tool list
+
+```sh
+drive <profile> mcp check [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--permission <key=level>` | make a permission stricter for this server only, like files.trash=deny; it never loosens the profile; repeat for more keys. |
+
+**Returns:** check this profile's local MCP handshake and tool list
+
+**Example:** `drive personal mcp check`
 
 ## `drive session`
 
@@ -4351,108 +4578,6 @@ drive images models download <model>
 
 **Example:** `drive images models download clip-b32`
 
-## `drive mcp`
-
-serve this profile to an agent over MCP and set it up — `claude mcp add drive -- drive <profile> mcp serve`
-
-### `drive mcp serve`
-
-serve this profile to an agent over MCP, on stdin and stdout — `claude mcp add drive -- drive <profile> mcp serve`; `drive mcp serve --profiles a,b` or `--profiles all` serves those profiles from one server and each tool asks which
-
-This command can change Google data or send data to the configured model.
-
-```sh
-drive <profile> mcp serve [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--tools` | list the commands the server offers instead of starting it. |
-| `--http` | serve over HTTP on 127.0.0.1 for ChatGPT and Claude in the browser, behind your tunnel; the profile's permissions decide. |
-| `--port <port>` | the local port for --http (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/drive. |
-| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
-
-**Returns:** serve this profile's commands to an AI agent
-
-**Example:** `drive personal mcp serve --tools`, `drive personal mcp serve`, `drive personal mcp serve --http --public-url https://laptop.example.ts.net`
-
-### `drive mcp revoke`
-
-forget every login `mcp serve --http` gave a browser app, of this profile or of the server `--profiles` names; each app must log in again
-
-This command changes local state.
-
-```sh
-drive <profile> mcp revoke [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--profiles <names\|all>` | serve several profiles from one server instead of one: names, comma-separated, or all for every profile. |
-
-**Returns:** forget every login given to a browser app
-
-**Example:** `drive personal mcp revoke`
-
-### `drive mcp server`
-
-start, stop and check `mcp serve --http` in the background; status shows the login code for a browser app
-
-#### `drive mcp server start`
-
-start `mcp serve --http` apart from this shell and answer once it listens, with its login code
-
-This command changes local state.
-
-```sh
-drive <profile> mcp server start [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--port <port>` | the local port (default 8765). |
-| `--public-url <url>` | the tunnel's https address the browser apps use, e.g. https://<name>.ts.net or https://<name>.ts.net/tg. |
-| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
-
-**Returns:** start the HTTP MCP server in the background
-
-**Example:** `drive personal mcp server start --public-url https://laptop.example.ts.net`
-
-#### `drive mcp server stop`
-
-stop `mcp serve --http` — only one that `mcp server start` started
-
-This command changes local state.
-
-```sh
-drive <profile> mcp server stop [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
-
-**Returns:** stop the background HTTP MCP server
-
-**Example:** `drive personal mcp server stop`
-
-#### `drive mcp server status`
-
-whether `mcp serve --http` runs, on which port and address, the login code for a new browser app, and the apps logged in
-
-```sh
-drive <profile> mcp server status [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--profiles <names\|all>` | the server of several profiles that `mcp serve --profiles` serves: names, comma-separated, or all. |
-
-**Returns:** whether the HTTP MCP server runs, its login code and the apps logged in
-
-**Example:** `drive personal mcp server status --json`
-
 ## `drive commands`
 
 every command by section; --json prints its contract, one path per call
@@ -4472,68 +4597,6 @@ drive commands info [path]
 **Returns:** one command contract, or all schemas, error reasons and explicit overrides
 
 **Example:** `drive commands info --json`
-
-## `drive skill`
-
-the instructions an agent is given for this tool
-
-### `drive skill show`
-
-print SKILL.md — `drive skill install` puts it where Claude Code, Codex, Gemini CLI and OpenClaw look for it, and where Hermes does on request; --for prints the copy already there
-
-```sh
-drive skill show [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--for <agents>` | print the copy installed for these agents instead of this version's. One of: `claude`, `agents`. |
-
-**Returns:** print drive's SKILL.md
-
-**Example:** `drive skill show`
-
-### `drive skill install`
-
-write SKILL.md to \~/.claude/skills/drive-cli/ (Claude Code) and \~/.agents/skills/drive-cli/ (Codex, Gemini CLI, OpenClaw); --for hermes also has Hermes read \~/.agents/skills, which changes Hermes's own settings, so all leaves it out
-
-This command changes local state.
-
-```sh
-drive skill install [options]
-```
-
-| Option | What it does |
-|---|---|
-| `--for <agents>` | which agents to install for. One of: `claude`, `agents`, `hermes`, `all`. Default: `all`. |
-
-**Returns:** put SKILL.md for Claude Code, Codex, Gemini CLI, OpenClaw, and Hermes on request
-
-**Example:** `drive skill install --for all`
-
-### `drive skill status`
-
-for each place `drive skill install` writes to, and for the copy Hermes reads: the path, the version installed there, and whether it is current, stale, missing or unversioned
-
-```sh
-drive skill status
-```
-
-**Returns:** whether the installed instructions for AI agents match this version
-
-**Example:** `drive skill status`, `drive skill status --json`
-
-## `drive doctor`
-
-check this installation: config, profiles, paths; no keyring, store or network
-
-```sh
-drive doctor
-```
-
-**Returns:** check this installation: config, profiles, paths; no keyring, store or network
-
-**Example:** `drive doctor`, `drive doctor --json`
 
 ## `drive upgrade`
 

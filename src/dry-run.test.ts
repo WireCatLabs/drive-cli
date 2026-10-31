@@ -3,9 +3,9 @@ import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { inspectConfig, paths, readConfig, writeConfig } from "./config.js"
-import { invokeTool, mcpTools } from "./mcp.js"
-import { createProgram } from "./program.js"
-import { commandResult, fixture } from "./testing.js"
+import { run as runProgram } from "./program.js"
+
+import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const setup = () => {
   const f = fixture()
@@ -98,23 +98,18 @@ describe("a global --dry-run on drive's early-return paths", () => {
     expect(existsSync(cache) ? readdirSync(cache) : []).toEqual([])
   })
 
-  it("a dry-run MCP server's config set leaves the config file as it was", async () => {
+  it("config set run for an agent previews and leaves the config file as it was", async () => {
     const t = setup()
-    const options = { env: t.env }
-    const tool = mcpTools(createProgram, options, "default").find((one) => one.command.path.join(" ") === "config set")
-    if (!tool) throw new Error("missing tool config set")
-    const result = await invokeTool(
-      createProgram,
-      tool,
-      { key: "max_text_chars", json_value: "2000" },
-      options,
-      "default",
-      {
-        dryRun: true,
-      },
-    )
-    expect(result).not.toHaveProperty("isError", true)
-    expect(result.structuredContent).toMatchObject({ item: { dry_run: true, action_invoked: false } })
+    let answer: unknown
+    let failure: unknown
+    const code = await runProgram(["default", "--dry-run", "config", "set", "max_text_chars", "2000", "--json"], {
+      env: t.env,
+      tty: false,
+      agent: { result: (value: unknown) => (answer = value), failure: (object: unknown) => (failure = object) },
+    } as Parameters<typeof runProgram>[1])
+    expect(failure).toBeUndefined()
+    expect(code).toBe(0)
+    expect(answer).toMatchObject({ item: { dry_run: true, action_invoked: false } })
     t.unchanged()
   })
 })

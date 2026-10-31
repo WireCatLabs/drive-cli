@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **drive runs on cli-core's shared program, with its `mcp`, `doctor` and `skill` commands**, as gcal, zoom and the
+  messengers do (cli-base#390). The command tree, help, failures and run records now come from cli-core 0.501.0.
+- **`mcp serve --tools` is gone.** `drive <profile> commands --json` lists every command with its availability for
+  the profile, and `drive <profile> mcp check` starts the server once and counts the tools it offers. `mcp` gains
+  `config`, `add` and `check`; `mcp serve` keeps `--profiles`, `--permission`, `--http`, `--port` and `--public-url`.
+- **Browser logins of `mcp serve --http` are kept in a new place** (`<state>/mcp-http/<profile>.json`), so a browser
+  app logs in again once. Stop a server started with `mcp server start` before upgrading: the new `mcp server stop`
+  does not find it.
+- **`doctor --json`** says `oauth_client` where it said `oauth_application`, lists `profiles` as names, and drops
+  `login`; each profile's selected folders and sign-in storage are in `drive session list`.
+- **Failures and parse errors are cli-core's**: `--profile` is refused as an unknown option, an unknown command says
+  `validation_error` with Commander's suggestion, and an expired sign-in no longer carries the `owner.sign-in` step.
+- **`--json id,name` with a space no longer picks catalog and document fields**; write `--json=id,name`.
+- **New global options from cli-core**: `-v`, `--trace`, `--no-input`, `--max-input-bytes`, `--brief`, `--full`.
+  Once a day an agent may see `agents: drive skill install installs this tool's guide`;
+  `drive <profile> config set --defaults skill_hint false` turns it off.
+- `mcp serve --read-only` makes every tool call read-only, as `DRIVE_READ_ONLY=1` does. An agent's `documents export`,
+  `files download` and `files export` still take only a file name, written in the profile's export folder.
+
+Settings files and keyring entries written by drive 0.51 load unchanged (checked by `contracts:upgrade`).
+
 ## 0.52.1 — 31.10.2026
 
 ### Fixed

@@ -1,11 +1,23 @@
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
-import { AI_ENTRIES, type ConfigIssue, checkConfigText, issueMessage, usableProfileName } from "@wirecat/cli-core/cli"
+import {
+  AI_ENTRIES,
+  type ConfigIssue,
+  checkConfigText,
+  commandPathKey,
+  commandPermissions,
+  issueMessage,
+  settingsFor,
+  usableProfileName,
+} from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
+import { operations } from "./generated/manifest.js"
+import { DRIVE_APP } from "./identity.js"
 import { WIRECAT_APPLICATION } from "./oauth-application.js"
+import { DEFAULT_LEVELS, permissionKeys } from "./policy-keys.js"
 
 const Common = {
   ...AI_ENTRIES,
@@ -20,7 +32,14 @@ const RunSettings = {
   runs_size_limit_mb: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   record_input: v.optional(v.union([v.boolean(), v.literal("failed")])),
 }
-export const DEFAULTS_ONLY = new Set(Object.keys(RunSettings))
+/** What cli-core's first run writes into a new file, and the daily hints it reads from there. */
+const SharedDefaults = {
+  limit: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  sends_per_hour: v.optional(v.pipe(v.number(), v.integer(), v.minValue(0))),
+  update_check: v.optional(v.boolean()),
+  skill_hint: v.optional(v.boolean()),
+}
+export const DEFAULTS_ONLY = new Set([...Object.keys(RunSettings), "update_check", "skill_hint"])
 export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])
 const Mirror = v.strictObject({
   id: v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,40}$/)),
@@ -38,9 +57,34 @@ const Profile = v.strictObject({
 })
 export const ConfigSchema = v.strictObject({
   profiles: v.optional(v.record(v.string(), Profile), {}),
-  defaults: v.optional(v.strictObject({ ...Common, ...RunSettings })),
+  defaults: v.optional(v.strictObject({ ...Common, ...RunSettings, ...SharedDefaults })),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
+
+// `api call`, `api list` and `api show` name no method of their own; `call` checks the method it is given.
+const keyOf = (path: readonly string[]) => {
+  if (path[0] !== "api" || path[1] === undefined) return commandPathKey(path)
+  if (["call", "list", "show"].includes(path[1])) return null
+  const operation = operations.find((one) => one.command === path[1])
+  return operation ? `api.${operation.id}` : commandPathKey(path)
+}
+
+/**
+ * The shared settings over drive's own file: the same `config.json`, read with drive's schema, so a file written by
+ * drive 0.51 loads unchanged.
+ */
+export const configuration = settingsFor(DRIVE_APP, {
+  // drive's own schema decides what the file may hold, so `doctor` names a profile that lacks its principal.
+  schema: ConfigSchema,
+  profile: {
+    principal: v.optional(v.string()),
+    roots: v.optional(v.array(v.pipe(v.string(), v.regex(/^[A-Za-z0-9_-]{1,200}$/)))),
+    mirrors: v.optional(v.array(Mirror)),
+    storage: v.optional(v.picklist(["keyring", "file"])),
+    max_text_chars: Common.max_text_chars,
+  },
+  permissions: commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS }),
+})
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
 export const configPath = (env: NodeJS.ProcessEnv) => join(paths(env).config, "config.json")
 const TOOL = "drive"
