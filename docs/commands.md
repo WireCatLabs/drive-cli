@@ -34,13 +34,17 @@ These options apply to the selected profile and current invocation.
 
 ## `drive doctor`
 
-check this installation: version, paths, config, profiles, store; no keyring or network
+the state this installation is in, without connecting unless --online
 
 ```sh
-drive doctor
+drive doctor [options]
 ```
 
-**Returns:** check this installation: version, paths, config, profiles, store; no keyring…
+| Option | What it does |
+|---|---|
+| `--online` | also connect once and read the account; sends nothing. |
+
+**Returns:** the state this installation is in, without connecting unless --online
 
 **Example:** `drive doctor`, `drive doctor --json`
 
