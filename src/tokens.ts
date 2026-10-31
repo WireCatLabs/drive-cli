@@ -29,6 +29,13 @@ const Session = v.object({
   }),
 })
 export type Session = v.InferOutput<typeof Session>
+// cli-base warns once per Credentials, and a run over several profiles makes one per profile.
+const warnedRuns = new WeakSet<NodeJS.ProcessEnv>()
+const warnOnce = (env: NodeJS.ProcessEnv) => (message: string) => {
+  if (warnedRuns.has(env)) return
+  warnedRuns.add(env)
+  process.stderr.write(`${message}\n`)
+}
 const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore) => ({
   configDir: paths(env).config,
   service: "drive-cli",
@@ -37,6 +44,7 @@ const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", 
   env,
   isolated: isMovedRun({ appName: "drive-cli", prefix: "DRIVE", env }),
   ...(keyring ? { keyring } : {}),
+  warn: warnOnce(env),
 })
 export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>
   new Credentials(credentialOptions(env, storage, keyring))
