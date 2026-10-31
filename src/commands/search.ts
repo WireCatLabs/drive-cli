@@ -11,7 +11,7 @@ import { type CommandContext, positive } from "./context.js"
 const installSearchCommandDefinition = (program: Command, { env, selected, output, withIndex }: CommandContext) => {
   examples(
     annotate(program.command("search"), { effects: LOCAL_READ })
-      .argument("<query>", "words to look for")
+      .argument("<query>", "words to look for, and fields such as tag: and date: that every hit must match")
       .description("search imported documents by words, and by meaning when indexed"),
     ["drive personal search budget", `drive personal search "quarterly plan" --exact --limit 5`],
   )

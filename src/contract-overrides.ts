@@ -914,7 +914,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "query",
           required: true,
           variadic: false,
-          description: "words to look for",
+          description: "words to look for, and fields such as tag: and date: that every hit must match",
         },
       ],
       reason: SEARCH_REASON,

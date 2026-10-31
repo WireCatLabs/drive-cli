@@ -408,7 +408,7 @@ drive <profile> search <query> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `query` | required | words to look for. |
+| `query` | required | words to look for, and fields such as tag: and date: that every hit must match. |
 
 | Option | What it does |
 |---|---|
