@@ -27,6 +27,9 @@ Metadata is available in document detail and listings; it is not a universal fie
 Use local tags and the supported person/list filters rather than inventing Google fields in a
 text query. Search does not index live comments, permissions or revision history.
 
+Notes are searched apart from documents: `drive personal notes list DOC_ID text:review` matches part of a word, in any
+letter case, in the note's title and text. A term shorter than three characters is refused.
+
 For manual use:
 
 ```sh

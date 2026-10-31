@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **Searching a document's notes (`notes list <document> text:review`) finds part of a word, in any letter case, and
+  looks in the title too.** A mixed-case Cyrillic word is no longer missed, and the answer comes in milliseconds. A
+  search of one or two characters is refused with "search needs at least three characters"; an empty one still
+  filters nothing. This comes with cli-core 0.491.0 (store version 40). Notes already saved are indexed in batches,
+  and matched as before until then. Every WireCat CLI that shares the store must run cli-core 0.490.0 or later, or it
+  does not index the notes it writes: update them together. A caller that searched notes by one or two characters
+  must send three or more.
+
 ## 0.47.0 — 31.10.2026
 
 ### Changed — may break callers
