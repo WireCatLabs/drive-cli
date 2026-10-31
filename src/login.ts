@@ -45,8 +45,6 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
     ...(options.signal ? { signal: options.signal } : {}),
     ...(options.fetch ? { fetch: options.fetch } : {}),
   })
-  const fileEntry = () => credentials(options.env, "file").read(name)?.secret
-  const fileBefore = fileEntry()
   let principal = ""
   try {
     await keeper.signIn({
@@ -87,8 +85,8 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
   } catch (error) {
     throw signInError(error)
   }
-  // A new sign-in always changes the saved entry, so a changed file means the keyring failed and cli-base used the file.
-  const storage = options.storage === "file" || fileEntry() !== fileBefore ? "file" : "keyring"
+  // cli-base drops the file copy once a sign-in reaches the keyring, so the file holds it only when it was kept there.
+  const storage = credentials(options.env, "file").read(name) ? "file" : "keyring"
   const config = readConfig(options.env)
   config.profiles[name] = { principal, roots: config.profiles[name]?.roots ?? [], storage }
   writeConfig(options.env, config)

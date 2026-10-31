@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`drive doctor --online`**, from cli-core 0.507.0: also connects once and reads the account, sending nothing.
+  Without the flag `doctor` is as before and connects to nothing.
+
+### Fixed
+
+- **The keyring's file fallback now comes from cli-base 0.68.0 and cli-core 0.507.0**, with no glue of drive's own. A
+  sign-in in the private file is read from there and its refreshes stay there; the next `session start` that reaches
+  the keyring moves it back and removes the file copy. Answers and the profile's `storage` are as in 0.53.0, and the
+  keyring warning still comes once per run.
+
 ## 0.53.0 — 31.10.2026
 
 ### Changed — may break callers
