@@ -173,7 +173,8 @@ The sections below are optional setup and maintenance, not more steps in this fi
 ## Connection repairs
 
 Credentials normally use your operating system's keyring, its private password store. If it is
-unavailable, add `--credential-storage file` to the sign-in command to choose private-file storage.
+unavailable, sign-in keeps them in a private file by itself, says so once, and answers `storage: "file"`.
+`--credential-storage file` chooses the file outright; the keyring is safer, so we do not recommend it.
 For a second account, repeat step 2 with another profile name, such as `work`.
 
 If Google blocks sign-in, check its displayed error and your Workspace administrator's policy.

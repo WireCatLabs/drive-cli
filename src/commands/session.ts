@@ -32,7 +32,8 @@ export const installSessionCommands = (program: Command, context: CommandContext
     .option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's")
     .option(
       "--credential-storage <storage>",
-      "where the sign-in is kept: keyring, or file for a private file",
+      "where the sign-in is kept: keyring (the default, which falls back to a private file by itself when no " +
+        "keyring works), or file, not recommended",
       "keyring",
     )
     .option("--no-browser", "print the sign-in URL instead of opening a browser")

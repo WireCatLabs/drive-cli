@@ -12,7 +12,8 @@ larger import or changing permissions. Keep the error code and profile name for 
 | Google blocks sign-in | Check the displayed Google error and Workspace policy. With your own client, also check enabled APIs, consent setup and test users. |
 | `google-api.disabled` | The OAuth project's owner must enable the requested API; see [API setup](#google-api-is-disabled). Reconnecting or granting write access does not enable it. |
 | Sign-in expired | Run `drive personal session start` again. Add `--client-file` only for your own application. External Testing grants usually expire after seven days. |
-| No keyring is available | Reconnect with the explicit `--credential-storage file` option if private-file storage fits your setup. |
+| "could not reach the OS keyring" | The keyring is locked or not running. Sign-in still works: drive keeps it in a private file and answers `storage: "file"`. Unlock the keyring and sign in again to move it back. |
+| `sign-in.not-saved` | The private credentials file cannot be read. Move it aside and sign in again. |
 | Search is empty | Run `status`, check selected roots with `folders list`, then `sync`. Try a known word with `search --exact`. |
 | A file was skipped | Check its type and download permission. Docs, Sheets and uploaded Markdown/TXT, PDF, `.docx`, `.xlsx` and CSV are imported; scanned PDFs, Slides and shortcuts are not. |
 | Sync stopped with errors | Repeat sync; pending work resumes. Read the report rather than treating a partial import as complete. |
