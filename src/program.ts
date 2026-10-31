@@ -57,6 +57,7 @@ import { activeProfile, application, configuration, fileId, paths, profileName, 
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
+import { PACKAGE } from "./identity.js"
 import type { DocumentIndex } from "./model.js"
 import { snakeKeys } from "./output.js"
 import {
@@ -641,7 +642,7 @@ export const definition = (): ProgramDefinition => ({
   configuration,
   firstScreen: FIRST_SCREEN,
   commands: () => [
-    appDoctorCommand(DRIVE_APP, configuration, { oauthClient }),
+    appDoctorCommand(DRIVE_APP, configuration, { oauthClient, packageName: PACKAGE }),
     skillCommand(DRIVE_APP, SKILL),
     mcpCommand(),
   ],
