@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.48.0 — 31.10.2026
+## Unreleased
 
 ### Added
 
@@ -11,6 +11,8 @@
   (`drive <profile> sync`) and `meta.complete: false`; exit code stays 0. Unlike `synced_at` on `documents show`, this
   is per document, not the profile's last sync. It needs the network, so `--offline` refuses it, and a document that
   is not imported fails with `document.not-imported`.
+
+## 0.48.0 — 31.10.2026
 
 ### Changed — may break callers
 
