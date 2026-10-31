@@ -20,7 +20,7 @@ describe("shared credential persistence", () => {
   const savedSession = (keyring: ReturnType<typeof memoryKeyring>, env: NodeJS.ProcessEnv) =>
     JSON.parse(credentials(env, "keyring", keyring).read("default")?.secret ?? "{}")
 
-  it("refreshes through the shared keeper and keeps the entry the old drive reads", async () => {
+  it("refreshes through the shared keeper and, in a moved run, keeps the refresh in memory only", async () => {
     const f = fixture()
     const keyring = memoryKeyring()
     saveSession(f.env, "default", expired, "keyring", keyring)
@@ -38,7 +38,7 @@ describe("shared credential persistence", () => {
       expect(saved.principal).toBe("synthetic-principal")
       expect(saved.tokens).toMatchObject({
         refresh_token: "fixture-refresh",
-        access_token: "fixture-next",
+        access_token: "fixture-access",
         scope: READ_SCOPE,
       })
       expect(grantedScopes(f.env, "default", keyring)).toEqual([READ_SCOPE])

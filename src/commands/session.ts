@@ -101,9 +101,19 @@ export const installSessionCommands = (program: Command, context: CommandContext
     const config = readConfig(env)
     const profile = activeProfile(env, name)
     const { credentials } = await import("../tokens.js")
-    credentials(env, profile.storage, options.keyring).remove(name)
+    const store = credentials(env, profile.storage, options.keyring)
+    store.remove(name)
     // Preserve the principal and roots so reauthorization resumes the same source identities.
     writeConfig(env, config)
-    output(itemOf({ profile: name, signed_out: true, cached_data: "retained" }))
+    // A run with moved folders never removes the owner's entry (WC-SECR-24), so it still reads back.
+    const kept = store.read(name)?.source === "keyring"
+    output(
+      itemOf({
+        profile: name,
+        signed_out: !kept,
+        ...(kept ? { kept: "owners-sign-in" } : {}),
+        cached_data: "retained",
+      }),
+    )
   })
 }

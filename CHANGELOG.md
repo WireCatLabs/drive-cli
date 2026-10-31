@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+### Security
+
+- **A run with moved folders never removes the owner's Google sign-in.** A run with a different `HOME` or XDG folder
+  now counts as moved, as one with `DRIVE_*_DIR` overrides already did (cli-base 0.65.5, WC-SECR-24): it reads the
+  owner's keyring entry, saves a new sign-in only to a temporary entry, and keeps a refreshed token in memory instead
+  of writing it (cli-core 0.494.0). drive requires cli-base 0.65.5 and cli-core 0.494.0.
+
+### Changed — may break callers
+
+- **`session end` in a run with moved folders says when it kept the owner's sign-in.** It removes only the run's
+  temporary entry; when the owner's sign-in is still there it answers `signed_out: false` and
+  `kept: "owners-sign-in"`, where it said `signed_out: true`.
+
 ## 0.49.0 — 31.10.2026
 
 ### Changed — may break callers

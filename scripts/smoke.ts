@@ -61,6 +61,7 @@ try {
     DRIVE_CACHE_DIR: join(temp, "cache"),
     WIRECAT_STATE_DIR: join(temp, "wirecat"),
     MESSAGING_STORE: join(temp, "never-owner.db"),
+    DBUS_SESSION_BUS_ADDRESS: "disabled:",
   }
   const bin = join(installed, "node_modules/@wirecat/drive-cli/dist/bin/drive.js")
   const run = (args: string[]) =>
