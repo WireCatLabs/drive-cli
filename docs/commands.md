@@ -868,7 +868,7 @@ drive <profile> memories list <document> [query] [options]
 |---|---|
 | `--limit <n>` | how many memories to return. Default: `50`. |
 
-**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 7 more; every field: drive commands info memories list
+**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 10 more; every field: drive commands info memories list
 
 **Example:** `drive personal memories list DOC_ID scope:work`, `drive personal memories list DOC_ID kind:preference status:confirmed`
 
@@ -940,7 +940,7 @@ drive <profile> memories search <document> <query>
 | `document` | required | Google file or folder id or URL in the local catalog. |
 | `query` | required | words to look for, and scope:personal or scope:work — the fields are below. |
 
-**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 7 more; every field: drive commands info memories search
+**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 10 more; every field: drive commands info memories search
 
 **Example:** `drive personal memories search DOC_ID reviews scope:work`, `drive personal memories search DOC_ID "async reviews"`
 
@@ -1015,7 +1015,7 @@ drive <profile> facts list <document> [query] [options]
 |---|---|
 | `--limit <n>` | how many facts to return. Default: `50`. |
 
-**Returns:** fact — ref, id, kind, text, status, project, subject, occurred_at, and 9 more; every field: drive commands info facts list
+**Returns:** fact — ref, id, kind, text, status, project, subject, occurred_at, and 12 more; every field: drive commands info facts list
 
 **Example:** `drive personal facts list DOC_ID status:proposed`, `drive personal facts list DOC_ID kind:decision`
 
