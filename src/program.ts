@@ -46,7 +46,7 @@ import { installConfigCommands, installModelCommands } from "./commands/config.j
 import { type CommandContext, offset, type ProgramOptions, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
 import { installDoctorCommand } from "./commands/doctor.js"
-import { importedDocument, installDocumentCommands } from "./commands/documents.js"
+import { importedDocument, installDocumentCommands, storedDocument } from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMcpCommand } from "./commands/mcp.js"
@@ -298,6 +298,7 @@ export const createProgram = (options: ProgramOptions = {}): Command => {
   })
   const remote: RemoteCommands = {
     mcp: options.mcp,
+    stored: storedDocument(context),
     output,
     positive,
     readBody:

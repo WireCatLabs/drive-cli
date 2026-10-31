@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive <profile> documents check <document>` asks Google whether one stored document changed.** It makes one
+  live read of the document's `modifiedTime` and compares it with the modified time the store kept when the document
+  was synced. The answer has `changed`, `remote_modified_at` and `local_modified_at` (`null` when the copy kept none,
+  which counts as changed). When `changed` is `true` it also has `missing` (`modified_at`), `next`
+  (`drive <profile> sync`) and `meta.complete: false`; exit code stays 0. Unlike `synced_at` on `documents show`, this
+  is per document, not the profile's last sync. It needs the network, so `--offline` refuses it, and a document that
+  is not imported fails with `document.not-imported`.
+
 ### Changed — may break callers
 
 - **The first screen (`drive --help`) lists `gcal` under "Works with"**, and `setup` offers to install

@@ -1,3 +1,4 @@
+import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
 import {
@@ -22,6 +23,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import * as v from "valibot"
+import { changedCopy, freshness } from "../age.js"
 import { jsonObject, operationOf, operations, schemas } from "../api-contract.js"
 import { apiMethods, validateApiParams } from "../api-methods.js"
 import { fileId } from "../config.js"
@@ -76,6 +78,7 @@ export interface RemoteCommands {
   output(body: Body): void
   positive(input: string): number
   readBody?: (path: string | number) => string
+  stored(input: string): { id: string; doc: { metadata: { modifiedAt?: string } } }
   download: Download
   upload(path: string, options: { name?: string; parent?: string }): Promise<unknown>
 }
@@ -347,6 +350,22 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   ).action(async (id: string) =>
     output(itemOf(await call("docs.documents.get", { documentId: fileId(id), includeTabsContent: true }))),
   )
+  examples(
+    annotate(documents.command("check"), { effects: GOOGLE_READ })
+      .argument("<document>", documentArgument)
+      .description("ask Google whether an imported document changed since its local copy was made"),
+    ["drive personal documents check DOC_ID"],
+  ).action(async (input: string) => {
+    const { id, doc } = helpers.stored(input)
+    const live = (await call("drive.files.get", {
+      fileId: id,
+      fields: "modifiedTime",
+      supportsAllDrives: true,
+    })) as { modifiedTime?: string }
+    if (!live.modifiedTime) throw new CliError("provider_error", "Google returned no modified time for this document")
+    const found = freshness(live.modifiedTime, doc.metadata.modifiedAt)
+    output(itemOf({ id, ...found }, changedCopy(found)))
+  })
   examples(annotate(documents.command("create"), { effects: GOOGLE_WRITE }).description("create an empty Google Doc"), [
     `drive personal documents create --title "Meeting notes"`,
   ])
