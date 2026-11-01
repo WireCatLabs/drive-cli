@@ -53,7 +53,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
       ),
       IMPORTED_DOCUMENT_QUERY,
     ),
-    { output: { entity: "drive_document" } },
+    { output: { entity: "drive_document" }, partial: true },
   )
     .option("--limit <n>", "how many documents to return", positive, 50)
     .option("--page <n>", "which page to return", positive, 1)
@@ -85,7 +85,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
       )
     })
   examples(
-    annotate(documents.command("show"), { effects: LOCAL_READ })
+    annotate(documents.command("show"), { effects: LOCAL_READ, partial: true })
       .argument("<document>", documentArgument)
       .description("show an imported document's text, tabs and metadata"),
     ["drive personal documents show DOC_ID"],
@@ -106,7 +106,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
     )
   })
   examples(
-    annotate(documents.command("export"), { effects: LOCAL_WRITE })
+    annotate(documents.command("export"), { effects: LOCAL_WRITE, partial: true })
       .argument("<document>", documentArgument)
       .description("write an imported document to a new Markdown file"),
     ["drive personal documents export DOC_ID --output notes.md"],

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **`documents show`, `list` and `export` exit 0 on a copy older than a day.** The answer is still the stored copy,
+  with `meta.complete: false`, `missing` and the `sync` step saying it may be stale; before, it also exited 1, so a
+  script or an agent chaining commands took a valid answer for a failure.
+
 ## 0.54.1 — 31.10.2026
 
 ### Added
