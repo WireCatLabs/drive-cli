@@ -491,11 +491,11 @@ drive <profile> documents show <document>
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | document id, Google Docs URL, or a search hit's document: ref. |
 
 **Returns:** show an imported document's text, tabs and metadata
 
-**Example:** `drive personal documents show DOC_ID`
+**Example:** `drive personal documents show DOC_ID`, `drive personal documents show document:42 --offline`
 
 ### `drive documents export`
 
@@ -509,7 +509,7 @@ drive <profile> documents export <document> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `document` | required | document id or Google Docs URL. |
+| `document` | required | document id, Google Docs URL, or a search hit's document: ref. |
 
 | Option | What it does |
 |---|---|

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`documents show` and `documents export` take a search hit's `ref`** (`document:42`), as well as a Google ID or Docs
+  URL. The ref is looked up in the selected profile's local copy, so it works with `--offline`; a ref the profile has
+  not imported is `not_found`.
+
 ## 0.54.3 — 01.11.2026
 
 ### Changed — may break callers
