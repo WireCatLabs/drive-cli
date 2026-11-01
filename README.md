@@ -172,3 +172,8 @@ explicit flags for mutation and permanent deletion; Google still enforces file r
 Read the [knowledge and API command guide](docs/dev/KNOWLEDGE_AND_API.md) for complete examples,
 permissions, history limits, AI settings and supported request formats. Contributor checks use
 isolated sources and mocked provider requests; see the [testing guide](docs/dev/TESTING.md).
+
+## Community
+
+Questions and setup help: join the [WireCat Discord](https://discord.gg/DebENqbRrJ). Bugs go to this
+repository's issues.
