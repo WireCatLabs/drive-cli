@@ -11,12 +11,18 @@ import { examples } from "../registry.js"
 import { readSnapshot, readState } from "../state.js"
 import { type CommandContext, positive } from "./context.js"
 
+// A `search` hit's ref; checkpoints are rewritten when the store changes, so it names one document here.
+const DOCUMENT_REF = /^document:[1-9]\d*$/
+
 export const storedDocument =
   ({ env, selected }: Pick<CommandContext, "env" | "selected">) =>
   (input: string) => {
-    const id = fileId(input)
     const profile = activeProfile(env, selected())
-    const doc = readState(env, selected(), profile.principal).documents[id]
+    const documents = readState(env, selected(), profile.principal).documents
+    const id = DOCUMENT_REF.test(input)
+      ? (Object.entries(documents).find(([, doc]) => doc.reference === input)?.[0] ?? "")
+      : fileId(input)
+    const doc = documents[id]
     if (!doc)
       throw new CliError("not_found", "this source is not imported in the selected profile", {
         reason: "document.not-imported",
@@ -38,7 +44,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
   const documents = annotate(program.command("documents"), { effects: LOCAL_READ }).description(
     "read imported documents and Google Docs",
   )
-  const documentArgument = "document id or Google Docs URL"
+  const documentArgument = "document id, Google Docs URL, or a search hit's document: ref"
   annotate(
     withQuery(
       examples(
@@ -88,7 +94,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
     annotate(documents.command("show"), { effects: LOCAL_READ, partial: true })
       .argument("<document>", documentArgument)
       .description("show an imported document's text, tabs and metadata"),
-    ["drive personal documents show DOC_ID"],
+    ["drive personal documents show DOC_ID", "drive personal documents show document:42 --offline"],
   ).action((input: string) => {
     const { snapshot } = imported(input)
     const state = readState(env, selected(), activeProfile(env, selected()).principal)

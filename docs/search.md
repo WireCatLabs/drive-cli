@@ -39,10 +39,11 @@ drive personal documents show DOC_ID --json
 drive personal tags list DOC_ID --json
 ```
 
-Replace `DOC_ID` with a result's Google ID. `--exact` uses word search. Document detail includes
-tab IDs, titles and text. Tables and footnotes are included; headers, footers, comments, images
-and suggested edits are not part of the indexed text. Use `tag:follow-up` to search local labels,
-alone or with words. `drive personal search` has no `--tag` flag; message-only fields are not supported.
+Replace `DOC_ID` with a result's Google ID, or pass the result's `ref` (`document:42`) as it is.
+`--exact` uses word search. Document detail includes tab IDs, titles and text. Tables and footnotes
+are included; headers, footers, comments, images and suggested edits are not part of the indexed text.
+Use `tag:follow-up` to search local labels, alone or with words.
+`drive personal search` has no `--tag` flag; message-only fields are not supported.
 
 ## Which result comes first
 
