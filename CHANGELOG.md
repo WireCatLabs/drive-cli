@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`documents check` exits 0 when the document changed in Google since the last download.** The change shows only in
+  the answer: `changed: true`, `remote_modified_at`, `local_modified_at`, `missing`, `next` and `meta.complete: false`.
+  Before, it exited 1, so a script took a valid answer for a failure. Real failures (not found, not signed in, network
+  error) still exit non-zero.
+
 ## 0.54.2 — 01.11.2026
 
 ### Fixed

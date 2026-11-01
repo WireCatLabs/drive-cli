@@ -351,7 +351,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     output(itemOf(await call("docs.documents.get", { documentId: fileId(id), includeTabsContent: true }))),
   )
   examples(
-    annotate(documents.command("check"), { effects: GOOGLE_READ })
+    annotate(documents.command("check"), { effects: GOOGLE_READ, partial: true })
       .argument("<document>", documentArgument)
       .description("ask Google whether an imported document changed since its local copy was made"),
     ["drive personal documents check DOC_ID"],

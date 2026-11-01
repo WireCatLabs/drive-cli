@@ -148,6 +148,15 @@ describe("standalone command workflow", () => {
 
     const sameInstant = await check("2026-10-01T12:00:00+02:00")
     expect(sameInstant.body.item.changed).toBe(false)
+
+    const exitOf = (id: string, call: () => Promise<unknown>) =>
+      run(["default", "documents", "check", id, "--json"], definition(), {
+        env: f.env,
+        api: { call },
+        streams: captureStreams(),
+      } as RunOptions)
+    expect(await exitOf("doc-a", async () => ({ modifiedTime: "2026-10-02T09:30:00.000Z" }))).toBe(0)
+    expect(await exitOf("never-imported", async () => ({ modifiedTime: stored }))).not.toBe(0)
   })
   it("refuses documents check offline and for a document that is not imported", async () => {
     const f = fixture()
