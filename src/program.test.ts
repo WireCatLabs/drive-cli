@@ -2,7 +2,9 @@ import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
 import { flatten, parseCommandsDocument } from "@wirecat/cli-base/commands"
+import { type RunOptions, run } from "@wirecat/cli-core/cli"
 import { describe, expect, it, vi } from "vitest"
+import { definition } from "./program.js"
 
 import { describeDriveProgram } from "./registry.js"
 import { readState, saveState } from "./state.js"
@@ -100,6 +102,11 @@ describe("standalone command workflow", () => {
       meta: { complete: false },
       missing: [{ field: "synced_at" }],
     })
+    const exitOf = (...argv: string[]) =>
+      run(["default", ...argv, "--json"], definition(), { ...options, streams: captureStreams() } as RunOptions)
+    expect(await exitOf("documents", "show", "doc-a")).toBe(0)
+    expect(await exitOf("documents", "list")).toBe(0)
+    expect(await exitOf("documents", "export", "doc-a", "--output", join(f.directory, "again.md"))).toBe(0)
   })
   it("asks Google once whether a stored document changed, and says what to run when it did", async () => {
     const f = fixture()
