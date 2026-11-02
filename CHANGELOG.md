@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **drive 0.56.0 moved the shared store to schema 43 (from 40): an older tg, max, memo or wa refuses it until it is
+  upgraded.** After drive 0.56.0 has opened a profile's store, run `<cli> upgrade` for every other WireCat CLI that
+  shares it, as drive's own message says ("the store moved to schema 43; every other WireCat CLI that uses it needs a
+  version that speaks it"). Until then those CLIs fail on that store instead of reading it.
+
+### Fixed
+
+- **A bad `--client-file` now carries the reason `sign-in.client-file-invalid`**, as gcal and mail already report, so a
+  caller can tell it from other configuration errors. The message and the code (`configuration_error`) are unchanged.
+
 ## 0.56.0 — 02.11.2026
 
 ### Changed — may break callers
