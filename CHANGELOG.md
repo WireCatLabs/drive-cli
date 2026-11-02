@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`wcat drive` runs drive, and `wcat --help` lists it.** The package installs `wcat-drive` beside `drive`, and
+  `wcat-drive --wcat-describe` prints the tool's name, version and description for `wcat`. `drive` keeps working.
+
 ## 0.57.0 — 02.11.2026
 
 ### Changed — may break callers
