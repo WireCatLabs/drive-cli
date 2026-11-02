@@ -14,7 +14,8 @@
     "url": "git+https://github.com/WireCatLabs/drive-cli.git"
   },
   "bin": {
-    "drive": "dist/bin/drive.js"
+    "drive": "dist/bin/drive.js",
+    "wcat-drive": "dist/bin/drive.js"
   },
   "files": [
     "dist",

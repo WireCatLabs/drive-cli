@@ -5,28 +5,41 @@ import { errorObjectOf, exitCodeOfError, processStreams, renderError } from "@wi
 // Compiling the program's module files is most of a start; later runs reuse what this one compiled.
 enableCompileCache()
 // A static import compiles before the cache is on.
-const [{ startCli }, { DRIVE_APP }, { REASONS }, { interactiveOf }] = await Promise.all([
-  import("@wirecat/cli-core/cli/start"),
+const [{ wcatStart }, { DRIVE_APP }] = await Promise.all([
+  import("@wirecat/cli-base/wcat/start"),
   import("../identity.js"),
-  import("../reasons.js"),
-  import("../terminal.js"),
 ])
-
-await startCli({
-  app: DRIVE_APP,
-  interactive: interactiveOf,
-  reasons: REASONS,
-  run: async (entry) =>
-    (await import("../program.js")).run(entry.args, {
-      signal: entry.signal,
-      ask: (key) => entry.ask(`Allow ${key}?`),
-      openBrowser: (url) => entry.openBrowser(url),
-    }),
-  fail: (error, entry) => {
-    const object = errorObjectOf(error)
-    processStreams.diagnostic(
-      renderError(object, { cli: DRIVE_APP.command, interactive: interactiveOf(entry.args, entry.tty) }),
-    )
-    return exitCodeOfError(object)
-  },
+const wcat = await wcatStart({
+  command: DRIVE_APP.command,
+  version: DRIVE_APP.version,
+  description: DRIVE_APP.description,
+  docs: "https://github.com/WireCatLabs/drive-cli#readme",
 })
+if (wcat.code !== undefined) {
+  process.exitCode = wcat.code
+} else {
+  const [{ startCli }, { REASONS }, { interactiveOf }] = await Promise.all([
+    import("@wirecat/cli-core/cli/start"),
+    import("../reasons.js"),
+    import("../terminal.js"),
+  ])
+
+  await startCli({
+    app: DRIVE_APP,
+    interactive: interactiveOf,
+    reasons: REASONS,
+    run: async (entry) =>
+      (await import("../program.js")).run(entry.args, {
+        signal: entry.signal,
+        ask: (key) => entry.ask(`Allow ${key}?`),
+        openBrowser: (url) => entry.openBrowser(url),
+      }),
+    fail: (error, entry) => {
+      const object = errorObjectOf(error)
+      processStreams.diagnostic(
+        renderError(object, { cli: DRIVE_APP.command, interactive: interactiveOf(entry.args, entry.tty) }),
+      )
+      return exitCodeOfError(object)
+    },
+  })
+}
