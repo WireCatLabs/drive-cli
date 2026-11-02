@@ -11,6 +11,8 @@
 
 ### Fixed
 
+- **`docs/remote.md` says what five wrong login codes do.** It said they lock the login page until the server
+  restarts; the page refuses for 30 seconds and then takes a new code, so a restart is not needed.
 - **A bad `--client-file` now carries the reason `sign-in.client-file-invalid`**, as gcal and mail already report, so a
   caller can tell it from other configuration errors. The message and the code (`configuration_error`) are unchanged.
 
