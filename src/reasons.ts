@@ -43,7 +43,7 @@ const ENTRIES: Entry[] = [
     ["permission"],
   ],
   ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
-  ["profile.locked", "provider_unavailable", "another drive command holds this profile; retry later"],
+  ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
   ["profile.lock-refused", "permission_error", "this process is locked to another profile (DRIVE_PROFILE_LOCK)"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],

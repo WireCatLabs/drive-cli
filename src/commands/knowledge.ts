@@ -143,9 +143,11 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
   )
   const noteArgument = "note:<id> reference, as notes list prints it"
   examples(
-    annotate(notes.command("add"), { effects: LOCAL_WRITE, output: { entity: "note" } }).description(
-      "write a note about a document",
-    ),
+    annotate(notes.command("add"), {
+      effects: LOCAL_WRITE,
+      output: { entity: "note" },
+      literal_after_dashes: true,
+    }).description("write a note about a document"),
     [`drive personal notes add DOC_ID "Check the numbers" --title Review`],
   )
     .argument("<document>", documentArgument)
@@ -188,9 +190,11 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
       output(itemOf(await run(doc, (k, p, ref) => k.note(p, ref, noteRef)))),
     )
   examples(
-    annotate(notes.command("edit"), { effects: LOCAL_WRITE, output: { entity: "note" } }).description(
-      "replace a note's text",
-    ),
+    annotate(notes.command("edit"), {
+      effects: LOCAL_WRITE,
+      output: { entity: "note" },
+      literal_after_dashes: true,
+    }).description("replace a note's text"),
     [`drive personal notes edit DOC_ID note:NOTE_ID "Numbers checked" --revision 2`],
   )
     .argument("<document>", documentArgument)
