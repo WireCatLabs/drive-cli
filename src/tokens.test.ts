@@ -93,6 +93,9 @@ describe("shared credential persistence", () => {
     writeFileSync(file, JSON.stringify({ web: { client_secret: "fixture-sensitive-data" } }))
     chmodSync(file, 0o600)
     expect(() => application({}, file)).toThrow("valid Desktop OAuth client JSON")
+    expect(() => application({}, file)).toThrow(
+      expect.objectContaining({ details: { reason: "sign-in.client-file-invalid" } }),
+    )
     expect(() => authorizedClient(fixture().env, "default", memoryKeyring())).toThrow("sign-in")
   })
   it("uses WireCat by default and returns independent application objects", () => {

@@ -227,6 +227,7 @@ export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplica
     invalid: new CliError(
       "configuration_error",
       "could not read a valid Desktop OAuth client JSON; file contents were not logged",
+      { reason: "sign-in.client-file-invalid" },
     ),
   })
 }
