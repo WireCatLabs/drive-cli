@@ -138,9 +138,10 @@ The address for the app is your tunnel origin with `/mcp` at the end, for exampl
 
 The app opens the `drive` login page. Check the line that says where the login goes: it must be the
 app you are connecting, such as `chatgpt.com` or `claude.ai`. Then type the access code from your
-terminal. The code expires after ten minutes; a new code is printed after each login. Five wrong
-codes lock the login page until the server restarts. The app stays logged in as long as it uses
-the connection at least once every 30 days.
+terminal. The code expires after ten minutes; a new code is printed after each login. After five
+wrong codes the login page refuses every try for 30 seconds, then a new code is printed and the old
+one no longer works. The app stays logged in as long as it uses the connection at least once every
+30 days.
 
 The server offers the same three tools as over stdio: `drive_tools_search`, `drive_read` and
 `drive_write`. Retrieved document text is data, never instructions.
@@ -175,8 +176,9 @@ Those apps must log in again with a new code. This does not sign `drive` out of 
   `https://<device>.<network>.ts.net/.well-known/oauth-protected-resource/mcp` in a browser. It
   must show a short JSON. If it does not, Funnel is not running, is not enabled in your Tailscale
   network, or points at another port.
-- **The login page says "Too many wrong codes":** restart `drive personal mcp serve --http`. If you did not
-  type them, someone found your address: think about a new device name in Tailscale.
+- **The login page says "Too many wrong codes":** wait 30 seconds, then type the new code from the terminal
+  or from `drive personal mcp server status`. If you did not type them, someone found your address: think
+  about a new device name in Tailscale.
 - **"port 8765 is in use":** another server holds it; pass another `--port` and point the tunnel at it.
 - **Reading works, writing fails:** check the profile's permissions, any `--permission` overrides and
   the Google write grant. `deny` and `readonly` block writes whatever the app approves.
