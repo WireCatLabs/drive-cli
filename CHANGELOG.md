@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.56.0 — 02.11.2026
+
+### Changed — may break callers
+
+- **`--client-file` refuses a file that other users of the computer can read**, as gcal and mail already do. Run
+  `chmod 600` on the file and sign in again. The file shapes and the error for a file that is not a Desktop client JSON
+  are unchanged. The reader now comes from `@wirecat/cli-core` 0.546.0, which needs `@wirecat/cli-base` 0.73.0.
+- **A busy profile lock now reports the reason `profile.busy`**, not `profile.locked`: cli-core uses `profile.locked`
+  for a profile lock that pins a process to its own account. The code (`provider_unavailable`) is the same.
+- **`notes add` and `notes edit` keep every word after `--` as note text**, as cli-core 0.545.0 now lifts an option
+  that stands after `--` in other commands.
+- **A fact of any type can correct an ordinary fact** (it supersedes it), as cli-core now allows; drive used to refuse.
+
+### Fixed
+
+- **Moved from cli-core 0.507.0 to 0.546.0 and cli-base 0.68.1 to 0.73.0**, with the command reference and the MCP tool
+  snapshot regenerated.
+
 ## 0.55.0 — 01.11.2026
 
 ### Added

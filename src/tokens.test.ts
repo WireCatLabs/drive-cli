@@ -1,4 +1,4 @@
-import { readFileSync, statSync, writeFileSync } from "node:fs"
+import { chmodSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
@@ -91,6 +91,7 @@ describe("shared credential persistence", () => {
     const f = fixture()
     const file = join(paths(f.env).config, "desktop-client.json")
     writeFileSync(file, JSON.stringify({ web: { client_secret: "fixture-sensitive-data" } }))
+    chmodSync(file, 0o600)
     expect(() => application({}, file)).toThrow("valid Desktop OAuth client JSON")
     expect(() => authorizedClient(fixture().env, "default", memoryKeyring())).toThrow("sign-in")
   })
@@ -115,6 +116,7 @@ describe("shared credential persistence", () => {
       file,
       JSON.stringify({ installed: { client_id: "fixture-file", client_secret: "fixture-file-secret" } }),
     )
+    chmodSync(file, 0o600)
     expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-env" }, file)).toEqual({
       clientId: "fixture-file",
       clientSecret: "fixture-file-secret",

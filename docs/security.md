@@ -32,7 +32,8 @@ application. They do not grant access to an account. Google treats installed app
 public clients that cannot keep this identity confidential; each user must grant their own
 access. Account access and refresh tokens remain private and are never bundled. A custom
 `--client-file` takes priority over environment application settings, which take priority over
-WireCat's included identity. See [Google's native-app OAuth explanation](https://developers.google.com/identity/protocols/oauth2/native-app).
+WireCat's included identity. A `--client-file` that other users of the computer can read is refused
+(`chmod 600` it first). See [Google's native-app OAuth explanation](https://developers.google.com/identity/protocols/oauth2/native-app).
 
 | Data | Location and protection |
 | --- | --- |

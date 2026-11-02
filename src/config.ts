@@ -12,6 +12,7 @@ import {
   usableProfileName,
 } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
+import { readClientFile } from "@wirecat/cli-core/oauth"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
 import { operations } from "./generated/manifest.js"
@@ -222,23 +223,12 @@ export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplica
       ...(env.DRIVE_GOOGLE_CLIENT_SECRET ? { clientSecret: env.DRIVE_GOOGLE_CLIENT_SECRET } : {}),
     }
   }
-  try {
-    const data = v.parse(
-      v.object({
-        installed: v.object({ client_id: v.pipe(v.string(), v.minLength(1)), client_secret: v.optional(v.string()) }),
-      }),
-      JSON.parse(readFileSync(file, "utf8")),
-    )
-    return {
-      clientId: data.installed.client_id,
-      ...(data.installed.client_secret ? { clientSecret: data.installed.client_secret } : {}),
-    }
-  } catch {
-    throw new CliError(
+  return readClientFile(file, {
+    invalid: new CliError(
       "configuration_error",
       "could not read a valid Desktop OAuth client JSON; file contents were not logged",
-    )
-  }
+    ),
+  })
 }
 
 export const selectedFolders = (env: NodeJS.ProcessEnv, profile: string, filter: { id?: string } = {}) =>
