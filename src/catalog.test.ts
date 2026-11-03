@@ -200,6 +200,7 @@ it("clears active catalog scope when the owner removes all selected roots", asyn
     await sync(f.source, index, f.env, "default", 10)
     const source = await index.catalog?.get("synthetic-principal", "doc-a")
     const memory = await index.knowledge?.addMemory("synthetic-principal", source?.ref ?? "", {
+      author: "owner",
       kind: "summary",
       body: "Synthetic source summary",
       scope: "work",

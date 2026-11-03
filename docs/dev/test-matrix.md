@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**252 ✅ · 966 ⛔ · 0 ❌** — 206 commands, 1012 options.
+**253 ✅ · 966 ⛔ · 0 ❌** — 206 commands, 1013 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1221,6 +1221,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | *global* | `--max-output-bytes` | ✅ |  |
 | *global* | `--brief` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
 | *global* | `--full` | ⛔ | cli-core's global option, read by its program; its program tests drive it |
+| *global* | `--compact` | ✅ |  |
 | *global* | `--dry-run` | ⛔ | drive previews in its own hook, before cli-core logs the parsed words; src/dry-run.test.ts checks it |
 | *global* | `--yes` | ✅ |  |
 | *global* | `--record` | ✅ |  |

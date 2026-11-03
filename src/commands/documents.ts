@@ -14,12 +14,26 @@ import { type CommandContext, positive } from "./context.js"
 // A `search` hit's ref; checkpoints are rewritten when the store changes, so it names one document here.
 const DOCUMENT_REF = /^document:[1-9]\d*$/
 
+export const isDocumentRef = (input: string) => DOCUMENT_REF.test(input)
+
+// A bare number is a store id with its kind lost; reading it as a Google ID would answer "not imported" for a document
+// this profile has.
+const refuseBareNumber = (input: string, documents: Record<string, { reference: string }>) => {
+  if (!/^\d+$/.test(input)) return
+  const ref = `document:${input}`
+  if (Object.values(documents).some((doc) => doc.reference === ref))
+    throw new CliError("validation_error", `${input} is a bare number; name the document as ${ref}`, {
+      reason: "ref.bare-number",
+    })
+}
+
 export const storedDocument =
   ({ env, selected }: Pick<CommandContext, "env" | "selected">) =>
   (input: string) => {
     const profile = activeProfile(env, selected())
     const documents = readState(env, selected(), profile.principal).documents
-    const id = DOCUMENT_REF.test(input)
+    refuseBareNumber(input, documents)
+    const id = isDocumentRef(input)
       ? (Object.entries(documents).find(([, doc]) => doc.reference === input)?.[0] ?? "")
       : fileId(input)
     const doc = documents[id]

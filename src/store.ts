@@ -1,4 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
+import type { ProviderEntry } from "@wirecat/cli-core"
 import { documentIngestion } from "@wirecat/cli-core/documents"
 import type { MessageStore } from "@wirecat/cli-core/store"
 import { catalogInput } from "./catalog.js"
@@ -7,6 +8,15 @@ import { documentKnowledge, saveContributors } from "./knowledge.js"
 import type { DocumentIndex } from "./model.js"
 import { prepareStore } from "./store-transition.js"
 import { VERSION } from "./version.js"
+
+// Other tools (memo show, search hits) read this to print `drive <profile> documents show document:N`.
+export const DRIVE_PROVIDER: ProviderEntry = {
+  name: "google-drive",
+  kind: "documents",
+  aliases: [],
+  command: "drive",
+  opens: { document: "documents show" },
+}
 
 export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
   if (name) activeProfile(env, name)
@@ -22,6 +32,7 @@ export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = 
   const store = await openStore({ path: storePath(env), env, command: "drive", version: VERSION })
   const index = indexOver(store, env)
   try {
+    await store.accounts.registerProvider(DRIVE_PROVIDER)
     if (name) await prepareStore(index, env, name, rescan)
     return index
   } catch (error) {

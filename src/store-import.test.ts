@@ -184,7 +184,7 @@ describe("explicit profile store import", () => {
     const f = await legacy()
     const source = await openStore({ path: f.source, env: f.env })
     const project = await source.knowledge.addProject({ name: "Synthetic source project" })
-    await source.notes.addLink({ from: project.ref, to: f.reference, kind: "links-to", origin: "owner" })
+    await source.notes.addLink({ from: project.ref, to: f.reference, kind: "links-to", origin: "owner", by: "owner" })
     await source.close()
     const target = await openStore({ path: f.env.MESSAGING_STORE, env: f.env })
     await target.knowledge.addProject({ name: "Unrelated project" })

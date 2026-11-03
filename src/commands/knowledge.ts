@@ -13,7 +13,7 @@ import {
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { extractDocumentMemories } from "@wirecat/cli-core/documents"
-import { FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
+import { type Author, type Decider, FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
 import { SHELL_OVERRIDES } from "../contract-overrides.js"
 import type { Complete } from "../extraction.js"
@@ -48,10 +48,13 @@ export interface KnowledgeCommands {
   output(body: Body): void
   positive(input: string): number
   complete(): Complete
+  /** Who writes or decides in this run: the owner at a terminal, an agent over MCP. */
+  author(): Author
+  decider(): Decider
 }
 const installKnowledgeCommandsDefinition = (program: Command, helpers: KnowledgeCommands) => {
-  const { run, output, positive } = helpers
-  const documentArgument = "Google file or folder id or URL in the local catalog"
+  const { run, output, positive, author, decider } = helpers
+  const documentArgument = "Google file or folder id or URL in the local catalog, or a document:<n> ref"
   const scopes = ["personal", "work"]
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   examples(
@@ -125,7 +128,9 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
     .action(async (doc: string, to: string, { reason, ...args }) =>
       output(
         itemOf(
-          await run(doc, (k, p, ref) => k.addLink(p, ref, { to, ...args, ...(reason ? { evidence: reason } : {}) })),
+          await run(doc, (k, p, ref) =>
+            k.addLink(p, ref, { to, ...args, by: decider(), ...(reason ? { evidence: reason } : {}) }),
+          ),
         ),
       ),
     )
@@ -137,7 +142,9 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
   )
     .argument("<document>", documentArgument)
     .argument("<relationship-id>", "id, as relationships list prints it")
-    .action(async (doc: string, id: string) => output(itemOf(await run(doc, (k, p, ref) => k.removeLink(p, ref, id)))))
+    .action(async (doc: string, id: string) =>
+      output(itemOf(await run(doc, (k, p, ref) => k.removeLink(p, ref, id, decider())))),
+    )
   const notes = annotate(program.command("notes"), { effects: LOCAL_READ }).description(
     "write notes about an imported document",
   )
@@ -228,7 +235,11 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
     .option("--supersedes <ref>", "a memory:<id> about the same document that this one replaces")
     .action(async (doc: string, body: string, args) =>
       output(
-        itemOf(memoryItem(await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed" })))),
+        itemOf(
+          memoryItem(
+            await run(doc, (k, p, ref) => k.addMemory(p, ref, { body, ...args, status: "proposed", author: author() })),
+          ),
+        ),
       ),
     )
   withQuery(
@@ -263,7 +274,15 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
       .argument("<document>", documentArgument)
       .argument("<memory>", memoryArgument)
       .action(async (doc: string, memoryRef: string) =>
-        output(itemOf(memoryItem(await run(doc, (k, p, ref) => k.memory(p, ref, memoryRef, action))))),
+        output(
+          itemOf(
+            memoryItem(
+              await run(doc, (k, p, ref) =>
+                action === "show" ? k.memory(p, ref, memoryRef) : k.memory(p, ref, memoryRef, action, decider()),
+              ),
+            ),
+          ),
+        ),
       )
   const search = examples(
     annotate(memories.command("search"), { effects: LOCAL_READ }).description("search a document's memories by words"),
@@ -346,6 +365,7 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
                 k.addFact(p, ref, {
                   statement,
                   ...args,
+                  by: author(),
                   ...(occurredTime === undefined ? {} : { occurredAt: occurredTime }),
                 }),
               ),
@@ -384,7 +404,15 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
       .argument("<document>", documentArgument)
       .argument("<fact>", factArgument)
       .action(async (doc: string, factRef: string) =>
-        output(itemOf(factItem(await run(doc, (k, p, ref) => k.fact(p, ref, factRef, action))))),
+        output(
+          itemOf(
+            factItem(
+              await run(doc, (k, p, ref) =>
+                action === "show" ? k.fact(p, ref, factRef) : k.fact(p, ref, factRef, action, decider()),
+              ),
+            ),
+          ),
+        ),
       )
   const identities = annotate(program.command("identities"), { effects: LOCAL_READ }).description(
     "the Google accounts seen on a document, and the people they belong to",

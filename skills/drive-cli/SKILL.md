@@ -27,7 +27,8 @@ Find your way with the tool itself, not this file:
 - `drive personal search "words"` searches every imported document by words, and by meaning once
   `drive personal sync --embed` has indexed them. Each hit has its Google URL; cite it.
 - `drive personal documents show DOC_ID` reads the text and tabs; `drive personal documents context DOC_ID`
-  adds tags, notes, memories and editors.
+  adds tags, notes, memories and editors. Each takes a hit's `document:<n>` ref too; a bare number is refused.
+- `drive personal documents list --compact` prints one line per document instead of JSON.
 - `drive personal documents history DOC_ID --activity` says who did what; it needs a sign-in with
   `--grant activity`.
 - An empty result means nothing matched in the imported folders, not that Drive has no such document.
