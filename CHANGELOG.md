@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Every command that takes a document takes its `document:<n>` ref too**: `documents context`, `tags`,
+  `relationships`, `notes`, `memories` and `facts`, as `documents show` and `documents export` already did. The ref is
+  looked up in the selected profile's local copy, so it works with `--offline`.
+- **`--compact` prints one line per document**: `documents list` gives `ref · name · modified`, plus how many days
+  since the last sync when the copy is old; `catalog` answers give `ref · name · kind · modified`. 200 documents fit
+  in a few KiB instead of a JSON answer over a megabyte.
+- **drive writes its entry into the shared store on every run**, so other WireCat tools (`memo show`, a search hit)
+  can print `drive <profile> documents show document:<n>` for a document ref.
+
+### Changed — may break callers
+
+- **A bare number that is one of this profile's document refs is refused** with `ref.bare-number` and names the ref
+  (`413` → `document:413`), instead of being read as a Google file ID and answering "not imported".
+- **An agent over MCP no longer writes or decides as the owner.** Its relationships stay suggestions, its facts and
+  memories stay proposed, and its confirm, stale, reverse and relationship remove are refused unless the owner turned
+  agent decisions on. At a terminal nothing changes.
+- **cli-core 0.561.0 and cli-base 0.75.2.** drive now opens the shared store at schema 48. `doctor` on a settings file
+  with broken JSON suggests `drive config repair`, which drive does not have yet
+  ([cli-core#2461](https://github.com/WireCatLabs/cli-core/issues/2461)).
+
 ## 0.58.0 — 03.11.2026
 
 ### Added

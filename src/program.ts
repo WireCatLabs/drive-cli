@@ -43,7 +43,7 @@ import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
-import { importedDocument, installDocumentCommands, storedDocument } from "./commands/documents.js"
+import { importedDocument, installDocumentCommands, isDocumentRef, storedDocument } from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMirrorCommands } from "./commands/mirrors.js"
@@ -72,7 +72,7 @@ import {
   refuseUnderReadOnly,
 } from "./policy.js"
 import { lockProfile } from "./profile-lock.js"
-import { checkProviderJson, checkResultFields, providerJsonFields } from "./provider-json.js"
+import { checkProviderJson, checkResultFields, DRIVE_ROWS, providerJsonFields } from "./provider-json.js"
 import { REASONS } from "./reasons.js"
 import {
   ACCOUNT_FREE_COMMANDS,
@@ -97,6 +97,7 @@ class Preview extends Error {}
 
 // An agent names only a file, which lands in the profile's export folder, never a path of its choosing.
 const EXPORTS = new Set(["documents export", "files download", "files export"])
+const MCP_AGENT = "drive-mcp"
 
 const googleOnly = (effects: Effects | undefined) => effects?.local === "none" && effects.remote !== "none"
 
@@ -311,6 +312,8 @@ const installDrive = (program: Command) => {
     output,
     positive,
     complete: () => environment().complete ?? memoryModel(env, selected(), signal()),
+    author: () => (agent() ? { bot: MCP_AGENT, kind: "agent" } : "owner"),
+    decider: () => (agent() ? { bot: MCP_AGENT, reason: "asked over drive's MCP server" } : "owner"),
     run: async (input, fn) =>
       withIndex(async (index) => {
         const lock = await lockProfile(env, selected())
@@ -318,7 +321,8 @@ const installDrive = (program: Command) => {
           lock.assertHeld()
           if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
           const principal = activeProfile(env, selected()).principal
-          const found = await index.catalog?.get(principal, fileId(input))
+          const local = isDocumentRef(input) || /^\d+$/.test(input)
+          const found = local ? undefined : await index.catalog?.get(principal, fileId(input))
           const ref = found?.ref ?? imported(input).ref
           const result = await fn(index.knowledge, principal, ref)
           lock.assertHeld()
@@ -641,6 +645,7 @@ export const definition = (): ProgramDefinition => ({
   app: DRIVE_APP,
   configuration,
   firstScreen: FIRST_SCREEN,
+  rows: DRIVE_ROWS,
   commands: () => [
     appDoctorCommand(DRIVE_APP, configuration, { oauthClient, packageName: PACKAGE }),
     skillCommand(DRIVE_APP, SKILL),

@@ -63,7 +63,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "document",
           required: true,
           variadic: false,
-          description: "Google file or folder id or URL in the local catalog",
+          description: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
         },
         {
           name: "text",
@@ -389,7 +389,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "document",
           required: true,
           variadic: false,
-          description: "Google file or folder id or URL in the local catalog",
+          description: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
         },
         {
           name: "query",
@@ -445,7 +445,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "document",
           required: true,
           variadic: false,
-          description: "Google file or folder id or URL in the local catalog",
+          description: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
         },
         {
           name: "note",
@@ -492,7 +492,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "document",
           required: true,
           variadic: false,
-          description: "Google file or folder id or URL in the local catalog",
+          description: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
         },
         {
           name: "note",
@@ -553,7 +553,7 @@ export const SHELL_OVERRIDES: Readonly<{
           name: "document",
           required: true,
           variadic: false,
-          description: "Google file or folder id or URL in the local catalog",
+          description: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
         },
         {
           name: "note",

@@ -21,6 +21,7 @@ const ENTRIES: Entry[] = [
     "the text is over {text_limit} characters; it was not imported",
     ["text_limit"],
   ],
+  ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.exists", "validation_error", "the output file already exists"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
