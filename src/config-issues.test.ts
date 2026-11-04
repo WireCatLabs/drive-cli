@@ -133,10 +133,10 @@ describe("doctor reports every problem in the config file", () => {
         what: "setting principal is missing",
       },
     ])
-    expect(JSON.parse(readFileSync(path, "utf8"))).toEqual({
-      defaults: { permissions: { files: "readonly" } },
-      profiles: { work: PROFILE, broken: { roots: [], storage: "keyring" } },
-    })
+    const fixed = JSON.parse(readFileSync(path, "utf8"))
+    expect(fixed.profiles).toEqual({ work: PROFILE, broken: { roots: [], storage: "keyring" } })
+    expect(fixed.defaults.permissions).toEqual({ files: "readonly" })
+    expect(Object.keys(fixed)).toEqual(["defaults", "profiles"])
   })
 })
 
@@ -148,7 +148,8 @@ describe("config runs on a file with problems", () => {
       profiles: { work: PROFILE },
     })
     const { result, diagnostics } = await run(env, ["config", "show"])
-    expect(result).toEqual({ defaults: { permissions: { files: "readonly" } }, profiles: { work: PROFILE } })
+    const { settings, ...loaded } = result
+    expect(loaded).toEqual({ defaults: { permissions: { files: "readonly" } }, profiles: { work: PROFILE } })
     expect(diagnostics).toContain(
       "setting colour is not a setting of drive, so it is left out — `drive config unset colour` removes it",
     )
@@ -157,7 +158,7 @@ describe("config runs on a file with problems", () => {
   it("sets a setting, keeping the other problems, and refuses one that adds a problem", async () => {
     const { env, path } = setup({ colour: "work", profiles: { work: PROFILE } })
     await run(env, ["work", "config", "set", "max_text_chars", "1000"])
-    expect(JSON.parse(readFileSync(path, "utf8"))).toEqual({
+    expect(JSON.parse(readFileSync(path, "utf8"))).toMatchObject({
       colour: "work",
       profiles: { work: { ...PROFILE, max_text_chars: 1000 } },
     })

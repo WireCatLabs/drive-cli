@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`drive config migrate` writes each setting the file lacks at its default, and every write drive makes to the
+  file adds them too.** You then find and edit `max_text_chars`, `limit`, `record` and the rest in `config.json`
+  without the docs. Your values, their order and keys drive does not know stay. `config unset` does not put back what
+  it removed; a plain read never rewrites the file (cli-core 0.563.0).
+- **`drive config show` lists each setting under `settings`** with its value, its default, whether the file sets it
+  and what it does.
+
 ## 0.59.0 — 03.11.2026
 
 ### Added

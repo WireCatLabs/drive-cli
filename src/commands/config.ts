@@ -1,19 +1,30 @@
 import { join } from "node:path"
 import { CliError, saveConfigFile } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, grantsAuthority, itemOf, LOCAL_READ, LOCAL_WRITE, modelCatalogueCommand } from "@wirecat/cli-core/cli"
+import {
+  FETCH,
+  grantsAuthority,
+  itemOf,
+  LOCAL_READ,
+  LOCAL_WRITE,
+  modelCatalogueCommand,
+  settingRows,
+} from "@wirecat/cli-core/cli"
 import { type Command, Option } from "commander"
 import {
   type Config,
   type ConfigFile,
   checkTextLimit,
   configIssues,
+  configPath,
+  configuration,
   DEFAULTS_ONLY,
   inspectConfig,
   readConfig,
   refusal,
   SETTING_NAMES,
   unknownProfile,
+  withDefaults,
   writeConfig,
 } from "../config.js"
 import { DRIVE_APP, permissionNames } from "../policy.js"
@@ -86,7 +97,12 @@ export const installConfigCommands = (
     ["drive config show"],
   ).action(() => {
     const file = inspectConfig(env, known())
-    output(itemOf(knownOnly(file.config, known()) as unknown as Node))
+    output(
+      itemOf({
+        ...(knownOnly(file.config, known()) as unknown as Node),
+        settings: settingRows(file.raw, configuration.declaredSettings),
+      }),
+    )
     for (const issue of file.issues)
       streams.diagnostic(`${issue.what}, so it is left out${issue.fix ? ` — \`${issue.fix}\` removes it` : ""}`)
   })
@@ -144,7 +160,7 @@ export const installConfigCommands = (
         (issue) => !before.has(JSON.stringify(issue)) || !elsewhere.has(JSON.stringify(issue)),
       )
       if (added.length) throw refusal(added)
-      saveConfigFile(file.path, next)
+      saveConfigFile(file.path, withDefaults(next))
       output(itemOf({ key, updated: true, scope: name }))
     })
   examples(
@@ -189,10 +205,21 @@ export const installConfigCommands = (
           if (Object.keys(chain[depth] as Node).length) break
           delete holder[section]
         }
-        saveConfigFile(file.path, next)
+        saveConfigFile(file.path, withDefaults(next, [at.join(".")]))
       }
       output(itemOf({ key, removed, scope: name }))
     })
+  examples(
+    annotate(grantsAuthority(config.command("migrate")), { effects: LOCAL_WRITE }).description(
+      "write each setting the file lacks at its default, keeping yours",
+    ),
+    ["drive config migrate"],
+  ).action(() => {
+    const path = configPath(env)
+    const added = configuration.migrate(path)
+    output(itemOf({ config_file: path, added }))
+    streams.diagnostic(added.length > 0 ? `added ${added.join(", ")} to ${path}` : `${path} already has every setting`)
+  })
 }
 
 export const installModelCommands = (program: Command, { env, output, streams, policyFlags }: CommandContext) => {
