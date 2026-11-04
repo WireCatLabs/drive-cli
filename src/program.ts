@@ -498,6 +498,10 @@ const installDrive = (program: Command) => {
     }
     // Discovery is account-independent and must not load config, credentials or the store.
     if (ACCOUNT_FREE_COMMANDS.has(words) && !agent()) return previewWrite()
+    if (words === "config migrate") {
+      refuseUnderReadOnly(env, "change a setting")
+      previewWrite()
+    }
     if (ANY_PROFILE_COMMANDS.has(words)) {
       if (profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK) selected()
       return

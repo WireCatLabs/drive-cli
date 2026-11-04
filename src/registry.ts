@@ -44,12 +44,13 @@ export const PROFILE_SET_COMMANDS = new Set([
   "mcp server status",
 ])
 
-/** These read every profile or none, so they run without one; a profile typed before them is still checked. */
+/** These take every profile or none, so they run without one; a profile typed before them is still checked. */
 export const ANY_PROFILE_COMMANDS = new Set([
   "commands",
   "commands info",
   "complete",
   "config show",
+  "config migrate",
   "session list",
   "store info",
 ])

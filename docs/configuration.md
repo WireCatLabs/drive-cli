@@ -75,7 +75,13 @@ drive config show --json
 ```
 
 The first line changes the shared default; the second overrides it for `work`.
-The final command prints both configuration sections, not a merged list of effective values.
+The final command prints both configuration sections, not a merged list of effective values, and under `settings`
+each setting of `defaults` with its value, its default and whether the file sets it.
+
+`drive config migrate` writes each setting `defaults` lacks at its default, so you see and edit them all in the file.
+Your values, their order and keys drive does not know stay as they are; no profile is created. Every write drive
+makes to the file, `config set` and `folders add` included, adds them too; `config unset` does not put back the
+setting it removed.
 
 `drive personal config set picture_search true` turns picture search on for `personal` only.
 Download the shared local `clip-b32` model first (about 160 MB), then use queries in English. The download needs no

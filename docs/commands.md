@@ -4471,6 +4471,20 @@ drive <profile> config unset <key> [options]
 
 **Example:** `drive personal config unset max_text_chars`, `drive personal config unset permissions.files --defaults`
 
+### `drive config migrate`
+
+write each setting the file lacks at its default, keeping yours
+
+This command changes local state.
+
+```sh
+drive config migrate
+```
+
+**Returns:** write each setting the file lacks at its default, keeping yours
+
+**Example:** `drive config migrate`
+
 ## `drive complete`
 
 print a shell completion script, or complete words

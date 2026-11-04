@@ -10,6 +10,7 @@ import {
   issueMessage,
   settingsFor,
   usableProfileName,
+  withSettingDefaults,
 } from "@wirecat/cli-core/cli"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
 import { readClientFile } from "@wirecat/cli-core/oauth"
@@ -84,6 +85,13 @@ export const configuration = settingsFor(DRIVE_APP, {
     storage: v.optional(v.picklist(["keyring", "file"])),
     max_text_chars: Common.max_text_chars,
   },
+  settings: [
+    {
+      key: "max_text_chars",
+      default: MAX_TEXT_CHARS,
+      description: "the most characters of text one file may have to be imported",
+    },
+  ],
   permissions: commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS }),
 })
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
@@ -165,8 +173,18 @@ export const writeConfig = (env: NodeJS.ProcessEnv, config: Config) => {
       "configuration_error",
       `drive settings: ${issue.profile === undefined ? "" : `profile ${issue.profile}: `}${issue.what}`,
     )
-  saveConfigFile(configPath(env), v.parse(ConfigSchema, config))
+  saveConfigFile(configPath(env), withDefaults(v.parse(ConfigSchema, config)))
 }
+
+/**
+ * The file with each declared setting it lacks at its default (WC-CMD-30), as cli-core's own writes do: `defaults` is
+ * the one section created. `except` keeps out the setting an unset just removed.
+ */
+export const withDefaults = (raw: unknown, except: readonly string[] = []): unknown =>
+  withSettingDefaults(
+    isNode(raw) && !Object.hasOwn(raw, "defaults") ? { ...raw, defaults: {} } : raw,
+    configuration.declaredSettings.filter(({ key }) => !except.includes(key)),
+  ).config
 export const profileName = usableProfileName
 export const fileId = (input: string): string => {
   let id = input
