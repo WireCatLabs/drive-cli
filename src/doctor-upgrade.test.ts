@@ -25,7 +25,7 @@ describe("doctor", () => {
       config: { found: true, issues: [] },
       profiles: ["default", "work"],
       store: { exists: false },
-      oauth_client: { client: "wirecat" },
+      oauth_client: { client: "wirecat", source: "constants" },
     })
     expect(await run(f.env, ["session", "list"])).toMatchObject({
       items: expect.arrayContaining([{ profile: "work", selected_folders: 1, storage: "keyring" }]),

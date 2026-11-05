@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Changed — may break callers
+
+- **`doctor`'s `oauth_client` says where the Google app comes from:** `{ "client": "wirecat", "source": "constants" }`,
+  or `"own"` with `"flag"` (`--client-file`) or `"env"` (`DRIVE_GOOGLE_CLIENT_ID`). WireCat's app now comes from
+  cli-core's `constants.json` instead of drive's source; the order is unchanged.
+- **`DRIVE_GOOGLE_CLIENT_SECRET` without `DRIVE_GOOGLE_CLIENT_ID` fails with reason `sign-in.secret-without-id`.**
+- **drive runs on cli-base 0.77.1 and cli-core 0.566.0.** A failure can now be `conflict` (exit 15); the MCP tools'
+  error codes list it.
+
 ## 0.60.0 — 05.11.2026
 
 ### Changed — may break callers

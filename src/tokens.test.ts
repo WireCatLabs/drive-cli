@@ -92,7 +92,7 @@ describe("shared credential persistence", () => {
     const file = join(paths(f.env).config, "desktop-client.json")
     writeFileSync(file, JSON.stringify({ web: { client_secret: "fixture-sensitive-data" } }))
     chmodSync(file, 0o600)
-    expect(() => application({}, file)).toThrow("valid Desktop OAuth client JSON")
+    expect(() => application({}, file)).toThrow("Desktop app OAuth client JSON")
     expect(() => application({}, file)).toThrow(
       expect.objectContaining({ details: { reason: "sign-in.client-file-invalid" } }),
     )
@@ -102,15 +102,21 @@ describe("shared credential persistence", () => {
     const first = application({})
     expect(first.clientId.endsWith(".apps.googleusercontent.com")).toBe(true)
     expect(typeof first.clientSecret === "string" && first.clientSecret.length > 0).toBe(true)
+    expect(first.source).toBe("constants")
     first.clientId = "fixture-replacement"
     expect(application({}).clientId === "fixture-replacement").toBe(false)
   })
   it("keeps custom environment clients separate from WireCat's client secret", () => {
-    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom" })).toEqual({ clientId: "fixture-custom" })
+    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom" })).toEqual({
+      clientId: "fixture-custom",
+      source: "env",
+    })
     expect(
       application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom", DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" }),
-    ).toEqual({ clientId: "fixture-custom", clientSecret: "fixture-secret" })
-    expect(() => application({ DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" })).toThrow("requires")
+    ).toEqual({ clientId: "fixture-custom", clientSecret: "fixture-secret", source: "env" })
+    expect(() => application({ DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" })).toThrow(
+      expect.objectContaining({ details: { reason: "sign-in.secret-without-id" } }),
+    )
   })
   it("prefers an explicit Desktop file and never falls back after an invalid file", () => {
     const f = fixture()
@@ -123,8 +129,9 @@ describe("shared credential persistence", () => {
     expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-env" }, file)).toEqual({
       clientId: "fixture-file",
       clientSecret: "fixture-file-secret",
+      source: "flag",
     })
-    expect(() => application({}, join(paths(f.env).config, "missing.json"))).toThrow("valid Desktop OAuth")
+    expect(() => application({}, join(paths(f.env).config, "missing.json"))).toThrow("Desktop app OAuth")
   })
   it("classifies OAuth rejection, quota limits and cancellation without provider messages", () => {
     expect(googleError({ response: { status: 400, data: { error: "invalid_grant" } } }).code).toBe(
