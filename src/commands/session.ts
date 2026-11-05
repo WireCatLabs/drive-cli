@@ -27,9 +27,17 @@ export const installSessionCommands = (program: Command, context: CommandContext
     annotate(session.command("start"), { mcp: false, effects: REMOTE_WRITE }).description(
       "sign in to Google in the browser; read-only unless you pass --grant write",
     ),
-    ["drive personal session start", "drive work session start --grant write,activity"],
+    [
+      "drive personal session start",
+      "drive work session start --grant write,activity",
+      "drive work session start --client-id 1234-abc.apps.googleusercontent.com",
+    ],
   )
     .option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's")
+    .option(
+      "--client-id <id>",
+      "your own Desktop OAuth client ID, used instead of WireCat's; its secret comes from DRIVE_GOOGLE_CLIENT_SECRET",
+    )
     .option(
       "--credential-storage <storage>",
       "where the sign-in is kept: keyring (the default, which falls back to a private file by itself when no " +
@@ -45,7 +53,13 @@ export const installSessionCommands = (program: Command, context: CommandContext
     )
     .action(
       async (
-        args: { clientFile?: string; credentialStorage: string; browser: boolean; grant?: Set<Grant> },
+        args: {
+          clientFile?: string
+          clientId?: string
+          credentialStorage: string
+          browser: boolean
+          grant?: Set<Grant>
+        },
         command: Command,
       ) => {
         if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
@@ -58,13 +72,18 @@ export const installSessionCommands = (program: Command, context: CommandContext
           json: json === true || jsonl === true || !process.stdout.isTTY,
           answers: false,
         })
+        const app = application(env, { file: args.clientFile, clientId: args.clientId, profile: selected() })
+        if (!app.clientSecret)
+          streams.diagnostic(
+            "your Google app has no secret here, and Google refuses a Desktop app without one: set DRIVE_GOOGLE_CLIENT_SECRET\n",
+          )
         const { login } = await import("../login.js")
         output(
           itemOf(
             await login({
               env,
               profile: selected(),
-              application: application(env, args.clientFile),
+              application: app,
               storage: args.credentialStorage,
               ...Object.fromEntries([...(args.grant ?? [])].map((grant) => [grant, true])),
               ...(options.keyring ? { keyring: options.keyring } : {}),

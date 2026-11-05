@@ -35,6 +35,7 @@ before moving or deleting them.
 | `keep_runs_for_days` | How many days a failed run stays; default `30` | `defaults` only |
 | `keep_successful_runs_for_days` | How many days a successful run stays; default `7` | `defaults` only |
 | `runs_size_limit_mb` | The most the run log may hold; the oldest successful runs go first; default `200` | `defaults` only |
+| `google_client_id` | Your own Google Desktop app's client ID, used by `session start` instead of WireCat's; its secret comes from `DRIVE_GOOGLE_CLIENT_SECRET`, never this file. Only you change it at a terminal: an agent over MCP is refused | A profile or `defaults` |
 | `picture_search` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
@@ -144,7 +145,7 @@ These values apply to the process that runs Drive; they are not saved by `config
 | `DRIVE_CACHE_DIR` | Move the tool cache; this does not move document snapshots |
 | `MESSAGING_STORE` | Select the shared database file instead of the default WireCat database |
 | `WIRECAT_STATE_DIR` | Move the WireCat folder that holds the shared database and local search models (default `~/.local/share/WireCat/`) |
-| `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Use your own Desktop OAuth application instead of WireCat's included app; set the ID before supplying its secret |
+| `DRIVE_GOOGLE_CLIENT_ID`, `DRIVE_GOOGLE_CLIENT_SECRET` | Use your own Desktop OAuth application instead of WireCat's included app; set the ID before supplying its secret. The ID wins over `google_client_id`; the secret also goes with `--client-id` and `google_client_id` |
 | `DRIVE_MODELS_MEMORIES_PROVIDER`, `DRIVE_MODELS_MEMORIES_MODEL`, `DRIVE_MODELS_MEMORIES_BASE_URL` | Override optional AI extraction choices for this process |
 | `DRIVE_OPENAI_API_KEY`, `DRIVE_ANTHROPIC_API_KEY` | Supply the selected provider's credential; the corresponding unprefixed API-key variable is also accepted |
 

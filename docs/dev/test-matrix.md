@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**254 ✅ · 966 ⛔ · 0 ❌** — 207 commands, 1013 options.
+**255 ✅ · 966 ⛔ · 0 ❌** — 207 commands, 1014 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -45,6 +45,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `mcp check` | `--permission` | ⛔ | starts the installed drive as a child process, as the agent would; cli-core's appMcpCommand; its app-mcp-command tests drive it |
 | `session start` |  | ✅ |  |
 | `session start` | `--client-file` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
+| `session start` | `--client-id` | ✅ |  |
 | `session start` | `--credential-storage` | ✅ |  |
 | `session start` | `--no-browser` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
 | `session start` | `--grant` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |

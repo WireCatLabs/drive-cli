@@ -86,7 +86,7 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
   // cli-base drops the file copy once a sign-in reaches the keyring, so the file holds it only when it was kept there.
   const storage = credentials(options.env, "file").read(name) ? "file" : "keyring"
   const config = readConfig(options.env)
-  config.profiles[name] = { principal, roots: config.profiles[name]?.roots ?? [], storage }
+  config.profiles[name] = { ...config.profiles[name], principal, roots: config.profiles[name]?.roots ?? [], storage }
   writeConfig(options.env, config)
   return { profile: name, signed_in: true, storage }
 }

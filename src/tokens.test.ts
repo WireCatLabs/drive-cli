@@ -92,19 +92,19 @@ describe("shared credential persistence", () => {
     const file = join(paths(f.env).config, "desktop-client.json")
     writeFileSync(file, JSON.stringify({ web: { client_secret: "fixture-sensitive-data" } }))
     chmodSync(file, 0o600)
-    expect(() => application({}, file)).toThrow("Desktop app OAuth client JSON")
-    expect(() => application({}, file)).toThrow(
+    expect(() => application({}, { file })).toThrow("Desktop app OAuth client JSON")
+    expect(() => application({}, { file })).toThrow(
       expect.objectContaining({ details: { reason: "sign-in.client-file-invalid" } }),
     )
     expect(() => authorizedClient(fixture().env, "default", memoryKeyring())).toThrow("sign-in")
   })
   it("uses WireCat by default and returns independent application objects", () => {
-    const first = application({})
+    const first = application(fixture().env)
     expect(first.clientId.endsWith(".apps.googleusercontent.com")).toBe(true)
     expect(typeof first.clientSecret === "string" && first.clientSecret.length > 0).toBe(true)
     expect(first.source).toBe("constants")
     first.clientId = "fixture-replacement"
-    expect(application({}).clientId === "fixture-replacement").toBe(false)
+    expect(application(fixture().env).clientId === "fixture-replacement").toBe(false)
   })
   it("keeps custom environment clients separate from WireCat's client secret", () => {
     expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-custom" })).toEqual({
@@ -126,12 +126,12 @@ describe("shared credential persistence", () => {
       JSON.stringify({ installed: { client_id: "fixture-file", client_secret: "fixture-file-secret" } }),
     )
     chmodSync(file, 0o600)
-    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-env" }, file)).toEqual({
+    expect(application({ DRIVE_GOOGLE_CLIENT_ID: "fixture-env" }, { file })).toEqual({
       clientId: "fixture-file",
       clientSecret: "fixture-file-secret",
       source: "flag",
     })
-    expect(() => application({}, join(paths(f.env).config, "missing.json"))).toThrow("Desktop app OAuth")
+    expect(() => application(f.env, { file: join(paths(f.env).config, "missing.json") })).toThrow("Desktop app OAuth")
   })
   it("classifies OAuth rejection, quota limits and cancellation without provider messages", () => {
     expect(googleError({ response: { status: 400, data: { error: "invalid_grant" } } }).code).toBe(

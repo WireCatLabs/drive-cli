@@ -275,13 +275,14 @@ drive <profile> session start [options]
 | Option | What it does |
 |---|---|
 | `--client-file <file>` | path to your own Desktop OAuth client JSON, used instead of WireCat's. |
+| `--client-id <id>` | your own Desktop OAuth client ID, used instead of WireCat's; its secret comes from DRIVE_GOOGLE_CLIENT_SECRET. |
 | `--credential-storage <storage>` | where the sign-in is kept: keyring (the default, which falls back to a private file by itself when no keyring works), or file, not recommended. Default: `keyring`. |
 | `--no-browser` | print the sign-in URL instead of opening a browser. |
 | `--grant <scopes>` | also ask for these permissions, comma-separated: write (change Drive files and Docs), activity (read Drive Activity history), apps (see installed Drive apps). |
 
 **Returns:** sign in to Google in the browser; read-only unless you pass --grant write
 
-**Example:** `drive personal session start`, `drive work session start --grant write,activity`
+**Example:** `drive personal session start`, `drive work session start --grant write,activity`, `drive work session start --client-id 1234-abc.apps.googleusercontent.com`
 
 ### `drive session list`
 
@@ -4438,7 +4439,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, google_client_id, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |

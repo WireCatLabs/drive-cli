@@ -35,7 +35,7 @@ import {
   runsCommand,
   skillCommand,
 } from "@wirecat/cli-core/cli"
-import { googleApp, oauthClientReport } from "@wirecat/cli-core/constants"
+import { oauthClientReport } from "@wirecat/cli-core/constants"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import type { Command } from "commander"
 import { validateRequest } from "./api-contract.js"
@@ -54,7 +54,7 @@ import { installSessionCommands } from "./commands/session.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, configuration, fileId, paths, profileName, readConfig } from "./config.js"
+import { activeProfile, configuration, fileId, googleAppOf, paths, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
@@ -547,6 +547,11 @@ const installDrive = (program: Command) => {
         const key = action.args[0] ?? ""
         if (key === "permissions" || key.startsWith("permissions.mcp"))
           throw new CliError("permission_error", "an agent cannot change its own authority or read-only settings")
+        if (key === "google_client_id")
+          throw new CliError(
+            "permission_error",
+            "only the owner, at a terminal, chooses the Google app to sign in with",
+          )
       }
     }
     const flags = policyFlags()
@@ -613,7 +618,8 @@ const installDrive = (program: Command) => {
   })
 }
 
-const oauthClient = (env: NodeJS.ProcessEnv) => oauthClientReport(googleApp({ env, prefix: "DRIVE" }))
+// doctor names no profile, so it reports the app of a profile without its own google_client_id.
+const oauthClient = (env: NodeJS.ProcessEnv) => oauthClientReport(googleAppOf(env))
 
 const mcpCommand = () => {
   // Read when the server starts: the run's keyring and Google fakes are its, and the availability hook takes no command.
