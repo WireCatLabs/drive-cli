@@ -12,6 +12,8 @@
 
 ### Fixed
 
+- **The Google sign-in notes no longer describe WireCat's review status.** They say that making a shared Google app
+  public for Drive is complex, so Google may refuse the sign-in, and point to your own Google app. No behaviour changes.
 - **Signing a profile in again keeps its settings:** mirrors, `max_text_chars`, `picture_search` and the rest stayed
   only as the principal, folders and storage before.
 
