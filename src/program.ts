@@ -35,6 +35,7 @@ import {
   runsCommand,
   skillCommand,
 } from "@wirecat/cli-core/cli"
+import { googleApp, oauthClientReport } from "@wirecat/cli-core/constants"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import type { Command } from "commander"
 import { validateRequest } from "./api-contract.js"
@@ -53,7 +54,7 @@ import { installSessionCommands } from "./commands/session.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, application, configuration, fileId, paths, profileName, readConfig } from "./config.js"
+import { activeProfile, configuration, fileId, paths, profileName, readConfig } from "./config.js"
 import { googleError } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
@@ -612,11 +613,7 @@ const installDrive = (program: Command) => {
   })
 }
 
-// cli-core reports a missing OAuth client only by throwing, so a broken one is the owner's own.
-const oauthClient = (env: NodeJS.ProcessEnv) => {
-  application(env)
-  return { client: env.DRIVE_GOOGLE_CLIENT_ID ? ("own" as const) : ("wirecat" as const) }
-}
+const oauthClient = (env: NodeJS.ProcessEnv) => oauthClientReport(googleApp({ env, prefix: "DRIVE" }))
 
 const mcpCommand = () => {
   // Read when the server starts: the run's keyring and Google fakes are its, and the availability hook takes no command.

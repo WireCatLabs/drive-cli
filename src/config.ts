@@ -12,13 +12,13 @@ import {
   usableProfileName,
   withSettingDefaults,
 } from "@wirecat/cli-core/cli"
+import { googleApp } from "@wirecat/cli-core/constants"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
-import { readClientFile } from "@wirecat/cli-core/oauth"
+import type { OAuthClient } from "@wirecat/cli-core/oauth"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
 import { operations } from "./generated/manifest.js"
 import { DRIVE_APP } from "./identity.js"
-import { WIRECAT_APPLICATION } from "./oauth-application.js"
 import { DEFAULT_LEVELS, permissionKeys } from "./policy-keys.js"
 
 const Common = {
@@ -218,10 +218,7 @@ export const activeProfile = (env: NodeJS.ProcessEnv, name: string) => {
   if (!profile) throw unknownProfile(name, Object.keys(config.profiles).sort())
   return profile
 }
-export interface OAuthApplication {
-  clientId: string
-  clientSecret?: string
-}
+export type OAuthApplication = OAuthClient
 export const checkTextLimit = (value: unknown): number => {
   if (typeof value !== "number" || !Number.isInteger(value) || value < 1)
     throw new CliError("validation_error", "max_text_chars must be a positive whole number of characters")
@@ -236,26 +233,8 @@ export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
   activeProfile(env, name).max_text_chars ?? readConfig(env).defaults?.max_text_chars ?? MAX_TEXT_CHARS
 export const pictureSearch = (env: NodeJS.ProcessEnv, name: string): boolean =>
   activeProfile(env, name).picture_search ?? false
-export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication => {
-  if (!file) {
-    if (!env.DRIVE_GOOGLE_CLIENT_ID) {
-      if (env.DRIVE_GOOGLE_CLIENT_SECRET)
-        throw new CliError("configuration_error", "DRIVE_GOOGLE_CLIENT_SECRET requires DRIVE_GOOGLE_CLIENT_ID")
-      return { ...WIRECAT_APPLICATION }
-    }
-    return {
-      clientId: env.DRIVE_GOOGLE_CLIENT_ID,
-      ...(env.DRIVE_GOOGLE_CLIENT_SECRET ? { clientSecret: env.DRIVE_GOOGLE_CLIENT_SECRET } : {}),
-    }
-  }
-  return readClientFile(file, {
-    invalid: new CliError(
-      "configuration_error",
-      "could not read a valid Desktop OAuth client JSON; file contents were not logged",
-      { reason: "sign-in.client-file-invalid" },
-    ),
-  })
-}
+export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication =>
+  googleApp({ env, prefix: "DRIVE", clientFile: file }).client
 
 export const selectedFolders = (env: NodeJS.ProcessEnv, profile: string, filter: { id?: string } = {}) =>
   activeProfile(env, profile).roots.flatMap((id) => (filter.id === undefined || id === filter.id ? [{ id }] : []))
