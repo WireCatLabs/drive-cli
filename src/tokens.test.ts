@@ -73,7 +73,7 @@ describe("shared credential persistence", () => {
     try {
       await expect(authorizedClient(f.env, "default", keyring).getAccessToken()).rejects.toMatchObject({
         code: "authentication_error",
-        details: { reason: "sign-in.expired" },
+        details: { reason: "oauth.expired" },
         message: expect.stringContaining("run drive default session start"),
       })
     } finally {

@@ -27,7 +27,7 @@ describe("Google API setup failures", () => {
     const failure = googleError(refused(payload))
     expect(errorObject(failure).error).toMatchObject({
       code: "configuration_error",
-      reason: "google-api.disabled",
+      reason: "api.disabled",
       details: { status: 403 },
       retry: { safe: false },
     })
@@ -82,7 +82,7 @@ describe("Google API setup failures", () => {
       .trim()
       .split("\n")
       .map((line) => JSON.parse(line))
-    expect(answer.error.reason).toBe("google-api.disabled")
+    expect(answer.error.reason).toBe("api.disabled")
     expect(JSON.stringify({ stdout: streams.stdout, stderr: streams.stderr })).not.toContain("DO_NOT_LOG")
   })
 })

@@ -1,6 +1,7 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { captureStreams } from "@wirecat/cli-base"
+import type { Command } from "commander"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 
@@ -85,7 +86,7 @@ describe("explicit account selection", () => {
     }
     await expect(run(["default", "folders", "list"])).rejects.toMatchObject({
       code: "permission_error",
-      details: { reason: "profile.lock-refused" },
+      details: { reason: "profile.locked" },
     })
     await expect(run(["folders", "list"], { DRIVE_PROFILE: "default" })).rejects.toMatchObject({
       code: "permission_error",
@@ -146,7 +147,7 @@ describe("explicit account selection", () => {
   it("with --json, gives the sign-in page as one open_url line before the plain one", async () => {
     const f = fixture()
     const streams = captureStreams()
-    const openBrowser = vi.fn(async (url: string) => {
+    const openBrowser = vi.fn(async (url: string, _command?: Command) => {
       const back = new URL(new URL(url).searchParams.get("redirect_uri") ?? "")
       back.search = new URLSearchParams({
         error: "access_denied",
@@ -161,10 +162,12 @@ describe("explicit account selection", () => {
           from: "user",
         },
       ),
-    ).rejects.toMatchObject({ details: { reason: "sign-in.declined" } })
+    ).rejects.toMatchObject({ details: { reason: "oauth.declined" } })
     const lines = streams.stderr.flatMap((text) => text.split("\n")).filter(Boolean)
     const event = JSON.parse(lines[0] ?? "{}")
     expect(event).toMatchObject({ event: "open_url", url: expect.stringMatching(/^https:\/\/accounts\.google\.com\//) })
     expect(lines[1]).toBe(`Open Google sign-in: ${event.url}`)
+    // The entry reads the command's --json and opens no browser for it (WC-CMD-15).
+    expect(openBrowser.mock.calls[0]?.[1]?.optsWithGlobals()).toMatchObject({ json: true })
   })
 })

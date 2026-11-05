@@ -34,7 +34,7 @@ export const googleError = (error: unknown): CliError => {
       "authentication_error",
       "Google sign-in is no longer valid — run drive <profile> session start again",
       {
-        reason: "sign-in.expired",
+        reason: "oauth.expired",
       },
     )
   if (reason === "invalid_client")
@@ -42,14 +42,14 @@ export const googleError = (error: unknown): CliError => {
       "configuration_error",
       "Google rejected the OAuth application; check its Desktop client setup",
       {
-        reason: "oauth-client.rejected",
+        reason: "sign-in.client-rejected",
       },
     )
   if (status === 403 && (reason === "accessNotConfigured" || disabled))
     return new CliError(
       "configuration_error",
       "Google API is disabled for this OAuth project; its owner must enable it in Google Cloud API Library",
-      { reason: "google-api.disabled", status },
+      { reason: "api.disabled", status },
     )
   if (reason === "rateLimitExceeded" || reason === "userRateLimitExceeded")
     return new CliError("rate_limited", "Google rate limit reached; retry the command", {
@@ -62,7 +62,7 @@ export const googleError = (error: unknown): CliError => {
     })
   if (status === 401)
     return new CliError("authentication_error", "Google sign-in expired — run drive <profile> session start again", {
-      reason: "sign-in.expired",
+      reason: "oauth.expired",
     })
   if (status === 403)
     return new CliError("permission_error", "Google denied this operation; check access and OAuth permissions", {

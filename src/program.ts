@@ -152,7 +152,7 @@ const installDrive = (program: Command) => {
         throw new CliError(
           "permission_error",
           `this process is locked to profile ${lock} (DRIVE_PROFILE_LOCK) — profile ${named} is refused`,
-          { reason: "profile.lock-refused" },
+          { reason: "profile.locked" },
         )
       return lock
     }

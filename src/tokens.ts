@@ -44,7 +44,7 @@ export const notSaved = () =>
   new CliError(
     "configuration_error",
     "could not save Google sign-in: the private credentials file cannot be read; move it aside and sign in again",
-    { reason: "sign-in.not-saved" },
+    { reason: "oauth.not-saved" },
   )
 export const saveSession = (
   env: NodeJS.ProcessEnv,
@@ -111,13 +111,13 @@ export const authorizedClient = (
       "authentication_error",
       `could not load Google sign-in — run drive ${name} session start again`,
       {
-        reason: "sign-in.expired",
+        reason: "oauth.expired",
       },
     )
   }
   if (!parsed.success || parsed.output.principal !== profile.principal)
     throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account", {
-      reason: "sign-in.expired",
+      reason: "oauth.expired",
     })
   const session = parsed.output
   const keeper = sessionKeeper({
@@ -143,7 +143,7 @@ export const authorizedClient = (
     } catch (error) {
       if (isCliError(error) && error.code !== "authentication_error") throw error
       throw new CliError("authentication_error", `Google sign-in expired — run drive ${name} session start again`, {
-        reason: "sign-in.expired",
+        reason: "oauth.expired",
       })
     }
   }
@@ -176,7 +176,7 @@ export const checkAuthorization = async (client: OAuth2Client, required = READ_S
       throw new CliError(
         "permission_error",
         "sign-in lacks the required permission; run drive <profile> session start --grant write, activity or apps when needed",
-        { reason: "sign-in.scope-missing" },
+        { reason: "oauth.scope-missing" },
       )
   } catch (error) {
     throw googleError(error)

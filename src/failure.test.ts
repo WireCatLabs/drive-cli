@@ -77,7 +77,7 @@ describe("failure handler", () => {
   })
 
   it("tells an agent that the sign-in expired", async () => {
-    const expired = new CliError("authentication_error", "Google sign-in expired", { reason: "sign-in.expired" })
+    const expired = new CliError("authentication_error", "Google sign-in expired", { reason: "oauth.expired" })
     let failure: ErrorObject | undefined
     await run(GET, {
       env: fixture().env,
@@ -85,7 +85,7 @@ describe("failure handler", () => {
       api: failing(expired),
       agent: { result: () => {}, failure: (object) => (failure = object) },
     })
-    expect(failure?.error).toMatchObject({ code: "authentication_error", reason: "sign-in.expired" })
+    expect(failure?.error).toMatchObject({ code: "authentication_error", reason: "oauth.expired" })
   })
 
   it("registers every reason drive raises", () => {

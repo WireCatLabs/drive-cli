@@ -43,37 +43,44 @@ export const installSessionCommands = (program: Command, context: CommandContext
         "activity (read Drive Activity history), apps (see installed Drive apps)",
       grants,
     )
-    .action(async (args: { clientFile?: string; credentialStorage: string; browser: boolean; grant?: Set<Grant> }) => {
-      if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
-        throw new CliError("validation_error", "credential storage is keyring or file")
-      const signal = context.signal()
-      const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
-      // Nothing is asked: Google answers the browser on a local port, so a window only needs the address.
-      const steps = signInSteps({
-        diagnostic: streams.diagnostic,
-        json: json === true || jsonl === true || !process.stdout.isTTY,
-        answers: false,
-      })
-      const { login } = await import("../login.js")
-      output(
-        itemOf(
-          await login({
-            env,
-            profile: selected(),
-            application: application(env, args.clientFile),
-            storage: args.credentialStorage,
-            ...Object.fromEntries([...(args.grant ?? [])].map((grant) => [grant, true])),
-            ...(options.keyring ? { keyring: options.keyring } : {}),
-            ...(signal ? { signal } : {}),
-            openBrowser: args.browser ? (options.openBrowser ?? (async () => {})) : async () => {},
-            showUrl: (url) => {
-              steps.openUrl(url, "Choose the Google account and allow access to Drive")
-              streams.diagnostic(`Open Google sign-in: ${url}\n`)
-            },
-          }),
-        ),
-      )
-    })
+    .action(
+      async (
+        args: { clientFile?: string; credentialStorage: string; browser: boolean; grant?: Set<Grant> },
+        command: Command,
+      ) => {
+        if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
+          throw new CliError("validation_error", "credential storage is keyring or file")
+        const signal = context.signal()
+        const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
+        // Nothing is asked: Google answers the browser on a local port, so a window only needs the address.
+        const steps = signInSteps({
+          diagnostic: streams.diagnostic,
+          json: json === true || jsonl === true || !process.stdout.isTTY,
+          answers: false,
+        })
+        const { login } = await import("../login.js")
+        output(
+          itemOf(
+            await login({
+              env,
+              profile: selected(),
+              application: application(env, args.clientFile),
+              storage: args.credentialStorage,
+              ...Object.fromEntries([...(args.grant ?? [])].map((grant) => [grant, true])),
+              ...(options.keyring ? { keyring: options.keyring } : {}),
+              ...(signal ? { signal } : {}),
+              openBrowser: async (url) => {
+                if (args.browser) await options.openBrowser?.(url, command)
+              },
+              showUrl: (url) => {
+                steps.openUrl(url, "Choose the Google account and allow access to Drive")
+                streams.diagnostic(`Open Google sign-in: ${url}\n`)
+              },
+            }),
+          ),
+        )
+      },
+    )
   bindQuery(
     examples(
       annotate(session.command("list"), { effects: LOCAL_READ }).description(
