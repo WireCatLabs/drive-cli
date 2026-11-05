@@ -40,9 +40,8 @@ refuses every change, as `--read-only` does.
 ## Sign in and choose folders
 
 Sign in with WireCat's included Google application. Each user approves their own account in the
-browser. Google's review of the Drive permissions is not finished, so Google shows an "unverified
-app" warning first and limits the application to 100 new users in total; see
-[the warning and how to continue](docs/installation.md#google-shows-an-unverified-app-warning).
+browser. Making a shared Google application public for Drive is complex, so Google may refuse
+the sign-in; see [what to do](docs/installation.md#google-shows-an-unverified-app-warning).
 You can also create your own Desktop client as explained in the
 [installation guide](docs/installation.md). Connect your account, then choose a folder:
 

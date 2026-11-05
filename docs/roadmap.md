@@ -16,12 +16,6 @@ and reopens comments. Its [remote MCP server](remote.md) connects browser and ph
 HTTPS tunnel with an access-code login and profile permissions. See the [mirroring guide](mirrors.md) for setup
 and conflict choices. Every command is in the [command reference](commands.md).
 
-## In progress
-
-- **Google's review of WireCat's sign-in app.** Until Google finishes it, Google shows an "unverified app" screen
-  and lets only 100 new users sign in with the app. See
-  [what to do about the warning](installation.md#google-shows-an-unverified-app-warning).
-
 ## Next
 
 - **`mirrors watch` as a background service** that starts with the computer, instead of a command left running in a
