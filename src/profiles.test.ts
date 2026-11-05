@@ -171,3 +171,64 @@ describe("explicit account selection", () => {
     expect(openBrowser.mock.calls[0]?.[1]?.optsWithGlobals()).toMatchObject({ json: true })
   })
 })
+
+describe("choosing the Google app (WC-SECR-25)", () => {
+  const signInClient = async (env: NodeJS.ProcessEnv, args: string[]) => {
+    const streams = captureStreams()
+    let clientId: string | null = null
+    const openBrowser = vi.fn(async (url: string) => {
+      clientId = new URL(url).searchParams.get("client_id")
+      const back = new URL(new URL(url).searchParams.get("redirect_uri") ?? "")
+      back.search = new URLSearchParams({
+        error: "access_denied",
+        state: new URL(url).searchParams.get("state") ?? "",
+      }).toString()
+      await fetch(back).catch(() => {})
+    })
+    await expect(
+      createProgram({ env, openBrowser, streams }).parseAsync(
+        ["work", "session", "start", "--credential-storage", "file", ...args],
+        { from: "user" },
+      ),
+    ).rejects.toMatchObject({ details: { reason: "oauth.declined" } })
+    return { clientId, stderr: streams.stderr.join("") }
+  }
+
+  it("takes --client-id, then DRIVE_GOOGLE_CLIENT_ID, then the profile's google_client_id, then the defaults'", async () => {
+    const f = fixture()
+    const config = readConfig(f.env)
+    config.profiles.work = {
+      principal: "synthetic-principal",
+      roots: [],
+      storage: "file",
+      google_client_id: "profile.apps",
+    }
+    config.defaults = { ...config.defaults, google_client_id: "defaults.apps" }
+    writeConfig(f.env, config)
+    const env = { ...f.env, DRIVE_GOOGLE_CLIENT_SECRET: "fixture-secret" }
+
+    expect((await signInClient(env, ["--client-id", "flag.apps"])).clientId).toBe("flag.apps")
+    expect((await signInClient({ ...env, DRIVE_GOOGLE_CLIENT_ID: "env.apps" }, [])).clientId).toBe("env.apps")
+    expect((await signInClient(env, [])).clientId).toBe("profile.apps")
+    const kept = readConfig(f.env)
+    expect(kept.profiles.work?.google_client_id).toBe("profile.apps")
+    delete kept.profiles.work?.google_client_id
+    writeConfig(f.env, kept)
+    expect((await signInClient(env, [])).clientId).toBe("defaults.apps")
+  })
+
+  it("warns before the browser when the owner's app has no secret, and doctor reports the config source", async () => {
+    const f = fixture()
+    expect((await signInClient(f.env, ["--client-id", "flag.apps"])).stderr).toContain("DRIVE_GOOGLE_CLIENT_SECRET")
+    expect((await signInClient(f.env, [])).stderr).not.toContain("DRIVE_GOOGLE_CLIENT_SECRET")
+
+    const set = captureStreams()
+    await createProgram({ env: f.env, streams: set }).parseAsync(
+      ["--json", "work", "config", "set", "google_client_id", '"defaults.apps"', "--defaults"],
+      { from: "user" },
+    )
+    const doctor = captureStreams()
+    await createProgram({ env: f.env, streams: doctor }).parseAsync(["--json", "doctor"], { from: "user" })
+    expect(commandResult(doctor.stdout.join("")).oauth_client).toEqual({ client: "own", source: "config" })
+  })
+})

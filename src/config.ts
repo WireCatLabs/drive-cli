@@ -25,6 +25,7 @@ const Common = {
   ...AI_ENTRIES,
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
   max_text_chars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
+  google_client_id: v.optional(v.pipe(v.string(), v.trim(), v.minLength(1))),
 }
 /** Whether and how long runs are kept: one choice for the whole tool, since a failure may come before a profile. */
 const RunSettings = {
@@ -85,6 +86,7 @@ export const configuration = settingsFor(DRIVE_APP, {
     mirrors: v.optional(v.array(Mirror)),
     storage: v.optional(v.picklist(["keyring", "file"])),
     max_text_chars: Common.max_text_chars,
+    google_client_id: Common.google_client_id,
   },
   settings: [
     {
@@ -233,8 +235,25 @@ export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
   activeProfile(env, name).max_text_chars ?? readConfig(env).defaults?.max_text_chars ?? MAX_TEXT_CHARS
 export const pictureSearch = (env: NodeJS.ProcessEnv, name: string): boolean =>
   activeProfile(env, name).picture_search ?? false
-export const application = (env: NodeJS.ProcessEnv, file?: string): OAuthApplication =>
-  googleApp({ env, prefix: "DRIVE", clientFile: file }).client
+export interface AppChoice {
+  /** `--client-file`. */
+  file?: string | undefined
+  /** `--client-id`. */
+  clientId?: string | undefined
+  /** Whose `google_client_id` to read; without one, only the defaults'. */
+  profile?: string | undefined
+}
+/** The Google app a sign-in uses (WC-SECR-25): a flag, the environment, `google_client_id`, then WireCat's. */
+export const googleAppOf = (env: NodeJS.ProcessEnv, { file, clientId, profile }: AppChoice = {}) => {
+  const own = file || clientId || env.DRIVE_GOOGLE_CLIENT_ID
+  const config = own ? undefined : readConfig(env)
+  const configClientId =
+    (profile === undefined ? undefined : config?.profiles[profileName(profile)]?.google_client_id) ??
+    config?.defaults?.google_client_id
+  return googleApp({ env, prefix: "DRIVE", clientFile: file, clientId, configClientId })
+}
+export const application = (env: NodeJS.ProcessEnv, choice: AppChoice = {}): OAuthApplication =>
+  googleAppOf(env, choice).client
 
 export const selectedFolders = (env: NodeJS.ProcessEnv, profile: string, filter: { id?: string } = {}) =>
   activeProfile(env, profile).roots.flatMap((id) => (filter.id === undefined || id === filter.id ? [{ id }] : []))

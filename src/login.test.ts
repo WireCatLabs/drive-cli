@@ -1,6 +1,6 @@
 import { CliError, memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
-import { readConfig } from "./config.js"
+import { readConfig, writeConfig } from "./config.js"
 import { type LoginOptions, login } from "./login.js"
 import { fixture } from "./testing.js"
 import { authorizedClient, credentials } from "./tokens.js"
@@ -79,6 +79,21 @@ describe("browser OAuth", () => {
     const saved = JSON.parse(credentials(f.env, "keyring", f.keyring).read("default")?.secret ?? "{}")
     expect(saved).toMatchObject({ principal: "synthetic-principal", clientId: "fixture-custom" })
     expect(saved).not.toHaveProperty("clientSecret")
+  })
+  it("keeps the profile's own settings when it signs in again", async () => {
+    const f = setup()
+    await login(f.options)
+    const config = readConfig(f.env)
+    config.profiles.default = {
+      principal: "synthetic-principal",
+      roots: [],
+      storage: "keyring",
+      google_client_id: "own.apps",
+      picture_search: true,
+    }
+    writeConfig(f.env, config)
+    await login(f.options)
+    expect(readConfig(f.env).profiles.default).toMatchObject({ google_client_id: "own.apps", picture_search: true })
   })
   it("rejects wrong-state requests while keeping the correct callback available", async () => {
     const f = setup()

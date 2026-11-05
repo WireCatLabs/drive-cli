@@ -40,5 +40,12 @@
     "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-24"
+  },
+  {
+    "rule": "option-role",
+    "target": "session start --client-id",
+    "reason": "Names the owner's own Google OAuth client by its ID, the first step of the app order in WC-SECR-25 (cli-base docs/standards/security.md), beside --client-file; no shared flag names an app credential. Review when the vocabulary names one: https://github.com/WireCatLabs/cli-base/issues/424",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-01"
   }
 ]

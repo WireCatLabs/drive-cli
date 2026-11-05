@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Added
+
+- **`session start --client-id <id>` and the `google_client_id` setting choose your own Google app** (WC-SECR-25):
+  `--client-file` or `--client-id`, then `DRIVE_GOOGLE_CLIENT_ID`, then the profile's or the defaults'
+  `google_client_id`, then WireCat's app. The secret comes from `DRIVE_GOOGLE_CLIENT_SECRET`, never the settings file,
+  and `session start` warns before the browser opens when your app has none. `doctor` reports `"source": "config"`
+  for the defaults' setting. An agent over MCP cannot change `google_client_id`.
+
+### Fixed
+
+- **Signing a profile in again keeps its settings:** mirrors, `max_text_chars`, `picture_search` and the rest stayed
+  only as the principal, folders and storage before.
+
 ### Changed — may break callers
 
 - **`doctor`'s `oauth_client` says where the Google app comes from:** `{ "client": "wirecat", "source": "constants" }`,

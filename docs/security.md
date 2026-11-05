@@ -30,9 +30,11 @@ an agent takes outside this tool.
 The bundled Desktop OAuth client ID and accompanying client secret identify WireCat's public
 application. They do not grant access to an account. Google treats installed applications as
 public clients that cannot keep this identity confidential; each user must grant their own
-access. Account access and refresh tokens remain private and are never bundled. A custom
-`--client-file` takes priority over environment application settings, which take priority over
-WireCat's included identity. A `--client-file` that other users of the computer can read is refused
+access. Account access and refresh tokens remain private and are never bundled. `session start`
+picks the application in this order: `--client-file` or `--client-id`, then `DRIVE_GOOGLE_CLIENT_ID`, then the
+profile's or the defaults' `google_client_id` setting, then WireCat's included identity. `drive doctor` reports
+which one a profile without its own setting would use, as `oauth_client.source`: `flag`, `env`, `config` or
+`constants`. A `--client-file` that other users of the computer can read is refused
 (`chmod 600` it first). See [Google's native-app OAuth explanation](https://developers.google.com/identity/protocols/oauth2/native-app).
 
 | Data | Location and protection |

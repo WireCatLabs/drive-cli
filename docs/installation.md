@@ -290,6 +290,17 @@ in step 2, then run:
 drive personal session start --client-file /absolute/path/to/desktop-client.json
 ```
 
+Or give only the client ID, with its secret in the environment for that run:
+
+```sh
+DRIVE_GOOGLE_CLIENT_SECRET=… drive personal session start --client-id 1234-abc.apps.googleusercontent.com
+```
+
+To keep using your app for every later sign-in, save its ID once with
+`drive config set google_client_id '"1234-abc.apps.googleusercontent.com"' --defaults`, or for one profile without
+`--defaults`. The secret is never saved in the settings file: set `DRIVE_GOOGLE_CLIENT_SECRET` whenever you sign in, as
+Google refuses a Desktop app without it.
+
 Return to [Connect your account](#connect-your-account) at
 [Approve access in your browser](#approve-access-in-your-browser), then check the saved profile
 and follow step 3. You have now used your own app instead of WireCat's app.

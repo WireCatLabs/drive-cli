@@ -62,8 +62,8 @@ new sign-in with `session start --grant write`; history events need `session sta
 
 Credentials use the OS keyring. Where it fails, drive uses an owner-only private file without
 asking and says so once; `--credential-storage file` chooses the file outright, not recommended. Tokens never enter regular config, output
-or diagnostics. `DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET` can provide application
-settings instead of the bundled application; `--client-file` takes priority. The included Desktop
+or diagnostics. Your own Google app replaces the bundled one with `session start --client-file` or `--client-id`,
+`DRIVE_GOOGLE_CLIENT_ID` and `DRIVE_GOOGLE_CLIENT_SECRET`, or the `google_client_id` setting, in that order. The included Desktop
 client identity is public application metadata, separate from private user tokens. If you create
 your own Desktop client and leave it in Testing, Google usually ends its sign-ins after seven days.
 [Google OAuth guide](https://developers.google.com/identity/protocols/oauth2/native-app),
