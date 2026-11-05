@@ -1,6 +1,7 @@
 import type { KeyringStore, Renderer, RenderFormat, Streams } from "@wirecat/cli-base"
 import type { BaseEnvironment, Body } from "@wirecat/cli-core/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
+import type { Command } from "commander"
 import { InvalidArgumentError } from "commander"
 import type { Download } from "../download.js"
 import type { Complete } from "../extraction.js"
@@ -11,7 +12,8 @@ import type { UploadRequest } from "../upload.js"
 
 /** What a run hands drive beyond cli-core's environment: the owner's answer and every test's fakes. */
 export interface DriveEnvironment extends BaseEnvironment {
-  openBrowser?: (url: string) => Promise<void>
+  /** Gets the command, so the entry opens nothing under `--json`, `--no-input`, CI or without a terminal (WC-CMD-15). */
+  openBrowser?: (url: string, command?: Command) => Promise<void>
   source?: (profile: string) => Promise<GoogleSource>
   index?: () => Promise<DocumentIndex>
   api?: GoogleApi
@@ -28,7 +30,7 @@ export interface RunOptions {
   /** Whether an agent runs this command over MCP. */
   readonly mcp: boolean
   readonly keyring: KeyringStore | undefined
-  readonly openBrowser: ((url: string) => Promise<void>) | undefined
+  readonly openBrowser: ((url: string, command?: Command) => Promise<void>) | undefined
   readonly update: UpdateEnvironment | undefined
 }
 

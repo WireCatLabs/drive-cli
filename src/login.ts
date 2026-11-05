@@ -21,17 +21,15 @@ export interface LoginOptions {
   activity?: boolean
   apps?: boolean
 }
-// The shared keeper names its failures oauth.*; drive's own reasons are the ones its docs and scripts know.
+// The shared keeper's oauth.* reasons go out as they are; only its words are replaced, so no credential detail shows.
 const signInError = (error: unknown): unknown => {
   if (!isCliError(error)) return error
   const reason = error.details.reason
   if (reason === "oauth.declined")
-    return new CliError("authentication_error", "Google sign-in was declined", { reason: "sign-in.declined" })
+    return new CliError(error.code, "Google sign-in was declined", { reason: "oauth.declined" })
   if (reason === "oauth.not-saved") return notSaved()
   if (typeof reason === "string" && reason.startsWith("oauth.") && reason !== "oauth.timeout")
-    return new CliError("authentication_error", "Google token exchange failed; credential details were not logged", {
-      reason: "sign-in.failed",
-    })
+    return new CliError(error.code, "Google token exchange failed; credential details were not logged", { reason })
   return error
 }
 export const login = async (options: LoginOptions): Promise<{ profile: string; signed_in: true; storage: string }> => {

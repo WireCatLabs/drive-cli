@@ -78,7 +78,7 @@ export const uploadFile = async (input: UploadInput): Promise<UploadedFile> => {
     throw new CliError("validation_error", "the file to upload could not be read", { reason: "file.unreadable" })
   }
   if (!stat.isFile())
-    throw new CliError("validation_error", "upload takes one file, not a folder", { reason: "file.not-file" })
+    throw new CliError("validation_error", "upload takes one file, not a folder", { reason: "file.not-a-file" })
   const size = stat.size
   const name = input.name ?? basename(path)
   const chunk = input.chunkBytes ?? CHUNK_BYTES

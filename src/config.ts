@@ -76,6 +76,7 @@ const keyOf = (path: readonly string[]) => {
  * drive 0.51 loads unchanged.
  */
 export const configuration = settingsFor(DRIVE_APP, {
+  configRepair: false,
   // drive's own schema decides what the file may hold, so `doctor` names a profile that lacks its principal.
   schema: ConfigSchema,
   profile: {
@@ -115,7 +116,13 @@ const withoutIncomplete = (raw: unknown, issues: readonly ConfigIssue[]): Node |
 
 const examine = (text: string, file: string, knownPermissions?: ReadonlySet<string>) => {
   const check = (body: string) =>
-    checkConfigText(body, { file, tool: TOOL, schema: ConfigSchema, ...(knownPermissions ? { knownPermissions } : {}) })
+    checkConfigText(body, {
+      file,
+      tool: TOOL,
+      schema: ConfigSchema,
+      repair: false,
+      ...(knownPermissions ? { knownPermissions } : {}),
+    })
   const first = check(text)
   if (first.issues.some((issue) => issue.kind === "invalid_json"))
     return { raw: {}, config: { profiles: {} }, issues: first.issues }

@@ -8,7 +8,6 @@ const ENTRIES: Entry[] = [
   ["catalog.depth-invalid", "validation_error", "tree depth must be between 0 and 50"],
   ["catalog.cycle", "invalid_response", "local folder ancestry contains a cycle"],
   ["catalog.tree-limit", "validation_error", "tree output exceeds 10000 nodes; choose a smaller folder"],
-  ["api.unknown-method", "validation_error", "the Google method is not known; run drive api list"],
   ["mirror.none", "not_found", "the profile has no mirrors; add one with drive <profile> mirrors add"],
   ["mirror.not-folder", "validation_error", "the path to mirror is not a folder"],
   ["mirror.not-found", "not_found", "no such mirror in this profile; see drive <profile> mirrors list"],
@@ -25,16 +24,8 @@ const ENTRIES: Entry[] = [
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.exists", "validation_error", "the output file already exists"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
-  ["file.not-file", "validation_error", "upload takes one file, not a folder"],
   ["file.unreadable", "validation_error", "the file to upload could not be read"],
-  [
-    "google-api.disabled",
-    "configuration_error",
-    "Google API is disabled for this OAuth project; its owner must enable it in Google Cloud API Library",
-  ],
   ["listing.too-large", "provider_error", "the listing is over its bound; the checkpoint was kept"],
-  ["oauth-client.rejected", "configuration_error", "Google rejected the OAuth client"],
-  ["offline.refused", "permission_error", "this command needs Google; --offline was given"],
   ["policy.confirm", "confirmation_required", "the profile policy asks to confirm {permission}", ["permission"]],
   ["policy.denied", "permission_error", "the profile policy refuses {permission}", ["permission"]],
   [
@@ -46,19 +37,7 @@ const ENTRIES: Entry[] = [
   ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
   ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
-  ["profile.lock-refused", "permission_error", "this process is locked to another profile (DRIVE_PROFILE_LOCK)"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
-  ["sign-in.declined", "authentication_error", "the Google sign-in was declined"],
-  [
-    "sign-in.expired",
-    "authentication_error",
-    "the Google sign-in is no longer valid; run drive <profile> session start",
-    [],
-    "owner.sign-in",
-  ],
-  ["sign-in.failed", "authentication_error", "the Google sign-in did not finish; run drive <profile> session start"],
-  ["sign-in.not-saved", "configuration_error", "the sign-in could not be saved: its private file cannot be read"],
-  ["sign-in.scope-missing", "permission_error", "the sign-in lacks the Google permission this command needs"],
   ["source.changed", "provider_error", "the document changed during export; retry the sync"],
   [
     "store.annotations-present",
@@ -85,7 +64,7 @@ const ENTRIES: Entry[] = [
   ["write.not-allowed", "permission_error", "this method changes Google data; pass --allow-writes"],
 ]
 
-/** Every reason drive raises; cli-base's base reasons are known to the handler already. */
+/** drive's own reasons; cli-base's base reasons and cli-core's shared ones are known to the handler already. */
 export const REASONS: ErrorReason[] = defineReasons(
   ENTRIES.map(([reason, code, message, details = [], step]) => ({
     reason,

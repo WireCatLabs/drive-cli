@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Changed — may break callers
+
+- **Error reasons use the names cli-core and gcal share.** `sign-in.expired` is now `oauth.expired`,
+  `sign-in.scope-missing` is `oauth.scope-missing`, `sign-in.declined` is `oauth.declined`, `sign-in.not-saved` is
+  `oauth.not-saved`, `google-api.disabled` is `api.disabled`, `oauth-client.rejected` is `sign-in.client-rejected`,
+  `file.not-file` is `file.not-a-file` and `profile.lock-refused` is `profile.locked`. A sign-in that fails keeps the
+  shared sign-in's own reason (`oauth.failed`, `oauth.unavailable`, …) and its code, in place of one `sign-in.failed`;
+  the message still names no credential detail.
+- **cli-core 0.565.0.** The store stays at schema 48.
+
 ### Added
 
 - **`drive config migrate` writes each setting the file lacks at its default, and every write drive makes to the
@@ -10,6 +20,12 @@
   it removed; a plain read never rewrites the file (cli-core 0.563.0).
 - **`drive config show` lists each setting under `settings`** with its value, its default, whether the file sets it
   and what it does.
+
+### Fixed
+
+- **`session start` opens no browser under `--json`, `--no-input` or `CI`.** It prints the address to open instead.
+- **A config file that is not valid JSON no longer suggests `drive config repair`**, which drive does not have
+  ([cli-core#2461](https://github.com/WireCatLabs/cli-core/issues/2461)).
 
 ## 0.59.0 — 03.11.2026
 

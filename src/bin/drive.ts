@@ -32,7 +32,7 @@ if (wcat.code !== undefined) {
       (await import("../program.js")).run(entry.args, {
         signal: entry.signal,
         ask: (key) => entry.ask(`Allow ${key}?`),
-        openBrowser: (url) => entry.openBrowser(url),
+        openBrowser: (url, command) => entry.openBrowser(url, undefined, command),
       }),
     fail: (error, entry) => {
       const object = errorObjectOf(error)
