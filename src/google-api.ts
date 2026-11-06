@@ -1,3 +1,4 @@
+import { PassThrough, Readable } from "node:stream"
 import { docs } from "@googleapis/docs"
 import { drive } from "@googleapis/drive"
 import { driveactivity } from "@googleapis/driveactivity"
@@ -105,23 +106,44 @@ export const googleUploadRequest =
     return { status: response.status, header, data }
   }
 
+const DOWNLOAD_IDLE_MS = 60000
+
+/** Streams the file so size is bounded by the disk; only a stall with no bytes for a minute ends it. */
 export const googleDownload =
-  (auth: OAuth2Client) =>
-  async (id: string, mime?: string): Promise<Uint8Array> => {
+  (auth: OAuth2Client, idleMs = DOWNLOAD_IDLE_MS) =>
+  async (id: string, mime?: string): Promise<Readable> => {
     const api = drive({ version: "v3", auth })
     const method = mime ? "drive.files.export" : "drive.files.get"
     const params = mime ? { fileId: id, mimeType: mime } : { fileId: id, supportsAllDrives: true }
     validateRequest(method, params)
+    const controller = new AbortController()
+    let stalled = false
+    let timer: NodeJS.Timeout | undefined
+    const arm = () => {
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        stalled = true
+        controller.abort()
+      }, idleMs)
+    }
+    const stallError = () =>
+      new CliError("provider_unavailable", "Google sent no data for a minute; the download stopped")
+    arm()
     try {
-      const options = { responseType: "arraybuffer" as const, timeout: 120000, maxContentLength: 50 * 1024 * 1024 }
+      const options = { responseType: "stream" as const, signal: controller.signal }
       const response = mime
         ? await api.files.export({ fileId: id, mimeType: mime }, options)
         : await api.files.get({ fileId: id, alt: "media", supportsAllDrives: true }, options)
-      const bytes = new Uint8Array(response.data as unknown as ArrayBuffer)
-      if (bytes.byteLength > 50 * 1024 * 1024)
-        throw new CliError("provider_error", "Google response exceeded the download bound")
-      return bytes
+      const body = response.data as unknown as Readable | import("node:stream/web").ReadableStream
+      const source = "pipe" in body ? body : Readable.fromWeb(body)
+      const out = new PassThrough()
+      source.on("data", arm)
+      source.on("error", (error) => out.destroy(stalled ? stallError() : error))
+      out.on("close", () => clearTimeout(timer))
+      source.pipe(out)
+      return out
     } catch (error) {
-      throw googleError(error)
+      clearTimeout(timer)
+      throw stalled ? stallError() : googleError(error)
     }
   }
