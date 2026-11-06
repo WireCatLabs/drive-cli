@@ -1,5 +1,6 @@
-import { existsSync, readFileSync, statSync, symlinkSync, writeFileSync } from "node:fs"
+import { existsSync, readdirSync, readFileSync, statSync, symlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { Readable } from "node:stream"
 import { captureStreams } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { writeConfig } from "./config.js"
@@ -97,5 +98,22 @@ describe("friendly file downloads", () => {
     await t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")
     expect(readFileSync(target, "utf8")).toBe("kept")
     expect(readFileSync(t.path)).toHaveLength(4)
+  })
+
+  it("writes a streamed download through a temporary file and leaves nothing behind when the stream fails", async () => {
+    const t = setup()
+    t.download.mockResolvedValueOnce(Readable.from([Buffer.from("ab"), Buffer.from("cde")]) as never)
+    expect(await t.run("files", "download", "synthetic-file", "--output", t.path)).toMatchObject({ bytes: 5 })
+    expect(readFileSync(t.path, "utf8")).toBe("abcde")
+    const broken = Readable.from(
+      (async function* () {
+        yield Buffer.from("partial")
+        throw new Error("synthetic stall")
+      })(),
+    )
+    t.download.mockResolvedValueOnce(broken as never)
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")).rejects.toThrow()
+    expect(readFileSync(t.path, "utf8")).toBe("abcde")
+    expect(readdirSync(t.directory).filter((name) => name.endsWith(".tmp"))).toEqual([])
   })
 })

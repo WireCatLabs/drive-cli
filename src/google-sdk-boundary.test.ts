@@ -1,4 +1,5 @@
 import { Socket } from "node:net"
+import { buffer } from "node:stream/consumers"
 import { OAuth2Client } from "google-auth-library"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { googleApi, googleDownload } from "./google-api.js"
@@ -27,20 +28,24 @@ const fixture = (respond: (attempt: number) => Response = () => Response.json({ 
 afterEach(() => vi.restoreAllMocks())
 
 describe("actual Google SDK security boundary", () => {
-  it.each([undefined, "application/pdf"])("downloads bounded binary media through the SDK (%s)", async (mime) => {
-    const bytes = Uint8Array.of(0, 255, 128, 10)
-    const { auth, requests, network } = fixture(
-      () => new Response(bytes, { headers: { "content-type": "application/octet-stream" } }),
-    )
-    expect(await googleDownload(auth)("synthetic-file", mime)).toEqual(bytes)
-    expect(requests).toHaveLength(1)
-    expect(requests[0]?.url.pathname).toBe(
-      mime ? "/drive/v3/files/synthetic-file/export" : "/drive/v3/files/synthetic-file",
-    )
-    expect(requests[0]?.options.size).toBe(budget)
-    expect(requests[0]?.url.searchParams.get(mime ? "mimeType" : "alt")).toBe(mime ?? "media")
-    expect(network).not.toHaveBeenCalled()
-  })
+  it.each([undefined, "application/pdf"])(
+    "streams downloads without a size cap or a whole-file timeout (%s)",
+    async (mime) => {
+      const bytes = Uint8Array.of(0, 255, 128, 10)
+      const { auth, requests, network } = fixture(
+        () => new Response(bytes, { headers: { "content-type": "application/octet-stream" } }),
+      )
+      const stream = await googleDownload(auth)("synthetic-file", mime)
+      expect(new Uint8Array(await buffer(stream))).toEqual(bytes)
+      expect(requests).toHaveLength(1)
+      expect(requests[0]?.url.pathname).toBe(
+        mime ? "/drive/v3/files/synthetic-file/export" : "/drive/v3/files/synthetic-file",
+      )
+      expect(requests[0]?.options.size).toBeUndefined()
+      expect(requests[0]?.url.searchParams.get(mime ? "mimeType" : "alt")).toBe(mime ?? "media")
+      expect(network).not.toHaveBeenCalled()
+    },
+  )
   it.each(["drive.files.get", "docs.documents.batchUpdate"])(
     "refreshes once after a definite auth refusal for %s",
     async (method) => {

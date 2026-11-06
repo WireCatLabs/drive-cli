@@ -12,6 +12,10 @@
 
 ### Fixed
 
+- **`files download` and `files export` stream to disk, so large files download.** Files over 50 MB failed with
+  `provider_unavailable` because the whole file was read into memory. The bytes now go to a temporary file next to
+  `--output`, which replaces the target only when the download is complete. There is no size limit; a download stops
+  only after a minute with no data.
 - **The Google sign-in notes no longer describe WireCat's review status.** They say that making a shared Google app
   public for Drive is complex, so Google may refuse the sign-in, and point to your own Google app. No behaviour changes.
 - **Signing a profile in again keeps its settings:** mirrors, `max_text_chars`, `picture_search` and the rest stayed
