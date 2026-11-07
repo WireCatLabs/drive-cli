@@ -14,7 +14,7 @@
 - **A profile with no saved sign-in now fails with `oauth.missing`** instead of `oauth.expired`, so a caller can tell
   "sign in" from "sign in again". Both still say to run `session start`.
 
-### Changed
+### Fixed
 
 - Updated cli-core to 0.604.0.
 
