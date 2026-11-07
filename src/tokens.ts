@@ -101,19 +101,29 @@ export const authorizedClient = (
   signal?: AbortSignal,
 ): OAuth2Client => {
   const profile = activeProfile(env, name)
-  let parsed: v.SafeParseResult<typeof Session>
+  const unreadable = () =>
+    new CliError("authentication_error", `could not load Google sign-in — run drive ${name} session start again`, {
+      reason: "oauth.expired",
+    })
+  let secret: string | undefined
   try {
-    const secret = credentials(env, profile.storage, keyring).read(name)?.secret
-    if (!secret) throw new Error("missing login")
-    parsed = v.safeParse(Session, JSON.parse(secret))
+    secret = credentials(env, profile.storage, keyring).read(name)?.secret
   } catch {
+    throw unreadable()
+  }
+  if (!secret)
     throw new CliError(
       "authentication_error",
-      `could not load Google sign-in — run drive ${name} session start again`,
+      `this profile has no saved Google sign-in — run drive ${name} session start`,
       {
-        reason: "oauth.expired",
+        reason: "oauth.missing",
       },
     )
+  let parsed: v.SafeParseResult<typeof Session>
+  try {
+    parsed = v.safeParse(Session, JSON.parse(secret))
+  } catch {
+    throw unreadable()
   }
   if (!parsed.success || parsed.output.principal !== profile.principal)
     throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account", {

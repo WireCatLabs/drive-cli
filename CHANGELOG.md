@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`folders browse [--parent <id>]` lists your Google Drive folders one level at a time**, so you can pick one for
+  `folders add` without copying its URL. With no `--parent` it lists My Drive, Shared with me and every shared drive;
+  with one it lists the folders directly inside. Each folder says where it lives, how many folders it holds and
+  whether sync already imports it. It only reads Drive, with the read-only sign-in you already have.
+
+### Changed — may break callers
+
+- **A profile with no saved sign-in now fails with `oauth.missing`** instead of `oauth.expired`, so a caller can tell
+  "sign in" from "sign in again". Both still say to run `session start`.
+
 ## 0.61.0 — 06.11.2026
 
 ### Added

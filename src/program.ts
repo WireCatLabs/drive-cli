@@ -302,7 +302,7 @@ const installDrive = (program: Command) => {
   runsOf.set(program, runs)
   const imported = importedDocument(context)
   installSessionCommands(program, context)
-  installFolderCommands(program, context)
+  installFolderCommands(program, context, (method, params) => remote.call(method, params))
   installSyncCommands(program, context)
   installStoreCommands(program, context)
   installDocumentCommands(program, context)
