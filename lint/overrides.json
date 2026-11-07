@@ -47,5 +47,12 @@
     "reason": "Names the owner's own Google OAuth client by its ID, the first step of the app order in WC-SECR-25 (cli-base docs/standards/security.md), beside --client-file; no shared flag names an app credential. Review when the vocabulary names one: https://github.com/WireCatLabs/cli-base/issues/424",
     "owner": "@WireCatLabs",
     "review_after": "2027-02-01"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "folders browse",
+    "reason": "Lists the owner's remote Google Drive folders one level at a time (My Drive, Shared with me, shared drives) so WireCat Desktop can show a folder picker before folders add. folders list already names the local selection and tree names stored sources, so neither fits a remote picker. Review when the shared vocabulary names a remote navigation verb.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-01"
   }
 ]

@@ -352,6 +352,22 @@ drive <profile> folders list [query]
 
 **Example:** `drive personal folders list`
 
+### `drive folders browse`
+
+list Google Drive folders one level at a time, to choose one for folders add
+
+```sh
+drive <profile> folders browse [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--parent <id>` | folder id or URL to list inside, or shared-with-me; the top level without it. |
+
+**Returns:** drive remote folder — id, name, kind, parent, location, drive_id, child_folders, added; every field: drive commands info folders browse
+
+**Example:** `drive personal folders browse`, `drive personal folders browse --parent FOLDER_ID --json`, `drive personal folders browse --parent shared-with-me`
+
 ### `drive folders remove`
 
 stop importing a folder; the next sync drops its documents
