@@ -4,11 +4,18 @@
 
 ### Added
 
-- **`drive documents add <url> --profiles <a,b|all>`** keeps one Google Doc's text in the shared store as a source
-  added by hand, for memo's "Add to memory". It tries the named profiles in order, at most five (the `max_add_profiles` setting changes that), and says which one
-  opened the document and what refused the others; `drive <profile> documents add <url>` reads with that profile
-  only. `--title` and `--subject` name it and what it is about. A document a sync already imported is answered as
-  `duplicate_of`. Not available over MCP.
+- **`drive documents add <url> --profiles <a,b|all>`** keeps one Drive document's text in the shared store as a
+  source added by hand, for memo's "Add to memory". It tries the named profiles in order, at most five (the
+  `max_add_profiles` setting changes that), and says which one opened the document and what refused the others;
+  `drive <profile> documents add <url>` reads with that profile only. `--title` and `--subject` name it and what it
+  is about. A file a sync already imported is answered as `duplicate_of`. Not available over MCP.
+  - Known limit: adding the same file again after it changed keeps a second copy; the first is not replaced yet.
+
+### Fixed
+
+- **A spent Google quota (`dailyLimitExceeded`, `quotaExceeded`) is a rate limit, not a permission refusal.**
+  `sync` and every other command now answer it as `rate_limited`, which says to retry, instead of
+  `permission_error`.
 
 ## 0.64.0 — 08.11.2026
 

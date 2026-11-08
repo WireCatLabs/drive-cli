@@ -15,16 +15,22 @@ it is not required for search.
 | --- | --- | --- | --- |
 | Browse a folder before importing | `drive personal files list --parent FOLDER_ID` | Google, immediately | No document import |
 | Read a native Google Doc now | `drive personal documents get DOC_ID` | Google, immediately | No local import; prints Docs JSON |
-| Keep one Google Doc in memory, outside the synced folders | `drive documents add DOC_URL --profiles work,personal` | Google, through the first named profile that opens it | Its text, as a source added by hand; never synced again |
+| Keep one Drive document in memory, outside the synced folders | `drive documents add DOC_URL --profiles work,personal` | Google, through the first named profile that opens it | Its text, as a source added by hand; never synced again |
 | Keep a folder searchable | `drive personal folders add FOLDER_ID`, then `drive personal sync` | Google folder and descendants | Index, snapshots and sync checkpoint |
 | Read an imported source | `drive personal documents show DOC_ID` | Local snapshot | Nothing new |
 | Save a Markdown file for another tool | `drive personal documents export DOC_ID --output ./decision.md` | Local snapshot | The file you requested |
 
-`documents add` tries the profiles in the order you name them (`all` is every profile, sorted), at most five
-(`drive personal config set max_add_profiles 8 --defaults` changes that),
-and answers with the one that opened the document and what refused the others. Nothing picks a profile for you:
-with no profile word and no `--profiles` it lists the profiles to choose from. It runs at a terminal only, not over
-MCP. A document already imported by a sync is answered as `duplicate_of`, and nothing is stored twice.
+`documents add` takes a Google Doc, Sheet, PDF or any other file sync reads. It tries the profiles in the order
+you name them (`all` is every profile, sorted), at most five (`drive personal config set max_add_profiles 8
+--defaults` changes that), and answers with the one that opened the document and what refused the others. Only a
+refusal of access (not found, denied, signed out) moves on to the next profile; a spent quota or a network failure
+stops, naming the profile it stopped at. Nothing picks a profile for you: with no profile word and no `--profiles`
+it lists the profiles to choose from, and a profile word with `--profiles` is refused. It runs at a terminal only,
+not over MCP.
+
+It keeps Google's own address for the file, not the link's sharing parameters. A file a sync already imported,
+by any profile, is answered as `duplicate_of`, and nothing is stored twice. Adding the same file again after it
+changed keeps a second copy beside the first: the first is not replaced yet.
 
 Redirecting command output to a file also saves that output. Browsing or reading live content
 alone does not add it to local search. Search needs an import; an export is optional.

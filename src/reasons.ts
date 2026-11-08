@@ -26,6 +26,18 @@ const ENTRIES: Entry[] = [
     "no profile named opened this document; each one is listed with what refused it",
     ["profiles", "tried"],
   ],
+  [
+    "document.signed-out",
+    "authentication_error",
+    "every profile named is signed out; sign in again with drive <profile> session start",
+    ["profiles", "tried"],
+  ],
+  [
+    "document.no-access",
+    "permission_error",
+    "Google denied every profile named access to this document",
+    ["profiles", "tried"],
+  ],
   ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.exists", "validation_error", "the output file already exists"],
@@ -43,6 +55,7 @@ const ENTRIES: Entry[] = [
   ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
   ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
+  ["profile.conflict", "validation_error", "name the profiles once: a profile word or --profiles, not both"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
   [
     "profile.too-many",

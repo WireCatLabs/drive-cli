@@ -88,7 +88,8 @@ export interface DocumentIndex {
   catalog?: import("./catalog.js").SourceCatalog
   knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
-  addSource?(input: AddedSourceInput): Promise<AddedSource>
+  /** A live document synced from the same Google file answers as the duplicate, whatever its text now. */
+  addSource?(input: AddedSourceInput, driveFileId?: string): Promise<AddedSource>
   remove(principal: string, id: string): Promise<void>
   openPictures(): Promise<PictureWriter>
   search(

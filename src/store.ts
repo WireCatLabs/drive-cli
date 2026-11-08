@@ -18,6 +18,16 @@ export const DRIVE_PROVIDER: ProviderEntry = {
   opens: { document: "documents show" },
 }
 
+/** The live, readable document a sync of any Drive profile made of this Google file. */
+const syncedDocument = async (store: MessageStore, driveFileId: string): Promise<string | undefined> => {
+  for (const account of await store.notes.documentsAccounts()) {
+    if (account.account?.provider !== DRIVE_PROVIDER.name) continue
+    const entry = await store.catalog.get(account.id, `${driveFileId}.md`)
+    if (entry?.active && entry.content === "indexed") return entry.ref
+  }
+  return undefined
+}
+
 export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
   if (name) activeProfile(env, name)
   const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
@@ -72,7 +82,14 @@ export const indexOver = (
       await folder(principal, true)
       await store.accounts.saveProfile("drive", name, { provider: "google-drive", account: principal })
     },
-    addSource: (input) => store.notes.saveAddedSource(input),
+    addSource: async (input, driveFileId) => {
+      const synced = driveFileId === undefined ? undefined : await syncedDocument(store, driveFileId)
+      if (!synced) return store.notes.saveAddedSource(input)
+      for (const subject of input.subjects ?? [])
+        await store.notes.addLink({ from: synced, to: subject, kind: "about", origin: "owner", by: input.by })
+      const subjects = (await store.notes.links({ from: synced, kind: "about" })).flatMap((link) => link.to ?? [])
+      return { note: await store.notes.note(synced), created: false, duplicateOf: synced, kept: null, subjects }
+    },
     linkMessages: (documents, since) => store.notes.linkMessages({ documents, ...(since ? { since } : {}) }),
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),
     openPictures: async () => {

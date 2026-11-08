@@ -37,8 +37,9 @@ const RunSettings = {
 }
 /** `documents add` reads across profiles, so how many it may try is one choice for every profile. */
 export const DEFAULT_ADD_PROFILES = 5
+const MOST_ADD_PROFILES = 50
 const AcrossProfiles = {
-  max_add_profiles: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50))),
+  max_add_profiles: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MOST_ADD_PROFILES))),
 }
 /** What cli-core's first run writes into a new file, and the daily hints it reads from there. */
 const SharedDefaults = {
@@ -289,3 +290,26 @@ export const configuredSessions = (
   )
 export const maxAddProfiles = (env: NodeJS.ProcessEnv): number =>
   readConfig(env).defaults?.max_add_profiles ?? DEFAULT_ADD_PROFILES
+export const checkAddProfiles = (value: unknown): number => {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 1 || value > MOST_ADD_PROFILES)
+    throw new CliError("validation_error", `max_add_profiles is a whole number from 1 to ${MOST_ADD_PROFILES}`)
+  return value
+}
+/** A process pinned by DRIVE_PROFILE_LOCK names no profile but its own, so no other profile's name leaks. */
+export const profileLocked = (lock: string, named: string) =>
+  new CliError(
+    "permission_error",
+    `this process is locked to profile ${lock} (DRIVE_PROFILE_LOCK) — ${named} is refused`,
+    {
+      reason: "profile.locked",
+    },
+  )
+/** Nothing picks a profile: the refusal lists the ones to choose from, and `how` says where the name goes. */
+export const profileRequired = (choices: readonly string[], how = "drive <profile> …") =>
+  new CliError(
+    "validation_error",
+    choices.length
+      ? `name a profile: ${how} — profiles here: ${choices.join(", ")} (or set DRIVE_PROFILE)`
+      : "no profiles here yet; create one with drive personal session start (any name in place of personal)",
+    { reason: "profile.required", profiles: [...choices] },
+  )

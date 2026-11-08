@@ -54,10 +54,11 @@ export const importedDocument = (context: Pick<CommandContext, "env" | "selected
 }
 
 /** The profiles `documents add` tries, as its run named them. */
-export const addProfilesOf = (env: NodeJS.ProcessEnv, command: Command, named: string | undefined) =>
+export const addProfilesOf = (env: NodeJS.ProcessEnv, command: Command, word: string | undefined) =>
   profilesToAdd(env, {
     option: command.opts<{ profiles?: string }>().profiles,
-    named: named ?? (env.DRIVE_PROFILE || undefined),
+    word,
+    chosen: env.DRIVE_PROFILE || undefined,
     lock: env.DRIVE_PROFILE_LOCK || undefined,
   })
 
@@ -158,8 +159,8 @@ export const installDocumentCommands = (program: Command, context: CommandContex
     })
   examples(
     annotate(documents.command("add"), { mcp: false, effects: FETCH })
-      .argument("<url>", "Google Docs URL or document id")
-      .description("keep a Google Doc's text in memory, read by the first named profile to open it"),
+      .argument("<url>", "Google Drive or Docs URL, or file id")
+      .description("keep a Drive document's text in memory, read by the first profile that opens it"),
     [
       "drive documents add https://docs.google.com/document/d/DOC_ID/edit --profiles work,personal",
       "drive personal documents add DOC_ID --subject person:PERSON_UID",
@@ -167,7 +168,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
   )
     .option(
       "--profiles <names|all>",
-      "profiles to try in this order, comma-separated, or all; at most max_add_profiles (5), in place of a profile word",
+      "profiles to try in this order, comma-separated, or all; at most max_add_profiles, in place of a profile word",
     )
     .option("--title <title>", "title to keep it under; the document's name when omitted")
     .option(
@@ -183,10 +184,10 @@ export const installDocumentCommands = (program: Command, context: CommandContex
         source,
         maxChars: (profile) => textLimit(env, profile),
         // Opened only once a profile has read the document, so no Google call waits with the store open.
-        save: (input) =>
+        save: (input, driveFileId) =>
           withIndex(async (index) => {
             if (!index.addSource) throw new CliError("configuration_error", "index cannot keep sources added by hand")
-            return index.addSource(input)
+            return index.addSource(input, driveFileId)
           }, null),
         ...(args.title ? { title: args.title } : {}),
         ...(args.subject ? { subjects: args.subject } : {}),
