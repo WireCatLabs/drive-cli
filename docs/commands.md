@@ -561,6 +561,30 @@ drive <profile> documents export <document> [options]
 
 **Example:** `drive personal documents export DOC_ID --output notes.md`
 
+### `drive documents add`
+
+keep a Google Doc's text in memory, read by the first named profile to open it
+
+This command changes local state.
+
+```sh
+drive <profile> documents add <url> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `url` | required | Google Docs URL or document id. |
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | profiles to try in this order, comma-separated, or all; at most 5, in place of a profile word. |
+| `--title <title>` | title to keep it under; the document's name when omitted. |
+| `--subject <ref>` | a person, organization, project, task or meeting it is about; repeat to add more. |
+
+**Returns:** keep a Google Doc's text in memory, read by the first named profile to open it
+
+**Example:** `drive documents add https://docs.google.com/document/d/DOC_ID/edit --profiles work,personal`, `drive personal documents add DOC_ID --subject person:PERSON_UID`
+
 ### `drive documents context`
 
 show a document with its tags, relationships, notes, memories and editors

@@ -45,7 +45,13 @@ import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
-import { importedDocument, installDocumentCommands, isDocumentRef, storedDocument } from "./commands/documents.js"
+import {
+  addProfilesOf,
+  importedDocument,
+  installDocumentCommands,
+  isDocumentRef,
+  storedDocument,
+} from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMirrorCommands } from "./commands/mirrors.js"
@@ -230,15 +236,16 @@ const installDrive = (program: Command) => {
     await checkAuthorization(client, scope)
     return client
   }
-  const source = async () => {
-    const name = selected()
+  const source = async (profile?: string) => {
+    const name = profile ?? selected()
     const fake = environment().source
     if (fake) return fake(name)
     const [{ googleSource }, client] = await Promise.all([import("./google.js"), signedIn(name)])
     return googleSource(client)
   }
-  const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T> => {
-    const index = await (environment().index?.() ?? openIndex(env, selected(), currentAction?.opts().rescan === true))
+  const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>, profile?: string | null): Promise<T> => {
+    const name = profile === undefined ? selected() : (profile ?? undefined)
+    const index = await (environment().index?.() ?? openIndex(env, name, currentAction?.opts().rescan === true))
     try {
       return await fn(index)
     } finally {
@@ -521,6 +528,18 @@ const installDrive = (program: Command) => {
     }
     if (words === "mcp revoke" && program.opts().readOnly)
       throw readOnlyRefusal("--read-only", "forget the browser logins")
+    // Each profile it may read is checked before any is tried; the hook below checks one selected profile only.
+    if (words === "documents add") {
+      const flags = policyFlags()
+      for (const name of addProfilesOf(env, action, profileWord()))
+        await checkPolicy(env, name, "documents.add", true, flags, askOnce)
+      if (flags.offline)
+        throw new CliError("permission_error", "this command may require network access; --offline was requested", {
+          reason: "offline.refused",
+        })
+      if (flags.dryRun) preview()
+      return
+    }
     // The shared `mcp` names its profiles or refuses; each tool call runs this hook for its own profile.
     if (PROFILE_SET_COMMANDS.has(words) || path[0] === "mcp") {
       const named = profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK

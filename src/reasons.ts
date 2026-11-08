@@ -20,6 +20,12 @@ const ENTRIES: Entry[] = [
     "the text is over {text_limit} characters; it was not imported",
     ["text_limit"],
   ],
+  [
+    "document.not-opened",
+    "not_found",
+    "no profile named opened this document; each one is listed with what refused it",
+    ["profiles", "tried"],
+  ],
   ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.exists", "validation_error", "the output file already exists"],
@@ -38,6 +44,7 @@ const ENTRIES: Entry[] = [
   ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
+  ["profile.too-many", "validation_error", "name at most 5 profiles to try", ["profiles"]],
   ["source.changed", "provider_error", "the document changed during export; retry the sync"],
   [
     "store.annotations-present",

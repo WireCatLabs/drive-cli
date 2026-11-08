@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`drive documents add <url> --profiles <a,b|all>`** keeps one Google Doc's text in the shared store as a source
+  added by hand, for memo's "Add to memory". It tries the named profiles in order, at most five, and says which one
+  opened the document and what refused the others; `drive <profile> documents add <url>` reads with that profile
+  only. `--title` and `--subject` name it and what it is about. A document a sync already imported is answered as
+  `duplicate_of`. Not available over MCP.
+
 ## 0.64.0 — 08.11.2026
 
 ### Added

@@ -1,11 +1,12 @@
 import { writeFileSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ, LOCAL_WRITE, listOf, listQuery, typedQuery, withQuery } from "@wirecat/cli-core/cli"
+import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE, listOf, listQuery, typedQuery, withQuery } from "@wirecat/cli-core/cli"
 import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { ageOf, staleCopy } from "../age.js"
-import { activeProfile, fileId } from "../config.js"
+import { activeProfile, fileId, textLimit } from "../config.js"
+import { addDocument, MAX_ADD_PROFILES, profilesToAdd } from "../documents-add.js"
 import { metadataJson } from "../model.js"
 import { examples } from "../registry.js"
 import { readSnapshot, readState } from "../state.js"
@@ -52,8 +53,16 @@ export const importedDocument = (context: Pick<CommandContext, "env" | "selected
   }
 }
 
+/** The profiles `documents add` tries, as its run named them. */
+export const addProfilesOf = (env: NodeJS.ProcessEnv, command: Command, named: string | undefined) =>
+  profilesToAdd(env, {
+    option: command.opts<{ profiles?: string }>().profiles,
+    named: named ?? (env.DRIVE_PROFILE || undefined),
+    lock: env.DRIVE_PROFILE_LOCK || undefined,
+  })
+
 export const installDocumentCommands = (program: Command, context: CommandContext) => {
-  const { env, selected, output, withIndex } = context
+  const { env, selected, output, withIndex, source, profileWord } = context
   const imported = importedDocument(context)
   const documents = annotate(program.command("documents"), { effects: LOCAL_READ }).description(
     "read imported documents and Google Docs",
@@ -146,5 +155,43 @@ export const installDocumentCommands = (program: Command, context: CommandContex
       }
       const state = readState(env, selected(), activeProfile(env, selected()).principal)
       output(itemOf({ id, path: args.output, format: "markdown", ...ageOf(state) }, staleCopy(state)))
+    })
+  examples(
+    annotate(documents.command("add"), { mcp: false, effects: FETCH })
+      .argument("<url>", "Google Docs URL or document id")
+      .description("keep a Google Doc's text in memory, read by the first named profile to open it"),
+    [
+      "drive documents add https://docs.google.com/document/d/DOC_ID/edit --profiles work,personal",
+      "drive personal documents add DOC_ID --subject person:PERSON_UID",
+    ],
+  )
+    .option(
+      "--profiles <names|all>",
+      `profiles to try in this order, comma-separated, or all; at most ${MAX_ADD_PROFILES}, in place of a profile word`,
+    )
+    .option("--title <title>", "title to keep it under; the document's name when omitted")
+    .option(
+      "--subject <ref>",
+      "a person, organization, project, task or meeting it is about; repeat to add more",
+      (value: string, previous: string[] = []) => [...previous, value],
+    )
+    .action(async (url: string, args: { title?: string; subject?: string[] }, command: Command) => {
+      const profiles = addProfilesOf(env, command, profileWord())
+      const added = await addDocument({
+        url,
+        profiles,
+        source,
+        maxChars: (profile) => textLimit(env, profile),
+        // Opened only once a profile has read the document, so no Google call waits with the store open.
+        save: (input) =>
+          withIndex(async (index) => {
+            if (!index.addSource) throw new CliError("configuration_error", "index cannot keep sources added by hand")
+            return index.addSource(input)
+          }, null),
+        ...(args.title ? { title: args.title } : {}),
+        ...(args.subject ? { subjects: args.subject } : {}),
+        by: "owner",
+      })
+      output(itemOf(added))
     })
 }

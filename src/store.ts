@@ -72,6 +72,7 @@ export const indexOver = (
       await folder(principal, true)
       await store.accounts.saveProfile("drive", name, { provider: "google-drive", account: principal })
     },
+    addSource: (input) => store.notes.saveAddedSource(input),
     linkMessages: (documents, since) => store.notes.linkMessages({ documents, ...(since ? { since } : {}) }),
     knowledge: documentKnowledge(store, async (principal) => (await folder(principal, false))?.id),
     openPictures: async () => {
