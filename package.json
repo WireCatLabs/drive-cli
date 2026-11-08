@@ -68,7 +68,7 @@
     "@googleapis/drive": "27.0.0",
     "@googleapis/driveactivity": "11.0.1",
     "@googleapis/sheets": "18.1.1",
-    "@wirecat/cli-base": "0.80.9",
+    "@wirecat/cli-base": "0.82.0",
     "@wirecat/cli-core": "0.608.0",
     "commander": "15.0.0",
     "google-auth-library": "11.3.1",
