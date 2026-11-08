@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Updated cli-base to 0.82.0, which names `browse` as a verb, so `folders browse` needs no naming exception.
+
 ## 0.63.0 — 08.11.2026
 
 ### Changed — may break callers
