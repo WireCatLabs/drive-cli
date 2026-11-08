@@ -6,7 +6,7 @@ import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import { ageOf, staleCopy } from "../age.js"
 import { activeProfile, fileId, textLimit } from "../config.js"
-import { addDocument, MAX_ADD_PROFILES, profilesToAdd } from "../documents-add.js"
+import { addDocument, profilesToAdd } from "../documents-add.js"
 import { metadataJson } from "../model.js"
 import { examples } from "../registry.js"
 import { readSnapshot, readState } from "../state.js"
@@ -167,7 +167,7 @@ export const installDocumentCommands = (program: Command, context: CommandContex
   )
     .option(
       "--profiles <names|all>",
-      `profiles to try in this order, comma-separated, or all; at most ${MAX_ADD_PROFILES}, in place of a profile word`,
+      "profiles to try in this order, comma-separated, or all; at most max_add_profiles (5), in place of a profile word",
     )
     .option("--title <title>", "title to keep it under; the document's name when omitted")
     .option(

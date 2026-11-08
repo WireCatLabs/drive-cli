@@ -1,9 +1,7 @@
 import { CliError, isCliError } from "@wirecat/cli-base"
 import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store"
-import { activeProfile, fileId, profileName, readConfig } from "./config.js"
+import { activeProfile, fileId, maxAddProfiles, profileName, readConfig } from "./config.js"
 import type { DocumentContent, GoogleSource } from "./model.js"
-
-export const MAX_ADD_PROFILES = 5
 
 /** Access a profile may lack while another has it; anything else stops the run. */
 const PASSES_ON = new Set(["not_found", "permission_error", "authentication_error"])
@@ -40,11 +38,12 @@ export const profilesToAdd = (
       reason: "profile.required",
       profiles: choices,
     })
-  if (unique.length > MAX_ADD_PROFILES)
+  const most = maxAddProfiles(env)
+  if (unique.length > most)
     throw new CliError(
       "validation_error",
-      `documents add tries at most ${MAX_ADD_PROFILES} profiles; name them with --profiles — profiles here: ${choices.join(", ")}`,
-      { reason: "profile.too-many", profiles: choices },
+      `documents add tries at most ${most} profiles (max_add_profiles); name fewer with --profiles — profiles here: ${choices.join(", ")}`,
+      { reason: "profile.too-many", profiles: choices, max_add_profiles: most },
     )
   for (const name of unique) {
     activeProfile(env, name)

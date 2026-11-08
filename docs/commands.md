@@ -577,7 +577,7 @@ drive <profile> documents add <url> [options]
 
 | Option | What it does |
 |---|---|
-| `--profiles <names\|all>` | profiles to try in this order, comma-separated, or all; at most 5, in place of a profile word. |
+| `--profiles <names\|all>` | profiles to try in this order, comma-separated, or all; at most max_add_profiles (5), in place of a profile word. |
 | `--title <title>` | title to keep it under; the document's name when omitted. |
 | `--subject <ref>` | a person, organization, project, task or meeting it is about; repeat to add more. |
 
@@ -4503,7 +4503,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, google_client_id, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |

@@ -35,6 +35,11 @@ const RunSettings = {
   runs_size_limit_mb: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
   record_input: v.optional(v.union([v.boolean(), v.literal("failed")])),
 }
+/** `documents add` reads across profiles, so how many it may try is one choice for every profile. */
+export const DEFAULT_ADD_PROFILES = 5
+const AcrossProfiles = {
+  max_add_profiles: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(50))),
+}
 /** What cli-core's first run writes into a new file, and the daily hints it reads from there. */
 const SharedDefaults = {
   limit: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1))),
@@ -42,7 +47,12 @@ const SharedDefaults = {
   update_check: v.optional(v.boolean()),
   skill_hint: v.optional(v.boolean()),
 }
-export const DEFAULTS_ONLY = new Set([...Object.keys(RunSettings), "update_check", "skill_hint"])
+export const DEFAULTS_ONLY = new Set([
+  ...Object.keys(RunSettings),
+  ...Object.keys(AcrossProfiles),
+  "update_check",
+  "skill_hint",
+])
 export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])
 const Mirror = v.strictObject({
   id: v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,40}$/)),
@@ -60,7 +70,7 @@ const Profile = v.strictObject({
 })
 export const ConfigSchema = v.strictObject({
   profiles: v.optional(v.record(v.string(), Profile), {}),
-  defaults: v.optional(v.strictObject({ ...Common, ...RunSettings, ...SharedDefaults })),
+  defaults: v.optional(v.strictObject({ ...Common, ...RunSettings, ...AcrossProfiles, ...SharedDefaults })),
 })
 export type Config = v.InferOutput<typeof ConfigSchema>
 
@@ -93,6 +103,11 @@ export const configuration = settingsFor(DRIVE_APP, {
       key: "max_text_chars",
       default: MAX_TEXT_CHARS,
       description: "the most characters of text one file may have to be imported",
+    },
+    {
+      key: "max_add_profiles",
+      default: DEFAULT_ADD_PROFILES,
+      description: "the most profiles documents add may try for one document",
     },
   ],
   permissions: commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS }),
@@ -272,3 +287,5 @@ export const configuredSessions = (
       ? [{ profile: name, selected_folders: row.roots.length, storage: row.storage }]
       : [],
   )
+export const maxAddProfiles = (env: NodeJS.ProcessEnv): number =>
+  readConfig(env).defaults?.max_add_profiles ?? DEFAULT_ADD_PROFILES

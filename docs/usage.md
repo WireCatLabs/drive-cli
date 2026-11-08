@@ -20,7 +20,8 @@ it is not required for search.
 | Read an imported source | `drive personal documents show DOC_ID` | Local snapshot | Nothing new |
 | Save a Markdown file for another tool | `drive personal documents export DOC_ID --output ./decision.md` | Local snapshot | The file you requested |
 
-`documents add` tries the profiles in the order you name them (`all` is every profile, sorted), at most five,
+`documents add` tries the profiles in the order you name them (`all` is every profile, sorted), at most five
+(`drive personal config set max_add_profiles 8 --defaults` changes that),
 and answers with the one that opened the document and what refused the others. Nothing picks a profile for you:
 with no profile word and no `--profiles` it lists the profiles to choose from. It runs at a terminal only, not over
 MCP. A document already imported by a sync is answered as `duplicate_of`, and nothing is stored twice.

@@ -44,7 +44,12 @@ const ENTRIES: Entry[] = [
   ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
   ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
-  ["profile.too-many", "validation_error", "name at most 5 profiles to try", ["profiles"]],
+  [
+    "profile.too-many",
+    "validation_error",
+    "name at most {max_add_profiles} profiles to try",
+    ["profiles", "max_add_profiles"],
+  ],
   ["source.changed", "provider_error", "the document changed during export; retry the sync"],
   [
     "store.annotations-present",

@@ -133,12 +133,27 @@ describe("documents add", () => {
   it("refuses more than five profiles and an unknown one before reading any", async () => {
     const t = setup(["a", "b", "c", "d", "e", "f"])
     await expect(t.run(["documents", "add", URL, "--profiles", "all"])).rejects.toMatchObject({
-      details: { reason: "profile.too-many", profiles: ["a", "b", "c", "d", "e", "f"] },
+      details: { reason: "profile.too-many", profiles: ["a", "b", "c", "d", "e", "f"], max_add_profiles: 5 },
     })
     await expect(t.run(["documents", "add", URL, "--profiles", "a,nobody"])).rejects.toMatchObject({
       details: { reason: "profile.unknown" },
     })
     expect(t.source).not.toHaveBeenCalled()
+  })
+
+  it("tries as many profiles as max_add_profiles allows, and no more", async () => {
+    const t = setup(["a", "b", "c", "d", "e", "f"])
+    t.sources.f = { content: t.opened }
+    await t.run(["a", "config", "set", "max_add_profiles", "6", "--defaults"])
+    expect(await t.run(["documents", "add", URL, "--profiles", "all"])).toMatchObject({ profile: "f" })
+    await t.run(["a", "config", "set", "max_add_profiles", "2", "--defaults"])
+    await expect(t.run(["documents", "add", URL, "--profiles", "a,b,f"])).rejects.toMatchObject({
+      details: { reason: "profile.too-many", max_add_profiles: 2 },
+    })
+    expect(t.opened).toHaveBeenCalledTimes(1)
+    await expect(t.run(["a", "config", "set", "max_add_profiles", "2"])).rejects.toMatchObject({
+      message: expect.stringContaining("--defaults"),
+    })
   })
 
   it("reaches no profile but the locked one", async () => {
