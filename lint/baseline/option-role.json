@@ -1,4 +1,6 @@
 [
+  "account remove --delete-data",
+  "account remove --keep-data",
   "documents history --activity",
   "memories extract --tab",
   "models set --purpose",

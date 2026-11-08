@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**257 ✅ · 966 ⛔ · 0 ❌** — 208 commands, 1015 options.
+**260 ✅ · 967 ⛔ · 0 ❌** — 209 commands, 1018 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -51,6 +51,10 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `session start` | `--grant` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
 | `session list` |  | ✅ |  |
 | `session end` |  | ✅ |  |
+| `account remove` |  | ✅ |  |
+| `account remove` | `--keep-data` | ✅ |  |
+| `account remove` | `--delete-data` | ✅ |  |
+| `account remove` | `--dry-run` | ⛔ | drive previews in its own hook, so cli-core's own list of what would go is not reached; src/account-remove.test.ts checks the preview |
 | `folders add` |  | ✅ |  |
 | `folders list` |  | ✅ |  |
 | `folders browse` |  | ✅ |  |

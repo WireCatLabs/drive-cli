@@ -314,6 +314,30 @@ drive <profile> session end
 
 **Example:** `drive personal session end`
 
+## `drive account`
+
+remove this profile from this computer
+
+### `drive account remove`
+
+sign the profile out, then forget it on this computer: its settings, its saved sign-in and its files; --keep-data leaves its messages in the store, where search still finds them, --delete-data deletes them; asks first, or --yes
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> account remove [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--keep-data` | leave what the store holds of this account, still searchable. |
+| `--delete-data` | delete what the store and the tool's own files hold of this account. |
+| `--dry-run` | list what it would remove and keep, and change nothing. |
+
+**Returns:** account removal — profile, data, dry_run, account, revoked, config_file, removed, kept; every field: drive commands info account remove
+
+**Example:** `drive personal account remove --keep-data --dry-run`, `drive personal account remove --delete-data --yes`
+
 ## `drive folders`
 
 choose the Google Drive folders that sync imports

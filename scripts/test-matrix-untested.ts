@@ -52,6 +52,12 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     option: "--dry-run",
     reason: "drive previews in its own hook, before cli-core logs the parsed words; src/dry-run.test.ts checks it",
   },
+  {
+    command: "account remove",
+    option: "--dry-run",
+    reason:
+      "drive previews in its own hook, so cli-core's own list of what would go is not reached; src/account-remove.test.ts checks the preview",
+  },
   { command: "api *", reason: GENERATED },
   ...generatedOptions.map((option) => ({ command: "api *", option, reason: GENERATED })),
   ...["--client-file", "--no-browser", "--grant"].map((option) => ({

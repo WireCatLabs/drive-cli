@@ -40,6 +40,7 @@ import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import type { Command } from "commander"
 import { validateRequest } from "./api-contract.js"
 import { apiMethod } from "./api-methods.js"
+import { installAccountCommands } from "./commands/account.js"
 import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
@@ -302,6 +303,7 @@ const installDrive = (program: Command) => {
   runsOf.set(program, runs)
   const imported = importedDocument(context)
   installSessionCommands(program, context)
+  installAccountCommands(program, context)
   installFolderCommands(program, context, (method, params) => remote.call(method, params))
   installSyncCommands(program, context)
   installStoreCommands(program, context)

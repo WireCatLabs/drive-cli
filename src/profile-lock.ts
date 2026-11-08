@@ -30,3 +30,6 @@ export const lockProfile = async (env: NodeJS.ProcessEnv, name: string) => {
     )
   }
 }
+
+export const profileLocked = (env: NodeJS.ProcessEnv, name: string): boolean =>
+  lockfile.checkSync(profileDir(env, name), { stale: 30000, realpath: false })
