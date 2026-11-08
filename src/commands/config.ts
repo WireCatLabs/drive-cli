@@ -285,7 +285,10 @@ export const installModelCommands = (program: Command, { env, output, streams, p
     diagnostic: (line) => streams.diagnostic(line),
     offline: () => policyFlags().offline === true,
   })
-  for (const command of sharedModels.commands) models.addCommand(command)
+  // Drive's own `models set` chooses the memory provider; the shared one, which picks the embedding model, would
+  // collide with it, so drive keeps its own and the choice is made from any other CLI.
+  const own = new Set(models.commands.map((command) => command.name()))
+  for (const command of sharedModels.commands) if (!own.has(command.name())) models.addCommand(command)
   const images = annotate(program.command("images"), { effects: LOCAL_READ }).description(
     "the local model that picture search uses",
   )
