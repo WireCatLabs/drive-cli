@@ -4579,7 +4579,7 @@ drive models list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info models list
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models list
 
 **Next usually:** `drive models download <model>`, `drive images models download <model>`
 
@@ -4604,11 +4604,36 @@ drive models download <model> [options]
 | `--offline` | refuse a download that needs the network. |
 | `--accept-terms` | accept the model's licence terms, for a model that has its own. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info models download
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models download
 
 **Next usually:** `drive images models download <model>`
 
 **Example:** `drive models download e5-small`
+
+### `drive models add`
+
+add an ONNX embedding model from Hugging Face, pinned and checked by sha256
+
+This command changes local state.
+
+```sh
+drive <profile> models add <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the id to give it: a-z, 0-9, . _ -. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | where the model is and how to run it, as JSON (below). |
+| `--offline` | refuse a call that needs the network. |
+
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models add
+
+**Next usually:** `drive models download <model>`, `drive images models download <model>`
+
+**Example:** `drive personal models add e5-base --payload '{"repository":"Xenova/multilingual-e5-base","onnx":"onnx/model_quantized.onnx","dims":768,"pooling":"mean","prefix":{"query":"query: ","passage":"passage: "}}'`
 
 ## `drive images`
 
@@ -4632,7 +4657,7 @@ drive images models download <model>
 |---|---|---|
 | `model` | required | model id, such as clip-b32. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info images models download
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info images models download
 
 **Next usually:** `drive models download <model>`
 

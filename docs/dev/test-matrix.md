@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**260 ✅ · 967 ⛔ · 0 ❌** — 209 commands, 1018 options.
+**260 ✅ · 970 ⛔ · 0 ❌** — 210 commands, 1020 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1202,6 +1202,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `models download` |  | ✅ |  |
 | `models download` | `--offline` | ✅ |  |
 | `models download` | `--accept-terms` | ⛔ | downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal |
+| `models add` |  | ⛔ | fetches a model's files from Hugging Face; the command is cli-core's (model-catalogue-command) |
+| `models add` | `--payload` | ⛔ | fetches a model's files from Hugging Face; the command is cli-core's (model-catalogue-command) |
+| `models add` | `--offline` | ⛔ | fetches a model's files from Hugging Face; the command is cli-core's (model-catalogue-command) |
 | `images models download` |  | ⛔ | downloads a model from Hugging Face; cli-core's downloadImageModel is tested there |
 | `commands` |  | ✅ |  |
 | `commands info` |  | ✅ |  |
