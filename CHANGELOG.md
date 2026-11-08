@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.63.0 — 08.11.2026
+
+### Changed — may break callers
+
+- **drive now writes the shared store at version 57, and an older WireCat CLI refuses it until it is upgraded.**
+  A memo, mail or other WireCat CLI on the same store reads it again once it is updated too: run `<cli> upgrade`
+  for each. The other way round matters more: a memo already on the new store version stopped this drive from
+  opening it, and this release reads it again.
+- **`memories add --supersedes` retires the old memory only once the owner confirms the correction.** drive writes
+  every memory `proposed`, so the old memory stays in effect until then.
+
+### Fixed
+
+- Updated cli-core to 0.608.0.
+
 ## 0.62.0 — 08.11.2026
 
 ### Added
