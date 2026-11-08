@@ -82,6 +82,11 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
     option: "--accept-terms",
     reason: "downloads a model from Hugging Face; cli-core tests the download, src/help.test.ts the --offline refusal",
   },
+  ...[undefined, "--payload", "--offline"].map((option) => ({
+    command: "models add",
+    option,
+    reason: "fetches a model's files from Hugging Face; the command is cli-core's (model-catalogue-command)",
+  })),
   {
     command: "images models download",
     reason: "downloads a model from Hugging Face; cli-core's downloadImageModel is tested there",
