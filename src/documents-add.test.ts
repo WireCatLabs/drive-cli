@@ -80,6 +80,12 @@ describe("documents add", () => {
     expect(await t.run(["work", "documents", "add", URL])).toMatchObject({ profile: "work", tried: [] })
   })
 
+  it("keeps Google's address for a bare document id", async () => {
+    const t = setup()
+    t.sources.work = { content: t.opened }
+    expect(await t.run(["work", "documents", "add", "SyntheticDoc_1"])).toMatchObject({ url: URL })
+  })
+
   it("tries every profile, sorted, for --profiles all and passes on signed-out and denied ones", async () => {
     const t = setup()
     t.sources.personal = { content: t.refused("authentication_error") }

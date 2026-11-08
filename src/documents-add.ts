@@ -82,7 +82,7 @@ const missOf = (profile: string, error: unknown): MissedProfile | undefined => {
 
 /**
  * Reads a Google Doc with the first profile that opens it and keeps its text as a source added by hand, named by
- * the address as given. The profiles before it are listed with what refused them.
+ * the address as given, or Google's own for a bare id. The profiles before it are listed with what refused them.
  */
 export const addDocument = async (input: DocumentAddInput) => {
   const id = fileId(input.url)
@@ -97,12 +97,13 @@ export const addDocument = async (input: DocumentAddInput) => {
       tried.push(missed)
       continue
     }
+    const url = input.url.startsWith("https://") ? input.url : content.metadata.url
     const added = await input.save({
       kind: "page",
       text: content.text,
       read: content.text.trim() ? "extracted" : "no-text",
       title: input.title ?? content.metadata.name,
-      url: input.url,
+      url,
       mime: content.metadata.mime,
       size: content.metadata.size ?? null,
       ...(input.subjects?.length ? { subjects: input.subjects } : {}),
@@ -113,7 +114,7 @@ export const addDocument = async (input: DocumentAddInput) => {
       created: added.created,
       duplicate_of: added.duplicateOf,
       title: added.note.title,
-      url: input.url,
+      url,
       file_id: id,
       mime: content.metadata.mime,
       chars: content.text.length,
