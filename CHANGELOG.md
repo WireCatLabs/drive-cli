@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+
+- **`drive <profile> account remove --keep-data|--delete-data`** removes a profile from this computer: it revokes the
+  Google sign-in at Google, deletes the saved sign-in, forgets the profile in the settings and, with `--delete-data`,
+  deletes its document snapshots and exports. `--keep-data` leaves them searchable. Your mirror folders are never
+  touched, and other profiles stay as they are. `session end` still only forgets the local sign-in.
+
 ### Fixed
 
 - Updated cli-base to 0.82.0, which names `browse` as a verb, so `folders browse` needs no naming exception.

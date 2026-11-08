@@ -314,6 +314,30 @@ drive <profile> session end
 
 **Example:** `drive personal session end`
 
+## `drive account`
+
+remove this profile from this computer
+
+### `drive account remove`
+
+sign the profile out, then forget it on this computer: its settings, its saved sign-in and its files; --keep-data leaves its messages in the store, where search still finds them, --delete-data deletes them; asks first, or --yes
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> account remove [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--keep-data` | leave what the store holds of this account, still searchable. |
+| `--delete-data` | delete what the store and the tool's own files hold of this account. |
+| `--dry-run` | list what it would remove and keep, and change nothing. |
+
+**Returns:** account removal — profile, data, dry_run, account, revoked, config_file, removed, kept; every field: drive commands info account remove
+
+**Example:** `drive personal account remove --keep-data --dry-run`, `drive personal account remove --delete-data --yes`
+
 ## `drive folders`
 
 choose the Google Drive folders that sync imports
@@ -4555,7 +4579,7 @@ drive models list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info models list
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models list
 
 **Next usually:** `drive models download <model>`, `drive images models download <model>`
 
@@ -4580,11 +4604,36 @@ drive models download <model> [options]
 | `--offline` | refuse a download that needs the network. |
 | `--accept-terms` | accept the model's licence terms, for a model that has its own. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info models download
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models download
 
 **Next usually:** `drive images models download <model>`
 
 **Example:** `drive models download e5-small`
+
+### `drive models add`
+
+add an ONNX embedding model from Hugging Face, pinned and checked by sha256
+
+This command changes local state.
+
+```sh
+drive <profile> models add <id> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `id` | required | the id to give it: a-z, 0-9, . _ -. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | where the model is and how to run it, as JSON (below). |
+| `--offline` | refuse a call that needs the network. |
+
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models add
+
+**Next usually:** `drive models download <model>`, `drive images models download <model>`
+
+**Example:** `drive personal models add e5-base --payload '{"repository":"Xenova/multilingual-e5-base","onnx":"onnx/model_quantized.onnx","dims":768,"pooling":"mean","prefix":{"query":"query: ","passage":"passage: "}}'`
 
 ## `drive images`
 
@@ -4608,7 +4657,7 @@ drive images models download <model>
 |---|---|---|
 | `model` | required | model id, such as clip-b32. |
 
-**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 1 more; every field: drive commands info images models download
+**Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info images models download
 
 **Next usually:** `drive models download <model>`
 

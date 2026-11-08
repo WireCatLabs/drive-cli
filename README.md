@@ -70,7 +70,8 @@ your own Desktop client and leave it in Testing, Google usually ends its sign-in
 
 Use `drive work …` for another account. Each Google account has one local profile. `drive session list`
 lists configured profiles. `session end` removes local sign-in while retaining cached data and
-configuration so re-login preserves document identities.
+configuration so re-login preserves document identities. `account remove --keep-data` or `--delete-data` goes
+further: it revokes the sign-in at Google and forgets the profile, and `--delete-data` also deletes its snapshots.
 
 ## Search and export
 
