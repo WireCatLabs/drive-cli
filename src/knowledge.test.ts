@@ -153,6 +153,9 @@ describe("shared document knowledge", () => {
           expect.objectContaining({ role: "last-editor", provenance: "google-drive:files.get" }),
         ]),
       )
+      const owner = await store.people.personOf({ provider: "google-drive", id: "owner-user" })
+      const [ownerLink] = await store.notes.links({ from: f.ref, to: `person:${owner?.uid}`, role: "owner" })
+      expect(ownerLink?.evidence).toMatch(/^Google Drive lists this person as the document's owner/)
     } finally {
       await store.close()
       await f.index.close()

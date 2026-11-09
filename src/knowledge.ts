@@ -121,6 +121,16 @@ export const documentKnowledge = (
   return port
 }
 
+/** Shown to the owner as the link's reason, so words, never the raw Drive record. */
+const contributorEvidence = (role: string, metadata: Pick<FileMetadata, "version" | "modifiedAt">) =>
+  [
+    `Google Drive lists this person as the document's ${role === "owner" ? "owner" : "last editor"}`,
+    metadata.version && `version ${metadata.version}`,
+    metadata.modifiedAt && `changed ${metadata.modifiedAt.slice(0, 10)}`,
+  ]
+    .filter(Boolean)
+    .join(", ")
+
 export const saveContributors = async (
   store: MessageStore,
   principal: string,
@@ -145,19 +155,14 @@ export const saveContributors = async (
     )
   }
   const links: Omit<LinkInput, "from" | "origin">[] = []
-  for (const { id, user, role } of identified) {
+  for (const { id, role } of identified) {
     const person = await store.people.personOf({ provider: "google-drive", id })
     if (person)
       links.push({
         kind: "related-to",
         to: `person:${person.uid}`,
         role,
-        evidence: JSON.stringify({
-          fileId: metadata.id,
-          version: metadata.version,
-          modifiedAt: metadata.modifiedAt,
-          user,
-        }),
+        evidence: contributorEvidence(role, metadata),
         provenance: "google-drive:files.get",
         confirmed: false,
       })
