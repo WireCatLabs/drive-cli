@@ -15,6 +15,7 @@ const setup = async () => {
       { id: "owner-user", name: "Owner Sample" },
       { email: "Editor@EXAMPLE.invalid", name: "Editor Sample" },
     ],
+    lastModifiedBy: { email: "last@example.invalid", name: "Last Editor" },
   }
   const ref = await index.save(principal, content(metadata), "hash-one")
   return { ...f, index, k: index.knowledge, ref, principal, metadata }
