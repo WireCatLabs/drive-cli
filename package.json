@@ -46,7 +46,7 @@
     "smoke:bun": "bun scripts/smoke.ts && bun scripts/smoke-bundle.ts",
     "smoke:node": "node --experimental-strip-types scripts/smoke-bundle.ts",
     "prepublishOnly": "pnpm build",
-    "docs:check": "node --experimental-strip-types scripts/docs-check.ts && cspell --no-progress --no-summary README.md 'docs/*.md' && rumdl check --config config/wirecat/rumdl.toml --exclude docs/dev/API_COVERAGE.md,docs/commands.md README.md CLAUDE.md docs/*.md docs/dev/*.md && pnpm docs:lint",
+    "docs:check": "node --experimental-strip-types scripts/docs-check.ts && node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts && cspell --no-progress --no-summary README.md 'docs/*.md' && rumdl check --config config/wirecat/rumdl.toml --exclude docs/dev/API_COVERAGE.md,docs/commands.md README.md CLAUDE.md docs/*.md docs/dev/*.md && pnpm docs:lint",
     "docs:lint": "markdownlint-cli2",
     "ci:quick": "pnpm typecheck && pnpm lint:commands",
     "standards:check": "node config/wirecat/check.mjs",

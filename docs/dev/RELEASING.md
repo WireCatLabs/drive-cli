@@ -36,6 +36,9 @@ Before publication, date the top version section in CHANGELOG.md as `## <version
 ([WC-DOC-14](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/docs.md#wc-doc-14--changelogmd-has-one-section-per-version-newest-first-under-a-pending-section))
 and ensure it matches package.json through review. `bin/release` refuses another date format. The sections
 released up to 0.17.1 keep their `YYYY-MM-DD` dates, because a released section is never edited.
+In the same pull request, collect the `changes/` fragments into that section with
+`node --experimental-strip-types scripts/changelog-fragments.ts --rules scripts/docs-rules.ts <version>`, which
+deletes them; `bin/release` refuses to publish while any are left.
 Create a GitHub environment named `npm` in
 [repository Settings → Environments](https://github.com/WireCatLabs/drive-cli/settings/environments).
 Use the organization's npm publishing account with access to the `@wirecat` scope. If creating

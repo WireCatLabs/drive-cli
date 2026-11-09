@@ -43,7 +43,7 @@ and MCP must use the same validation and permission guards; MCP runs the CLI exe
 Use a branch and isolated checkout. Hooks, pull request CI and full validation follow the handbook's
 [CI rules](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/ci.md);
 here `ci:quick` is `pnpm typecheck && pnpm lint:commands`. Publishing requires owner
-authorization. Visible changes get an Unreleased changelog entry. Keep cleanup separate from development work.
+authorization. Visible changes get a changelog fragment, `changes/<branch>.md`, not an Unreleased entry. Keep cleanup separate from development work.
 
 Security audits of this repository follow the shared
 [security method](https://github.com/WireCatLabs/cli-testing/tree/main/docs/security) in cli-testing;
