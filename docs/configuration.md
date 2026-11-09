@@ -32,6 +32,7 @@ before moving or deleting them.
 | `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
 | `record` | `false` keeps only failed runs in `drive runs list`; default `true`, every run | `defaults` only |
 | `record_input` | A kept run holds the command as typed, a secret or phone number written `[redacted]`; `"failed"` keeps the typed words only in a failed run; `false` writes every value that may be content as `[redacted]` too | `defaults` only |
+| `max_add_profiles` | The most profiles `documents add` may try for one document; default `5`, at most `50` | `defaults` only |
 | `keep_runs_for_days` | How many days a failed run stays; default `30` | `defaults` only |
 | `keep_successful_runs_for_days` | How many days a successful run stays; default `7` | `defaults` only |
 | `runs_size_limit_mb` | The most the run log may hold; the oldest successful runs go first; default `200` | `defaults` only |

@@ -42,8 +42,10 @@ export interface CommandContext {
   signal(): AbortSignal | undefined
   output(body: Body): void
   print(render: (renderer: Renderer, format: RenderFormat, streams: Streams) => void): void
-  source(): Promise<GoogleSource>
-  withIndex<T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T>
+  /** The selected profile's Google source, or the named one's. */
+  source(profile?: string): Promise<GoogleSource>
+  /** The store for the selected profile; `null` opens it for no profile. */
+  withIndex<T>(fn: (index: DocumentIndex) => Promise<T>, profile?: string | null): Promise<T>
   policyFlags(): PolicyFlags & { offline?: boolean }
   /** The profile typed as the first word, if any; `selected()` also reads DRIVE_PROFILE and the lock. */
   profileWord(): string | undefined

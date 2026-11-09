@@ -9,6 +9,7 @@ import type {
   SourceState,
   SourceWork,
 } from "@wirecat/cli-core/documents"
+import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store"
 
 export type { PictureWriter, TabText } from "@wirecat/cli-core/documents"
 export const FOLDER = "application/vnd.google-apps.folder"
@@ -87,6 +88,8 @@ export interface DocumentIndex {
   catalog?: import("./catalog.js").SourceCatalog
   knowledge?: import("./knowledge.js").DocumentKnowledge
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
+  /** A live document synced from the same Google file answers as the duplicate, whatever its text now. */
+  addSource?(input: AddedSourceInput, driveFileId?: string): Promise<AddedSource>
   remove(principal: string, id: string): Promise<void>
   openPictures(): Promise<PictureWriter>
   search(

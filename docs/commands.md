@@ -561,6 +561,30 @@ drive <profile> documents export <document> [options]
 
 **Example:** `drive personal documents export DOC_ID --output notes.md`
 
+### `drive documents add`
+
+keep a Drive document's text in memory, read by the first profile that opens it
+
+This command changes local state.
+
+```sh
+drive <profile> documents add <url> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `url` | required | Google Drive or Docs URL, or file id. |
+
+| Option | What it does |
+|---|---|
+| `--profiles <names\|all>` | profiles to try in this order, comma-separated, or all; at most max_add_profiles, in place of a profile word. |
+| `--title <title>` | title to keep it under; the document's name when omitted. |
+| `--subject <ref>` | a person, organization, project, task or meeting it is about; repeat to add more. |
+
+**Returns:** keep a Drive document's text in memory, read by the first profile that opens it
+
+**Example:** `drive documents add https://docs.google.com/document/d/DOC_ID/edit --profiles work,personal`, `drive personal documents add DOC_ID --subject person:PERSON_UID`
+
 ### `drive documents context`
 
 show a document with its tags, relationships, notes, memories and editors
@@ -4479,7 +4503,7 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, google_client_id, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |

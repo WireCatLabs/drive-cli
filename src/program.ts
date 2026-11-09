@@ -45,7 +45,13 @@ import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
 import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
-import { importedDocument, installDocumentCommands, isDocumentRef, storedDocument } from "./commands/documents.js"
+import {
+  addProfilesOf,
+  importedDocument,
+  installDocumentCommands,
+  isDocumentRef,
+  storedDocument,
+} from "./commands/documents.js"
 import { installFolderCommands } from "./commands/folders.js"
 import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMirrorCommands } from "./commands/mirrors.js"
@@ -55,8 +61,18 @@ import { installSessionCommands } from "./commands/session.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
-import { activeProfile, configuration, fileId, googleAppOf, paths, profileName, readConfig } from "./config.js"
-import { googleError } from "./errors.js"
+import {
+  activeProfile,
+  configuration,
+  fileId,
+  googleAppOf,
+  paths,
+  profileLocked,
+  profileName,
+  profileRequired,
+  readConfig,
+} from "./config.js"
+import { googleError, offlineRefused } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
 import { PACKAGE } from "./identity.js"
@@ -150,24 +166,12 @@ const installDrive = (program: Command) => {
     const named = profileWord() ?? (env.DRIVE_PROFILE || undefined)
     if (lock !== undefined) {
       profileName(lock)
-      if (named !== undefined && profileName(named) !== lock)
-        throw new CliError(
-          "permission_error",
-          `this process is locked to profile ${lock} (DRIVE_PROFILE_LOCK) — profile ${named} is refused`,
-          { reason: "profile.locked" },
-        )
+      if (named !== undefined && profileName(named) !== lock) throw profileLocked(lock, `profile ${named}`)
       return lock
     }
     if (named) return profileName(named)
     const config = readConfig(env, permissionNames(policyFlags().permissionKeys ?? new Set()))
-    const choices = Object.keys(config.profiles).sort()
-    throw new CliError(
-      "validation_error",
-      choices.length
-        ? `name a profile: drive <profile> … — profiles here: ${choices.join(", ")} (or set DRIVE_PROFILE)`
-        : "no profiles here yet; create one with drive personal session start (any name in place of personal)",
-      { reason: "profile.required", profiles: choices },
-    )
+    throw profileRequired(Object.keys(config.profiles).sort())
   }
   let currentAction: Command | undefined
   let checkedMethod: string | undefined
@@ -230,15 +234,16 @@ const installDrive = (program: Command) => {
     await checkAuthorization(client, scope)
     return client
   }
-  const source = async () => {
-    const name = selected()
+  const source = async (profile?: string) => {
+    const name = profile ?? selected()
     const fake = environment().source
     if (fake) return fake(name)
     const [{ googleSource }, client] = await Promise.all([import("./google.js"), signedIn(name)])
     return googleSource(client)
   }
-  const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>): Promise<T> => {
-    const index = await (environment().index?.() ?? openIndex(env, selected(), currentAction?.opts().rescan === true))
+  const withIndex = async <T>(fn: (index: DocumentIndex) => Promise<T>, profile?: string | null): Promise<T> => {
+    const name = profile === undefined ? selected() : (profile ?? undefined)
+    const index = await (environment().index?.() ?? openIndex(env, name, currentAction?.opts().rescan === true))
     try {
       return await fn(index)
     } finally {
@@ -521,6 +526,15 @@ const installDrive = (program: Command) => {
     }
     if (words === "mcp revoke" && program.opts().readOnly)
       throw readOnlyRefusal("--read-only", "forget the browser logins")
+    // Each profile it may read is checked before any is tried; the hook below checks one selected profile only.
+    if (words === "documents add") {
+      const flags = policyFlags()
+      for (const name of addProfilesOf(env, action, profileWord()))
+        await checkPolicy(env, name, "documents.add", true, flags, askOnce)
+      if (flags.offline) throw offlineRefused()
+      if (flags.dryRun) preview()
+      return
+    }
     // The shared `mcp` names its profiles or refuses; each tool call runs this hook for its own profile.
     if (PROFILE_SET_COMMANDS.has(words) || path[0] === "mcp") {
       const named = profileWord() ?? env.DRIVE_PROFILE ?? env.DRIVE_PROFILE_LOCK
@@ -578,10 +592,7 @@ const installDrive = (program: Command) => {
     for (const permission of method ? methodPolicyKeys(method) : [key])
       await checkPolicy(env, selected(), permission, mutates, flags, askOnce)
     checkedMethod = method
-    if (flags.offline && (method || metadata.effects?.remote !== "none"))
-      throw new CliError("permission_error", "this command may require network access; --offline was requested", {
-        reason: "offline.refused",
-      })
+    if (flags.offline && (method || metadata.effects?.remote !== "none")) throw offlineRefused()
     if (flags.dryRun && !googleOnly(metadata.effects)) preview()
     // A command that only calls Google previews the request itself, once its parameters are known; cli-core, whose
     // hook runs after this one, would preview the bare command instead.

@@ -14,6 +14,9 @@ export const googleError = (error: unknown): CliError => {
   const status = value?.status ?? value?.response?.status
   const payload = value?.response?.data?.error
   const reason = typeof payload === "string" ? payload : payload?.errors?.[0]?.reason
+  // Google's reason tells a spent quota from no access; only its plain enum word is kept, never free text.
+  const told =
+    status === 403 && typeof reason === "string" && /^[A-Za-z]{1,64}$/.test(reason) ? { google_reason: reason } : {}
   const disabled =
     typeof payload === "object" &&
     payload !== null &&
@@ -51,10 +54,16 @@ export const googleError = (error: unknown): CliError => {
       "Google API is disabled for this OAuth project; its owner must enable it in Google Cloud API Library",
       { reason: "api.disabled", status },
     )
-  if (reason === "rateLimitExceeded" || reason === "userRateLimitExceeded")
+  if (
+    reason === "rateLimitExceeded" ||
+    reason === "userRateLimitExceeded" ||
+    reason === "dailyLimitExceeded" ||
+    reason === "quotaExceeded"
+  )
     return new CliError("rate_limited", "Google rate limit reached; retry the command", {
       retryable: true,
       ...(status ? { status } : {}),
+      ...told,
     })
   if (reason === "exportSizeLimitExceeded")
     return new CliError("validation_error", "Google exports at most 10 MB of a native file; this one is larger", {
@@ -67,6 +76,7 @@ export const googleError = (error: unknown): CliError => {
   if (status === 403)
     return new CliError("permission_error", "Google denied this operation; check access and OAuth permissions", {
       status,
+      ...told,
     })
   if (status === 404)
     return new CliError("not_found", "Google source is unavailable or no longer accessible", { status })
@@ -77,3 +87,6 @@ export const googleError = (error: unknown): CliError => {
     retryable: true,
   })
 }
+
+export const offlineRefused = (what = "this command may require network access") =>
+  new CliError("permission_error", `${what}; --offline was requested`, { reason: "offline.refused" })

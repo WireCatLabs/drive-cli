@@ -51,6 +51,21 @@ describe("Google API setup failures", () => {
     expect(JSON.stringify(failure)).not.toContain("DO_NOT_LOG")
   })
 
+  it.each(["dailyLimitExceeded", "quotaExceeded"])("answers a spent quota (%s) as a rate limit", (reason) => {
+    const failure = googleError(refused({ errors: [{ reason }] }))
+    expect(errorObject(failure).error).toMatchObject({ code: "rate_limited", details: { status: 403 } })
+    expect(failure.details).toMatchObject({ retryable: true, google_reason: reason })
+  })
+
+  it("keeps Google's reason on every 403, and only a plain word of it", () => {
+    expect(googleError(refused({ errors: [{ reason: "insufficientFilePermissions" }] })).details).toMatchObject({
+      status: 403,
+      google_reason: "insufficientFilePermissions",
+    })
+    const odd = googleError(refused({ errors: [{ reason: "DO NOT LOG <script>" }] }))
+    expect(odd.details.google_reason).toBeUndefined()
+  })
+
   it("does not reinterpret a different HTTP status as API setup", () => {
     expect(errorObject(googleError(refused({ details: [info] }, 401))).error.code).toBe("authentication_error")
   })

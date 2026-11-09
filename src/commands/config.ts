@@ -14,6 +14,7 @@ import { type Command, Option } from "commander"
 import {
   type Config,
   type ConfigFile,
+  checkAddProfiles,
   checkTextLimit,
   configIssues,
   configPath,
@@ -27,6 +28,7 @@ import {
   withDefaults,
   writeConfig,
 } from "../config.js"
+import { offlineRefused } from "../errors.js"
 import { DRIVE_APP, permissionNames } from "../policy.js"
 import { examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
@@ -118,7 +120,7 @@ export const installConfigCommands = (
   )
     .argument(
       "<key>",
-      "max_text_chars, picture_search, google_client_id, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>",
+      "max_text_chars, picture_search, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>",
     )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
@@ -143,6 +145,7 @@ export const installConfigCommands = (
       if (head === "picture_search" && (args.defaults || typeof parsed !== "boolean"))
         throw new CliError("validation_error", "picture_search is true or false, set per profile")
       if (head === "max_text_chars") parsed = checkTextLimit(parsed)
+      if (head === "max_add_profiles") parsed = checkAddProfiles(parsed)
       const at = [...scope, ...setting]
       const next: Node = isNode(file.raw) ? structuredClone(file.raw) : {}
       let node = next
@@ -253,10 +256,7 @@ export const installModelCommands = (program: Command, { env, output, streams, p
       output(itemOf({ purpose: args.purpose, configured: true }))
     })
   const download = async (kind: "text" | "image", id: string, acceptTerms: boolean) => {
-    if (policyFlags().offline)
-      throw new CliError("permission_error", "downloading a model needs the network; --offline was requested", {
-        reason: "offline.refused",
-      })
+    if (policyFlags().offline) throw offlineRefused("downloading a model needs the network")
     const { downloadImageModel, downloadTextModel } = await import("@wirecat/cli-core/services")
     const progress = (line: string) => {
       if (!program.opts().quiet) streams.diagnostic(line)
