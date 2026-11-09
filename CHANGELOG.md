@@ -13,6 +13,9 @@
 
 ### Fixed
 
+- **A document's owner is linked at once, and nobody else is.** `sync` confirms the link to the owner Drive names
+  (email and document are enough) and no longer proposes links for the last editor. Old proposals for owners
+  and editors stay until the owner removes them.
 - **A spent Google quota (`dailyLimitExceeded`, `quotaExceeded`) is a rate limit, not a permission refusal.**
   `sync` and every other command now answer it as `rate_limited`, which says to retry, instead of
   `permission_error`.

@@ -89,20 +89,17 @@ export const documentKnowledge = (
               source?: string
               fileId?: string
               owners?: GoogleUser[]
-              lastModifiedBy?: GoogleUser
               sourceVersion?: string
               modifiedAt?: string
             }
             if (data?.source !== "google-drive" || !data.fileId) continue
-            const contributors = [...(data.owners ?? []), ...(data.lastModifiedBy ? [data.lastModifiedBy] : [])]
-            if (!contributors.some((user) => googleUserId(user) === googleId)) continue
+            if (!(data.owners ?? []).some((user) => googleUserId(user) === googleId)) continue
             await saveContributors(
               store,
               principal,
               {
                 id: data.fileId,
                 owners: data.owners,
-                lastModifiedBy: data.lastModifiedBy,
                 version: data.sourceVersion,
                 modifiedAt: data.modifiedAt,
               },
@@ -121,10 +118,10 @@ export const documentKnowledge = (
   return port
 }
 
-/** Shown to the owner as the link's reason, so words, never the raw Drive record. */
-const contributorEvidence = (role: string, metadata: Pick<FileMetadata, "version" | "modifiedAt">) =>
+/** Shown as the link's reason, so words, never the raw Drive record. */
+const ownerEvidence = (metadata: Pick<FileMetadata, "version" | "modifiedAt">) =>
   [
-    `Google Drive lists this person as the document's ${role === "owner" ? "owner" : "last editor"}`,
+    "Google Drive lists this person as the document's owner",
     metadata.version && `version ${metadata.version}`,
     metadata.modifiedAt && `changed ${metadata.modifiedAt.slice(0, 10)}`,
   ]
@@ -134,18 +131,14 @@ const contributorEvidence = (role: string, metadata: Pick<FileMetadata, "version
 export const saveContributors = async (
   store: MessageStore,
   principal: string,
-  metadata: Pick<FileMetadata, "id" | "owners" | "lastModifiedBy" | "version" | "modifiedAt">,
+  metadata: Pick<FileMetadata, "id" | "owners" | "version" | "modifiedAt">,
   documentId: string,
   register = true,
 ) => {
-  const users = [
-    ...(metadata.owners ?? []).map((user) => ({ user, role: "owner" })),
-    ...(metadata.lastModifiedBy ? [{ user: metadata.lastModifiedBy, role: "last-editor" }] : []),
-  ]
   const key = { provider: "google-drive", account: principal }
-  const identified = users.flatMap(({ user, role }) => {
+  const identified = (metadata.owners ?? []).flatMap((user) => {
     const id = googleUserId(user)
-    return id ? [{ id, user, role }] : []
+    return id ? [{ id, user }] : []
   })
   if (register && identified.length) {
     await store.accounts.saveAccount(key, { name: "Google Drive" })
@@ -155,16 +148,16 @@ export const saveContributors = async (
     )
   }
   const links: Omit<LinkInput, "from" | "origin">[] = []
-  for (const { id, role } of identified) {
+  for (const { id } of identified) {
     const person = await store.people.personOf({ provider: "google-drive", id })
     if (person)
       links.push({
         kind: "related-to",
         to: `person:${person.uid}`,
-        role,
-        evidence: contributorEvidence(role, metadata),
+        role: "owner",
+        evidence: ownerEvidence(metadata),
         provenance: "google-drive:files.get",
-        confirmed: false,
+        confirmed: true,
       })
   }
   await store.notes.replaceFileLinks(documentId, links)
