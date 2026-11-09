@@ -1165,7 +1165,7 @@ drive <profile> memories list <document> [query] [options]
 |---|---|
 | `--limit <n>` | how many memories to return. Default: `50`. |
 
-**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 12 more; every field: drive commands info memories list
+**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 13 more; every field: drive commands info memories list
 
 **Example:** `drive personal memories list DOC_ID scope:work`, `drive personal memories list DOC_ID kind:preference status:confirmed`
 
@@ -1237,7 +1237,7 @@ drive <profile> memories search <document> <query>
 | `document` | required | Google file or folder id or URL in the local catalog, or a document:<n> ref. |
 | `query` | required | words to look for, and scope:personal or scope:work — the fields are below. |
 
-**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 12 more; every field: drive commands info memories search
+**Returns:** memory — ref, id, kind, text, subject, author, model, confidence, and 13 more; every field: drive commands info memories search
 
 **Example:** `drive personal memories search DOC_ID reviews scope:work`, `drive personal memories search DOC_ID "async reviews"`
 
@@ -1312,7 +1312,7 @@ drive <profile> facts list <document> [query] [options]
 |---|---|
 | `--limit <n>` | how many facts to return. Default: `50`. |
 
-**Returns:** fact — ref, id, kind, text, status, project, subject, occurred_at, and 13 more; every field: drive commands info facts list
+**Returns:** fact — ref, id, kind, text, status, project, subject, occurred_at, and 14 more; every field: drive commands info facts list
 
 **Example:** `drive personal facts list DOC_ID status:proposed`, `drive personal facts list DOC_ID kind:decision`
 
@@ -4626,13 +4626,13 @@ drive models download <model> [options]
 | Option | What it does |
 |---|---|
 | `--offline` | refuse a download that needs the network. |
-| `--accept-terms` | accept the model's licence terms, for a model that has its own. |
+| `--accept-terms` | no longer needed; kept so older scripts still run. |
 
 **Returns:** model — id, kind, title, languages, size_bytes, downloaded, default, path, and 6 more; every field: drive commands info models download
 
 **Next usually:** `drive images models download <model>`
 
-**Example:** `drive models download e5-small`
+**Example:** `drive models download embeddinggemma`
 
 ### `drive models add`
 
