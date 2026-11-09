@@ -11,8 +11,11 @@ const setup = async () => {
   const principal = "synthetic-principal"
   const metadata = {
     ...file("doc-a"),
-    owners: [{ id: "owner-user", name: "Owner Sample" }],
-    lastModifiedBy: { email: "Editor@EXAMPLE.invalid", name: "Editor Sample" },
+    owners: [
+      { id: "owner-user", name: "Owner Sample" },
+      { email: "Editor@EXAMPLE.invalid", name: "Editor Sample" },
+    ],
+    lastModifiedBy: { email: "last@example.invalid", name: "Last Editor" },
   }
   const ref = await index.save(principal, content(metadata), "hash-one")
   return { ...f, index, k: index.knowledge, ref, principal, metadata }
@@ -39,7 +42,10 @@ describe("shared document knowledge", () => {
       expect(await f.k.tags(f.principal, f.ref, "list", [], { tag: "review" })).toEqual(["review"])
       expect(await f.k.links(f.principal, f.ref, { id: link.id })).toEqual([link])
       expect(await f.k.people(f.principal, f.ref, { role: "owner" })).toMatchObject({
-        items: [{ google_id: "owner-user", role: "owner" }],
+        items: [
+          { google_id: "owner-user", role: "owner" },
+          { google_id: "email:editor@example.invalid", role: "owner" },
+        ],
       })
       expect(await f.k.people(f.principal, f.ref, { google_id: "missing" })).toMatchObject({ items: [] })
       expect((await f.k.note(f.principal, f.ref, note.ref)).title).toBe("Review")
@@ -147,12 +153,12 @@ describe("shared document knowledge", () => {
       )
       await expect(f.k.linkPerson(f.principal, f.ref, "owner-user", "note:1")).rejects.toThrow("person reference")
       await expect(f.k.linkPerson(f.principal, f.ref, "owner-user", "person:unknown")).rejects.toThrow("identity")
-      const context = (await f.k.context(f.principal, f.ref)) as { links: { role: string; provenance: string }[] }
-      expect(context.links).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ role: "last-editor", provenance: "google-drive:files.get" }),
-        ]),
-      )
+      const context = (await f.k.context(f.principal, f.ref)) as {
+        links: { role: string; provenance: string; confirmed: boolean }[]
+      }
+      expect(context.links).toHaveLength(2)
+      for (const link of context.links)
+        expect(link).toMatchObject({ role: "owner", provenance: "google-drive:files.get", confirmed: true })
       const owner = await store.people.personOf({ provider: "google-drive", id: "owner-user" })
       const [ownerLink] = await store.notes.links({ from: f.ref, to: `person:${owner?.uid}`, role: "owner" })
       expect(ownerLink?.evidence).toMatch(/^Google Drive lists this person as the document's owner/)
@@ -161,7 +167,7 @@ describe("shared document knowledge", () => {
       await f.index.close()
     }
   })
-  it("makes an editor the same person as the mail contact of their exact address", async () => {
+  it("makes an owner the same person as the mail contact of their exact address", async () => {
     const f = await setup()
     const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
     try {
