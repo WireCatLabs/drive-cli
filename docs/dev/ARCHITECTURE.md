@@ -53,8 +53,9 @@ management uses a separate SDK adapter. Tokens stay in the shared secure credent
 
 Source metadata supplies owners and the last editor. Stable Google permission IDs, with an email
 fallback, create identities in the shared store; name similarity never merges identities. Observed
-roles carry Google provenance as file links; explicit owner links survive resync. A manual identity
-link uses the shared decision API to connect an observed Google editor to another known person.
+owners become file links with Google provenance, filed as the Drive account's report (`reported`),
+never as the owner's memory or a proposal; the last editor stays in the document's metadata only.
+Explicit owner links survive resync. A manual identity link uses the shared decision API to connect an observed Google editor to another known person.
 
 Notes are internal shared notes whose primary subject is the source document. Memories carry a
 subject, evidence reference and explicit personal/work scope. Content-hash changes or removal mark

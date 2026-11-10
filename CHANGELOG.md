@@ -13,9 +13,13 @@
 
 ### Fixed
 
-- **A document's owner is linked at once, and nobody else is.** `sync` confirms the link to the owner Drive names
-  (email and document are enough) and no longer proposes links for the last editor. A document's old proposals are replaced
-  when it is imported again; the rest stay until the owner removes them.
+- **A document's owner and last editor no longer land in your memory or its review.** `sync` links a document to the
+  owner Drive names as Drive's report (`reported`, the way a CRM's links are), not as a proposal and not as your own
+  confirmed memory, with the reason in words ("Google Drive lists this person as the document's owner, version 68,
+  changed 2026-11-02") instead of the raw Drive record. The last editor gets no link and stays in the document's
+  metadata. Each import replaces every owner and last-editor link the document had, proposed or confirmed, so the next
+  `sync` (or `drive <profile> catalog import --offline`) clears the ones already stored. `relationships list
+  confirmed:true` no longer lists a document's owner.
 - **A spent Google quota (`dailyLimitExceeded`, `quotaExceeded`) is a rate limit, not a permission refusal.**
   `sync` and every other command now answer it as `rate_limited`, which says to retry, instead of
   `permission_error`.

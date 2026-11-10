@@ -157,7 +157,8 @@ export const saveContributors = async (
         role: "owner",
         evidence: ownerEvidence(metadata),
         provenance: "google-drive:files.get",
-        confirmed: true,
+        // Google's word, not the owner's: the store files it as the account's report, never in his memory or review.
+        confirmed: false,
       })
   }
   await store.notes.replaceFileLinks(documentId, links)
