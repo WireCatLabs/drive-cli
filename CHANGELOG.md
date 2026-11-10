@@ -13,9 +13,10 @@
 
 ### Fixed
 
-- **A document's owner is linked at once, and nobody else is.** `sync` confirms the link to the owner Drive names
-  (email and document are enough) and no longer proposes links for the last editor. A document's old proposals are replaced
-  when it is imported again; the rest stay until the owner removes them.
+- **A document's owner and last editor no longer land in your memory or its review.** `sync` links a document to the
+  owner Drive names as Drive's report (`reported`, the way a CRM's links are), not as a proposal and not as your own
+  confirmed memory; the last editor gets no link and stays in the document's metadata. Each import replaces the
+  document's old owner and last-editor proposals, so the next `sync` (or `catalog import`) clears them.
 - **A spent Google quota (`dailyLimitExceeded`, `quotaExceeded`) is a rate limit, not a permission refusal.**
   `sync` and every other command now answer it as `rate_limited`, which says to retry, instead of
   `permission_error`.
