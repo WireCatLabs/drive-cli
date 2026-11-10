@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.65.0 — 10.11.2026
 
 ### Added
 
@@ -10,6 +10,17 @@
   `drive <profile> documents add <url>` reads with that profile only. `--title` and `--subject` name it and what it
   is about. A file a sync already imported is answered as `duplicate_of`. Not available over MCP.
   - Known limit: adding the same file again after it changed keeps a second copy; the first is not replaced yet.
+- **A pull request adds its changelog entries as a fragment, `changes/<branch>.md`.** Open pull requests no longer
+  conflict under `## Unreleased`. `pnpm docs:check` checks each fragment, and `bin/release` collects them into the
+  version's section. An entry under `## Unreleased` still works during the move.
+
+### Changed — may break callers
+
+- **Built on cli-core 0.634.0** (was 0.614.0). The store moves to version 64 on first open (people ties, stored
+  person kinds, faster deal-link triggers; additive). With it, a document owner's link is filed as Drive's report.
+  What changed in between is in [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **`schedule pause <name>` and `schedule resume <name>`** take a schedule off its timer and keep it; `schedule run`
+  still runs it. `--at` repeats: `--at 08:30 --at 18:00` runs twice a day.
 
 ### Fixed
 
