@@ -1,4 +1,4 @@
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import type { MessageStore } from "@wirecat/cli-core/store"
 import { Command } from "commander"
 import { describe, expect, it, vi } from "vitest"
@@ -107,7 +107,7 @@ describe("api list", () => {
 describe("MCP list tools", () => {
   it("take the query as one string, as the CLI list takes it after its arguments", async () => {
     const f = fixture()
-    const { client, close } = await mcpClient({ env: f.env })
+    const { client, close } = await mcpClient({ env: f.env, keyring: memoryKeyring() })
     try {
       for (const command of ["facts list", "memories list", "memories search", "catalog list"]) {
         const found = await client.callTool({ name: "drive_tools_search", arguments: { query: command } })
