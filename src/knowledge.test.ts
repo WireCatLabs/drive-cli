@@ -1,4 +1,5 @@
 import { listQuery } from "@wirecat/cli-core/cli"
+import { proposalRegistry } from "@wirecat/cli-core/services"
 import { IMPORTED_DOCUMENT_QUERY, openStore } from "@wirecat/cli-core/store"
 import { describe, expect, it } from "vitest"
 import { openIndex } from "./store.js"
@@ -164,6 +165,40 @@ describe("shared document knowledge", () => {
       const owner = await store.people.personOf({ provider: "google-drive", id: "owner-user" })
       const [ownerLink] = await store.notes.links({ from: f.ref, to: `person:${owner?.uid}`, role: "owner" })
       expect(ownerLink?.evidence).toMatch(/^Google Drive lists this person as the document's owner/)
+    } finally {
+      await store.close()
+      await f.index.close()
+    }
+  })
+  it("sends an owner and a last editor to no review, replaces an older build's links, and asks about a deduced memory", async () => {
+    const f = await setup()
+    const store = await openStore({ path: f.env.MESSAGING_STORE, env: f.env, command: "drive" })
+    const registry = proposalRegistry(store)
+    const waiting = async () => (await registry.list({ limit: 50, offset: 0 })).items
+    try {
+      expect(await waiting()).toEqual([])
+      expect((await store.knowledge.listRelations({ standing: "proposed" })).items).toEqual([])
+      expect(await store.notes.links({ from: f.ref, role: "last-editor" })).toEqual([])
+      expect(await f.k.people(f.principal, f.ref, { role: "last-editor" })).toMatchObject({
+        items: [{ email: "last@example.invalid", role: "last-editor" }],
+      })
+
+      const owner = await store.people.personOf({ provider: "google-drive", id: "owner-user" })
+      await store.notes.replaceFileLinks(f.ref.slice("document:".length), [
+        { kind: "related-to", to: `person:${owner?.uid}`, role: "last-editor", provenance: "older", confirmed: false },
+      ])
+      expect((await store.knowledge.listRelations({ standing: "proposed" })).items).toHaveLength(1)
+      await f.index.save(f.principal, content(f.metadata), "hash-one")
+      expect((await store.knowledge.listRelations({ standing: "proposed" })).items).toEqual([])
+      expect(await store.notes.links({ from: f.ref, role: "last-editor" })).toEqual([])
+
+      const memory = await f.k.addMemory(f.principal, f.ref, {
+        author: { bot: "reader", model: "synthetic" },
+        body: "The budget assumes the March launch holds",
+        scope: "work",
+        kind: "summary",
+      })
+      expect(await waiting()).toMatchObject([{ id: memory.ref, kind: "memory", status: "proposed" }])
     } finally {
       await store.close()
       await f.index.close()
