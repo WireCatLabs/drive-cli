@@ -8,11 +8,12 @@ import { callTool, mcpClient } from "./testing/mcp.js"
 import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
 const ref = "document:1"
+const none = { items: [], hasMore: false }
 const stubStore = () => {
   const store = {
     notes: { resolveNote: vi.fn(async () => ({ source: "file", folderId: "folder-1", deletedAt: null })) },
-    facts: { list: vi.fn(async () => []) },
-    memories: { list: vi.fn(async () => []), search: vi.fn(async () => []) },
+    facts: { list: vi.fn(async () => none) },
+    memories: { list: vi.fn(async () => none), search: vi.fn(async () => none) },
   }
   return store
 }

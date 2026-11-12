@@ -29,8 +29,8 @@ export const documentKnowledge = (
         tags: await store.notes.noteTags(ref),
         links: await store.notes.links({ from: ref }),
         notes: await store.notes.notes({ source: "internal", about: ref, limit: 100 }),
-        memories: (await store.memories.list({ subject: ref, limit: 100 })).map(memoryItem),
-        facts: (await store.facts.list({ subject: ref, limit: 100 })).map(factItem),
+        memories: (await store.memories.list({ subject: ref, limit: 100 })).items.map(memoryItem),
+        facts: (await store.facts.list({ subject: ref, limit: 100 })).items.map(factItem),
         people: await port.people(principal, ref),
       }
     },

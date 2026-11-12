@@ -257,7 +257,7 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
         ...(terms.has("status") ? { status: terms.get("status") as Memory["status"] } : {}),
         ...(terms.has("scope") ? { scope: terms.get("scope") as Memory["scope"] } : {}),
       }
-      output(allOf((await run(doc, (k, p, ref) => k.memories(p, ref, { ...filters, limit }))).map(memoryItem)))
+      output(allOf((await run(doc, (k, p, ref) => k.memories(p, ref, { ...filters, limit }))).items.map(memoryItem)))
     })
   const memoryActions = {
     show: "show one memory",
@@ -300,7 +300,7 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
       const found = await run(doc, (k, p, ref) => k.searchMemories(p, ref, text, scope))
       output({
         ...allOf(found.items.map(memoryItem)),
-        ...(found.limit_reached ? { meta: { truncated: true } } : {}),
+        ...(found.hasMore ? { meta: { truncated: true } } : {}),
       })
     })
   annotate(search, { query: defineQuery(MEMORY_SEARCH_QUERY), output: { entity: "memory" } })
@@ -387,7 +387,7 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
         ...(terms.has("kind") ? { type: terms.get("kind") as Fact["type"] } : {}),
         ...(terms.has("status") ? { status: terms.get("status") as Fact["status"] } : {}),
       }
-      output(allOf((await run(doc, (k, p, ref) => k.facts(p, ref, { ...filters, limit }))).map(factItem)))
+      output(allOf((await run(doc, (k, p, ref) => k.facts(p, ref, { ...filters, limit }))).items.map(factItem)))
     })
   const factActions = {
     show: "show one fact",
