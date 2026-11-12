@@ -42,11 +42,8 @@ describe("command data effects", () => {
       effects: { remote: "write", local: "write" },
       lifetime: "persistent",
     })
-    // cli-core's shared skill and doctor reports groups declare none, as in every other CLI; their commands do.
-    expect(commands.filter((command) => !command.effects).map((command) => command.path.join(" "))).toEqual([
-      "doctor reports",
-      "skill",
-    ])
+    // cli-core's shared skill group declares none, as in every other CLI; its commands do.
+    expect(commands.filter((command) => !command.effects).map((command) => command.path.join(" "))).toEqual(["skill"])
   })
 
   it("runs provider-only reads without opening the content store and still refuses them offline", async () => {
