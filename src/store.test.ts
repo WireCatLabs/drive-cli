@@ -95,7 +95,7 @@ describe("released shared store and search", () => {
       const options = { limit: 5, offset: 0, exact: true }
       const drive = (await index.search("synthetic-principal", "budget", options)) as { hits: object[] }
       const core = await searchNotes(store, "budget", { ...options, env: f.env, command: "memo" })
-      expect(drive.hits).toMatchObject(core.hits)
+      expect(drive.hits).toMatchObject(core.items)
       expect(drive.hits[0]).toMatchObject({
         url: `${plan.url}?moved=1`,
         title: "Budget plan renamed",

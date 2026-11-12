@@ -33,8 +33,8 @@ export const prepareStore = async (index: DocumentIndex, env: NodeJS.ProcessEnv,
             for (const note of page.items) {
               counts.tags += (await old.notes.noteTags(note.ref)).length
               counts.notes += (await old.notes.notes({ source: "internal", about: note.ref, limit: 1 })).items.length
-              counts.memories += (await old.memories.list({ subject: note.ref, limit: 1 })).length
-              counts.facts += (await old.facts.list({ subject: note.ref, limit: 1 })).length
+              counts.memories += (await old.memories.list({ subject: note.ref, limit: 1 })).items.length
+              counts.facts += (await old.facts.list({ subject: note.ref, limit: 1 })).items.length
               counts.links += (await old.notes.links({ from: note.ref })).filter(
                 (link) => link.origin !== "file",
               ).length

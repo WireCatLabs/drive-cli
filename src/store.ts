@@ -127,12 +127,15 @@ export const indexOver = (
           return { ...picture, title: note.title, url: file?.url ?? null }
         }),
       )
-      const { pictures: _, ...rest } = result
+      // The answer keeps the --json names it had before cli-core's search answered a ListResult.
+      const { pictures: _, items, hasMore, nextOffset, ...rest } = result
       return {
         ...rest,
+        has_more: hasMore,
+        ...(nextOffset === undefined ? {} : { next_offset: nextOffset }),
         ...(result.pictures ? { pictures } : {}),
         hits: await Promise.all(
-          result.hits.map(async (hit) => {
+          items.map(async (hit) => {
             const note = await store.notes.note(hit.ref)
             const metadata = note.frontMatter as { tabs?: unknown; notRead?: unknown } | null
             const entry = note.path ? await store.catalog.get(selected.id, note.path) : undefined

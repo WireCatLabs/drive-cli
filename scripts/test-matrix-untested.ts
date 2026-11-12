@@ -19,9 +19,14 @@ const generatedOptions = [
 ].filter((name) => name && name !== "--help")
 
 const SHARED_MCP = "cli-core's appMcpCommand; its app-mcp-command tests drive it"
+const SHARED_REPORTS = "cli-core's appDoctorCommand; its app-mcp-command test creates and shows a report"
 const SHARED_GLOBAL = "cli-core's global option, read by its program; its program tests drive it"
 
 export const UNTESTED: { command: string; option?: string; reason: string }[] = [
+  { command: "doctor reports show", reason: SHARED_REPORTS },
+  { command: "doctor reports create", reason: SHARED_REPORTS },
+  { command: "doctor reports create", option: "--run", reason: SHARED_REPORTS },
+  { command: "doctor reports create", option: "--output", reason: SHARED_REPORTS },
   {
     command: "doctor",
     option: "--online",
