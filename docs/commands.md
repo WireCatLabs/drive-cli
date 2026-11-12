@@ -45,9 +45,40 @@ drive doctor [options]
 |---|---|
 | `--online` | also connect once and read the account; sends nothing. |
 
-**Returns:** the state this installation is in, without connecting unless --online
+### `drive doctor reports`
 
-**Example:** `drive doctor`, `drive doctor --json`
+problem reports
+
+#### `drive doctor reports show`
+
+what a problem report holds; writes nothing
+
+```sh
+drive <profile> doctor reports show
+```
+
+**Returns:** what a problem report holds; writes nothing
+
+**Example:** `drive doctor reports show`
+
+#### `drive doctor reports create`
+
+write a problem report to a file, and say where to send it
+
+This command changes local state.
+
+```sh
+drive <profile> doctor reports create [options]
+```
+
+| Option | What it does |
+|---|---|
+| `--run <id>` | the run the report is about; the newest failed one if not given. |
+| `--output <file>` | where to write it; a new file in this directory if not given. |
+
+**Returns:** write a problem report to a file, and say where to send it
+
+**Example:** `drive doctor reports create --output ./problem-report.json`
 
 ## `drive skill`
 

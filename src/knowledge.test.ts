@@ -253,9 +253,9 @@ describe("shared document knowledge", () => {
         by: { bot: "drive-memory", model: "example-model" },
       })
       expect(drawn).toMatchObject({ status: "proposed", model: "example-model", scope: "work" })
-      expect((await f.k.facts(f.principal, f.ref, { status: "proposed" })).items.map((fact) => fact.ref)).toEqual([
-        drawn.ref,
-      ])
+      expect(
+        (await f.k.facts(f.principal, f.ref, { status: "proposed" })).items.map((fact: { ref: string }) => fact.ref),
+      ).toEqual([drawn.ref])
       expect((await f.k.fact(f.principal, f.ref, drawn.ref, "confirm", "owner")).status).toBe("accepted")
       await expect(
         f.k.addMemory(f.principal, f.ref, { author: "owner", body: "A fact", kind: "fact" as never, scope: "work" }),
