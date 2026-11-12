@@ -83,6 +83,8 @@ const keyOf = (path: readonly string[]) => {
   return operation ? `api.${operation.id}` : commandPathKey(path)
 }
 
+export const permissions = commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS })
+
 /**
  * The shared settings over drive's own file: the same `config.json`, read with drive's schema, so a file written by
  * drive 0.51 loads unchanged.
@@ -111,7 +113,7 @@ export const configuration = settingsFor(DRIVE_APP, {
       description: "the most profiles documents add may try for one document",
     },
   ],
-  permissions: commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS }),
+  permissions,
 })
 export const paths = (env: NodeJS.ProcessEnv) => resolvePaths({ appName: "drive-cli", prefix: "DRIVE", env })
 export const configPath = (env: NodeJS.ProcessEnv) => join(paths(env).config, "config.json")

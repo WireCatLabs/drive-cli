@@ -2,7 +2,16 @@ import { CliError, isCliError, type KeyringStore } from "@wirecat/cli-base"
 import { OAuth2Client } from "google-auth-library"
 import { type OAuthApplication, profileName, readConfig, writeConfig } from "./config.js"
 import { googleSource } from "./google.js"
-import { ACTIVITY_SCOPE, APPS_SCOPE, credentials, notSaved, READ_SCOPE, sessionKeeper, WRITE_SCOPE } from "./tokens.js"
+import {
+  ACTIVITY_SCOPE,
+  APPS_SCOPE,
+  credentials,
+  notSaved,
+  READ_SCOPE,
+  sessionKeeper,
+  transporterOptions,
+  WRITE_SCOPE,
+} from "./tokens.js"
 
 export interface LoginOptions {
   env: NodeJS.ProcessEnv
@@ -59,7 +68,7 @@ export const login = async (options: LoginOptions): Promise<{ profile: string; s
         const client = new OAuth2Client({
           clientId: options.application.clientId,
           clientSecret: options.application.clientSecret,
-          transporterOptions: { timeout: 30000, ...(options.signal ? { signal: options.signal } : {}) },
+          transporterOptions: transporterOptions(options.signal),
         })
         client.setCredentials({ access_token: tokens.accessToken ?? null })
         principal = await (options.identity?.(client) ?? googleSource(client).identity())

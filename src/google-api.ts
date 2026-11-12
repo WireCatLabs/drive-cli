@@ -66,13 +66,15 @@ export const googleApi = (auth: OAuth2Client): GoogleApi => {
       } catch (error) {
         const value = error as { status?: number; response?: { status?: number } }
         const status = value?.status ?? value?.response?.status
+        const known = googleError(error)
+        if (known.details.sent === false) throw known
         if (apiMethod(name).mutates && (status === undefined || status >= 500))
           throw new CliError(
             "outcome_unknown",
             "Google write has no certain outcome; check Google before repeating it",
             { retryable: false },
           )
-        throw googleError(error)
+        throw known
       }
     },
   }

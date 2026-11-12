@@ -39,7 +39,7 @@ which one a profile without its own setting would use, as `oauth_client.source`:
 
 | Data | Location and protection |
 | --- | --- |
-| Google sign-in tokens | Operating-system keyring; private-file storage only when explicitly selected |
+| Google sign-in tokens | Operating-system keyring; `credentials.json` (mode 600) in the configuration directory when the keyring fails or `--credential-storage file` was chosen |
 | Profiles and selected roots | `config.json` in the configuration directory |
 | Source text, chunks, vectors and local context | The shared WireCat database, selected by `MESSAGING_STORE` |
 | Source snapshots and folder ancestry | Profile documents and sync state in the data directory |

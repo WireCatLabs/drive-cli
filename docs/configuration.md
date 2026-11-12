@@ -19,7 +19,9 @@ changes one command invocation. These are different ways to control the tool.
 
 These are the operating-system defaults; the environment overrides below can move them. The
 configuration contains selected folder IDs, account identity and settings, not OAuth tokens.
-Tokens use the system keyring unless file credential storage was explicitly selected at sign-in.
+Tokens use the system keyring. Where the keyring fails (locked, not running, no D-Bus), drive saves them in
+`credentials.json` (mode 600) in the configuration directory without asking, and warns once;
+`--credential-storage file` at sign-in chooses that file outright.
 The local database defaults to `~/.local/share/WireCat/wirecat.db` on Linux; profile snapshots and checkpoints
 are under `profiles/PROFILE_NAME/`. Read [local storage](usage.md#disk-use-index-without-an-export-directory)
 before moving or deleting them.

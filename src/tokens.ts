@@ -1,4 +1,5 @@
 import { CliError, Credentials, isCliError, isMovedRun, type KeyringStore, systemKeyring } from "@wirecat/cli-base"
+import { type FetchLike, hostFetch } from "@wirecat/cli-base/http"
 import { providerRequest } from "@wirecat/cli-core/cli"
 import {
   credentialStorage,
@@ -12,6 +13,7 @@ import { OAuth2Client } from "google-auth-library"
 import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
+import { DESKTOP } from "./identity.js"
 import { READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
 
 export { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
@@ -29,6 +31,21 @@ const Session = v.object({
   }),
 })
 export type Session = v.InferOutput<typeof Session>
+// Made per call: hostFetch takes the global fetch when it is made, and a test that stubs fetch stubs it later.
+const viaDeclaredHosts =
+  (timeoutMs?: number): FetchLike =>
+  (input, init) =>
+    hostFetch({ hosts: DESKTOP.hosts, ...(timeoutMs ? { timeoutMs } : {}) })(input, init)
+export const googleFetch = viaDeclaredHosts()
+// gaxios bounds each request with its own `timeout` and a streamed download with an idle timer; hostFetch's whole-
+// exchange deadline must not cut a long download short.
+const sdkFetch = viaDeclaredHosts(24 * 60 * 60_000)
+/** The Google SDK client's transport: drive's request bound, and only the declared hosts. */
+export const transporterOptions = (signal?: AbortSignal) => ({
+  timeout: 30000,
+  fetchImplementation: sdkFetch,
+  ...(signal ? { signal } : {}),
+})
 const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore) => ({
   configDir: paths(env).config,
   service: "drive-cli",
@@ -88,7 +105,7 @@ export const sessionKeeper = (options: {
       codec: driveSessionCodec,
     }),
     lockDir: paths(options.env).config,
-    fetch: options.fetch ?? globalThis.fetch,
+    fetch: options.fetch ?? googleFetch,
     signInCommand: `drive ${options.name} session start`,
     // Above the client's own 5-minute early refresh, so a token it asks to replace is replaced.
     freshForMs: 6 * 60_000,
@@ -141,7 +158,7 @@ export const authorizedClient = (
   const client = new OAuth2Client({
     clientId: session.clientId,
     clientSecret: session.clientSecret,
-    transporterOptions: { timeout: 30000, ...(signal ? { signal } : {}) },
+    transporterOptions: transporterOptions(signal),
   })
   // Without the refresh token the client cannot refresh on its own: every refresh goes through the keeper's
   // lock, so two drive processes never spend the same refresh token.

@@ -48,6 +48,24 @@ describe("shared credential persistence", () => {
       vi.unstubAllGlobals()
     }
   })
+
+  it("sends the signed-in client's requests only to the hosts drive declares", async () => {
+    const f = fixture()
+    const keyring = memoryKeyring()
+    saveSession(f.env, "default", session, "keyring", keyring)
+    const fetch = tokenResponse({ ok: true })
+    vi.stubGlobal("fetch", fetch)
+    try {
+      const client = authorizedClient(f.env, "default", keyring)
+      const refused = await client.request({ url: "https://elsewhere.invalid/files", retry: false }).catch((e) => e)
+      expect(googleError(refused).details).toMatchObject({ reason: "network.host-undeclared", sent: false })
+      expect(fetch).not.toHaveBeenCalled()
+      await client.request({ url: "https://www.googleapis.com/drive/v3/about", retry: false })
+      expect(String((fetch.mock.calls[0] as unknown as [URL])[0])).toBe("https://www.googleapis.com/drive/v3/about")
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
   it("spends the refresh token once when two clients refresh together", async () => {
     const f = fixture()
     const keyring = memoryKeyring()

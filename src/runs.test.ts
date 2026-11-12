@@ -65,6 +65,14 @@ describe("run records", () => {
     expect(kept().slice(0, kept().length - before)).toEqual(["documents list failed"])
   })
 
+  it("answers with the id of the run it keeps", async () => {
+    const { env } = fixture()
+    const answer = JSON.parse((await drive(env, ["default", "documents", "list", "--json"])).stdout)
+    const [kept] = listRuns(runsDirFor(DRIVE_APP, env))
+    expect(answer.meta.run_id).toBe(kept?.runId)
+    expect(answer.meta.run_id).toMatch(/^\d{8}T\d{6}Z-/)
+  })
+
   it("keeps nothing with --no-record, even a failure", async () => {
     const { env } = fixture()
     await drive(env, ["missing", "documents", "list", "--json", "--no-record"])

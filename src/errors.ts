@@ -3,6 +3,9 @@ import { CliError, isCliError } from "@wirecat/cli-base"
 // Google errors can contain bearer headers and document content in their request/response objects.
 export const googleError = (error: unknown): CliError => {
   if (isCliError(error)) return error
+  // gaxios wraps what its fetch threw: hostFetch's refusal of an undeclared host, a cancel or a lost connection.
+  const cause = (error as { cause?: unknown } | null)?.cause
+  if (isCliError(cause) && (error as { code?: unknown }).code !== "TimeoutError") return cause
   const value = error as {
     name?: string
     status?: number

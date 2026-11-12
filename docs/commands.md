@@ -4587,7 +4587,7 @@ drive config migrate
 
 ## `drive complete`
 
-print a shell completion script, or complete words
+shell completion: `drive complete zsh` prints the script to source
 
 ```sh
 drive complete [words]
@@ -4595,9 +4595,9 @@ drive complete [words]
 
 | Argument | | What it is |
 |---|---|---|
-| `words` | optional | a shell name, or after -- the words typed so far. |
+| `words` | optional | zsh for the shell script, or command words to complete. |
 
-**Returns:** print a shell completion script, or complete words
+**Returns:** shell completion: `drive complete zsh` prints the script to source
 
 **Example:** `drive complete zsh`
 

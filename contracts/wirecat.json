@@ -1,0 +1,2870 @@
+{
+  "wcat_manifest": 2,
+  "name": "drive",
+  "description": "Google Drive",
+  "docs_url": "https://github.com/WireCatLabs/drive-cli#readme",
+  "package": "@wirecat/drive-cli",
+  "bin": "wcat-drive",
+  "commands": [
+    {
+      "path": [
+        "doctor"
+      ],
+      "summary": "the state this installation is in, without connecting unless --online",
+      "effects": {
+        "remote": "read",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "doctor",
+        "reports",
+        "show"
+      ],
+      "summary": "what a report holds and never holds, and where to send it; writes nothing",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      }
+    },
+    {
+      "path": [
+        "doctor",
+        "reports",
+        "create"
+      ],
+      "summary": "the report file written: its path, the run it is about, and where to send it",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "skill",
+        "show"
+      ],
+      "summary": "print the tool's instructions for AI agents",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "skill",
+        "install"
+      ],
+      "summary": "install the tool's instructions for AI agents",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "skill",
+        "status"
+      ],
+      "summary": "whether the installed instructions for AI agents match this version",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "serve"
+      ],
+      "summary": "serve this profile's commands to an AI agent",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "revoke"
+      ],
+      "summary": "forget every login given to a browser app",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "server",
+        "start"
+      ],
+      "summary": "start the HTTP MCP server in the background",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "server",
+        "stop"
+      ],
+      "summary": "stop the background HTTP MCP server",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "server",
+        "status"
+      ],
+      "summary": "whether the HTTP MCP server runs, its login code and the apps logged in",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "config"
+      ],
+      "summary": "print the local MCP configuration of this profile, or of those --profiles names",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "add"
+      ],
+      "summary": "add this profile's local MCP server to Codex or Claude Code",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "mcp",
+        "check"
+      ],
+      "summary": "check this profile's local MCP handshake and tool list",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "session",
+        "start"
+      ],
+      "summary": "sign in to Google in the browser; read-only unless you pass --grant write",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "session",
+        "list"
+      ],
+      "summary": "list the configured profiles; credentials are never printed",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "entity": "drive_session"
+    },
+    {
+      "path": [
+        "session",
+        "end"
+      ],
+      "summary": "sign this profile out; imported documents stay",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "account",
+        "remove"
+      ],
+      "summary": "sign this profile out and forget it, keeping or deleting its data",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "account.remove",
+      "entity": "account_removal"
+    },
+    {
+      "path": [
+        "folders",
+        "add"
+      ],
+      "summary": "import a folder and everything under it on the next sync",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "folders.add"
+    },
+    {
+      "path": [
+        "folders",
+        "list"
+      ],
+      "summary": "list the folder ids sync imports",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "folders.list",
+      "entity": "drive_selected_folder"
+    },
+    {
+      "path": [
+        "folders",
+        "browse"
+      ],
+      "summary": "list Google Drive folders one level at a time, to choose one for folders add",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "folders.browse",
+      "entity": "drive_remote_folder"
+    },
+    {
+      "path": [
+        "folders",
+        "remove"
+      ],
+      "summary": "stop importing a folder; the next sync drops its documents",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "folders.remove"
+    },
+    {
+      "path": [
+        "sync"
+      ],
+      "summary": "import what changed in the chosen folders, and finish an unfinished sync",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "sync"
+    },
+    {
+      "path": [
+        "status"
+      ],
+      "summary": "show the last sync, imported documents and pending work",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "status"
+    },
+    {
+      "path": [
+        "store",
+        "info"
+      ],
+      "summary": "the shared store's format and size, and whether drive can read it",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "store.info",
+      "entity": "store_info"
+    },
+    {
+      "path": [
+        "store",
+        "check"
+      ],
+      "summary": "preview copying document context without changing either database",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "store.check"
+    },
+    {
+      "path": [
+        "store",
+        "import"
+      ],
+      "summary": "copy reviewed document context and bind this profile to the selected store",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "store.import"
+    },
+    {
+      "path": [
+        "documents",
+        "list"
+      ],
+      "summary": "list imported documents with their Google URLs",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "documents.list",
+      "entity": "drive_document"
+    },
+    {
+      "path": [
+        "documents",
+        "show"
+      ],
+      "summary": "show an imported document's text, tabs and metadata",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "documents.show"
+    },
+    {
+      "path": [
+        "documents",
+        "export"
+      ],
+      "summary": "write an imported document to a new Markdown file",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "documents.export"
+    },
+    {
+      "path": [
+        "documents",
+        "add"
+      ],
+      "summary": "keep a Drive document's text in memory, read by the first profile that opens it",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "documents.add"
+    },
+    {
+      "path": [
+        "documents",
+        "context"
+      ],
+      "summary": "show a document with its tags, relationships, notes, memories and editors",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "documents.context"
+    },
+    {
+      "path": [
+        "documents",
+        "get"
+      ],
+      "summary": "read a document live from Google Docs, as JSON with every tab",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "documents.get"
+    },
+    {
+      "path": [
+        "documents",
+        "check"
+      ],
+      "summary": "ask Google whether an imported document changed since its local copy was made",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "documents.check"
+    },
+    {
+      "path": [
+        "documents",
+        "create"
+      ],
+      "summary": "create an empty Google Doc",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "documents.create"
+    },
+    {
+      "path": [
+        "documents",
+        "update"
+      ],
+      "summary": "change a Google Doc with a Docs batchUpdate request",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "documents.update"
+    },
+    {
+      "path": [
+        "documents",
+        "history"
+      ],
+      "summary": "list the revisions Google kept, or who did what with --activity",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "documents.history"
+    },
+    {
+      "path": [
+        "search"
+      ],
+      "summary": "search imported documents by words, and by meaning when indexed",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "search"
+    },
+    {
+      "path": [
+        "catalog",
+        "import"
+      ],
+      "summary": "put cached file and folder metadata into the shared database",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "catalog.import"
+    },
+    {
+      "path": [
+        "catalog",
+        "show"
+      ],
+      "summary": "show stored metadata and the stable file or folder reference",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "catalog.show",
+      "entity": "document"
+    },
+    {
+      "path": [
+        "catalog",
+        "list"
+      ],
+      "summary": "list cached files and folders using metadata queries",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "catalog.list",
+      "entity": "document"
+    },
+    {
+      "path": [
+        "catalog",
+        "search"
+      ],
+      "summary": "search cached names, descriptions, types and observed people",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "catalog.search",
+      "entity": "document"
+    },
+    {
+      "path": [
+        "catalog",
+        "tree"
+      ],
+      "summary": "show the cached hierarchy below a folder or all selected roots",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "catalog.tree"
+    },
+    {
+      "path": [
+        "catalog",
+        "tags",
+        "list"
+      ],
+      "summary": "list local tags on a cached file or folder",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "catalog.tags.list",
+      "entity": "drive_document_tag"
+    },
+    {
+      "path": [
+        "catalog",
+        "tags",
+        "add"
+      ],
+      "summary": "add local tags on a cached file or folder",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "catalog.tags.add"
+    },
+    {
+      "path": [
+        "catalog",
+        "tags",
+        "remove"
+      ],
+      "summary": "remove local tags on a cached file or folder",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "catalog.tags.remove"
+    },
+    {
+      "path": [
+        "tags",
+        "list"
+      ],
+      "summary": "list a document's tags",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "tags.list",
+      "entity": "drive_document_tag"
+    },
+    {
+      "path": [
+        "tags",
+        "add"
+      ],
+      "summary": "tag a document",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "tags.add"
+    },
+    {
+      "path": [
+        "tags",
+        "remove"
+      ],
+      "summary": "untag a document",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "tags.remove"
+    },
+    {
+      "path": [
+        "relationships",
+        "list"
+      ],
+      "summary": "list a document's relationships",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "relationships.list",
+      "entity": "drive_document_relationship"
+    },
+    {
+      "path": [
+        "relationships",
+        "add"
+      ],
+      "summary": "connect a document to another reference",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "relationships.add"
+    },
+    {
+      "path": [
+        "relationships",
+        "remove"
+      ],
+      "summary": "remove one of a document's relationships",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "relationships.remove"
+    },
+    {
+      "path": [
+        "notes",
+        "add"
+      ],
+      "summary": "write a note about a document",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "notes.add",
+      "entity": "note"
+    },
+    {
+      "path": [
+        "notes",
+        "list"
+      ],
+      "summary": "list a document's notes",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "notes.list",
+      "entity": "note"
+    },
+    {
+      "path": [
+        "notes",
+        "show"
+      ],
+      "summary": "show one note",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "notes.show",
+      "entity": "note"
+    },
+    {
+      "path": [
+        "notes",
+        "edit"
+      ],
+      "summary": "replace a note's text",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "notes.edit",
+      "entity": "note"
+    },
+    {
+      "path": [
+        "notes",
+        "remove"
+      ],
+      "summary": "delete one note",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "notes.remove"
+    },
+    {
+      "path": [
+        "memories",
+        "add"
+      ],
+      "summary": "record a memory about a document",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "memories.add"
+    },
+    {
+      "path": [
+        "memories",
+        "list"
+      ],
+      "summary": "list a document's memories",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "memories.list",
+      "entity": "memory"
+    },
+    {
+      "path": [
+        "memories",
+        "show"
+      ],
+      "summary": "show one memory",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "memories.show"
+    },
+    {
+      "path": [
+        "memories",
+        "confirm"
+      ],
+      "summary": "confirm a proposed memory as true",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "memories.confirm"
+    },
+    {
+      "path": [
+        "memories",
+        "stale"
+      ],
+      "summary": "mark a memory as out of date",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "memories.stale"
+    },
+    {
+      "path": [
+        "memories",
+        "search"
+      ],
+      "summary": "search a document's memories by words",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "memories.search",
+      "entity": "memory"
+    },
+    {
+      "path": [
+        "memories",
+        "extract"
+      ],
+      "summary": "send a document's text to the model and show the memories it proposes",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "memories.extract"
+    },
+    {
+      "path": [
+        "facts",
+        "add"
+      ],
+      "summary": "record a fact a document shows",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "facts.add"
+    },
+    {
+      "path": [
+        "facts",
+        "list"
+      ],
+      "summary": "list a document's facts",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "facts.list",
+      "entity": "fact"
+    },
+    {
+      "path": [
+        "facts",
+        "show"
+      ],
+      "summary": "show one fact",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "facts.show"
+    },
+    {
+      "path": [
+        "facts",
+        "confirm"
+      ],
+      "summary": "confirm a proposed fact; a decision it supersedes stops holding",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "facts.confirm"
+    },
+    {
+      "path": [
+        "facts",
+        "reverse"
+      ],
+      "summary": "an accepted decision no longer holds, and nothing replaced it",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "facts.reverse"
+    },
+    {
+      "path": [
+        "identities",
+        "list"
+      ],
+      "summary": "list the owners and last editor Google shows for a document",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "identities.list",
+      "entity": "drive_document_identity"
+    },
+    {
+      "path": [
+        "identities",
+        "link"
+      ],
+      "summary": "record that a Google account belongs to a known person",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "identities.link"
+    },
+    {
+      "path": [
+        "api",
+        "list"
+      ],
+      "summary": "list the Google API methods drive can call",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      },
+      "entity": "api_method"
+    },
+    {
+      "path": [
+        "api",
+        "show"
+      ],
+      "summary": "show one method's request schema and contract, without calling Google",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      }
+    },
+    {
+      "path": [
+        "api",
+        "call"
+      ],
+      "summary": "call one Google API method by name with JSON parameters",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      }
+    },
+    {
+      "path": [
+        "api",
+        "docs-documents-batch-update"
+      ],
+      "summary": "Applies one or more updates to the document. Each request is validated…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.docs.documents.batchUpdate"
+    },
+    {
+      "path": [
+        "api",
+        "docs-documents-create"
+      ],
+      "summary": "Creates a blank document using the title given in the request. Other fields…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.docs.documents.create"
+    },
+    {
+      "path": [
+        "api",
+        "docs-documents-get"
+      ],
+      "summary": "Gets the latest version of the specified document. — read (GET…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.docs.documents.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-about-get"
+      ],
+      "summary": "Gets information about the user, the user's Drive, and system capabilities.…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.about.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-accessproposals-get"
+      ],
+      "summary": "Retrieves an access proposal by ID. For more information, see [Manage…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.accessproposals.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-accessproposals-list"
+      ],
+      "summary": "List the access proposals on a file. For more information, see [Manage…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.accessproposals.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-accessproposals-resolve"
+      ],
+      "summary": "Approves or denies an access proposal. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.accessproposals.resolve"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-approve"
+      ],
+      "summary": "Approves an approval. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.approve"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-cancel"
+      ],
+      "summary": "Cancels an approval. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.cancel"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-comment"
+      ],
+      "summary": "Comments on an approval. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.comment"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-decline"
+      ],
+      "summary": "Declines an approval. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.decline"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-get"
+      ],
+      "summary": "Gets an approval by ID. For more information, see [Manage…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-list"
+      ],
+      "summary": "Lists the approvals on a file. For more information, see [Manage…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-reassign"
+      ],
+      "summary": "Reassigns the reviewers on an approval. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.reassign"
+    },
+    {
+      "path": [
+        "api",
+        "drive-approvals-start"
+      ],
+      "summary": "Starts an approval on a file. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.approvals.start"
+    },
+    {
+      "path": [
+        "api",
+        "drive-apps-get"
+      ],
+      "summary": "Gets a specific app. For more information, see [Return user…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.apps.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-apps-list"
+      ],
+      "summary": "Lists a user's installed apps. For more information, see [Return user…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.apps.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-changes-get-start-page-token"
+      ],
+      "summary": "Gets the starting pageToken for listing future changes. For more…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.changes.getStartPageToken"
+    },
+    {
+      "path": [
+        "api",
+        "drive-changes-list"
+      ],
+      "summary": "Lists the changes for a user or shared drive. For more information, see…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.changes.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-changes-watch"
+      ],
+      "summary": "Subscribes to changes for a user. For more information, see [Notifications…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.changes.watch"
+    },
+    {
+      "path": [
+        "api",
+        "drive-channels-stop"
+      ],
+      "summary": "Stops watching resources through this channel. For more information, see…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.channels.stop"
+    },
+    {
+      "path": [
+        "api",
+        "drive-comments-create"
+      ],
+      "summary": "Creates a comment on a file. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.comments.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-comments-delete"
+      ],
+      "summary": "Deletes a comment. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.comments.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-comments-get"
+      ],
+      "summary": "Gets a comment by ID. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.comments.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-comments-list"
+      ],
+      "summary": "Lists a file's comments. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.comments.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-comments-update"
+      ],
+      "summary": "Updates a comment with patch semantics. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.comments.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-create"
+      ],
+      "summary": "Creates a shared drive. For more information, see [Manage shared…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-delete"
+      ],
+      "summary": "Permanently deletes a shared drive for which the user is an `organizer`. The…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-get"
+      ],
+      "summary": "Gets a shared drive's metadata by ID. For more information, see [Manage…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-hide"
+      ],
+      "summary": "Hides a shared drive from the default view. For more information, see…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.hide"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-list"
+      ],
+      "summary": "Lists the user's shared drives. This method accepts the `q` parameter,…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-unhide"
+      ],
+      "summary": "Restores a shared drive to the default view. For more information, see…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.unhide"
+    },
+    {
+      "path": [
+        "api",
+        "drive-drives-update"
+      ],
+      "summary": "Updates the metadata for a shared drive. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.drives.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-copy"
+      ],
+      "summary": "Creates a copy of a file and applies any requested updates with patch…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.copy"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-create"
+      ],
+      "summary": "Creates a file. For more information, see [Create and manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-delete"
+      ],
+      "summary": "Permanently deletes a file owned by the user without moving it to the trash.…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-download"
+      ],
+      "summary": "Downloads the content of a file. For more information, see [Download and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.download"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-empty-trash"
+      ],
+      "summary": "Permanently deletes all of the user's trashed files. For more information,…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.emptyTrash"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-export"
+      ],
+      "summary": "Exports a Google Workspace document to the requested MIME type and returns…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.export"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-generate-cse-token"
+      ],
+      "summary": "Generates a CSE token which can be used to create or update CSE files. —…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.generateCseToken"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-generate-ids"
+      ],
+      "summary": "Generates a set of file IDs which can be provided in create or copy…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.generateIds"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-get"
+      ],
+      "summary": "Gets a file's metadata or content by ID. For more information, see [Search…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-list"
+      ],
+      "summary": "Lists the user's files. For more information, see [Search for files and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-list-labels"
+      ],
+      "summary": "Lists the labels on a file. For more information, see [List labels on a…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.files.listLabels"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-modify-labels"
+      ],
+      "summary": "Modifies the set of labels applied to a file. For more information, see [Set…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.modifyLabels"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-update"
+      ],
+      "summary": "Updates a file's metadata, content, or both. When calling this method, only…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-files-watch"
+      ],
+      "summary": "Subscribes to changes to a file. For more information, see [Notifications…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.files.watch"
+    },
+    {
+      "path": [
+        "api",
+        "drive-operations-get"
+      ],
+      "summary": "Gets the latest state of a long-running operation. Clients can use this…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.operations.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-permissions-create"
+      ],
+      "summary": "Creates a permission for a file or shared drive. For more information, see…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.permissions.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-permissions-delete"
+      ],
+      "summary": "Deletes a permission. For more information, see [Share files, folders, and…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.permissions.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-permissions-get"
+      ],
+      "summary": "Gets a permission by ID. For more information, see [Share files, folders,…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.permissions.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-permissions-list"
+      ],
+      "summary": "Lists a file's or shared drive's permissions. For more information, see…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.permissions.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-permissions-update"
+      ],
+      "summary": "Updates a permission with patch semantics. For more information, see [Share…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.permissions.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-replies-create"
+      ],
+      "summary": "Creates a reply to a comment. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.replies.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-replies-delete"
+      ],
+      "summary": "Deletes a reply. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.replies.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-replies-get"
+      ],
+      "summary": "Gets a reply by ID. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.replies.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-replies-list"
+      ],
+      "summary": "Lists a comment's replies. For more information, see [Manage comments and…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.replies.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-replies-update"
+      ],
+      "summary": "Updates a reply with patch semantics. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.replies.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-revisions-delete"
+      ],
+      "summary": "Permanently deletes a file version. You can only delete revisions for files…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.revisions.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-revisions-get"
+      ],
+      "summary": "Gets a revision's metadata or content by ID. For more information, see…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.revisions.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-revisions-list"
+      ],
+      "summary": "Lists a file's revisions. For more information, see [Manage file…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.revisions.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-revisions-update"
+      ],
+      "summary": "Updates a revision with patch semantics. For more information, see [Manage…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.revisions.update"
+    },
+    {
+      "path": [
+        "api",
+        "drive-teamdrives-create"
+      ],
+      "summary": "Deprecated: Use `drives.create` instead. — write (POST teamdrives)",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.teamdrives.create"
+    },
+    {
+      "path": [
+        "api",
+        "drive-teamdrives-delete"
+      ],
+      "summary": "Deprecated: Use `drives.delete` instead. — destructive (DELETE…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.teamdrives.delete"
+    },
+    {
+      "path": [
+        "api",
+        "drive-teamdrives-get"
+      ],
+      "summary": "Deprecated: Use `drives.get` instead. — read (GET teamdrives/{teamDriveId})",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.teamdrives.get"
+    },
+    {
+      "path": [
+        "api",
+        "drive-teamdrives-list"
+      ],
+      "summary": "Deprecated: Use `drives.list` instead. — read (GET teamdrives)",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.drive.teamdrives.list"
+    },
+    {
+      "path": [
+        "api",
+        "drive-teamdrives-update"
+      ],
+      "summary": "Deprecated: Use `drives.update` instead. — write (PATCH…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.drive.teamdrives.update"
+    },
+    {
+      "path": [
+        "api",
+        "driveactivity-activity-query"
+      ],
+      "summary": "Query past activity in Google Drive. — read (POST v2/activity:query)",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.driveactivity.activity.query"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-batch-update"
+      ],
+      "summary": "Applies one or more updates to the spreadsheet. Each request is validated…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.batchUpdate"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-create"
+      ],
+      "summary": "Creates a spreadsheet, returning the newly created spreadsheet. — write…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.create"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-developer-metadata-get"
+      ],
+      "summary": "Returns the developer metadata with the specified ID. The caller must…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.developerMetadata.get"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-developer-metadata-search"
+      ],
+      "summary": "Returns all developer metadata matching the specified DataFilter. For more…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.developerMetadata.search"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-get"
+      ],
+      "summary": "Returns the spreadsheet at the given ID. The caller must specify the…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.get"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-get-by-data-filter"
+      ],
+      "summary": "Returns the spreadsheet at the given ID. The caller must specify the…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.getByDataFilter"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-sheets-copy-to"
+      ],
+      "summary": "Copies a single sheet from a spreadsheet to another spreadsheet. Returns the…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.sheets.copyTo"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-append"
+      ],
+      "summary": "Appends values to a spreadsheet. The input range is used to search for…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.append"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-clear"
+      ],
+      "summary": "Clears one or more ranges of values from a spreadsheet. The caller must…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchClear"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-clear-by-data-filter"
+      ],
+      "summary": "Clears one or more ranges of values from a spreadsheet. For more…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchClearByDataFilter"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-get"
+      ],
+      "summary": "Returns one or more ranges of values from a spreadsheet. The caller must…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchGet"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-get-by-data-filter"
+      ],
+      "summary": "Returns one or more ranges of values that match the specified data filters.…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchGetByDataFilter"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-update"
+      ],
+      "summary": "Sets values in one or more ranges of a spreadsheet. The caller must specify…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchUpdate"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-batch-update-by-data-filter"
+      ],
+      "summary": "Sets values in one or more ranges of a spreadsheet. For more information,…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.batchUpdateByDataFilter"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-clear"
+      ],
+      "summary": "Clears values from a spreadsheet. The caller must specify the spreadsheet ID…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.clear"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-get"
+      ],
+      "summary": "Returns a range of values from a spreadsheet. The caller must specify the…",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.get"
+    },
+    {
+      "path": [
+        "api",
+        "sheets-spreadsheets-values-update"
+      ],
+      "summary": "Sets values in a range of a spreadsheet. The caller must specify the…",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "api.sheets.spreadsheets.values.update"
+    },
+    {
+      "path": [
+        "sheets",
+        "create"
+      ],
+      "summary": "create an empty tab inside an existing spreadsheet",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.create"
+    },
+    {
+      "path": [
+        "sheets",
+        "rename"
+      ],
+      "summary": "rename one tab while preserving its ID and other properties",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.rename"
+    },
+    {
+      "path": [
+        "sheets",
+        "insert"
+      ],
+      "summary": "insert bounded rows or columns before a zero-based index",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.insert"
+    },
+    {
+      "path": [
+        "sheets",
+        "format"
+      ],
+      "summary": "change only supplied formatting fields in at most 10000 cells",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.format"
+    },
+    {
+      "path": [
+        "sheets",
+        "info"
+      ],
+      "summary": "list spreadsheet properties and tabs without downloading grid data",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "sheets.info"
+    },
+    {
+      "path": [
+        "sheets",
+        "show"
+      ],
+      "summary": "read a live A1 range; choose formatted values, raw values or formulas",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "sheets.show"
+    },
+    {
+      "path": [
+        "sheets",
+        "update"
+      ],
+      "summary": "set cells within a finite A1 rectangle; literal values by default",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.update"
+    },
+    {
+      "path": [
+        "sheets",
+        "add"
+      ],
+      "summary": "append rows after Google's detected table within a finite A1 range",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.add"
+    },
+    {
+      "path": [
+        "sheets",
+        "clear"
+      ],
+      "summary": "clear cell values in a finite A1 rectangle; formatting remains",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "sheets.clear"
+    },
+    {
+      "path": [
+        "files",
+        "download"
+      ],
+      "summary": "download a stored file to a local file",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "files.download"
+    },
+    {
+      "path": [
+        "files",
+        "export"
+      ],
+      "summary": "export a Google document to a local file",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "files.export"
+    },
+    {
+      "path": [
+        "files",
+        "list"
+      ],
+      "summary": "list files in Google Drive, one page at a time",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "files.list",
+      "entity": "drive_remote_file"
+    },
+    {
+      "path": [
+        "files",
+        "get"
+      ],
+      "summary": "show one file's Google Drive metadata",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "files.get"
+    },
+    {
+      "path": [
+        "files",
+        "copy"
+      ],
+      "summary": "copy a file in Google Drive",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.copy"
+    },
+    {
+      "path": [
+        "files",
+        "move"
+      ],
+      "summary": "move a file to another Google Drive folder",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.move"
+    },
+    {
+      "path": [
+        "files",
+        "update"
+      ],
+      "summary": "change a file's Google Drive metadata",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.update"
+    },
+    {
+      "path": [
+        "files",
+        "trash"
+      ],
+      "summary": "move a file to the Google Drive trash",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.trash"
+    },
+    {
+      "path": [
+        "files",
+        "restore"
+      ],
+      "summary": "take a file out of the trash",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.restore"
+    },
+    {
+      "path": [
+        "files",
+        "mkdir"
+      ],
+      "summary": "create an empty folder in Google Drive",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.mkdir"
+    },
+    {
+      "path": [
+        "files",
+        "upload"
+      ],
+      "summary": "upload a local file to Google Drive; an interrupted upload resumes",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "files.upload"
+    },
+    {
+      "path": [
+        "comments",
+        "reply"
+      ],
+      "summary": "reply to a Google Drive comment",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "comments.reply"
+    },
+    {
+      "path": [
+        "comments",
+        "resolve"
+      ],
+      "summary": "resolve a Google Drive comment",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "comments.resolve"
+    },
+    {
+      "path": [
+        "comments",
+        "reopen"
+      ],
+      "summary": "reopen a Google Drive comment",
+      "effects": {
+        "remote": "write",
+        "local": "none"
+      },
+      "permission": "comments.reopen"
+    },
+    {
+      "path": [
+        "comments",
+        "list"
+      ],
+      "summary": "list a file's comments",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "comments.list",
+      "entity": "drive_remote_comment"
+    },
+    {
+      "path": [
+        "comments",
+        "get"
+      ],
+      "summary": "show one comment of a file",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "comments.get"
+    },
+    {
+      "path": [
+        "permissions",
+        "list"
+      ],
+      "summary": "list a file's permissions",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "permissions.list",
+      "entity": "drive_remote_permission"
+    },
+    {
+      "path": [
+        "permissions",
+        "get"
+      ],
+      "summary": "show one permission of a file",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "permissions.get"
+    },
+    {
+      "path": [
+        "revisions",
+        "list"
+      ],
+      "summary": "list a file's revisions",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "revisions.list",
+      "entity": "drive_remote_revision"
+    },
+    {
+      "path": [
+        "revisions",
+        "get"
+      ],
+      "summary": "show one revision of a file",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "revisions.get"
+    },
+    {
+      "path": [
+        "shared-drives"
+      ],
+      "summary": "list the shared drives this account can open",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "shared-drives"
+    },
+    {
+      "path": [
+        "mirrors",
+        "add"
+      ],
+      "summary": "mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "mirrors.add"
+    },
+    {
+      "path": [
+        "mirrors",
+        "list"
+      ],
+      "summary": "list this profile's mirrors",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "mirrors.list",
+      "entity": "drive_mirror"
+    },
+    {
+      "path": [
+        "mirrors",
+        "remove"
+      ],
+      "summary": "stop mirroring a folder; nothing in Google Drive is changed or deleted",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "mirrors.remove"
+    },
+    {
+      "path": [
+        "mirrors",
+        "status"
+      ],
+      "summary": "show which local files the next sync would create or send; Google is not asked",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "mirrors.status"
+    },
+    {
+      "path": [
+        "mirrors",
+        "sync"
+      ],
+      "summary": "sync both ways with Docs and Sheets; a part changed on both sides is reported",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "mirrors.sync"
+    },
+    {
+      "path": [
+        "mirrors",
+        "watch"
+      ],
+      "summary": "keep syncing both ways until Ctrl-C or --timeout",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "mirrors.watch"
+    },
+    {
+      "path": [
+        "config",
+        "show"
+      ],
+      "summary": "show the defaults and every profile's settings",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "config",
+        "set"
+      ],
+      "summary": "set one setting of this profile, or of the defaults",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "config",
+        "unset"
+      ],
+      "summary": "remove one setting from this profile, the defaults or the top of the file",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "config",
+        "migrate"
+      ],
+      "summary": "write each setting the file lacks at its default, keeping yours",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "complete"
+      ],
+      "summary": "shell completion: `drive complete zsh` prints the script to source",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "models",
+        "set"
+      ],
+      "summary": "set the provider and model for one use",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      },
+      "permission": "models.set"
+    },
+    {
+      "path": [
+        "models",
+        "list"
+      ],
+      "summary": "speech and embedding models, their download status and the default of each kind",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "models.list",
+      "entity": "model"
+    },
+    {
+      "path": [
+        "models",
+        "download"
+      ],
+      "summary": "download and verify one speech or embedding model",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "models.download",
+      "entity": "model"
+    },
+    {
+      "path": [
+        "models",
+        "add"
+      ],
+      "summary": "add an ONNX embedding model from Hugging Face, pinned and checked by sha256",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "models.add",
+      "entity": "model"
+    },
+    {
+      "path": [
+        "images",
+        "models",
+        "download"
+      ],
+      "summary": "download a picture model once into the folder every WireCat CLI shares",
+      "effects": {
+        "remote": "read",
+        "local": "write"
+      },
+      "permission": "images.models.download",
+      "entity": "model"
+    },
+    {
+      "path": [
+        "commands"
+      ],
+      "summary": "every command by section; --json prints its contract, one path per call",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      }
+    },
+    {
+      "path": [
+        "commands",
+        "info"
+      ],
+      "summary": "one command contract, or all schemas, error reasons and explicit overrides",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      }
+    },
+    {
+      "path": [
+        "upgrade"
+      ],
+      "summary": "upgrade drive with the package manager that installed it; --check only looks",
+      "effects": {
+        "remote": "none",
+        "local": "write"
+      }
+    },
+    {
+      "path": [
+        "runs",
+        "list"
+      ],
+      "summary": "recorded runs, newest first",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "entity": "run"
+    },
+    {
+      "path": [
+        "runs",
+        "show"
+      ],
+      "summary": "one run: what it was, how it ended, and every event it logged",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "entity": "run"
+    },
+    {
+      "path": [
+        "runs",
+        "path"
+      ],
+      "summary": "the directory holding one run",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      },
+      "entity": "run_location"
+    },
+    {
+      "path": [
+        "guide"
+      ],
+      "summary": "scenarios: the commands for a common task, in order, and why each",
+      "effects": {
+        "remote": "none",
+        "local": "none"
+      }
+    }
+  ],
+  "entities": {
+    "drive_session": {
+      "fields": [
+        "profile",
+        "selected_folders",
+        "storage"
+      ]
+    },
+    "drive_selected_folder": {
+      "fields": [
+        "id"
+      ]
+    },
+    "document": {
+      "fields": [
+        "name",
+        "kind",
+        "mime"
+      ]
+    },
+    "drive_document_tag": {
+      "fields": [
+        "tag"
+      ]
+    },
+    "drive_document_relationship": {
+      "fields": [
+        "id",
+        "from",
+        "to",
+        "kind",
+        "role",
+        "confirmed",
+        "origin"
+      ]
+    },
+    "note": {
+      "fields": [
+        "ref",
+        "kind",
+        "provider",
+        "account",
+        "url",
+        "id",
+        "source",
+        "folder_id",
+        "path",
+        "title",
+        "text",
+        "revision",
+        "content_hash",
+        "export_path",
+        "created_at",
+        "updated_at",
+        "deleted_at",
+        "tags",
+        "excerpt",
+        "found_by"
+      ]
+    },
+    "memory": {
+      "fields": [
+        "kind",
+        "status",
+        "scope"
+      ]
+    },
+    "fact": {
+      "fields": [
+        "kind",
+        "status"
+      ]
+    },
+    "drive_document_identity": {
+      "fields": [
+        "google_id",
+        "role"
+      ]
+    },
+    "api_method": {
+      "fields": [
+        "service"
+      ]
+    },
+    "drive_remote_file": {
+      "fields": [
+        "id",
+        "name",
+        "trashed",
+        "modified_time",
+        "created_time",
+        "viewed_by_me_time"
+      ]
+    },
+    "drive_remote_comment": {
+      "fields": [
+        "id"
+      ]
+    },
+    "drive_remote_permission": {
+      "fields": [
+        "id"
+      ]
+    },
+    "drive_remote_revision": {
+      "fields": [
+        "id"
+      ]
+    },
+    "drive_mirror": {
+      "fields": [
+        "id",
+        "path",
+        "folder"
+      ]
+    },
+    "model": {
+      "fields": [
+        "kind",
+        "id",
+        "downloaded"
+      ]
+    },
+    "run": {
+      "fields": [
+        "run_id",
+        "command",
+        "profile",
+        "started_at",
+        "completed_at",
+        "status",
+        "requests",
+        "duration_ms",
+        "cli_version",
+        "runtime",
+        "platform",
+        "arch",
+        "error_code",
+        "provider_error",
+        "kept_because_failed",
+        "operations",
+        "codes",
+        "trace_id",
+        "cli_command",
+        "argv",
+        "unknown_command",
+        "via",
+        "events_dropped",
+        "directory",
+        "event_count",
+        "events_truncated"
+      ]
+    }
+  },
+  "network": {
+    "hosts": [
+      "accounts.google.com",
+      "oauth2.googleapis.com",
+      "www.googleapis.com",
+      "docs.googleapis.com",
+      "sheets.googleapis.com",
+      "driveactivity.googleapis.com",
+      "*.googleusercontent.com"
+    ]
+  },
+  "desktop": {
+    "tagline": "Your Google Drive files and Docs, searchable offline",
+    "profiles": {
+      "args": [
+        "session",
+        "list",
+        "--no-record",
+        "--json"
+      ],
+      "shape": "items"
+    },
+    "doctor": [
+      "{profile}",
+      "doctor",
+      "--record",
+      "--json"
+    ],
+    "runs": {
+      "list": [
+        "runs",
+        "list",
+        "{query}",
+        "--limit",
+        "{limit}",
+        "--page",
+        "{page}",
+        "--no-record",
+        "--json"
+      ],
+      "show": [
+        "runs",
+        "show",
+        "{run}",
+        "--no-record",
+        "--json"
+      ]
+    },
+    "search": null,
+    "setup": [
+      "{profile}",
+      "session",
+      "start"
+    ],
+    "signIn": {
+      "gives": "Lets your agent find and read your Google Drive files. It cannot change them.",
+      "asks": "Your browser opens Google: choose the account and allow read-only access to Drive."
+    },
+    "skill": {
+      "status": [
+        "skill",
+        "status",
+        "--no-record",
+        "--json"
+      ],
+      "install": [
+        "skill",
+        "install",
+        "--for",
+        "{target}",
+        "--json"
+      ],
+      "show": [
+        "skill",
+        "show",
+        "--no-record",
+        "--json"
+      ]
+    },
+    "mcpServer": {
+      "start": [
+        "mcp",
+        "server",
+        "start",
+        "--port",
+        "{port}",
+        "--public-url",
+        "{url}",
+        "--profiles",
+        "all",
+        "--json"
+      ],
+      "stop": [
+        "mcp",
+        "server",
+        "stop",
+        "--profiles",
+        "all",
+        "--json"
+      ],
+      "status": [
+        "mcp",
+        "server",
+        "status",
+        "--profiles",
+        "all",
+        "--no-record",
+        "--json"
+      ],
+      "revoke": [
+        "mcp",
+        "revoke",
+        "--profiles",
+        "all",
+        "--json"
+      ],
+      "config": [
+        "mcp",
+        "config",
+        "--profiles",
+        "all",
+        "--no-record",
+        "--json"
+      ]
+    },
+    "tasks": null,
+    "sync": {
+      "run": [
+        "{profile}",
+        "sync",
+        "--record",
+        "--json"
+      ],
+      "last": [
+        "runs",
+        "list",
+        "command:sync",
+        "status:success",
+        "--limit",
+        "50",
+        "--no-record",
+        "--json"
+      ],
+      "lastShape": "runs",
+      "what": "Drive files and Google Docs",
+      "note": null
+    },
+    "storeInfo": null,
+    "storeTables": null,
+    "storeTableSizes": null,
+    "storeCheck": null,
+    "storeBackup": null,
+    "storeBackupEncrypted": null,
+    "storeResetPreview": null,
+    "storeReset": null,
+    "storage": {
+      "app": "drive-cli",
+      "env": "DRIVE"
+    },
+    "settings": null
+  }
+}

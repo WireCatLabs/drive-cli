@@ -16,9 +16,10 @@ paths. Never run tests against the owner's account or store. No memory productio
 Default storage is the shared WireCat database; MESSAGING_STORE is its only file override.
 Checkpoints bind row references to their store. Never strand legacy annotations when switching stores.
 Pin shared packages exactly and keep reviewed community presets aligned with MAX.
-Credentials use the keyring unless the user explicitly chooses private-file storage. Never log
+Credentials use the keyring; when it fails, cli-base's `Credentials` falls back to a private file and warns
+(WC-SECR-4), and `--credential-storage file` chooses the file. Never log
 SDK error objects, headers, OAuth responses or document bodies. Data belongs in requested output.
-No implicit model download or credential-file fallback.
+No implicit model download.
 
 Browser login uses PKCE and state checks; its listener closes on success, failure, cancellation
 and timeout. Version and unprofiled discovery never load config, keyring or database. With a named
