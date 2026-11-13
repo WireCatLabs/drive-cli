@@ -89,8 +89,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
       throw googleError(error)
     }
   }
-  // The default corpus is My Drive plus every file shared with the account, wherever its owner keeps it.
-  const listed = (q: string) =>
+  // The default `user` corpus: files the account created, opened or had shared with it directly, per Google's docs.
+  const listed = (q: string, what: string) =>
     safe(async () => {
       const files: FileMetadata[] = []
       const seen = new Set<string>()
@@ -108,7 +108,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           { timeout: 30000 },
         )
         if (data.incompleteSearch)
-          throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
+          throw new CliError("provider_error", `Google ${what} was incomplete; sync state was preserved`)
         for (const file of data.files ?? []) files.push(metadataOf(file))
         if (files.length > MAX_ENTRIES) throw tooManyEntries()
         if (!data.nextPageToken) return files
@@ -116,7 +116,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         seen.add(data.nextPageToken)
         pageToken = data.nextPageToken
       }
-      throw new CliError("provider_error", "folder pagination exceeded its bound; sync state was preserved")
+      throw new CliError("provider_error", `${what} pagination exceeded its bound; sync state was preserved`)
     })
   const metadata = (id: string) =>
     safe(async () =>
@@ -132,8 +132,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (!id) throw new CliError("invalid_response", "Google did not identify the signed-in account")
         return id
       }),
-    children: (id) => listed(`'${id}' in parents and trashed = false`),
-    search: (q) => listed(q),
+    children: (id) => listed(`'${id}' in parents and trashed = false`, "folder listing"),
+    search: (q) => listed(q, "transcript search"),
     startToken: () =>
       safe(async () => {
         const token = (await api.changes.getStartPageToken({ supportsAllDrives: true }, { timeout: 30000 })).data

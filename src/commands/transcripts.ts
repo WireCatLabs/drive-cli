@@ -1,3 +1,4 @@
+import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { LOCAL_READ } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
@@ -39,6 +40,8 @@ export const installTranscriptCommands = (program: Command, context: CommandCont
     .addHelpText("after", TRANSCRIPTS_HELP)
     .action(async (words: string[]) => {
       const filter = termsOf(words, TRANSCRIPTS_QUERY, "transcripts list")
+      if (filter.owned_by_me !== undefined && !["true", "false"].includes(filter.owned_by_me))
+        throw new CliError("validation_error", "owned_by_me takes true or false")
       const remote = await source()
       const found = await findTranscripts(remote.search, transcriptsOf(env, selected()).words)
       const rows = found.map((file) => ({

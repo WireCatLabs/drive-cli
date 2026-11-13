@@ -6,7 +6,7 @@ import { run } from "./program.js"
 import { readState } from "./state.js"
 import { sync } from "./sync.js"
 import { commandResult, content, file, fixture } from "./testing.js"
-import { isTranscript, TRANSCRIPT_WORDS, transcriptsDriveQuery } from "./transcripts.js"
+import { isTranscript, TRANSCRIPT_WORDS, transcriptQuery, transcriptsDriveQuery } from "./transcripts.js"
 
 const named = (id: string, name: string, parents = ["organizers-folder"], mime?: string) => ({
   ...file(id, parents, mime),
@@ -22,10 +22,10 @@ const setTranscripts = (env: NodeJS.ProcessEnv, mode: "include" | "skip" | "excl
 }
 
 describe("Meet transcripts and Gemini notes", () => {
-  it("asks Drive for each phrase's last word and keeps only Google Docs holding a whole phrase", () => {
+  it("asks Drive for each phrase's longest word and keeps only Google Docs holding a whole phrase", () => {
     expect(transcriptsDriveQuery(["Transcript", "Notes by Gemini", "Заметки Gemini", "O'Brien notes"])).toBe(
       "mimeType = 'application/vnd.google-apps.document' and trashed = false and " +
-        "(name contains 'Transcript' or name contains 'Gemini' or name contains 'notes')",
+        "(name contains 'Transcript' or name contains 'Gemini' or name contains 'Заметки' or name contains 'O\\'Brien')",
     )
     expect(transcriptsDriveQuery(["it's"])).toContain("name contains 'it\\'s'")
     const matches = isTranscript(TRANSCRIPT_WORDS)
@@ -34,6 +34,9 @@ describe("Meet transcripts and Gemini notes", () => {
     expect(matches(named("c", "Планёрка — Заметки Gemini"))).toBe(true)
     expect(matches(named("d", "Gemini pricing notes"))).toBe(false)
     expect(matches(named("e", "Weekly sync - Transcript", [], SHEET))).toBe(false)
+    expect(transcriptQuery("exclude", ["Transcript", "notes"])?.key).toBe(
+      transcriptQuery("exclude", ["NOTES", "transcript", "Notes"])?.key,
+    )
   })
 
   it("imports nothing while the setting is unset, then include imports the ones in other people's Drives", async () => {
@@ -91,7 +94,7 @@ describe("Meet transcripts and Gemini notes", () => {
         tty: false,
         source: async () => ({ ...f.source, search }),
       })
-      return { code, items: commandResult(streams.stdout.join("")).items }
+      return { code, items: code === 0 ? commandResult(streams.stdout.join("")).items : [] }
     }
     const all = await list()
     expect(all.code).toBe(0)
@@ -102,6 +105,7 @@ describe("Meet transcripts and Gemini notes", () => {
       ["Invented call - Notes by Gemini", true],
     ])
     expect((await list("owned_by_me:false")).items.map(({ id }: { id: string }) => id)).toEqual(["theirs"])
+    expect((await list("owned_by_me:no")).code).not.toBe(0)
     expect(f.index.save).not.toHaveBeenCalled()
   })
 
@@ -113,6 +117,10 @@ describe("Meet transcripts and Gemini notes", () => {
     expect(readConfig(f.env).profiles.default?.transcripts).toBe("exclude")
     expect(await set("transcripts", '"sometimes"')).not.toBe(0)
     expect(await set("transcripts", '"include"', "--defaults")).not.toBe(0)
+    expect(await set("transcript_words", '["Protokoll"]', "--defaults")).not.toBe(0)
+    expect(await set("transcript_words", '["  "]')).not.toBe(0)
+    expect(await set("transcript_words", '["Protokoll"]')).toBe(0)
+    expect(readConfig(f.env).profiles.default?.transcript_words).toEqual(["Protokoll"])
     expect(readConfig(f.env).profiles.default?.transcripts).toBe("exclude")
   })
 })

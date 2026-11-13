@@ -107,9 +107,10 @@ export const bindQuery = (command: Command, query: QueryRegistry, schema: v.Gene
   answerEntity(withQuery(command, query), query.entity, schema)
 export const termsOf = (words: string[], query: QueryRegistry, command: string) =>
   Object.fromEntries(queryTerms(words, query, command))
+/** A string literal in a Drive `q`. */
+export const quote = (value: string) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`
 export const driveFileQuery = (words: string[], timezone?: string) => {
   const ast = listQuery(typedQuery(words), FILES_QUERY, "files list")
-  const quote = (value: string) => `'${value.replaceAll("\\", "\\\\").replaceAll("'", "\\'")}'`
   const zone = timezoneOf(timezone)
   const column: Record<string, string> = {
     modified_time: "modifiedTime",
