@@ -30,6 +30,8 @@ export interface PolicyFlags {
   yes?: boolean
   allowDangerous?: boolean
   dryRun?: boolean
+  /** Only fetches from Google into the local store (`fetchesOnly`): setup's "read only" answer lets it run. */
+  fetches?: boolean
   /** The keys this program checks (`permissionKeys`); with them, a permission naming no command is refused. */
   permissionKeys?: Set<string>
 }
@@ -122,9 +124,10 @@ export const checkPolicy = async (
   ask?: (key: string) => Promise<boolean>,
 ) => {
   const { levels, readOnly, lock } = policySettings(env, profile, flags)
-  const { level } = levelFor(levels, key, defaults)
+  const { level, key: named } = levelFor(levels, key, defaults)
   if (mutates && lock) throw readOnlyRefusal(lock, "change local or Google data")
-  if (level === "deny" || (mutates && (readOnly || level === "readonly")))
+  const answerOnly = flags.fetches === true && flags.readOnly !== true && named === CEILING_KEY
+  if (level === "deny" || (mutates && !answerOnly && (readOnly || level === "readonly")))
     throw new CliError("permission_error", "profile policy refuses this operation", {
       reason: "policy.denied",
       permission: key,
