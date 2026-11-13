@@ -197,6 +197,6 @@ describe("folders browse", () => {
       keyring: memoryKeyring(),
     })
     expect(code).not.toBe(0)
-    expect(JSON.parse(streams.stderr.join("").trim().split("\n")[0] ?? "").error.reason).toBe("oauth.missing")
+    expect(JSON.parse(streams.stderr.join("").trim().split("\n")[0] ?? "").error.reason).toBe("session.missing")
   })
 })
