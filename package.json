@@ -21,6 +21,7 @@
     "dist",
     "scenarios",
     "skills",
+    "contracts/wirecat.json",
     "README.md",
     "LICENSE"
   ],
@@ -31,8 +32,8 @@
     }
   },
   "scripts": {
-    "generate": "node --experimental-strip-types scripts/generate.ts && pnpm build && node --experimental-strip-types scripts/commands.ts",
-    "generate:check": "node --experimental-strip-types scripts/generate.ts --check && pnpm build && node --experimental-strip-types scripts/commands.ts --check",
+    "generate": "node --experimental-strip-types scripts/generate.ts && pnpm build && node --experimental-strip-types scripts/commands.ts && cli-dev manifest --program dist/program.js --identity dist/wcat.js",
+    "generate:check": "node --experimental-strip-types scripts/generate.ts --check && pnpm build && node --experimental-strip-types scripts/commands.ts --check && cli-dev manifest --program dist/program.js --identity dist/wcat.js --check",
     "spec:sync": "node --experimental-strip-types scripts/sync-spec.ts",
     "contracts:check": "cli-contract contracts/plan.json",
     "contracts:upgrade": "pnpm --dir contracts/previous install --frozen-lockfile --ignore-scripts && cli-contract contracts/upgrade.json",
@@ -63,13 +64,12 @@
     "release:check": "pnpm standards:check && pnpm lint && pnpm typecheck && pnpm test:coverage && pnpm lint:commands && pnpm audit:commands && pnpm contracts:check && pnpm contracts:upgrade && pnpm test:matrix:check && pnpm docs:check && pnpm generate:check && pnpm version:check && pnpm security:no-leak && pnpm package:check"
   },
   "dependencies": {
-    "@bomb.sh/tab": "0.0.22",
     "@googleapis/docs": "14.1.1",
     "@googleapis/drive": "27.0.0",
     "@googleapis/driveactivity": "11.0.1",
     "@googleapis/sheets": "18.1.1",
-    "@wirecat/cli-base": "0.93.0",
-    "@wirecat/cli-core": "0.647.0",
+    "@wirecat/cli-base": "0.98.0",
+    "@wirecat/cli-core": "0.648.0",
     "commander": "15.0.0",
     "google-auth-library": "11.3.1",
     "mammoth": "1.13.0",
@@ -86,7 +86,7 @@
     "@types/node": "^22.20.5",
     "@types/proper-lockfile": "4.1.4",
     "@vitest/coverage-v8": "^5.0.5",
-    "@wirecat/cli-testing": "0.5.3",
+    "@wirecat/cli-testing": "0.7.0",
     "cspell": "10.4.0",
     "esbuild": "0.28.2",
     "lefthook": "2.2.2",

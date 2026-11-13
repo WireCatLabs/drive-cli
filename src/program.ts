@@ -7,6 +7,7 @@ import { timezoneOf } from "@wirecat/cli-base/query"
 import { type Effects, writes } from "@wirecat/cli-base/standards"
 import {
   addContractInfo,
+  appCompleteCommand,
   appDoctorCommand,
   appMcpCommand,
   type BaseEnvironment,
@@ -44,7 +45,7 @@ import { installAccountCommands } from "./commands/account.js"
 import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
 import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
-import { installCommandsCommand, installCompleteCommand } from "./commands/discovery.js"
+import { installCommandsCommand } from "./commands/discovery.js"
 import {
   addProfilesOf,
   importedDocument,
@@ -199,7 +200,9 @@ const installDrive = (program: Command) => {
       permissionKeys: knownKeys,
     }
   }
-  const runId = randomUUID()
+  const fallbackRunId = randomUUID()
+  // cli-core names the run once the command starts (`20261112T121302Z-search-1a2b3c`); the answer names the same one.
+  const runId = () => runs.runId() ?? fallbackRunId
   const shown = () => outputFor(currentAction ?? program)
   const print: CommandContext["print"] = (render) => {
     const { renderer, format, streams: out } = shown()
@@ -210,7 +213,7 @@ const installDrive = (program: Command) => {
     const whole = {
       ...snaked,
       meta: {
-        run_id: runId,
+        run_id: runId(),
         duration_ms: Math.max(0, Math.round(Date.now() - startedAt)),
         complete: true,
         ...body.meta,
@@ -443,7 +446,7 @@ const installDrive = (program: Command) => {
   installRemoteCommands(program, remote)
   installMirrorCommands(program, context, remote)
   installConfigCommands(program, context)
-  installCompleteCommand(program, context)
+  program.addCommand(appCompleteCommand(DRIVE_APP, configuration))
   installModelCommands(program, context)
   installCommandsCommand(program, context)
   installUpgradeCommand(program, context)
@@ -607,7 +610,7 @@ const installDrive = (program: Command) => {
   // Google's clients report each request with `providerEvent`, which lands in the run this scope names.
   const scope = {
     get runId() {
-      return runs.runId() ?? runId
+      return runId()
     },
     command: "",
     startedAt,

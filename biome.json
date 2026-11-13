@@ -13,7 +13,8 @@
       "!.claude",
       "!config/wirecat",
       "!spec/google",
-      "!lint/baseline"
+      "!lint/baseline",
+      "!contracts/wirecat.json"
     ]
   },
   "overrides": [

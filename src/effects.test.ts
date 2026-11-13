@@ -27,9 +27,10 @@ describe("command data effects", () => {
     ]) {
       expect(effects(path), path).toEqual({ remote: "read", local: "none" })
     }
-    for (const path of ["commands", "complete", "api list", "api show"]) {
+    for (const path of ["commands", "api list", "api show"]) {
       expect(effects(path), path).toEqual({ remote: "none", local: "none" })
     }
+    expect(effects("complete"), "reads the profile names").toEqual({ remote: "none", local: "read" })
     expect(effects("documents show")).toEqual({ remote: "none", local: "read" })
     expect(effects("catalog list")).toEqual({ remote: "none", local: "read" })
     expect(effects("catalog import")).toEqual({ remote: "none", local: "write" })

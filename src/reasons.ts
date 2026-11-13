@@ -54,7 +54,6 @@ const ENTRIES: Entry[] = [
   ],
   ["policy.unknown-key", "configuration_error", "permission {permission} names no drive command", ["permission"]],
   ["profile.busy", "provider_unavailable", "another drive command holds this profile; retry later"],
-  ["profile.unknown", "validation_error", "no such profile here; see the profiles listed", ["profiles"]],
   ["profile.conflict", "validation_error", "name the profiles once: a profile word or --profiles, not both"],
   ["profile.required", "validation_error", "choose a profile: drive <profile> <command>", ["profiles"]],
   [

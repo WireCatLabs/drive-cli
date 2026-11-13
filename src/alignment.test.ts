@@ -232,7 +232,7 @@ describe("shared CLI policy and execution", () => {
     await expect(run("config", "set", "max_text_chars", "1.5")).rejects.toThrow("positive whole number")
     expect(readConfig(f.env).defaults?.permissions?.api).toBe("readonly")
     expect(await run("complete", "--", "fil")).toContain("files")
-    expect(await run("complete", "--help")).toContain("print a shell completion script")
+    expect(await run("complete", "--help")).toContain("drive complete zsh")
     await expect(run("--offline", "files", "get", "doc-a")).rejects.toThrow("offline")
     expect(commandResult(await run("--dry-run", "api", "drive-files-get", "--file-id", "doc-a"))).toMatchObject({
       dry_run: true,

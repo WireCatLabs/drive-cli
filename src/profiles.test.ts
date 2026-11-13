@@ -100,7 +100,7 @@ describe("explicit account selection", () => {
       createProgram({ env: f.env, streams: captureStreams() }).parseAsync(["nosuch", "folders", "list"], {
         from: "user",
       }),
-    ).rejects.toMatchObject({ code: "validation_error", details: { reason: "profile.unknown", profiles: ["default"] } })
+    ).rejects.toMatchObject({ code: "not_found", details: { reason: "profile.unknown", profiles: ["default"] } })
     for (const args of [
       ["session", "list"],
       ["config", "show"],

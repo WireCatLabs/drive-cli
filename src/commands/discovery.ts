@@ -1,6 +1,4 @@
-import { CliError } from "@wirecat/cli-base"
-import { annotate, type CommandInfo, customizeSharedCommand, describeOptions } from "@wirecat/cli-base/commands"
-import { formatSuggestions, suggest } from "@wirecat/cli-base/completion"
+import { annotate, type CommandInfo, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import {
   addContractInfo,
   commandsText,
@@ -10,37 +8,10 @@ import {
   sharedCommandTemplate,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { reviewedOverrides, SHELL_OVERRIDES } from "../contract-overrides.js"
 import { DRIVE_APP } from "../policy.js"
-import { commandsDocument, describeDriveProgram, examples } from "../registry.js"
+import { commandsDocument, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
-
-export const installCompleteCommand = (program: Command, { streams }: CommandContext) => {
-  examples(
-    annotate(program.command("complete"), { mcp: false, effects: NO_EFFECTS }).description(
-      "print a shell completion script, or complete words",
-    ),
-    ["drive complete zsh"],
-  )
-    .argument("[words...]", "a shell name, or after -- the words typed so far")
-    .allowUnknownOption()
-    .helpOption(false)
-    .action(async function (this: Command, words: string[]) {
-      if (!(program as Command & { rawArgs: string[] }).rawArgs.includes("--")) {
-        // The help option stays off: during a Tab, `--help` is a word being completed, not a request.
-        if (words[0] === "--help" || words[0] === "-h") return streams.data(this.helpInformation())
-        if (!["bash", "zsh", "fish", "powershell"].includes(words[0] ?? ""))
-          throw new CliError("validation_error", "choose a supported shell")
-        const { script } = await import("@bomb.sh/tab")
-        script(words[0] as "zsh", "drive", "drive")
-      } else
-        streams.data(
-          formatSuggestions(
-            suggest({ commands: describeDriveProgram(program), globalOptions: describeOptions(program), words }),
-          ),
-        )
-    })
-}
 
 const installCommandsCommandDefinition = (program: Command, { print, streams }: CommandContext) => {
   examples(
@@ -70,8 +41,9 @@ const installCommandsCommandDefinition = (program: Command, { print, streams }: 
 
 export const installCommandsCommand = (...args: Parameters<typeof installCommandsCommandDefinition>) => {
   const [program, context] = args
+  const reference = sharedCommandTemplate(DRIVE_APP, "commands")
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_APP, "commands"),
+    reference,
     "Drive binds discovery to its profile-aware usage renderer while retaining the shared command document and evidence endpoint.",
     () => {
       installCommandsCommandDefinition(...args)
@@ -80,6 +52,6 @@ export const installCommandsCommand = (...args: Parameters<typeof installCommand
       if (!command) throw new Error("discovery builder did not install its command")
       return command
     },
-    SHELL_OVERRIDES.commands,
+    reviewedOverrides(reference, SHELL_OVERRIDES.commands),
   )
 }

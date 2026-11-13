@@ -1,5 +1,6 @@
 import { describeProgram } from "@wirecat/cli-base/commands"
 import { toolsFromCommands } from "@wirecat/cli-core/mcp"
+import { ownCatalogue } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
 import { createProgram } from "./program.js"
 import { callTool, mcpClient } from "./testing/mcp.js"
@@ -110,6 +111,11 @@ describe("MCP validation through the SDK", () => {
     } finally {
       await close()
     }
+  })
+
+  it("pins drive's own MCP catalogue; cli-core pins the commands it mounts", async () => {
+    const catalogue = ownCatalogue(createProgram(), { includeUnavailable: true, exclude: [["mcp"]] })
+    await expect(`${JSON.stringify(catalogue, null, 2)}\n`).toMatchFileSnapshot("../contracts/own-catalogue.json")
   })
 
   it("gives every command a name drive_read and drive_write can tell apart", () => {

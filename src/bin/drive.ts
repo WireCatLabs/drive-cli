@@ -5,7 +5,7 @@ import { errorObjectOf, exitCodeOfError, processStreams, renderError } from "@wi
 // Compiling the program's module files is most of a start; later runs reuse what this one compiled.
 enableCompileCache()
 // A static import compiles before the cache is on.
-const [{ wcatStart }, { DRIVE_APP }] = await Promise.all([
+const [{ wcatStart }, { DESKTOP, DRIVE_APP }] = await Promise.all([
   import("@wirecat/cli-base/wcat/start"),
   import("../identity.js"),
 ])
@@ -13,7 +13,7 @@ const wcat = await wcatStart({
   command: DRIVE_APP.command,
   version: DRIVE_APP.version,
   description: DRIVE_APP.description,
-  docs: "https://github.com/WireCatLabs/drive-cli#readme",
+  docs: DESKTOP.docs,
 })
 if (wcat.code !== undefined) {
   process.exitCode = wcat.code

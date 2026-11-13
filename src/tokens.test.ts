@@ -4,6 +4,7 @@ import { memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { application, paths } from "./config.js"
 import { googleError } from "./errors.js"
+import { googleApi } from "./google-api.js"
 import { fixture } from "./testing.js"
 import { authorizedClient, credentials, grantedScopes, READ_SCOPE, saveSession } from "./tokens.js"
 
@@ -44,6 +45,26 @@ describe("shared credential persistence", () => {
       expect(grantedScopes(f.env, "default", keyring)).toEqual([READ_SCOPE])
       expect((await authorizedClient(f.env, "default", keyring).getAccessToken()).token).toBe("fixture-next")
       expect(fetch).toHaveBeenCalledTimes(1)
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
+
+  it("sends the signed-in client's requests only to the hosts drive declares", async () => {
+    const f = fixture()
+    const keyring = memoryKeyring()
+    saveSession(f.env, "default", session, "keyring", keyring)
+    const fetch = tokenResponse({ ok: true })
+    vi.stubGlobal("fetch", fetch)
+    try {
+      const client = authorizedClient(f.env, "default", keyring)
+      const refused = await client.request({ url: "https://elsewhere.invalid/files", retry: false }).catch((e) => e)
+      expect(googleError(refused).details).toMatchObject({ reason: "network.host-undeclared", sent: false })
+      expect(fetch).not.toHaveBeenCalled()
+      await googleApi(client).call("drive.about.get", { fields: "user" })
+      expect(String((fetch.mock.calls[0] as unknown as [URL])[0])).toMatch(
+        /^https:\/\/www\.googleapis\.com\/drive\/v3\/about\?/,
+      )
     } finally {
       vi.unstubAllGlobals()
     }

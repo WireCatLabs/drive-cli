@@ -1,8 +1,5 @@
 [
-  "account remove --delete-data",
-  "account remove --keep-data",
   "documents history --activity",
   "memories extract --tab",
-  "models set --purpose",
-  "session start --client-file"
+  "models set --purpose"
 ]
