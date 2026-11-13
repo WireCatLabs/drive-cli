@@ -20,6 +20,7 @@ import * as v from "valibot"
 import { operations } from "./generated/manifest.js"
 import { DRIVE_APP } from "./identity.js"
 import { DEFAULT_LEVELS, permissionKeys } from "./policy-keys.js"
+import { TRANSCRIPT_MODES, TRANSCRIPT_WORDS } from "./transcripts.js"
 
 const Common = {
   ...AI_ENTRIES,
@@ -54,7 +55,15 @@ export const DEFAULTS_ONLY = new Set([
   "update_check",
   "skill_hint",
 ])
-export const SETTING_NAMES = new Set([...Object.keys(Common), "picture_search", ...DEFAULTS_ONLY])
+/** Per profile: whether sync takes Meet transcripts and Gemini notes, and the name words that find them. */
+const Transcripts = {
+  transcripts: v.optional(v.picklist(TRANSCRIPT_MODES)),
+  transcript_words: v.optional(
+    v.pipe(v.array(v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(100))), v.minLength(1), v.maxLength(50)),
+  ),
+}
+export const PROFILE_ONLY = new Set(["picture_search", ...Object.keys(Transcripts)])
+export const SETTING_NAMES = new Set([...Object.keys(Common), ...PROFILE_ONLY, ...DEFAULTS_ONLY])
 const Mirror = v.strictObject({
   id: v.pipe(v.string(), v.regex(/^[a-z0-9-]{1,40}$/)),
   path: v.pipe(v.string(), v.minLength(1)),
@@ -67,6 +76,7 @@ const Profile = v.strictObject({
   mirrors: v.optional(v.array(Mirror)),
   storage: v.picklist(["keyring", "file"]),
   picture_search: v.optional(v.boolean()),
+  ...Transcripts,
   ...Common,
 })
 export const ConfigSchema = v.strictObject({
@@ -100,6 +110,7 @@ export const configuration = settingsFor(DRIVE_APP, {
     storage: v.optional(v.picklist(["keyring", "file"])),
     max_text_chars: Common.max_text_chars,
     google_client_id: Common.google_client_id,
+    ...Transcripts,
   },
   settings: [
     {
@@ -251,6 +262,10 @@ export const checkTextLimit = (value: unknown): number => {
 }
 export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
   activeProfile(env, name).max_text_chars ?? readConfig(env).defaults?.max_text_chars ?? MAX_TEXT_CHARS
+export const transcriptsOf = (env: NodeJS.ProcessEnv, name: string) => {
+  const profile = activeProfile(env, name)
+  return { mode: profile.transcripts, words: profile.transcript_words ?? [...TRANSCRIPT_WORDS] }
+}
 export const pictureSearch = (env: NodeJS.ProcessEnv, name: string): boolean =>
   activeProfile(env, name).picture_search ?? false
 export interface AppChoice {

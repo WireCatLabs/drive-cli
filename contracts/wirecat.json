@@ -286,6 +286,19 @@
     },
     {
       "path": [
+        "transcripts",
+        "list"
+      ],
+      "summary": "list Google Docs named like Meet transcripts or Gemini notes",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "transcripts.list",
+      "entity": "drive_transcript"
+    },
+    {
+      "path": [
         "store",
         "info"
       ],
@@ -2564,6 +2577,15 @@
     "drive_selected_folder": {
       "fields": [
         "id"
+      ]
+    },
+    "drive_transcript": {
+      "fields": [
+        "id",
+        "name",
+        "url",
+        "owned_by_me",
+        "modified_at"
       ]
     },
     "document": {

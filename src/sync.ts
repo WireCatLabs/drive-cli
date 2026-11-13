@@ -1,12 +1,13 @@
 import { resolve } from "node:path"
 import { syncDocuments } from "@wirecat/cli-core/documents"
 import { storePath } from "@wirecat/cli-core/store"
-import { activeProfile, textLimit } from "./config.js"
+import { activeProfile, textLimit, transcriptsOf } from "./config.js"
 import { googleError } from "./errors.js"
 import { type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource, type Skip } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { readState, readWalk, removeSnapshot, removeWalk, saveSnapshot, saveState, saveWalk } from "./state.js"
 import { MAX_ENTRIES, supported, tooManyEntries } from "./supported.js"
+import { transcriptQuery } from "./transcripts.js"
 import { VERSION } from "./version.js"
 
 export type { SyncResult } from "@wirecat/cli-core/documents"
@@ -41,7 +42,10 @@ export const sync = async (
     await index.registerProfile?.(name, profile.principal)
     const before = readState(env, name, profile.principal)
     const started = new Date().toISOString()
+    const transcripts = transcriptsOf(env, name)
+    const query = transcriptQuery(transcripts.mode, transcripts.words, source?.search)
     const result = await syncDocuments({
+      ...(query ? { query } : {}),
       source,
       index,
       principal: profile.principal,

@@ -89,6 +89,35 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
       throw googleError(error)
     }
   }
+  // The default corpus is My Drive plus every file shared with the account, wherever its owner keeps it.
+  const listed = (q: string) =>
+    safe(async () => {
+      const files: FileMetadata[] = []
+      const seen = new Set<string>()
+      let pageToken: string | undefined
+      for (let page = 0; page < MAX_PAGES; page++) {
+        const { data } = await api.files.list(
+          {
+            q,
+            fields: `nextPageToken,incompleteSearch,files(${FIELDS})`,
+            pageSize: 1000,
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true,
+            ...(pageToken ? { pageToken } : {}),
+          },
+          { timeout: 30000 },
+        )
+        if (data.incompleteSearch)
+          throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
+        for (const file of data.files ?? []) files.push(metadataOf(file))
+        if (files.length > MAX_ENTRIES) throw tooManyEntries()
+        if (!data.nextPageToken) return files
+        if (seen.has(data.nextPageToken)) throw new CliError("invalid_response", "Google repeated a folder page token")
+        seen.add(data.nextPageToken)
+        pageToken = data.nextPageToken
+      }
+      throw new CliError("provider_error", "folder pagination exceeded its bound; sync state was preserved")
+    })
   const metadata = (id: string) =>
     safe(async () =>
       metadataOf(
@@ -103,35 +132,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (!id) throw new CliError("invalid_response", "Google did not identify the signed-in account")
         return id
       }),
-    children: (id) =>
-      safe(async () => {
-        const files: FileMetadata[] = []
-        const seen = new Set<string>()
-        let pageToken: string | undefined
-        for (let page = 0; page < MAX_PAGES; page++) {
-          const { data } = await api.files.list(
-            {
-              q: `'${id}' in parents and trashed = false`,
-              fields: `nextPageToken,incompleteSearch,files(${FIELDS})`,
-              pageSize: 1000,
-              supportsAllDrives: true,
-              includeItemsFromAllDrives: true,
-              ...(pageToken ? { pageToken } : {}),
-            },
-            { timeout: 30000 },
-          )
-          if (data.incompleteSearch)
-            throw new CliError("provider_error", "Google folder listing was incomplete; sync state was preserved")
-          for (const file of data.files ?? []) files.push(metadataOf(file))
-          if (files.length > MAX_ENTRIES) throw tooManyEntries()
-          if (!data.nextPageToken) return files
-          if (seen.has(data.nextPageToken))
-            throw new CliError("invalid_response", "Google repeated a folder page token")
-          seen.add(data.nextPageToken)
-          pageToken = data.nextPageToken
-        }
-        throw new CliError("provider_error", "folder pagination exceeded its bound; sync state was preserved")
-      }),
+    children: (id) => listed(`'${id}' in parents and trashed = false`),
+    search: (q) => listed(q),
     startToken: () =>
       safe(async () => {
         const token = (await api.changes.getStartPageToken({ supportsAllDrives: true }, { timeout: 30000 })).data

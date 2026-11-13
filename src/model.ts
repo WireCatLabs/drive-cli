@@ -72,7 +72,10 @@ export const skipJson = ({ file, textLimit, storeRefusedIn, ...rest }: Skip) => 
 })
 export type DocumentContent = SourceContent<FileMetadata>
 export type Change = SourceChange<FileMetadata>
-export type GoogleSource = DocumentSource<FileMetadata>
+export type GoogleSource = DocumentSource<FileMetadata> & {
+  /** Every file a Drive query (`q`) finds in My Drive and among the files shared with the account. */
+  search?(q: string): Promise<FileMetadata[]>
+}
 export type IndexedDocument = IndexedSource<FileMetadata>
 export type WorkItem = SourceWork<FileMetadata>
 export type Skip = SourceSkip<FileMetadata>

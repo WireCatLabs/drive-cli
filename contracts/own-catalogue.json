@@ -6,6 +6,7 @@
   "folders remove": "write",
   "sync": "write",
   "status": "read",
+  "transcripts list": "read",
   "store info": "read",
   "store check": "read",
   "store import": "write",

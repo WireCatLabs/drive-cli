@@ -54,6 +54,16 @@ export const fileRow = v.looseObject({
   created_time: v.optional(isoTime),
   viewed_by_me_time: v.optional(isoTime),
 })
+export const transcriptRow = v.strictObject({
+  id: v.string(),
+  name: v.string(),
+  url: v.string(),
+  owned_by_me: v.nullable(v.boolean()),
+  modified_at: v.nullable(v.string()),
+})
+export const TRANSCRIPTS_QUERY = registry("drive_transcript", transcriptRow, ["owned_by_me"], {
+  owned_by_me: "owned_by_me:false",
+})
 export const FOLDERS_QUERY = registry("drive_selected_folder", folderRow, ["id"], { id: "id:FOLDER_ID" })
 export const MIRRORS_QUERY = registry("drive_mirror", mirrorRow, ["id", "path", "folder"], {
   id: "id:example",

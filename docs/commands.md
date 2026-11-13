@@ -437,6 +437,26 @@ drive <profile> status
 
 **Example:** `drive personal status`
 
+## `drive transcripts`
+
+meet transcripts and Gemini notes in this account's Drive or shared with it
+
+### `drive transcripts list`
+
+list the Google Docs named like Meet transcripts or Gemini notes, wherever they sit; imports nothing
+
+```sh
+drive <profile> transcripts list [query]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `query` | optional | field:value terms that narrow the list — the fields are below. |
+
+**Returns:** drive transcript — id, name, url, owned_by_me, modified_at; every field: drive commands info transcripts list
+
+**Example:** `drive personal transcripts list --json`, `drive personal transcripts list owned_by_me:false`
+
 ## `drive store`
 
 the shared store, and importing this profile's previous document database
@@ -4190,14 +4210,14 @@ drive <profile> config set <key> <json-value> [options]
 
 | Argument | | What it is |
 |---|---|---|
-| `key` | required | max_text_chars, picture_search, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
+| `key` | required | max_text_chars, picture_search, transcripts, transcript_words, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>. |
 | `json-value` | required | the new value, as JSON. |
 
 | Option | What it does |
 |---|---|
 | `--defaults` | change the defaults instead of this profile. |
 
-**Example:** `drive personal config set max_text_chars 100000`, `drive personal config set permissions.files '"readonly"' --defaults`, `drive personal config set record true --defaults`
+**Example:** `drive personal config set max_text_chars 100000`, `drive personal config set permissions.files '"readonly"' --defaults`, `drive personal config set transcripts '"include"'`
 
 ### `drive config unset`
 

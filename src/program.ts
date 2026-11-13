@@ -61,6 +61,7 @@ import { installSearchCommand } from "./commands/search.js"
 import { installSessionCommands } from "./commands/session.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
+import { installTranscriptCommands } from "./commands/transcripts.js"
 import { installUpgradeCommand } from "./commands/upgrade.js"
 import {
   activeProfile,
@@ -314,6 +315,7 @@ const installDrive = (program: Command) => {
   installAccountCommands(program, context)
   installFolderCommands(program, context, (method, params) => remote.call(method, params))
   installSyncCommands(program, context)
+  installTranscriptCommands(program, context)
   installStoreCommands(program, context)
   installDocumentCommands(program, context)
   installSearchCommand(program, context)
