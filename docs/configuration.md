@@ -40,6 +40,8 @@ before moving or deleting them.
 | `runs_size_limit_mb` | The most the run log may hold; the oldest successful runs go first; default `200` | `defaults` only |
 | `google_client_id` | Your own Google Desktop app's client ID, used by `session start` instead of WireCat's; its secret comes from `DRIVE_GOOGLE_CLIENT_SECRET`, never this file. Only you change it at a terminal: an agent over MCP is refused | A profile or `defaults` |
 | `picture_search` | `true` finds Drive images by what they show: sync downloads each image (up to 25 MB) and search returns `pictures`; default `false` | A profile only |
+| `transcripts` | Google Meet transcripts and Gemini notes: `include` imports them wherever they sit, `exclude` leaves them out even inside a chosen folder, `skip` or unset leaves them alone; see [usage](usage.md#meet-transcripts-and-gemini-notes) | A profile only |
+| `transcript_words` | The words in a document's name that make it a transcript, replacing the built-in list (`Transcript`, `Notes by Gemini` and their Russian and Spanish forms) | A profile only |
 | `models.memories.provider` | AI provider for explicitly requested memory extraction | A profile or `defaults` |
 | `models.memories.model` | The provider's model identifier | A profile or `defaults` |
 | `models.memories.base_url` | Optional endpoint for the configured provider | A profile or `defaults` |

@@ -40,5 +40,12 @@
     "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
     "owner": "@WireCatLabs",
     "review_after": "2026-11-24"
+  },
+  {
+    "rule": "unknown-resource",
+    "target": "transcripts",
+    "reason": "Google Meet transcripts and Gemini notes as Google Docs, chosen by name for sync; the vocabulary has the singular transcript (the text of speech) but no collection of them. Add transcripts to the cli-base vocabulary when a Meet CLI lists them too.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
   }
 ]

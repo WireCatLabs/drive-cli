@@ -27,7 +27,8 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
     .option("--rescan", "read every chosen folder again instead of only what changed")
     .option("--embed", "also index pending text for meaning search, with a model already downloaded")
     .action(async (args: { limit: number; embed?: boolean; rescan?: boolean }) => {
-      const remote = activeProfile(env, selected()).roots.length ? await source() : undefined
+      const profile = activeProfile(env, selected())
+      const remote = profile.roots.length || profile.transcripts === "include" ? await source() : undefined
       const result = await withIndex(async (index) => ({
         ...(await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan)),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),

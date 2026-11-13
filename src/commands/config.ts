@@ -21,6 +21,7 @@ import {
   configuration,
   DEFAULTS_ONLY,
   inspectConfig,
+  PROFILE_ONLY,
   readConfig,
   refusal,
   SETTING_NAMES,
@@ -115,12 +116,12 @@ export const installConfigCommands = (
     [
       "drive personal config set max_text_chars 100000",
       `drive personal config set permissions.files '"readonly"' --defaults`,
-      "drive personal config set record true --defaults",
+      `drive personal config set transcripts '"include"'`,
     ],
   )
     .argument(
       "<key>",
-      "max_text_chars, picture_search, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>",
+      "max_text_chars, picture_search, transcripts, transcript_words, google_client_id, max_add_profiles, record, record_input, keep_runs_for_days, keep_successful_runs_for_days, runs_size_limit_mb, shared AI settings, permissions.<key> or models.<purpose>.<field>",
     )
     .argument("<json-value>", "the new value, as JSON")
     .option("--defaults", "change the defaults instead of this profile")
@@ -144,6 +145,8 @@ export const installConfigCommands = (
         throw new CliError("validation_error", `${head} is set for every profile at once: add --defaults`)
       if (head === "picture_search" && (args.defaults || typeof parsed !== "boolean"))
         throw new CliError("validation_error", "picture_search is true or false, set per profile")
+      if (PROFILE_ONLY.has(head) && args.defaults)
+        throw new CliError("validation_error", `${head} is set per profile, not in the defaults`)
       if (head === "max_text_chars") parsed = checkTextLimit(parsed)
       if (head === "max_add_profiles") parsed = checkAddProfiles(parsed)
       const at = [...scope, ...setting]

@@ -54,6 +54,7 @@ const State = v.object({
     }),
   ),
   skipped: v.array(Skip),
+  matched: v.optional(v.array(ID)),
   lastSync: v.optional(v.string()),
   pending: v.optional(
     v.object({
@@ -62,6 +63,7 @@ const State = v.object({
       folders: v.record(ID, File),
       jobs: v.array(v.object({ id: ID, kind: v.picklist(["save", "remove"]), file: v.optional(File) })),
       skipped: v.array(Skip),
+      matched: v.optional(v.array(ID)),
     }),
   ),
 })

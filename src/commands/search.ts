@@ -1,7 +1,7 @@
 import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { activeProfile, pictureSearch } from "../config.js"
+import { activeProfile, pictureSearch, transcriptsOf } from "../config.js"
 import { reviewedOverrides, SHELL_OVERRIDES } from "../contract-overrides.js"
 import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
@@ -31,7 +31,7 @@ const installSearchCommandDefinition = (program: Command, { env, selected, outpu
       )
       const hint = notImported(
         name,
-        profile.roots.length,
+        profile.roots.length > 0 || transcriptsOf(env, name).mode === "include",
         Object.keys(readState(env, name, profile.principal).documents),
       )
       output(itemOf(hint ? { ...(result as object), not_imported: hint } : result))
@@ -39,9 +39,9 @@ const installSearchCommandDefinition = (program: Command, { env, selected, outpu
 }
 
 // An empty answer over an empty import reads to an agent as "no such document".
-const notImported = (name: string, folders: number, documents: string[]): string | undefined => {
+const notImported = (name: string, chosen: boolean, documents: string[]): string | undefined => {
   if (documents.length > 0) return undefined
-  return folders === 0
+  return !chosen
     ? `profile ${name} has no folders selected, so nothing is imported to search — ` +
         `drive ${name} folders add FOLDER_ID, then drive ${name} sync`
     : `profile ${name} has imported no documents yet — drive ${name} sync`

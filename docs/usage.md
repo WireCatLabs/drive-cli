@@ -56,6 +56,27 @@ output counts them in `pictures`. `pictures_too_large` counts images over 25 MB,
 `pictures_skipped` says the picture model is not downloaded; the rest of the sync still finishes, and the
 images are picked up by a later sync once the model is there.
 
+## Meet transcripts and Gemini notes
+
+Google Meet saves a meeting's transcript and Gemini's notes as Google Docs in the organizer's Drive and shares them
+with the guests, so most of them are in no folder of yours. `drive personal transcripts list` lists the Google Docs
+whose name holds `Transcript`, `Notes by Gemini` or one of their Russian and Spanish forms, in your Drive and among
+the files shared with you, and imports nothing. `owned_by_me` is `false` for one in someone else's Drive.
+
+The profile's `transcripts` setting decides what sync does with them; nothing is imported until you set it:
+
+| `transcripts` | What sync does |
+| --- | --- |
+| `include` | Imports every match wherever it sits, keeps it up to date, and drops one that is no longer shared or renamed |
+| `skip` or unset | Leaves them alone: only what the chosen folders hold |
+| `exclude` | Leaves matches out even inside a chosen folder |
+
+`drive personal config set transcripts '"include"'` turns it on. Drive keeps no mark that a document came from
+Meet, so the name decides; `transcript_words` replaces the words (`drive personal config set transcript_words
+'["Transcript","Notes by Gemini"]'`). The Russian and Spanish forms are Google's names as best known and have not
+been seen in a real Drive yet. A transcript a meeting tool also stored is shown once in WireCat's search, as the
+meeting.
+
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
 Files over 50 MB are skipped before download, and so is text of 2 000 000 characters or more
