@@ -20,6 +20,7 @@ import {
   createProgram as createSharedProgram,
   type EventSink,
   environmentOf,
+  fetchesOnly,
   hasSharedContract,
   inRun,
   itemOf,
@@ -594,8 +595,9 @@ const installDrive = (program: Command) => {
     }
     const mutates = method ? apiMethod(method).mutates : writes(metadata.effects)
     const key = method ? `api.${method}` : path.join(".")
+    const fetches = !method && fetchesOnly(action)
     for (const permission of method ? methodPolicyKeys(method) : [key])
-      await checkPolicy(env, selected(), permission, mutates, flags, askOnce)
+      await checkPolicy(env, selected(), permission, mutates, { ...flags, fetches }, askOnce)
     checkedMethod = method
     if (flags.offline && (method || metadata.effects?.remote !== "none")) throw offlineRefused()
     if (flags.dryRun && !googleOnly(metadata.effects)) preview()
