@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.66.0 — 13.11.2026
+
+### Changed — may break callers
+
+- **Built on cli-core 0.650.0** (was 0.634.0). The store moves to version 66 on first open (a person's kind and
+  name order are worked out again; additive). Model calls follow memo's "local only" switch (`models local-only set
+  on`), send to a plain `http` model address only on this computer, and reach only their own host. A profile with no
+  saved sign-in fails with `session.missing` (was `oauth.missing`), and a profile name that is not on this computer
+  with `not_found` (exit 6, `profile.unknown`; was `validation_error`). `doctor reports` writes a problem report to
+  send; `store reset` is no longer offered to an agent over MCP. What changed is in
+  [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+- **`meta.run_id` names the run that `drive runs show` finds** (`20261112T121302Z-documents-list-7dfb77`), as in
+  every other WireCat CLI. It was a random UUID that matched no saved run.
+- **`drive complete` is the shared WireCat completion command.** The same shells (zsh, bash, fish, PowerShell) and
+  the same Tab answers; its help text is the shared one, and it now reads the configured profile names.
+
+### Fixed
+
+- **`doctor --help` shows its Returns and Example again**, and `doctor reports` says what it returns.
+- **The docs say where tokens go when the keyring fails.** drive saves them in `credentials.json` (mode 600) in the
+  configuration folder and warns once; the configuration and security pages said there was no such fallback.
+
+### Security
+
+- **drive reaches only the Google hosts it declares.** Every request of the Google SDK, the sign-in and the token
+  refresh goes through cli-base's `hostFetch`, which refuses any other host before anything is sent and checks each
+  redirect. The package now ships `contracts/wirecat.json`, so WireCat Desktop shows these hosts before install.
+
 ## 0.65.0 — 10.11.2026
 
 ### Added

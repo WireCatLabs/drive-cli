@@ -33,7 +33,7 @@ Each item, one level of the tree (--json prints them under "items"):
   child_folders  folders directly inside it, or null when not counted (Shared with me, a level of over 1000 folders)
   added          whether sync already imports this folder (folders add)
 Folders are listed by name. Only folders are listed; files inside them are not.
-Failures carry error.reason: oauth.missing (not signed in), oauth.expired (sign in again),
+Failures carry error.reason: session.missing (not signed in), oauth.expired (sign in again),
 provider.rate-limited (retry later), not_found code (no such folder).`
 
 const PAGE_BOUND = 1000

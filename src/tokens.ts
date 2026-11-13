@@ -122,7 +122,7 @@ export const authorizedClient = (
       "authentication_error",
       `this profile has no saved Google sign-in — run drive ${name} session start`,
       {
-        reason: "oauth.missing",
+        reason: "session.missing",
       },
     )
   let parsed: v.SafeParseResult<typeof Session>
