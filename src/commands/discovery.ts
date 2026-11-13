@@ -8,7 +8,7 @@ import {
   sharedCommandTemplate,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
-import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { reviewedOverrides, SHELL_OVERRIDES } from "../contract-overrides.js"
 import { DRIVE_APP } from "../policy.js"
 import { commandsDocument, examples } from "../registry.js"
 import type { CommandContext } from "./context.js"
@@ -41,8 +41,9 @@ const installCommandsCommandDefinition = (program: Command, { print, streams }: 
 
 export const installCommandsCommand = (...args: Parameters<typeof installCommandsCommandDefinition>) => {
   const [program, context] = args
+  const reference = sharedCommandTemplate(DRIVE_APP, "commands")
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_APP, "commands"),
+    reference,
     "Drive binds discovery to its profile-aware usage renderer while retaining the shared command document and evidence endpoint.",
     () => {
       installCommandsCommandDefinition(...args)
@@ -51,6 +52,6 @@ export const installCommandsCommand = (...args: Parameters<typeof installCommand
       if (!command) throw new Error("discovery builder did not install its command")
       return command
     },
-    SHELL_OVERRIDES.commands,
+    reviewedOverrides(reference, SHELL_OVERRIDES.commands),
   )
 }

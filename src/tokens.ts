@@ -4,8 +4,8 @@ import { providerRequest } from "@wirecat/cli-core/cli"
 import {
   credentialStorage,
   driveSessionCodec,
+  googleProvider,
   type OAuthClient,
-  type OAuthProvider,
   type TokenKeeper,
   tokenKeeper,
 } from "@wirecat/cli-core/oauth"
@@ -76,17 +76,6 @@ export const saveSession = (
     throw notSaved()
   }
 }
-export const googleProvider = (client: OAuthClient): OAuthProvider => ({
-  id: "google",
-  name: "Google",
-  authorizeUrl: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenUrl: "https://oauth2.googleapis.com/token",
-  revokeUrl: "https://oauth2.googleapis.com/revoke",
-  client,
-  redirect: { kind: "loopback" },
-  // Without offline access Google returns no refresh token; without consent it does not return one again.
-  authorizeParams: { access_type: "offline", prompt: "select_account consent" },
-})
 /** One profile's saved sign-in, refreshed and saved under a lock every drive process shares. */
 export const sessionKeeper = (options: {
   env: NodeJS.ProcessEnv

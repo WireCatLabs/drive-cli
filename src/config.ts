@@ -226,7 +226,7 @@ export const fileId = (input: string): string => {
 }
 export const unknownProfile = (name: string, profiles: string[]) =>
   new CliError(
-    "validation_error",
+    "not_found",
     profiles.length
       ? `no profile ${name} here — profiles here: ${profiles.join(", ")}; a new one signs in with drive ${name} session start`
       : `no profiles here yet; create one with drive ${name} session start`,

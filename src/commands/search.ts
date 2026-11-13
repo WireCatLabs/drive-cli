@@ -2,7 +2,7 @@ import { annotate, customizeSharedCommand } from "@wirecat/cli-base/commands"
 import { itemOf, LOCAL_READ, sharedCommandTemplate } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
 import { activeProfile, pictureSearch } from "../config.js"
-import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { reviewedOverrides, SHELL_OVERRIDES } from "../contract-overrides.js"
 import { DRIVE_APP } from "../policy.js"
 import { examples } from "../registry.js"
 import { readState } from "../state.js"
@@ -47,9 +47,10 @@ const notImported = (name: string, folders: number, documents: string[]): string
     : `profile ${name} has imported no documents yet — drive ${name} sync`
 }
 
-export const installSearchCommand = (...args: Parameters<typeof installSearchCommandDefinition>) =>
-  customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_APP, "search"),
+export const installSearchCommand = (...args: Parameters<typeof installSearchCommandDefinition>) => {
+  const reference = sharedCommandTemplate(DRIVE_APP, "search")
+  return customizeSharedCommand(
+    reference,
     "Drive searches imported documents and embeddings rather than live messenger messages; its default action and pagination are explicitly provider-specific.",
     () => {
       installSearchCommandDefinition(...args)
@@ -57,5 +58,6 @@ export const installSearchCommand = (...args: Parameters<typeof installSearchCom
       if (!command) throw new Error("search builder did not install its command")
       return command
     },
-    SHELL_OVERRIDES.search,
+    reviewedOverrides(reference, SHELL_OVERRIDES.search),
   )
+}

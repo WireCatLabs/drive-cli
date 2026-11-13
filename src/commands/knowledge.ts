@@ -15,7 +15,7 @@ import {
 import { extractDocumentMemories } from "@wirecat/cli-core/documents"
 import { type Author, type Decider, FACT_TYPES, type Fact, MEMORY_KINDS, type Memory } from "@wirecat/cli-core/store"
 import { type Command, Option } from "commander"
-import { SHELL_OVERRIDES } from "../contract-overrides.js"
+import { reviewedOverrides, SHELL_OVERRIDES } from "../contract-overrides.js"
 import type { Complete } from "../extraction.js"
 import type { DocumentKnowledge } from "../knowledge.js"
 import {
@@ -445,8 +445,9 @@ const installKnowledgeCommandsDefinition = (program: Command, helpers: Knowledge
 }
 
 export const installKnowledgeCommands = (...args: Parameters<typeof installKnowledgeCommandsDefinition>) => {
+  const reference = sharedCommandTemplate(DRIVE_APP, "notes")
   customizeSharedCommand(
-    sharedCommandTemplate(DRIVE_APP, "notes"),
+    reference,
     "Drive notes annotate one explicitly selected imported document; document-bound arguments and receipts replace the generic note scope.",
     () => {
       installKnowledgeCommandsDefinition(...args)
@@ -454,6 +455,6 @@ export const installKnowledgeCommands = (...args: Parameters<typeof installKnowl
       if (!command) throw new Error("notes builder did not install its command")
       return command
     },
-    SHELL_OVERRIDES.notes,
+    reviewedOverrides(reference, SHELL_OVERRIDES.notes),
   )
 }

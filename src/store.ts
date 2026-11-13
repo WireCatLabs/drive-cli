@@ -30,19 +30,16 @@ const syncedDocument = async (store: MessageStore, driveFileId: string): Promise
 
 export const openIndex = async (env: NodeJS.ProcessEnv, name?: string, rescan = false): Promise<DocumentIndex> => {
   if (name) activeProfile(env, name)
-  const { ensureSqlite } = await import("@wirecat/cli-core/sqlite-runtime")
-  await ensureSqlite()
-  const { openStore, storePath } = await import("@wirecat/cli-core/store")
   if (env.DRIVE_STORE)
     throw new CliError(
       "configuration_error",
       "DRIVE_STORE has been retired; use MESSAGING_STORE to select the shared database",
       { reason: "store.override-retired" },
     )
-  const store = await openStore({ path: storePath(env), env, command: "drive", version: VERSION })
+  const { openAppStore } = await import("@wirecat/cli-core/cli")
+  const store = await openAppStore(env, { app: { command: "drive", version: VERSION }, provider: DRIVE_PROVIDER })
   const index = indexOver(store, env)
   try {
-    await store.accounts.registerProvider(DRIVE_PROVIDER)
     if (name) await prepareStore(index, env, name, rescan)
     return index
   } catch (error) {

@@ -1,5 +1,9 @@
 ### Changed — may break callers
 
+- **Built on cli-core 0.648.0** (was 0.647.0). A profile name that is not on this computer is now `not_found`
+  (exit 6), with `profile.unknown` and the profiles there, as in every WireCat CLI; it was `validation_error`.
+  `store reset` is no longer offered to an agent over MCP. What changed is in
+  [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
 - **`meta.run_id` names the run that `drive runs show` finds** (`20261112T121302Z-documents-list-7dfb77`), as in
   every other WireCat CLI. It was a random UUID that matched no saved run.
 - **`drive complete` is the shared WireCat completion command.** The same shells (zsh, bash, fish, PowerShell) and
