@@ -22,7 +22,8 @@ SDK error objects, headers, OAuth responses or document bodies. Data belongs in 
 No implicit model download.
 
 Browser login uses PKCE and state checks; its listener closes on success, failure, cancellation
-and timeout. Version and unprofiled discovery never load config, keyring or database. With a named
+and timeout. Version and unprofiled discovery never load config, keyring or database; `complete`
+reads only the profile names from config. With a named
 profile, help and discovery may read permission configuration to annotate availability; neither opens
 credentials or the database. Remote
 document operations default to reads. Remote writes require an explicitly requested OAuth write

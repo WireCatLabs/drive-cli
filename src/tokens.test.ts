@@ -4,6 +4,7 @@ import { memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { application, paths } from "./config.js"
 import { googleError } from "./errors.js"
+import { googleApi } from "./google-api.js"
 import { fixture } from "./testing.js"
 import { authorizedClient, credentials, grantedScopes, READ_SCOPE, saveSession } from "./tokens.js"
 
@@ -60,8 +61,10 @@ describe("shared credential persistence", () => {
       const refused = await client.request({ url: "https://elsewhere.invalid/files", retry: false }).catch((e) => e)
       expect(googleError(refused).details).toMatchObject({ reason: "network.host-undeclared", sent: false })
       expect(fetch).not.toHaveBeenCalled()
-      await client.request({ url: "https://www.googleapis.com/drive/v3/about", retry: false })
-      expect(String((fetch.mock.calls[0] as unknown as [URL])[0])).toBe("https://www.googleapis.com/drive/v3/about")
+      await googleApi(client).call("drive.about.get", { fields: "user" })
+      expect(String((fetch.mock.calls[0] as unknown as [URL])[0])).toMatch(
+        /^https:\/\/www\.googleapis\.com\/drive\/v3\/about\?/,
+      )
     } finally {
       vi.unstubAllGlobals()
     }
