@@ -1,16 +1,14 @@
-import { writeFileSync } from "node:fs"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
-import { FETCH, itemOf, LOCAL_READ, LOCAL_WRITE, listOf, listQuery, typedQuery, withQuery } from "@wirecat/cli-core/cli"
-import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store"
+import { FETCH, itemOf } from "@wirecat/cli-core/cli"
+import { addLocalDocumentCommands } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
-import { ageOf, staleCopy } from "../age.js"
 import { activeProfile, fileId, textLimit } from "../config.js"
 import { addDocument, profilesToAdd } from "../documents-add.js"
 import { metadataJson } from "../model.js"
 import { examples } from "../registry.js"
 import { readSnapshot, readState } from "../state.js"
-import { type CommandContext, positive } from "./context.js"
+import { type CommandContext, DRIVE_WORDS } from "./context.js"
 
 // A `search` hit's ref; checkpoints are rewritten when the store changes, so it names one document here.
 const DOCUMENT_REF = /^document:[1-9]\d*$/
@@ -65,98 +63,33 @@ export const addProfilesOf = (env: NodeJS.ProcessEnv, command: Command, word: st
 export const installDocumentCommands = (program: Command, context: CommandContext) => {
   const { env, selected, output, withIndex, source, profileWord } = context
   const imported = importedDocument(context)
-  const documents = annotate(program.command("documents"), { effects: LOCAL_READ }).description(
-    "read imported documents and Google Docs",
-  )
-  const documentArgument = "document id, Google Docs URL, or a search hit's document: ref"
-  annotate(
-    withQuery(
-      examples(
-        annotate(documents.command("list"), { effects: LOCAL_READ }).description(
-          "list imported documents with their Google URLs",
-        ),
-        [
-          "drive personal documents list",
-          "drive personal documents list tag:budget",
-          "drive personal documents list person:PERSON_UID --limit 10",
-        ],
-      ),
-      IMPORTED_DOCUMENT_QUERY,
-    ),
-    { output: { entity: "drive_document" }, partial: true },
-  )
-    .option("--limit <n>", "how many documents to return", positive, 50)
-    .option("--page <n>", "which page to return", positive, 1)
-    .action(async (words: string[], { limit, page }: { limit: number; page: number }) => {
+  const documents = addLocalDocumentCommands(program, {
+    words: DRIVE_WORDS,
+    output,
+    list: async (query, page) => {
       const profile = activeProfile(env, selected())
-      const query = typedQuery(words)
-      const ast = listQuery(query, IMPORTED_DOCUMENT_QUERY, "documents list")
       const found = await withIndex(async (index) => {
         if (!index.knowledge) throw new CliError("configuration_error", "index has no shared knowledge adapter")
-        return index.knowledge.documents(profile.principal, ast, { limit, offset: (page - 1) * limit })
+        return index.knowledge.documents(profile.principal, query, page)
       })
       const state = readState(env, selected(), profile.principal)
-      const age = ageOf(state)
-      output(
-        listOf("documents list", {
-          ...staleCopy(state),
-          items: found.items.map((note) => {
-            const id = (note.path ?? "").replace(/\.md$/, "")
-            const doc = state.documents[id]
-            return doc
-              ? { ...metadataJson(doc.metadata), reference: doc.reference, tabs: doc.tabs, ...age }
-              : { id, name: note.title, reference: note.ref, tabs: 0, ...age }
-          }),
-          limit,
-          has_more: found.hasMore,
-          page,
-          args: { query: query || undefined },
+      return {
+        items: found.items.map((note) => {
+          const id = (note.path ?? "").replace(/\.md$/, "")
+          const doc = state.documents[id]
+          return doc
+            ? { ...metadataJson(doc.metadata), reference: doc.reference, tabs: doc.tabs }
+            : { id, name: note.title, reference: note.ref, tabs: 0 }
         }),
-      )
-    })
-  examples(
-    annotate(documents.command("show"), { effects: LOCAL_READ, partial: true })
-      .argument("<document>", documentArgument)
-      .description("show an imported document's text, tabs and metadata"),
-    ["drive personal documents show DOC_ID", "drive personal documents show document:42 --offline"],
-  ).action((input: string) => {
-    const { snapshot } = imported(input)
-    const state = readState(env, selected(), activeProfile(env, selected()).principal)
-    output(
-      itemOf(
-        {
-          metadata: metadataJson(snapshot.metadata),
-          ...ageOf(state),
-          text: snapshot.text,
-          tabs: snapshot.tabs,
-          ...(snapshot.notRead ? { not_read: snapshot.notRead } : {}),
-        },
-        staleCopy(state),
-      ),
-    )
-  })
-  examples(
-    annotate(documents.command("export"), { effects: LOCAL_WRITE, partial: true })
-      .argument("<document>", documentArgument)
-      .description("write an imported document to a new Markdown file"),
-    ["drive personal documents export DOC_ID --output notes.md"],
-  )
-    .requiredOption("--output <file>", "path of the Markdown file to write; an existing file is refused")
-    .action((input: string, args: { output: string }) => {
-      const { id, snapshot } = imported(input)
-      try {
-        writeFileSync(args.output, snapshot.markdown, { flag: "wx", mode: 0o600 })
-      } catch (error) {
-        if ((error as NodeJS.ErrnoException).code === "EEXIST")
-          throw new CliError("validation_error", "the output file already exists; choose another --output", {
-            reason: "export.exists",
-            param: "--output",
-          })
-        throw error
+        hasMore: found.hasMore,
       }
-      const state = readState(env, selected(), activeProfile(env, selected()).principal)
-      output(itemOf({ id, path: args.output, format: "markdown", ...ageOf(state) }, staleCopy(state)))
-    })
+    },
+    document: (input) => {
+      const { id, snapshot } = imported(input)
+      return { id, metadata: metadataJson(snapshot.metadata), snapshot }
+    },
+    lastSync: () => readState(env, selected(), activeProfile(env, selected()).principal).lastSync,
+  })
   examples(
     annotate(documents.command("add"), { mcp: false, effects: FETCH })
       .argument("<url>", "Google Drive or Docs URL, or file id")

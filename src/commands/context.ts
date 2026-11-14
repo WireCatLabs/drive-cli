@@ -1,5 +1,6 @@
 import type { KeyringStore, Renderer, RenderFormat, Streams } from "@wirecat/cli-base"
 import type { BaseEnvironment, Body } from "@wirecat/cli-core/cli"
+import type { DocumentWords } from "@wirecat/cli-core/documents/cli"
 import type { UpdateEnvironment } from "@wirecat/cli-core/update"
 import type { Command } from "commander"
 import { InvalidArgumentError } from "commander"
@@ -62,4 +63,24 @@ export const offset = (input: string) => {
   const n = Number(input)
   if (!Number.isSafeInteger(n) || n < 0) throw new InvalidArgumentError("use a nonnegative integer")
   return n
+}
+
+/** How drive names itself and Google in cli-core's shared documents commands. */
+export const DRIVE_WORDS: DocumentWords = {
+  app: "drive",
+  remote: "google",
+  provider: "Google",
+  place: "Google Drive",
+  source: "google-drive",
+  text: {
+    documents: "read imported documents and Google Docs",
+    documentArgument: "document id, Google Docs URL, or a search hit's document: ref",
+    knowledgeArgument: "Google file or folder id or URL in the local catalog, or a document:<n> ref",
+    catalog: "browse stored Drive files and folders offline",
+    catalogArgument: "Google file or folder id, or its Drive URL",
+    treeArgument: "Google folder id or URL; defaults to the explicitly selected profile's roots",
+    identitiesList: "list the owners and last editor Google shows for a document",
+    mirrors: "keep local folders mirrored into Google Docs and Sheets",
+    mirrorsAdd: "mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets",
+  },
 }

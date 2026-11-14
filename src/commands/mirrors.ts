@@ -1,286 +1,66 @@
-import { statSync } from "node:fs"
-import { join, resolve } from "node:path"
-import { CliError, isCliError } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
-import {
-  FETCH,
-  itemOf,
-  jsonlRecords,
-  LOCAL_READ,
-  LOCAL_WRITE,
-  listOf,
-  parseDuration,
-  REMOTE_WRITE,
-} from "@wirecat/cli-core/cli"
-import {
-  fileMirrorState,
-  type Keep,
-  mirrorId,
-  mirrorStatus,
-  syncMirrors,
-  watchMirrors,
-} from "@wirecat/cli-core/documents"
+import { join } from "node:path"
+import { CliError } from "@wirecat/cli-base"
+import { fileMirrorState } from "@wirecat/cli-core/documents"
+import { addDocumentMirrorCommands } from "@wirecat/cli-core/documents/cli"
 import { newOperationId } from "@wirecat/cli-core/sends"
-import { type Command, Option } from "commander"
-import { activeProfile, configuredMirrors, fileId, type Mirror, readConfig, writeConfig } from "../config.js"
+import type { Command } from "commander"
+import { activeProfile, fileId, readConfig, writeConfig } from "../config.js"
 import { googleError } from "../errors.js"
-import { bindQuery, MIRRORS_QUERY, mirrorRow, termsOf } from "../list-queries.js"
 import { googleTarget, type MirrorSnapshot, mirrorKind } from "../mirror-target.js"
-import { FOLDER, type GoogleSource } from "../model.js"
-import { allOf } from "../output.js"
+import { FOLDER } from "../model.js"
 import { lockProfile } from "../profile-lock.js"
-import { examples } from "../registry.js"
 import { profileDir } from "../state.js"
-import type { CommandContext } from "./context.js"
+import { type CommandContext, DRIVE_WORDS } from "./context.js"
 import type { RemoteCommands } from "./remote.js"
 
 export const installMirrorCommands = (program: Command, context: CommandContext, { call }: RemoteCommands) => {
   const { env, selected, output, source } = context
-  const mirrors = annotate(program.command("mirrors"), { effects: LOCAL_READ }).description(
-    "keep local folders mirrored into Google Docs and Sheets",
-  )
-  const mirrorsOf = () => activeProfile(env, selected()).mirrors ?? []
-  const find = (id: string): Mirror => {
-    const mirror = mirrorsOf().find((item) => item.id === id)
-    if (!mirror)
-      throw new CliError(
-        "not_found",
-        `no mirror ${id} in profile ${selected()}; see drive ${selected()} mirrors list`,
-        {
-          reason: "mirror.not-found",
+  addDocumentMirrorCommands<MirrorSnapshot>(program, {
+    words: DRIVE_WORDS,
+    output,
+    print: (render) => context.print((_renderer, format, streams) => render(format, (text) => streams.data(text))),
+    profile: selected,
+    mirrors: () => activeProfile(env, selected()).mirrors ?? [],
+    save: (mirrors) => {
+      const config = readConfig(env)
+      const name = selected()
+      config.profiles[name] = { ...activeProfile(env, name), mirrors }
+      writeConfig(env, config)
+    },
+    parent: async (input) => {
+      const folder = fileId(input)
+      const metadata = await (await source()).metadata(folder)
+      if (metadata.mime !== FOLDER || metadata.trashed)
+        throw new CliError("validation_error", "--parent is not an accessible Google folder")
+      return { id: folder, name: metadata.name }
+    },
+    kindOf: mirrorKind,
+    stateOf: (mirror) =>
+      fileMirrorState<MirrorSnapshot>(
+        join(profileDir(env, selected()), "mirrors"),
+        mirror,
+        activeProfile(env, selected()).principal,
+        ["doc", "sheet"],
+      ),
+    connect: async () => {
+      const name = selected()
+      const { principal } = activeProfile(env, name)
+      const google = await source()
+      return {
+        sync: {
+          target: googleTarget(call, () => google.identity()),
+          principal,
+          // `call` already checks policy and journals each Google write it makes.
+          guard: <T>(_attempt: unknown, act: () => Promise<T>) => act(),
+          operationId: newOperationId,
+          errorOf: googleError,
+          lock: () => lockProfile(env, name),
+          ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
         },
-      )
-    return mirror
-  }
-
-  const stateOf = (name: string, principal: string) => (mirror: Mirror) =>
-    fileMirrorState<MirrorSnapshot>(join(profileDir(env, name), "mirrors"), mirror, principal, ["doc", "sheet"])
-  const syncing = (name: string, principal: string, google: GoogleSource) => ({
-    target: googleTarget(call, () => google.identity()),
-    stateOf: stateOf(name, principal),
-    principal,
-    // `call` already checks policy and journals each Google write it makes.
-    guard: <T>(_attempt: unknown, act: () => Promise<T>) => act(),
-    operationId: newOperationId,
-    errorOf: googleError,
-    lock: () => lockProfile(env, name),
-    ...(context.signal() ? { signal: context.signal() as AbortSignal } : {}),
-    remote: "google",
-  })
-  const chosenOf = (name: string, id?: string) => {
-    const chosen = id ? [find(id)] : mirrorsOf()
-    if (!chosen.length)
-      throw new CliError("not_found", `profile ${name} has no mirrors; add one with drive ${name} mirrors add`, {
-        reason: "mirror.none",
-      })
-    return chosen
-  }
-
-  examples(
-    annotate(mirrors.command("add"), { effects: FETCH })
-      .argument("<path>", "local folder to mirror")
-      .requiredOption("--parent <id>", "the Google Drive folder to write into, by id or URL")
-      .description("mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets"),
-    ["drive personal mirrors add ./notes --parent FOLDER_ID"],
-  ).action(async (path: string, args: { parent: string }) => {
-    const root = resolve(path)
-    let directory = false
-    try {
-      directory = statSync(root).isDirectory()
-    } catch {}
-    if (!directory)
-      throw new CliError("validation_error", "the path to mirror is not a folder", { reason: "mirror.not-folder" })
-    const folder = fileId(args.parent)
-    const metadata = await (await source()).metadata(folder)
-    if (metadata.mime !== FOLDER || metadata.trashed)
-      throw new CliError("validation_error", "--parent is not an accessible Google folder")
-    const config = readConfig(env)
-    const name = selected()
-    const profile = activeProfile(env, name)
-    const id = mirrorId(root, folder)
-    const list = profile.mirrors ?? []
-    if (!list.some((mirror) => mirror.id === id)) list.push({ id, path: root, folder })
-    config.profiles[name] = { ...profile, mirrors: list }
-    writeConfig(env, config)
-    output(itemOf({ id, path: root, folder, folder_name: metadata.name, added: true }))
-  })
-
-  bindQuery(
-    examples(annotate(mirrors.command("list"), { effects: LOCAL_READ }).description("list this profile's mirrors"), [
-      "drive personal mirrors list",
-    ]),
-    MIRRORS_QUERY,
-    mirrorRow,
-  ).action((words: string[]) => {
-    const filter = termsOf(words, MIRRORS_QUERY, "mirrors list")
-    output(allOf(configuredMirrors(env, selected(), filter)))
-  })
-
-  examples(
-    annotate(mirrors.command("remove"), { effects: LOCAL_WRITE })
-      .argument("<id>", "mirror id from mirrors list")
-      .description("stop mirroring a folder; nothing in Google Drive is changed or deleted"),
-    ["drive personal mirrors remove 1a2b3c4d"],
-  ).action((id: string) => {
-    find(id)
-    const config = readConfig(env)
-    const name = selected()
-    const profile = activeProfile(env, name)
-    config.profiles[name] = { ...profile, mirrors: (profile.mirrors ?? []).filter((mirror) => mirror.id !== id) }
-    writeConfig(env, config)
-    output(itemOf({ id, removed: true }))
-  })
-
-  examples(
-    annotate(mirrors.command("status"), { effects: LOCAL_READ })
-      .argument("[id]", "mirror id; every mirror of the profile when omitted")
-      .description("show which local files the next sync would create or send; Google is not asked"),
-    ["drive personal mirrors status"],
-  ).action(async (id?: string) => {
-    const name = selected()
-    const { principal } = activeProfile(env, name)
-    const items = await mirrorStatus(id ? [find(id)] : mirrorsOf(), mirrorKind, stateOf(name, principal))
-    output(
-      allOf(
-        items.map(({ id, folder, create, update, unchanged, orphans, unsupported, remote_checked }) => ({
-          id,
-          folder,
-          create: create.length,
-          update: update.length,
-          unchanged,
-          orphans: orphans.length,
-          unsupported,
-          remote_checked,
-        })),
-      ),
-    )
-  })
-
-  examples(
-    annotate(mirrors.command("sync"), { effects: REMOTE_WRITE })
-      .argument("[id]", "mirror id; every mirror of the profile when omitted")
-      .addOption(
-        new Option("--keep <side>", "where a part changed on both sides, keep this side").choices([
-          "local",
-          "google",
-          "both",
-        ]),
-      )
-      .option("--replace", "same as --keep local, and create again files deleted in Google")
-      .description("sync both ways with Docs and Sheets; a part changed on both sides is reported"),
-    [
-      "drive personal mirrors sync",
-      "drive personal mirrors sync 1a2b3c4d --keep google",
-      "drive personal mirrors sync 1a2b3c4d --replace",
-    ],
-  ).action(async (id: string | undefined, args: { keep?: "local" | "google" | "both"; replace?: boolean }) => {
-    const name = selected()
-    const profile = activeProfile(env, name)
-    const chosen = chosenOf(name, id)
-    if (args.replace && args.keep && args.keep !== "local")
-      throw new CliError(
-        "validation_error",
-        "--replace keeps the local side; it cannot be combined with --keep google or both",
-      )
-    const keep: Keep | undefined = args.replace ? "local" : args.keep === "google" ? "remote" : args.keep
-    const google = await source()
-    const { items, issues } = await syncMirrors({
-      ...syncing(name, profile.principal, google),
-      mirrors: chosen,
-      ...(keep ? { keep } : {}),
-      recreate: args.replace === true,
-    })
-    const body = allOf(items)
-    if (issues.length) body.meta = { complete: false, issues }
-    output(body)
-    if (issues.length)
-      throw new CliError(
-        "provider_error",
-        `some files were not synced; see conflicts, missing and errors, then rerun with --keep local, google or both`,
-        { reason: "mirror.partial" },
-      )
-  })
-
-  examples(
-    annotate(mirrors.command("watch"), { effects: REMOTE_WRITE, lifetime: "persistent" })
-      .argument("[id]", "mirror id; every mirror of the profile when omitted")
-      .option("--every <duration>", "how often to ask Google for changes", "60s")
-      .summary("keep syncing both ways until Ctrl-C or --timeout")
-      .description(
-        "keep syncing both ways until Ctrl-C or --timeout: on each local save and each Google change; " +
-          "a part changed on both sides is reported and left for mirrors sync --keep",
-      ),
-    ["drive personal mirrors watch", "drive personal mirrors watch 1a2b3c4d --every 2m --jsonl"],
-  ).action(async (id: string | undefined, args: { every: string }) => {
-    const pollMs = parseDuration(args.every, "--every")
-    if (pollMs < 10_000) throw new CliError("validation_error", "--every must be at least 10s")
-    const name = selected()
-    const profile = activeProfile(env, name)
-    const chosen = chosenOf(name, id)
-    const signal = context.endsOnStop() ?? new AbortController().signal
-    const google = await source()
-    const states = stateOf(name, profile.principal)
-    let token = await google.startToken()
-    const remoteChanges = async (): Promise<string[] | "all"> => {
-      let changed: Set<string>
-      try {
-        const feed = await google.changes(token)
-        token = feed.cursor
-        changed = new Set(feed.items.map((item) => item.id))
-      } catch (error) {
-        if (!isCliError(error) || error.details?.reason !== "listing.too-large") throw error
-        token = await google.startToken()
-        return "all"
+        startToken: () => google.startToken(),
+        changes: (token) => google.changes(token),
       }
-      return chosen
-        .filter((mirror) => Object.values(states(mirror).read().entries).some((entry) => changed.has(entry.id)))
-        .map((mirror) => mirror.id)
-    }
-    let cycles = 0
-    for await (const event of watchMirrors(
-      (mirrors) => syncMirrors({ ...syncing(name, profile.principal, google), mirrors }),
-      { mirrors: chosen, signal, kindOf: mirrorKind, stateOf: states, remoteChanges, pollMs },
-    )) {
-      cycles++
-      const data = {
-        at: new Date().toISOString(),
-        triggers: event.triggers,
-        mirrors: event.mirrors,
-        ...("error" in event
-          ? { error: { code: event.error.code, message: event.error.message } }
-          : { results: event.result.items, ...(event.result.issues.length ? { issues: event.result.issues } : {}) }),
-      }
-      context.print((_renderer, format, streams) =>
-        streams.data(format === "pretty" ? describeCycle(data) : JSON.stringify({ type: "item", data })),
-      )
-    }
-    context.print((_renderer, format, streams) => {
-      if (format === "pretty") return
-      const end = listOf("mirrors watch", {
-        items: [],
-        limit: Math.max(1, cycles),
-        has_more: false,
-        paging: "cursor",
-        meta: { complete: true },
-      })
-      for (const record of jsonlRecords(end)) streams.data(JSON.stringify(record))
-    })
+    },
+    endsOnStop: () => context.endsOnStop(),
   })
-}
-
-const describeCycle = (cycle: {
-  at: string
-  triggers: string[]
-  mirrors: string[]
-  error?: { message: string }
-  results?: { id: string; created: string[]; updated: string[]; pulled: string[]; conflicts: unknown[] }[]
-}) => {
-  const time = cycle.at.slice(11, 19)
-  if (cycle.error) return `${time} ${cycle.triggers.join("+")}: ${cycle.error.message}; trying again`
-  const parts = (cycle.results ?? []).map(
-    (result) =>
-      `${result.id} ${result.created.length} created, ${result.updated.length} sent, ${result.pulled.length} pulled` +
-      (result.conflicts.length ? `, ${result.conflicts.length} conflicts (mirrors sync ${result.id} --keep …)` : ""),
-  )
-  return `${time} ${cycle.triggers.join("+")}: ${parts.join("; ") || "nothing to do"}`
 }
