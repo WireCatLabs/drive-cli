@@ -373,7 +373,7 @@ drive <profile> folders list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive selected folder — id; every field: drive commands info folders list
+**Returns:** selected folder — id; every field: drive commands info folders list
 
 **Example:** `drive personal folders list`
 
@@ -529,6 +529,8 @@ drive <profile> documents list [query] [options]
 |---|---|
 | `--limit <n>` | how many documents to return. Default: `50`. |
 | `--page <n>` | which page to return. Default: `1`. |
+
+**Next usually:** `drive documents show <document>`, `drive documents context <document>`, `drive documents get <document>`
 
 **Example:** `drive personal documents list`, `drive personal documents list tag:budget`, `drive personal documents list person:PERSON_UID --limit 10`
 
@@ -815,7 +817,7 @@ drive <profile> catalog tags list <file> [query]
 | `file` | required | Google file or folder id, or its Drive URL. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive document tag — tag; every field: drive commands info catalog tags list
+**Returns:** document tag — tag; every field: drive commands info catalog tags list
 
 **Example:** `drive personal catalog tags list FOLDER_ID --offline`
 
@@ -870,7 +872,7 @@ drive <profile> tags list <document> [query]
 | `document` | required | Google file or folder id or URL in the local catalog, or a document:<n> ref. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive document tag — tag; every field: drive commands info tags list
+**Returns:** document tag — tag; every field: drive commands info tags list
 
 **Example:** `drive personal tags list DOC_ID`
 
@@ -925,7 +927,7 @@ drive <profile> relationships list <document> [query]
 | `document` | required | Google file or folder id or URL in the local catalog, or a document:<n> ref. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive document relationship — id, from, to, kind, role, confirmed, origin; every field: drive commands info relationships list
+**Returns:** document relationship — id, from, to, kind, role, confirmed, origin; every field: drive commands info relationships list
 
 **Example:** `drive personal relationships list DOC_ID`
 
@@ -1335,7 +1337,7 @@ drive <profile> identities list <document> [query]
 | `document` | required | Google file or folder id or URL in the local catalog, or a document:<n> ref. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive document identity — google_id, role, person; every field: drive commands info identities list
+**Returns:** document identity — google_id, role, person; every field: drive commands info identities list
 
 **Example:** `drive personal identities list DOC_ID`
 
@@ -4109,7 +4111,7 @@ drive <profile> mirrors list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** drive mirror — id, path, folder; every field: drive commands info mirrors list
+**Returns:** mirror — id, path, folder; every field: drive commands info mirrors list
 
 **Example:** `drive personal mirrors list`
 

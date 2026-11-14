@@ -3,14 +3,6 @@ import { defineReasons, type ErrorReason } from "@wirecat/cli-base/standards"
 type Entry = [reason: string, code: ErrorReason["code"], message: string, details?: string[], step?: string]
 
 const ENTRIES: Entry[] = [
-  ["catalog.unavailable", "configuration_error", "the index has no shared catalog adapter"],
-  ["catalog.not-found", "not_found", "the file or folder is not in the local catalog; run catalog import or sync"],
-  ["catalog.depth-invalid", "validation_error", "tree depth must be between 0 and 50"],
-  ["catalog.cycle", "invalid_response", "local folder ancestry contains a cycle"],
-  ["catalog.tree-limit", "validation_error", "tree output exceeds 10000 nodes; choose a smaller folder"],
-  ["mirror.none", "not_found", "the profile has no mirrors; add one with drive <profile> mirrors add"],
-  ["mirror.not-folder", "validation_error", "the path to mirror is not a folder"],
-  ["mirror.not-found", "not_found", "no such mirror in this profile; see drive <profile> mirrors list"],
   ["mirror.too-many-cells", "validation_error", "a mirrored spreadsheet is over its cell limit"],
   ["body.unreadable", "validation_error", "the request body file could not be read"],
   ["delete.not-allowed", "permission_error", "this method permanently deletes Google data; pass --allow-delete"],
@@ -40,7 +32,6 @@ const ENTRIES: Entry[] = [
   ],
   ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
-  ["export.exists", "validation_error", "the output file already exists"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   ["file.unreadable", "validation_error", "the file to upload could not be read"],
   ["listing.too-large", "provider_error", "the listing is over its bound; the checkpoint was kept"],

@@ -10,11 +10,11 @@ describe("provider result fields", () => {
   it("selects catalog names for items and lists, retaining envelope metadata", async () => {
     const f = fixture()
     const discovery = commandsDocument(createProgram({ env: f.env, streams: captureStreams() }), ["catalog", "list"])
-    expect(discovery.commands[0]?.output).toEqual({ entity: "document", view: "drive_catalog" })
+    expect(discovery.commands[0]?.output).toEqual({ entity: "document", view: "catalog" })
     const declared = (words: string[]) =>
       commandsDocument(createProgram({ env: f.env, streams: captureStreams() }), words).commands[0]?.output
-    expect(declared(["catalog", "show"])).toEqual({ entity: "document", view: "drive_catalog" })
-    expect(declared(["documents", "list"])).toEqual({ entity: "drive_document" })
+    expect(declared(["catalog", "show"])).toEqual({ entity: "document", view: "catalog" })
+    expect(declared(["documents", "list"])).toEqual({ entity: "document", view: "imported" })
     saveState(f.env, "default", {
       version: 1,
       principal: "synthetic-principal",

@@ -28,7 +28,6 @@ const commands = (store: ReturnType<typeof stubStore>) => {
     },
     run: (_input, fn) => fn(knowledge, "synthetic-principal", ref),
     output: (body) => bodies.push(body),
-    positive: Number,
     author: () => "owner",
     decider: () => "owner",
     complete: () => {

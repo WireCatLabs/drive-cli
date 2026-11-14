@@ -235,7 +235,7 @@
         "local": "read"
       },
       "permission": "folders.list",
-      "entity": "drive_selected_folder"
+      "entity": "selected_folder"
     },
     {
       "path": [
@@ -345,7 +345,7 @@
         "local": "read"
       },
       "permission": "documents.list",
-      "entity": "drive_document"
+      "entity": "document"
     },
     {
       "path": [
@@ -541,7 +541,7 @@
         "local": "read"
       },
       "permission": "catalog.tags.list",
-      "entity": "drive_document_tag"
+      "entity": "document_tag"
     },
     {
       "path": [
@@ -580,7 +580,7 @@
         "local": "read"
       },
       "permission": "tags.list",
-      "entity": "drive_document_tag"
+      "entity": "document_tag"
     },
     {
       "path": [
@@ -617,7 +617,7 @@
         "local": "read"
       },
       "permission": "relationships.list",
-      "entity": "drive_document_relationship"
+      "entity": "document_relationship"
     },
     {
       "path": [
@@ -865,7 +865,7 @@
         "local": "read"
       },
       "permission": "identities.list",
-      "entity": "drive_document_identity"
+      "entity": "document_identity"
     },
     {
       "path": [
@@ -2319,7 +2319,7 @@
         "local": "read"
       },
       "permission": "mirrors.list",
-      "entity": "drive_mirror"
+      "entity": "mirror"
     },
     {
       "path": [
@@ -2574,7 +2574,7 @@
         "storage"
       ]
     },
-    "drive_selected_folder": {
+    "selected_folder": {
       "fields": [
         "id"
       ]
@@ -2595,12 +2595,12 @@
         "mime"
       ]
     },
-    "drive_document_tag": {
+    "document_tag": {
       "fields": [
         "tag"
       ]
     },
-    "drive_document_relationship": {
+    "document_relationship": {
       "fields": [
         "id",
         "from",
@@ -2648,7 +2648,7 @@
         "status"
       ]
     },
-    "drive_document_identity": {
+    "document_identity": {
       "fields": [
         "google_id",
         "role"
@@ -2684,7 +2684,7 @@
         "id"
       ]
     },
-    "drive_mirror": {
+    "mirror": {
       "fields": [
         "id",
         "path",
