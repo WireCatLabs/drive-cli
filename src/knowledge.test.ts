@@ -44,11 +44,11 @@ describe("shared document knowledge", () => {
       expect(await f.k.links(f.principal, f.ref, { id: link.id })).toEqual([link])
       expect(await f.k.people(f.principal, f.ref, { role: "owner" })).toMatchObject({
         items: [
-          { google_id: "owner-user", role: "owner" },
-          { google_id: "email:editor@example.invalid", role: "owner" },
+          { remote_id: "owner-user", role: "owner" },
+          { remote_id: "email:editor@example.invalid", role: "owner" },
         ],
       })
-      expect(await f.k.people(f.principal, f.ref, { google_id: "missing" })).toMatchObject({ items: [] })
+      expect(await f.k.people(f.principal, f.ref, { remote_id: "missing" })).toMatchObject({ items: [] })
       expect((await f.k.note(f.principal, f.ref, note.ref)).title).toBe("Review")
       await f.index.save(f.principal, content(f.metadata, "Revised decision"), "hash-two")
       expect((await f.k.memory(f.principal, f.ref, memory.ref)).status).toBe("stale")
@@ -133,9 +133,9 @@ describe("shared document knowledge", () => {
       if (!person) throw new Error("missing fixture person")
       const otherRef = await f.index.save("second-google-account", content({ ...f.metadata, id: "doc-b" }), "hash")
       const observed = (await f.k.people(f.principal, f.ref)) as {
-        items: { google_id: string; person: { uid: string } }[]
+        items: { remote_id: string; person: { uid: string } }[]
       }
-      const editor = observed.items.find((item) => item.google_id === "email:editor@example.invalid")
+      const editor = observed.items.find((item) => item.remote_id === "email:editor@example.invalid")
       expect(editor?.person.uid).not.toBe(person.uid)
       expect(
         (await f.k.linkPerson(f.principal, f.ref, "email:editor@example.invalid", `person:${person.uid}`)).uid,

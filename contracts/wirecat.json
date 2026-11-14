@@ -2650,7 +2650,8 @@
     },
     "document_identity": {
       "fields": [
-        "google_id",
+        "remote_id",
+        "provider",
         "role"
       ]
     },

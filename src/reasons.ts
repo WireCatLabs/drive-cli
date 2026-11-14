@@ -34,7 +34,6 @@ const ENTRIES: Entry[] = [
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   ["file.unreadable", "validation_error", "the file to upload could not be read"],
-  ["listing.too-large", "provider_error", "the listing is over its bound; the checkpoint was kept"],
   ["policy.confirm", "confirmation_required", "the profile policy asks to confirm {permission}", ["permission"]],
   ["policy.denied", "permission_error", "the profile policy refuses {permission}", ["permission"]],
   [

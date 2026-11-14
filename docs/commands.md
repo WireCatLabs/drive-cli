@@ -1337,7 +1337,7 @@ drive <profile> identities list <document> [query]
 | `document` | required | Google file or folder id or URL in the local catalog, or a document:<n> ref. |
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** document identity — google_id, role, person; every field: drive commands info identities list
+**Returns:** document identity — remote_id, provider, role, person; every field: drive commands info identities list
 
 **Example:** `drive personal identities list DOC_ID`
 

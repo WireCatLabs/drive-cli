@@ -8,7 +8,7 @@ import type { LinkInput, MessageStore, PersonRecord } from "@wirecat/cli-core/st
 import type { FileMetadata, GoogleUser } from "./model.js"
 export interface DocumentKnowledge extends SharedDocumentKnowledge {
   context(principal: string, ref: string): Promise<unknown>
-  people(principal: string, ref: string, filter?: { google_id?: string; role?: string }): Promise<unknown>
+  people(principal: string, ref: string, filter?: { remote_id?: string; role?: string }): Promise<unknown>
   linkPerson(principal: string, ref: string, googleId: string, personRef: string): Promise<PersonRecord>
 }
 export const googleUserId = (user: GoogleUser): string | undefined =>
@@ -43,7 +43,7 @@ export const documentKnowledge = (
       ].filter(
         (user) =>
           (filter.role === undefined || user.role === filter.role) &&
-          (filter.google_id === undefined || googleUserId(user) === filter.google_id),
+          (filter.remote_id === undefined || googleUserId(user) === filter.remote_id),
       )
       return {
         items: await Promise.all(
@@ -52,7 +52,8 @@ export const documentKnowledge = (
             const person = id ? await store.people.personOf({ provider: "google-drive", id }) : undefined
             return {
               ...user,
-              google_id: id ?? null,
+              remote_id: id ?? null,
+              provider: "google-drive",
               person: person ? { ref: `person:${person.uid}`, ...person } : null,
             }
           }),

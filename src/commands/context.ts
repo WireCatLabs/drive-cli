@@ -82,5 +82,6 @@ export const DRIVE_WORDS: DocumentWords = {
     identitiesList: "list the owners and last editor Google shows for a document",
     mirrors: "keep local folders mirrored into Google Docs and Sheets",
     mirrorsAdd: "mirror a local folder: Markdown to Google Docs, CSV/TSV/XLSX to Sheets",
+    mirrorsSync: "sync both ways with Docs and Sheets; a part changed on both sides is reported",
   },
 }
