@@ -1,5 +1,7 @@
 ### Changed — may break callers
 
+- **cli-core 0.666.0**, which carries the shared documents commands. `runs list` help no longer prints the defaults of
+  `--limit` and `--page`.
 - **The document commands come from cli-core and use the shared entity names.** `folders`, `sync`, `status`,
   `documents list|show|export|context`, `search`, `catalog`, `tags`, `relationships`, `notes`, `memories`, `facts`,
   `identities` and `mirrors` are cli-core's shared documents commands, the same in every documents CLI. Their
