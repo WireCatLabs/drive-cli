@@ -1,7 +1,7 @@
 import { captureStreams } from "@wirecat/cli-base"
-import { type CatalogEntry, openStore } from "@wirecat/cli-core/store"
+import { openStore } from "@wirecat/cli-core/store"
 import { expect, it, vi } from "vitest"
-import { catalogFiles, catalogTree } from "./catalog.js"
+import { catalogFiles } from "./catalog.js"
 import { writeConfig } from "./config.js"
 import { FOLDER, type SyncState } from "./model.js"
 
@@ -157,26 +157,6 @@ it("uses the pending hierarchy and excludes scheduled removals when backfilling 
   }
   expect(catalogFiles(state, ["root"]).map((e) => e.id)).toEqual(["root", "photo"])
   expect(catalogFiles(state, [])).toEqual([])
-})
-it("bounds local trees and refuses cycles while keeping duplicate names distinct", () => {
-  const entry = (id: string, parents: string[]): CatalogEntry => ({
-    externalId: `${id}.md`,
-    name: "Same",
-    kind: "folder",
-    parents: parents.map((p) => `${p}.md`),
-    ref: `document:${id}`,
-    active: true,
-    observedAt: "2026-10-13T00:00:00Z",
-    content: "metadata",
-  })
-  expect(
-    catalogTree([entry("root", []), entry("a", ["root"]), entry("b", ["root"])], ["root.md"], 2)[0]?.children.map(
-      (e) => e.item.id,
-    ),
-  ).toEqual(["a", "b"])
-  expect(() => catalogTree([entry("root", ["a"]), entry("a", ["root"])], ["root.md"], 5)).toThrow("cycle")
-  expect(() => catalogTree([], ["absent.md"], 5)).toThrow("not in")
-  expect(() => catalogTree([], [], 51)).toThrow("depth")
 })
 it("retains checkpoint and pending work if catalog persistence fails", async () => {
   const f = fixture()

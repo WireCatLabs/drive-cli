@@ -45,7 +45,7 @@ import { apiMethod } from "./api-methods.js"
 import { installAccountCommands } from "./commands/account.js"
 import { installCatalogCommands } from "./commands/catalog.js"
 import { installConfigCommands, installModelCommands } from "./commands/config.js"
-import { type CommandContext, type DriveEnvironment, offset, positive } from "./commands/context.js"
+import { type CommandContext, type DriveEnvironment, positive } from "./commands/context.js"
 import { installCommandsCommand } from "./commands/discovery.js"
 import {
   addProfilesOf,
@@ -320,11 +320,10 @@ const installDrive = (program: Command) => {
   installStoreCommands(program, context)
   installDocumentCommands(program, context)
   installSearchCommand(program, context)
-  installCatalogCommands(program, { env, selected, output, positive, offset, withIndex })
+  installCatalogCommands(program, { env, selected, output, withIndex })
   installKnowledgeCommands(program, {
     document: imported,
     output,
-    positive,
     complete: () => environment().complete ?? memoryModel(env, selected(), signal()),
     author: () => (agent() ? { bot: MCP_AGENT, kind: "agent" } : "owner"),
     decider: () => (agent() ? { bot: MCP_AGENT, reason: "asked over drive's MCP server" } : "owner"),

@@ -128,7 +128,7 @@ describe("times at the edges", () => {
     process.env.TZ = "America/Los_Angeles"
     await expect(
       drive(async () => ({ files: [] }), "files", "list", 'modified_time>"2026-03-08T02:30:00"', "--json"),
-    ).rejects.toThrow(/quoted timestamp with offset/)
+    ).rejects.toMatchObject({ details: { reason: "query.invalid-date" }, message: expect.stringMatching(/offset/) })
   })
 
   it("shows a person the times in the computer's zone and says which zone", async () => {

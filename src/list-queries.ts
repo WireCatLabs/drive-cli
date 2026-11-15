@@ -8,7 +8,6 @@ import {
 } from "@wirecat/cli-base/query"
 import { isoTime } from "@wirecat/cli-base/standards"
 import { answerEntity, listQuery, queryTerms, typedQuery, withQuery } from "@wirecat/cli-core/cli"
-import { note } from "@wirecat/cli-core/store"
 import type { Command } from "commander"
 import * as v from "valibot"
 
@@ -24,27 +23,10 @@ const registry = (
     field.native ? { ...field, operators: ["term", "phrase"] } : field,
   ),
 })
-export const folderRow = v.strictObject({ id: v.string() })
-export const mirrorRow = v.strictObject({ id: v.string(), path: v.string(), folder: v.string() })
 export const sessionRow = v.strictObject({
   profile: v.string(),
   selected_folders: v.number(),
   storage: v.picklist(["keyring", "file"]),
-})
-export const tagRow = v.strictObject({ tag: v.string() })
-export const linkRow = v.looseObject({
-  id: v.string(),
-  from: v.string(),
-  to: v.nullable(v.string()),
-  kind: v.string(),
-  role: v.nullable(v.string()),
-  confirmed: v.boolean(),
-  origin: v.picklist(["file", "owner", "suggested", "message"]),
-})
-export const identityRow = v.looseObject({
-  google_id: v.nullable(v.string()),
-  role: v.picklist(["owner", "last-editor"]),
-  person: v.nullable(v.record(v.string(), v.unknown())),
 })
 export const fileRow = v.looseObject({
   id: v.optional(v.string()),
@@ -64,27 +46,9 @@ export const transcriptRow = v.strictObject({
 export const TRANSCRIPTS_QUERY = registry("drive_transcript", transcriptRow, ["owned_by_me"], {
   owned_by_me: "owned_by_me:false",
 })
-export const FOLDERS_QUERY = registry("drive_selected_folder", folderRow, ["id"], { id: "id:FOLDER_ID" })
-export const MIRRORS_QUERY = registry("drive_mirror", mirrorRow, ["id", "path", "folder"], {
-  id: "id:example",
-  path: 'path:"/example/notes"',
-  folder: "folder:FOLDER_ID",
-})
 export const SESSIONS_QUERY = registry("drive_session", sessionRow, ["profile", "storage"], {
   profile: "profile:personal",
   storage: "storage:keyring",
-})
-export const TAGS_QUERY = registry("drive_document_tag", tagRow, ["tag"], { tag: "tag:budget" })
-export const NOTES_QUERY = registry("note", note, ["text"], { text: "text:review" })
-export const LINKS_QUERY = registry("drive_document_relationship", linkRow, ["id", "role", "origin", "confirmed"], {
-  id: "id:1",
-  role: "role:reviewer",
-  origin: "origin:owner",
-  confirmed: "confirmed:true",
-})
-export const IDENTITIES_QUERY = registry("drive_document_identity", identityRow, ["google_id", "role"], {
-  google_id: "google_id:example",
-  role: "role:owner",
 })
 export const FILES_QUERY: QueryRegistry = {
   entity: "drive_remote_file",

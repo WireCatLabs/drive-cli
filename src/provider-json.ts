@@ -3,17 +3,17 @@ import { metaOf } from "@wirecat/cli-base/commands"
 import type { ItemEnvelope, ListEnvelope } from "@wirecat/cli-base/standards"
 import { writes } from "@wirecat/cli-base/standards"
 import { answerFields, checkJson, entityFields, type RowTable } from "@wirecat/cli-core/cli"
+import { CATALOG_FIELDS } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
-import { CATALOG_FIELDS } from "./catalog.js"
 import { DOCUMENT_LIST_FIELDS } from "./model.js"
 
 export const providerJsonFields = entityFields({
-  "document.drive_catalog": CATALOG_FIELDS,
-  drive_document: DOCUMENT_LIST_FIELDS,
+  "document.catalog": CATALOG_FIELDS,
+  "document.imported": DOCUMENT_LIST_FIELDS,
 })
 
 export const DRIVE_ROWS: RowTable = {
-  drive_document: {
+  "document.imported": {
     columns: [
       { field: "reference" },
       { field: "name" },
@@ -21,7 +21,7 @@ export const DRIVE_ROWS: RowTable = {
       { field: "age_days", as: "count", tag: "days since sync" },
     ],
   },
-  "document.drive_catalog": {
+  "document.catalog": {
     columns: [{ field: "ref" }, { field: "name" }, { field: "kind" }, { field: "modified_at", as: "time" }],
   },
 }

@@ -104,7 +104,7 @@ describe("document knowledge commands", () => {
     expect((await call("facts", "show", "doc-a", replacement.ref)).status).toBe("accepted")
     expect((await call("--offline", "facts", "reverse", "doc-a", replacement.ref)).status).toBe("reversed")
     const people = await call("identities", "list", "doc-a")
-    expect(people.items[0].google_id).toBe("google-owner")
+    expect(people.items[0].remote_id).toBe("google-owner")
     expect((await call("documents", "list", `person:"${people.items[0].person.ref}"`)).items).toHaveLength(2)
     expect((await call("documents", "list", `person:${people.items[0].person.uid}`)).items).toHaveLength(2)
     expect((await call("documents", "list", "person:missing")).items).toHaveLength(0)
