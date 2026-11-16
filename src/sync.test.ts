@@ -75,7 +75,7 @@ describe("durable source sync", () => {
     expect(stopped.next).toEqual([expect.objectContaining({ step: "sync.run", command: "sync" })])
     expect(streams.stderr.join("")).toContain("run drive default sync again")
   })
-  it("stops in time at the run's deadline and says to sync again, instead of timing out", async () => {
+  it("stops within the run's deadline after real progress, says to sync again and leaves embedding for later", async () => {
     const f = fixture()
     vi.mocked(f.source.children).mockImplementation(async (id) =>
       id === "root"
@@ -84,13 +84,26 @@ describe("durable source sync", () => {
     )
     const streams = captureStreams()
     await testProgram({ env: f.env, source: async () => f.source, index: async () => f.index, streams }).parseAsync(
-      ["default", "sync", "--json", "--timeout", "1s"],
+      ["default", "sync", "--json", "--embed", "--timeout", "7s"],
       { from: "user" },
     )
     const stopped = JSON.parse(streams.stdout.join(""))
     expect(stopped.meta).toMatchObject({ complete: false })
-    expect(stopped.item.stopped).toBe("deadline")
+    // 7 s leave one request after the 5 s margin: the budget sized to the deadline stops the walk after it.
+    expect(stopped.item).toMatchObject({ stopped: "requests", embeddings: { skipped: "requests" } })
+    expect(stopped.item.walk.listed).toBeGreaterThan(0)
+    expect(f.index.embed).not.toHaveBeenCalled()
     expect(streams.stderr.join("")).toContain("run drive default sync again")
+  })
+  it("embeds after a sync that ended with time to spare", async () => {
+    const f = fixture()
+    const streams = captureStreams()
+    await testProgram({ env: f.env, source: async () => f.source, index: async () => f.index, streams }).parseAsync(
+      ["default", "sync", "--json", "--embed"],
+      { from: "user" },
+    )
+    expect(JSON.parse(streams.stdout.join("")).item.embeddings).toEqual({ embedded: 0 })
+    expect(f.index.embed).toHaveBeenCalledWith(600)
   })
   it("handles overlapping selected roots without mistaking them for a cycle", async () => {
     const f = fixture(["nested", "root"])

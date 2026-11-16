@@ -11,3 +11,6 @@
 - **A sync stops in time at its deadline and says to sync again** (15 minutes in a terminal, 45 seconds over MCP, or
   `--timeout`). drive did not pass the run's budget and deadline to the sync, so a long sync was cut off with
   `command.timed-out` instead.
+- **`sync --embed` no longer turns a sync's own stop into a timeout.** After a sync that stopped early, or with no
+  time left before the deadline, it skips embedding and says so in `embeddings` (`skipped`, `next`); the next
+  `sync --embed` goes on.
