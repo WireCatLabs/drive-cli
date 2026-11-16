@@ -14,13 +14,14 @@ import {
 } from "@wirecat/cli-core/cli"
 import { googleApp } from "@wirecat/cli-core/constants"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
+import { TRANSCRIPT_WORDS } from "@wirecat/cli-core/meetings"
 import type { OAuthClient } from "@wirecat/cli-core/oauth"
 import { LEVELS } from "@wirecat/cli-core/sends"
 import * as v from "valibot"
 import { operations } from "./generated/manifest.js"
 import { DRIVE_APP } from "./identity.js"
 import { DEFAULT_LEVELS, permissionKeys } from "./policy-keys.js"
-import { TRANSCRIPT_MODES, TRANSCRIPT_WORDS } from "./transcripts.js"
+import { TRANSCRIPT_MODES } from "./transcripts.js"
 
 const Common = {
   ...AI_ENTRIES,

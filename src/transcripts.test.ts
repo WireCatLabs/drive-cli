@@ -1,4 +1,5 @@
 import { captureStreams } from "@wirecat/cli-base"
+import { TRANSCRIPT_WORDS } from "@wirecat/cli-core/meetings"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 import { SHEET } from "./model.js"
@@ -6,7 +7,7 @@ import { run } from "./program.js"
 import { readState } from "./state.js"
 import { sync } from "./sync.js"
 import { commandResult, content, file, fixture } from "./testing.js"
-import { isTranscript, TRANSCRIPT_WORDS, transcriptQuery, transcriptsDriveQuery } from "./transcripts.js"
+import { isTranscript, transcriptQuery, transcriptsDriveQuery } from "./transcripts.js"
 
 const named = (id: string, name: string, parents = ["organizers-folder"], mime?: string) => ({
   ...file(id, parents, mime),
