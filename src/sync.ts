@@ -6,7 +6,7 @@ import { googleError } from "./errors.js"
 import { type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource, type Skip } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
 import { readState, readWalk, removeSnapshot, removeWalk, saveSnapshot, saveState, saveWalk } from "./state.js"
-import { MAX_ENTRIES, supported, tooManyEntries } from "./supported.js"
+import { MAX_ENTRIES, supported } from "./supported.js"
 import { transcriptQuery } from "./transcripts.js"
 import { VERSION } from "./version.js"
 
@@ -56,7 +56,6 @@ export const sync = async (
       pictures: profile.picture_search,
       textLimit: textLimit(env, name),
       maxEntries: MAX_ENTRIES,
-      limitError: tooManyEntries,
       isFolder: (file) => file.mime === FOLDER,
       skipReason,
       retryable,

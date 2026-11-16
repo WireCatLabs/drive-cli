@@ -6,20 +6,6 @@ import { DOC, type FileMetadata } from "./model.js"
 export const TRANSCRIPT_MODES = ["include", "skip", "exclude"] as const
 export type TranscriptMode = (typeof TRANSCRIPT_MODES)[number]
 
-/**
- * What Meet and Gemini put in the name of the Google Doc they save. The English names are the ones in a real Drive;
- * the Russian and Spanish ones are Google's localized forms as best known, not yet seen in one (`transcript_words`
- * replaces the list). Drive's files have no field that marks a document as Meet's.
- */
-export const TRANSCRIPT_WORDS = [
-  "Transcript",
-  "Notes by Gemini",
-  "Транскрипт",
-  "Заметки Gemini",
-  "Transcripción",
-  "Notas de Gemini",
-] as const
-
 const folded = (text: string) => text.normalize("NFC").toLowerCase()
 
 export const isTranscript =

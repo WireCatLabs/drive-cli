@@ -223,9 +223,10 @@ drive personal status --json
 Sync polls Google's change feed. Repeat it after edits or before a time-sensitive answer; there
 is no background watcher. `--limit` bounds the documents read for that invocation, not the eventual
 size of the folder. `--rescan` reconciles the selected folders from a fresh change token when you
-need a full check. One sync reads at most 10,000 entries under the chosen folders and at most
-10,000 changes since the last sync. When Google lists more changes than that, `--rescan` reads the
-folders instead; when the folders themselves hold more, choose smaller ones. Unchanged text reuses its content identity and existing embeddings.
+need a full check. One sync reads at most 10,000 entries under the chosen folders and saves where it
+stopped; the next sync goes on from there. One folder may hold at most 10,000 entries, and one sync
+reads at most 10,000 changes since the last sync. When Google lists more changes than that,
+`--rescan` reads the folders instead; when one folder holds more, choose smaller ones. Unchanged text reuses its content identity and existing embeddings.
 Renames keep document IDs; files moved outside selected roots or removed remotely leave local
 search after reconciliation. Changed or removed sources mark their active memories stale.
 
