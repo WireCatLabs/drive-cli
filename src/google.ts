@@ -90,7 +90,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
     }
   }
   // The default `user` corpus: files the account created, opened or had shared with it directly, per Google's docs.
-  const listed = (q: string, what: string) =>
+  const listed = (q: string, what: string, fix: string) =>
     safe(async () => {
       const files: FileMetadata[] = []
       const seen = new Set<string>()
@@ -110,7 +110,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (data.incompleteSearch)
           throw new CliError("provider_error", `Google ${what} was incomplete; sync state was preserved`)
         for (const file of data.files ?? []) files.push(metadataOf(file))
-        if (files.length > MAX_ENTRIES) throw tooManyEntries()
+        if (files.length > MAX_ENTRIES) throw tooManyEntries(what, fix)
         if (!data.nextPageToken) return files
         if (seen.has(data.nextPageToken)) throw new CliError("invalid_response", "Google repeated a folder page token")
         seen.add(data.nextPageToken)
@@ -132,8 +132,13 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (!id) throw new CliError("invalid_response", "Google did not identify the signed-in account")
         return id
       }),
-    children: (id) => listed(`'${id}' in parents and trashed = false`, "folder listing"),
-    search: (q) => listed(q, "transcript search"),
+    children: (id) =>
+      listed(
+        `'${id}' in parents and trashed = false`,
+        "folder listing",
+        "choose smaller folders with `folders remove` and `folders add`",
+      ),
+    search: (q) => listed(q, "transcript search", "set more specific `transcript_words`"),
     startToken: () =>
       safe(async () => {
         const token = (await api.changes.getStartPageToken({ supportsAllDrives: true }, { timeout: 30000 })).data
@@ -173,7 +178,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             throw new CliError(
               "provider_error",
               `Google lists more than ${MAX_ENTRIES} changes since the last sync, the most one sync reads; ` +
-                `\`sync --rescan\` reads the chosen folders instead, which works while they hold at most ${MAX_ENTRIES} entries`,
+                `run \`sync --rescan\` once to read the chosen folders instead, then plain \`sync\` until it is complete`,
               { reason: "listing.too-large" },
             )
           if (data.nextPageToken) {

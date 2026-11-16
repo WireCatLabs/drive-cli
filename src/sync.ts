@@ -1,5 +1,6 @@
 import { resolve } from "node:path"
 import { syncDocuments } from "@wirecat/cli-core/documents"
+import type { DocumentSyncArgs } from "@wirecat/cli-core/documents/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import { activeProfile, textLimit, transcriptsOf } from "./config.js"
 import { googleError } from "./errors.js"
@@ -35,6 +36,7 @@ export const sync = async (
   max: number,
   signal?: AbortSignal,
   rescan = false,
+  run: Pick<DocumentSyncArgs, "budget" | "deadline"> = {},
 ) => {
   const profile = activeProfile(env, name)
   const lock = await lockProfile(env, name)
@@ -46,6 +48,8 @@ export const sync = async (
     const query = transcriptQuery(transcripts.mode, transcripts.words, source?.search)
     const result = await syncDocuments({
       ...(query ? { query } : {}),
+      ...(run.budget ? { budget: run.budget } : {}),
+      ...(run.deadline ? { deadline: run.deadline } : {}),
       source,
       index,
       principal: profile.principal,

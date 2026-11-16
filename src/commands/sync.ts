@@ -20,10 +20,18 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
     sync: async (args) => {
       const profile = activeProfile(env, selected())
       const remote = profile.roots.length || profile.transcripts === "include" ? await source() : undefined
-      return withIndex(async (index) => ({
-        ...(await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan)),
-        ...(args.embed ? { embeddings: await index.embed(600) } : {}),
-      }))
+      return withIndex(async (index) => {
+        const result = await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan, {
+          budget: args.budget,
+          deadline: args.deadline,
+        })
+        if (!args.embed) return result
+        // Embedding has no deadline of its own: started after a stop or past the budget, it would turn the sync's
+        // own stop into the run's hard timeout.
+        const stopped = result.stopped ?? args.budget?.take()
+        if (stopped) return { ...result, embeddings: { skipped: stopped, next: "the next sync --embed goes on" } }
+        return { ...result, embeddings: await index.embed(600) }
+      })
     },
     status: () => {
       const name = selected()

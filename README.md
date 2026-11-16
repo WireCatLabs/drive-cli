@@ -139,8 +139,8 @@ comments and suggested edits are excluded. Image assets are not downloaded. Sear
 when layout or tab coverage matters.
 
 One sync reads at most 10,000 entries under the chosen folders and saves where it stopped; the next sync goes on from
-there. One folder may hold at most 10,000 entries, and one sync reads at most 10,000 changes from Google's change
-feed; past either, it stops with nothing lost and says what to do. Text caps at
+there. A sync also stops after 15 minutes in a terminal, 45 seconds over MCP, and the next one goes on. One folder
+may hold at most 10,000 entries, and one sync reads at most 10,000 changes from Google's change feed; past either, it stops with nothing lost and says what to do. Text caps at
 2,000,000 characters and snapshots at 50 MiB, with bounded pagination. Oversized input is refused rather than truncated. Google's native export
 also has its own 10 MB limit. Documents changing during export remain pending for retry.
 
