@@ -178,7 +178,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             throw new CliError(
               "provider_error",
               `Google lists more than ${MAX_ENTRIES} changes since the last sync, the most one sync reads; ` +
-                `\`sync --rescan\` reads the chosen folders instead, over several syncs if they are large`,
+                `run \`sync --rescan\` once to read the chosen folders instead, then plain \`sync\` until it is complete`,
               { reason: "listing.too-large" },
             )
           if (data.nextPageToken) {

@@ -56,22 +56,41 @@ describe("durable source sync", () => {
       code: "cancelled",
     })
   })
-  it("stops a sync past the entries one call reads and says to sync again", async () => {
+  it("stops a walk of folders that together hold more than one sync reads, and says to sync again", async () => {
     const f = fixture()
-    vi.mocked(f.source.children).mockResolvedValue(
-      Array.from({ length: 10_001 }, (_, at) => file(`doc-${at}`, ["root"], "image/png")),
+    const folders = ["one", "two", "three", "four", "five"]
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root"
+        ? folders.map((folder) => file(folder, ["root"], FOLDER))
+        : Array.from({ length: 4_000 }, (_, at) => file(`${id}-${at}`, [id], "image/png")),
     )
-    const first = captureStreams()
-    await testProgram({
-      env: f.env,
-      source: async () => f.source,
-      index: async () => f.index,
-      streams: first,
-    }).parseAsync(["default", "sync", "--json"], { from: "user" })
-    const stopped = JSON.parse(first.stdout.join(""))
+    const streams = captureStreams()
+    await testProgram({ env: f.env, source: async () => f.source, index: async () => f.index, streams }).parseAsync(
+      ["default", "sync", "--json"],
+      { from: "user" },
+    )
+    const stopped = JSON.parse(streams.stdout.join(""))
     expect(stopped.meta).toMatchObject({ complete: false })
+    expect(stopped.item.walk.folders_left).toBeGreaterThan(0)
     expect(stopped.next).toEqual([expect.objectContaining({ step: "sync.run", command: "sync" })])
-    expect(first.stderr.join("")).toContain("run drive default sync again")
+    expect(streams.stderr.join("")).toContain("run drive default sync again")
+  })
+  it("stops in time at the run's deadline and says to sync again, instead of timing out", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root"
+        ? Array.from({ length: 50 }, (_, at) => file(`folder-${at}`, ["root"], FOLDER))
+        : [file(`${id}-doc`, [id], "image/png")],
+    )
+    const streams = captureStreams()
+    await testProgram({ env: f.env, source: async () => f.source, index: async () => f.index, streams }).parseAsync(
+      ["default", "sync", "--json", "--timeout", "1s"],
+      { from: "user" },
+    )
+    const stopped = JSON.parse(streams.stdout.join(""))
+    expect(stopped.meta).toMatchObject({ complete: false })
+    expect(stopped.item.stopped).toBe("deadline")
+    expect(streams.stderr.join("")).toContain("run drive default sync again")
   })
   it("handles overlapping selected roots without mistaking them for a cycle", async () => {
     const f = fixture(["nested", "root"])

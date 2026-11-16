@@ -21,7 +21,10 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
       const profile = activeProfile(env, selected())
       const remote = profile.roots.length || profile.transcripts === "include" ? await source() : undefined
       return withIndex(async (index) => ({
-        ...(await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan)),
+        ...(await sync(remote, index, env, selected(), args.limit, context.signal(), args.rescan, {
+          budget: args.budget,
+          deadline: args.deadline,
+        })),
         ...(args.embed ? { embeddings: await index.embed(600) } : {}),
       }))
     },
