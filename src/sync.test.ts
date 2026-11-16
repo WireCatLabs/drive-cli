@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { CliError } from "@wirecat/cli-base"
+import { CliError, captureStreams } from "@wirecat/cli-base"
 import lockfile from "proper-lockfile"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
 import { FOLDER, SHEET } from "./model.js"
 import { profileDir, readState, saveState, snapshotPath } from "./state.js"
 import { sync } from "./sync.js"
-import { content, file, fixture } from "./testing.js"
+import { content, file, fixture, testProgram } from "./testing.js"
 
 describe("durable source sync", () => {
   it("cleans a possibly indexed pending source when scope changes before recovery", async () => {
@@ -56,12 +56,22 @@ describe("durable source sync", () => {
       code: "cancelled",
     })
   })
-  it("syncs chosen folders past the entries one call reads, and leaves the rest to the next sync", async () => {
+  it("stops a sync past the entries one call reads and says to sync again", async () => {
     const f = fixture()
     vi.mocked(f.source.children).mockResolvedValue(
       Array.from({ length: 10_001 }, (_, at) => file(`doc-${at}`, ["root"], "image/png")),
     )
-    expect(await sync(f.source, f.index, f.env, "default", 200)).toMatchObject({ complete: false })
+    const first = captureStreams()
+    await testProgram({
+      env: f.env,
+      source: async () => f.source,
+      index: async () => f.index,
+      streams: first,
+    }).parseAsync(["default", "sync", "--json"], { from: "user" })
+    const stopped = JSON.parse(first.stdout.join(""))
+    expect(stopped.meta).toMatchObject({ complete: false })
+    expect(stopped.next).toEqual([expect.objectContaining({ step: "sync.run", command: "sync" })])
+    expect(first.stderr.join("")).toContain("run drive default sync again")
   })
   it("handles overlapping selected roots without mistaking them for a cycle", async () => {
     const f = fixture(["nested", "root"])

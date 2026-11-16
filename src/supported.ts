@@ -1,14 +1,13 @@
 import { CliError } from "@wirecat/cli-base"
 import { DOC, type FileMetadata, SHEET } from "./model.js"
 
-/** Every entry of a scan or a change list is held in memory, and in one checkpoint, until the sync ends. */
+/** One folder's listing, a transcript search or a change list is read whole into memory in one sync. */
 export const MAX_ENTRIES = 10_000
 
-export const tooManyEntries = () =>
+export const tooManyEntries = (what: string, fix: string) =>
   new CliError(
     "provider_error",
-    `the chosen folders hold more than ${MAX_ENTRIES} entries, the most one sync reads; ` +
-      "choose fewer or smaller folders with `folders remove` and `folders add`",
+    `the ${what} has more than ${MAX_ENTRIES} entries, the most drive reads at once; ${fix}`,
     { reason: "listing.too-large" },
   )
 export const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
