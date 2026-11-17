@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/WireCatLabs/drive-cli/main/docs/images/social-preview.png" alt="Google Drive for your AI agents: Docs as local Markdown, search with sources" width="100%">
+  <img src="https://raw.githubusercontent.com/WireCatLabs/drive-cli/main/docs/images/social-preview.png" alt="drive: Google Drive for your AI agents. Docs, Sheets, Markdown, sync and edit every line" width="100%">
 </p>
 
 # drive: Google Drive and Docs for AI agents
