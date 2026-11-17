@@ -11,7 +11,8 @@
 
 <p align="center">
   <a href="https://wirecat.dev/en/docs/drive">Docs</a> ·
-  <a href="https://github.com/WireCatLabs/drive-cli/blob/main/docs/recipes.md">Examples</a> ·
+  <a href="https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md">Install</a> ·
+  <a href="https://github.com/WireCatLabs/drive-cli/blob/main/docs/usage.md">Usage</a> ·
   <a href="https://discord.gg/DebENqbRrJ">Discord</a>
 </p>
 
@@ -104,6 +105,8 @@ Ask in plain words. The agent picks the commands.
 
 `drive guide` lists scenarios, the commands for a common task in order, and `drive commands --json` is the full
 command tree. `DRIVE_READ_ONLY=1` refuses every change, as `--read-only` does.
+
+More: [recipes](https://github.com/WireCatLabs/drive-cli/blob/main/docs/recipes.md)
 
 ## Sign in and choose folders
 
