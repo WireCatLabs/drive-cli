@@ -84,12 +84,12 @@ describe("durable source sync", () => {
     )
     const streams = captureStreams()
     await testProgram({ env: f.env, source: async () => f.source, index: async () => f.index, streams }).parseAsync(
-      ["default", "sync", "--json", "--embed", "--timeout", "7s"],
+      ["default", "sync", "--json", "--embed", "--timeout", "11s"],
       { from: "user" },
     )
     const stopped = JSON.parse(streams.stdout.join(""))
     expect(stopped.meta).toMatchObject({ complete: false })
-    // 7 s leave one request after the 5 s margin: the budget sized to the deadline stops the walk after it.
+    // 11 s leave three 2 s requests after the 5 s margin: the start token, the root's read and one listing.
     expect(stopped.item).toMatchObject({ stopped: "requests", embeddings: { skipped: "requests" } })
     expect(stopped.item.walk.listed).toBeGreaterThan(0)
     expect(f.index.embed).not.toHaveBeenCalled()

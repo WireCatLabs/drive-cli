@@ -55,6 +55,7 @@ export const indexOver = (
 ): DocumentIndex => {
   const ingestion = documentIngestion(store, {
     provider: "google-drive",
+    command: "drive",
     externalId: (id) => `${id}.md`,
     catalogInput,
     observed: (principal, file, id) => saveContributors(store, principal, file, id),
@@ -75,10 +76,6 @@ export const indexOver = (
   const folder = ingestion.collection
   return {
     ...ingestion,
-    registerProfile: async (name, principal) => {
-      await folder(principal, true)
-      await store.accounts.saveProfile("drive", name, { provider: "google-drive", account: principal })
-    },
     addSource: async (input, driveFileId) => {
       const synced = driveFileId === undefined ? undefined : await syncedDocument(store, driveFileId)
       if (!synced) return store.notes.saveAddedSource(input)
@@ -144,9 +141,7 @@ export const indexOver = (
                 typeof metadata?.notRead === "string"
                   ? metadata.notRead
                   : entry?.content === "metadata"
-                    ? entry.kind === "folder"
-                      ? "folder metadata only"
-                      : "content is not indexed yet"
+                    ? "content is not indexed yet"
                     : null,
             }
           }),
