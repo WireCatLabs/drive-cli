@@ -6,6 +6,7 @@ import { annotate, flatten, metaOf } from "@wirecat/cli-base/commands"
 import { timezoneOf } from "@wirecat/cli-base/query"
 import { type Effects, writes } from "@wirecat/cli-base/standards"
 import {
+  actorOf,
   addContractInfo,
   appCompleteCommand,
   appDoctorCommand,
@@ -118,7 +119,6 @@ class Preview extends Error {}
 
 // An agent names only a file, which lands in the profile's export folder, never a path of its choosing.
 const EXPORTS = new Set(["documents export", "files download", "files export"])
-const MCP_AGENT = "drive-mcp"
 
 const googleOnly = (effects: Effects | undefined) => effects?.local === "none" && effects.remote !== "none"
 
@@ -325,8 +325,14 @@ const installDrive = (program: Command) => {
     document: imported,
     output,
     complete: () => environment().complete ?? memoryModel(env, selected(), signal()),
-    author: () => (agent() ? { bot: MCP_AGENT, kind: "agent" } : "owner"),
-    decider: () => (agent() ? { bot: MCP_AGENT, reason: "asked over drive's MCP server" } : "owner"),
+    author: () => {
+      const actor = actorOf(program)
+      return actor === "owner" ? "owner" : { bot: actor, kind: "agent" }
+    },
+    decider: () => {
+      const actor = actorOf(program)
+      return actor === "owner" ? "owner" : { bot: actor, reason: `asked by ${actor} through drive` }
+    },
     run: async (input, fn) =>
       withIndex(async (index) => {
         const lock = await lockProfile(env, selected())

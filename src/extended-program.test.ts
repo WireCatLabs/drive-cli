@@ -5,6 +5,22 @@ import { readConfig } from "./config.js"
 import { commandResult, content, testProgram as createProgram, file, fixture } from "./testing.js"
 
 describe("document knowledge commands", () => {
+  it("writes an agent's relationship unconfirmed when it runs drive itself, and the owner's adding it confirms it", async () => {
+    const f = fixture()
+    const call = async (env: NodeJS.ProcessEnv, ...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env, streams, source: async () => f.source }).parseAsync(["default", ...args, "--json"], {
+        from: "user",
+      })
+      return commandResult(streams.stdout.join(""))
+    }
+    await call(f.env, "sync")
+    const note = await call(f.env, "notes", "add", "doc-a", "Review memo")
+    const add = (env: NodeJS.ProcessEnv) => call(env, "relationships", "add", "doc-a", note.ref, "--kind", "about")
+    const proposed = await add({ ...f.env, CLAUDECODE: "1" })
+    expect(proposed).toMatchObject({ origin: "suggested", confirmed: false })
+    expect(await add(f.env)).toMatchObject({ id: proposed.id, origin: "owner", confirmed: true })
+  })
   it("runs notes, tags, links, memories and extraction through the released shared store", async () => {
     const f = fixture()
     f.source.content = async (id) => ({

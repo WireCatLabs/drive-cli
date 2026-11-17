@@ -5,9 +5,9 @@
 /** This resource represents a long-running operation that is the result of a network API call. */
 export type DriveOperation = {
   /** The normal, successful response of the operation. If the original method returns no data on success, such as `Delete`, the response is `google.protobuf.Empty`. If the original method is standard `Get`/`Create`/`Update`, the response should be the resource. For other methods, the response should have the type `XxxResponse`, where `Xxx` is the original method name. For example, if the original method name is `TakeSnapshot()`, the inferred response type is `TakeSnapshotResponse`. */
-  response?: Record<string, unknown>
+  response?: { [key: string]: unknown }
   /** Service-specific metadata associated with the operation. It typically contains progress information and common metadata such as create time. Some services might not provide such metadata. Any method that returns a long-running operation should document the metadata type, if any. */
-  metadata?: Record<string, unknown>
+  metadata?: { [key: string]: unknown }
   /** The error result of the operation in case of failure or cancellation. */
   error?: DriveStatus
   /** The server-assigned name, which is only unique within the same service that originally returns it. If you use the default HTTP mapping, the `name` should be a resource name ending with `operations/{unique_id}`. */
@@ -490,7 +490,7 @@ export type DriveChannel = {
   /** A Boolean value to indicate whether payload is wanted. Optional. */
   payload?: boolean
   /** Additional parameters controlling delivery channel behavior. Optional. */
-  params?: Record<string, string>
+  params?: { [key: string]: string }
   /** Date and time of notification channel expiration, expressed as a Unix timestamp, in milliseconds. Optional. */
   expiration?: string
   /** An arbitrary string delivered to the target address with each notification delivered over this channel. Optional. */
@@ -546,7 +546,7 @@ export type DriveRevision = {
   /** Output only. The MD5 checksum of the revision's content. This is only applicable to files with binary content in Drive. */
   md5Checksum?: string
   /** Output only. Links for exporting Docs Editors files to specific formats. */
-  exportLinks?: Record<string, string>
+  exportLinks?: { [key: string]: string }
   /** Output only. The MIME type of the revision. */
   mimeType?: string
   /** Whether this revision is published. This is only applicable to Docs Editors files. */
@@ -663,7 +663,7 @@ export type DriveStatus = {
   /** The status code, which should be an enum value of google.rpc.Code. */
   code?: number
   /** A list of messages that carry the error details. There is a common set of message types for APIs to use. */
-  details?: Array<Record<string, unknown>>
+  details?: Array<{ [key: string]: unknown }>
   /** A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the google.rpc.Status.details field, or localized by the client. */
   message?: string
 }
@@ -709,7 +709,7 @@ export type DriveLabel = {
   /** The ID of the label. */
   id?: string
   /** A map of the fields on the label, keyed by the field's ID. */
-  fields?: Record<string, DriveLabelField>
+  fields?: { [key: string]: DriveLabelField }
   /** The revision ID of the label. */
   revisionId?: string
 }
@@ -875,7 +875,7 @@ export type DriveFile = {
   /** Output only. The last user to modify the file. This field is only populated when the last modification was performed by a signed-in user. */
   lastModifyingUser?: DriveUser
   /** Output only. Links for exporting Docs Editors files to specific formats. */
-  exportLinks?: Record<string, string>
+  exportLinks?: { [key: string]: string }
   /** The time at which the file was created (RFC 3339 date-time). */
   createdTime?: string
   /** The name of the file. This isn't necessarily unique within a folder. Note that for immutable items such as the top-level folders of shared drives, the My Drive root folder, and the Application Data folder, the name is constant. */
@@ -991,7 +991,7 @@ export type DriveFile = {
   /** The time that the item was trashed (RFC 3339 date-time). Only populated for items in shared drives. */
   trashedTime?: string
   /** A collection of arbitrary key-value pairs which are private to the requesting app. Entries with null values are cleared in update and copy requests. These properties can only be retrieved using an authenticated request. An authenticated request uses an access token obtained with a OAuth 2 client ID. You cannot use an API key to retrieve private properties. */
-  appProperties?: Record<string, string>
+  appProperties?: { [key: string]: string }
   /** Output only. Capabilities the current user has on this file. Each capability corresponds to a fine-grained action that a user may take. For more information, see [Understand file capabilities](https://developers.google.com/workspace/drive/api/guides/manage-sharing#capabilities). */
   capabilities?: {
     /** Output only. Whether the current user can delete children of this folder. This is `false` when the item isn't a folder. Only populated for items in shared drives. */
@@ -1088,7 +1088,7 @@ export type DriveFile = {
     canComment?: boolean
   }
   /** A collection of arbitrary key-value pairs which are visible to all apps. Entries with null values are cleared in update and copy requests. */
-  properties?: Record<string, string>
+  properties?: { [key: string]: string }
   /** The MIME type of the file. Google Drive attempts to automatically detect an appropriate value from uploaded content, if no value is provided. The value cannot be changed unless a new revision is uploaded. If a file is created with a Google Doc MIME type, the uploaded content is imported, if possible. The supported import formats are published in the [`about`](https://developers.google.com/workspace/drive/api/reference/rest/v3/about) resource. */
   mimeType?: string
   /** Output only. A link for opening the file in a relevant Google editor or viewer in a browser. */
@@ -1118,13 +1118,13 @@ export type DriveFile = {
 /** Information about the user, the user's Drive, and system capabilities. */
 export type DriveAbout = {
   /** A map of source MIME type to possible targets for all supported imports. */
-  importFormats?: Record<string, Array<string>>
+  importFormats?: { [key: string]: Array<string> }
   /** The maximum upload size in bytes. */
   maxUploadSize?: string
   /** Deprecated: Use `canCreateDrives` instead. */
   canCreateTeamDrives?: boolean
   /** A map of maximum import sizes by MIME type, in bytes. */
-  maxImportSizes?: Record<string, string>
+  maxImportSizes?: { [key: string]: string }
   /** Deprecated: Use `driveThemes` instead. */
   teamDriveThemes?: Array<{
     /** Deprecated: Use `driveThemes/id` instead. */
@@ -1148,7 +1148,7 @@ export type DriveAbout = {
   /** Whether the user can create shared drives. */
   canCreateDrives?: boolean
   /** A map of source MIME type to possible targets for all supported exports. */
-  exportFormats?: Record<string, Array<string>>
+  exportFormats?: { [key: string]: Array<string> }
   /** Identifies what kind of resource this is. Value: the fixed string `"drive#about"`. */
   kind?: string
   /** Whether the user has installed the requesting app. */
@@ -1308,7 +1308,7 @@ export type DocsPositionedObjectProperties = {
 /** An object that's tethered to a Paragraph and positioned relative to the beginning of the paragraph. A PositionedObject contains an EmbeddedObject such as an image. */
 export type DocsPositionedObject = {
   /** The suggested changes to the positioned object properties, keyed by suggestion ID. */
-  suggestedPositionedObjectPropertiesChanges?: Record<string, DocsSuggestedPositionedObjectProperties>
+  suggestedPositionedObjectPropertiesChanges?: { [key: string]: DocsSuggestedPositionedObjectProperties }
   /** The suggested insertion ID. If empty, then this is not a suggested insertion. */
   suggestedInsertionId?: string
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this content. */
@@ -1336,7 +1336,7 @@ export type DocsTableCell = {
   /** The suggested insertion IDs. A TableCell may have multiple insertion IDs if it's a nested suggested change. If empty, then this is not a suggested insertion. */
   suggestedInsertionIds?: Array<string>
   /** The suggested changes to the table cell style, keyed by suggestion ID. */
-  suggestedTableCellStyleChanges?: Record<string, DocsSuggestedTableCellStyle>
+  suggestedTableCellStyleChanges?: { [key: string]: DocsSuggestedTableCellStyle }
   /** The content of the cell. */
   content?: Array<DocsStructuralElement>
   /** The zero-based start index of this cell, in UTF-16 code units. */
@@ -1382,7 +1382,7 @@ export type DocsAutoText = {
   /** The suggested insertion IDs. An AutoText may have multiple insertion IDs if it's a nested suggested change. If empty, then this is not a suggested insertion. */
   suggestedInsertionIds?: Array<string>
   /** The suggested text style changes to this AutoText, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
 }
 
 /** A dropdown in the document. The chip is displayed as a dropdown menu that allows users to select an option from a configurable list of options. */
@@ -1396,9 +1396,9 @@ export type DocsDropdown = {
   /** The ID of this dropdown. */
   dropdownId?: string
   /** The suggested properties changes to this dropdown, keyed by suggestion ID. */
-  suggestedDropdownPropertiesChanges?: Record<string, DocsSuggestedDropdownProperties>
+  suggestedDropdownPropertiesChanges?: { [key: string]: DocsSuggestedDropdownProperties }
   /** The suggested text style changes to this dropdown, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The properties of this dropdown. */
   dropdownProperties?: DocsDropdownProperties
 }
@@ -1444,7 +1444,7 @@ export type DocsPageBreak = {
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this content. */
   suggestedDeletionIds?: Array<string>
   /** The suggested text style changes to this PageBreak, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The text style of this PageBreak. Similar to text content, like text runs and footnote references, the text style of a page break can affect content layout as well as the styling of text inserted next to it. */
   textStyle?: DocsTextStyle
 }
@@ -1542,7 +1542,7 @@ export type DocsFootnoteReference = {
   /** The text style of this FootnoteReference. */
   textStyle?: DocsTextStyle
   /** The suggested text style changes to this FootnoteReference, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The ID of the footnote that contains the content of this footnote reference. */
   footnoteId?: string
   /** The suggested insertion IDs. A FootnoteReference may have multiple insertion IDs if it's a nested suggested change. If empty, then this is not a suggested insertion. */
@@ -1846,7 +1846,7 @@ export type DocsAddCommentReplyResponse = {
 /** The contents and style of a row in a Table. */
 export type DocsTableRow = {
   /** The suggested style changes to this row, keyed by suggestion ID. */
-  suggestedTableRowStyleChanges?: Record<string, DocsSuggestedTableRowStyle>
+  suggestedTableRowStyleChanges?: { [key: string]: DocsSuggestedTableRowStyle }
   /** The zero-based end index of this row, exclusive, in UTF-16 code units. */
   endIndex?: number
   /** The suggested insertion IDs. A TableRow may have multiple insertion IDs if it's a nested suggested change. If empty, then this is not a suggested insertion. */
@@ -1947,7 +1947,7 @@ export type DocsAcceptSuggestionRequest = {
 /** A ParagraphElement representing a horizontal line. */
 export type DocsHorizontalRule = {
   /** The suggested text style changes to this HorizontalRule, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The text style of this HorizontalRule. Similar to text content, like text runs and footnote references, the text style of a horizontal rule can affect content layout as well as the styling of text inserted next to it. */
   textStyle?: DocsTextStyle
   /** The suggested insertion IDs. A HorizontalRule may have multiple insertion IDs if it is a nested suggested change. If empty, then this is not a suggested insertion. */
@@ -2125,7 +2125,7 @@ export type DocsInlineObject = {
   /** The ID of this inline object. Can be used to update an object’s properties. */
   objectId?: string
   /** The suggested changes to the inline object properties, keyed by suggestion ID. */
-  suggestedInlineObjectPropertiesChanges?: Record<string, DocsSuggestedInlineObjectProperties>
+  suggestedInlineObjectPropertiesChanges?: { [key: string]: DocsSuggestedInlineObjectProperties }
   /** The suggested insertion ID. If empty, then this is not a suggested insertion. */
   suggestedInsertionId?: string
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this content. */
@@ -2301,7 +2301,7 @@ export type DocsDropdownDefinition = {
   /** ID for suggestion that inserts this dropdown definition. */
   suggestedInsertionId?: string
   /** Suggested property changes to this definition, keyed by suggestion ID. */
-  suggestedDropdownDefinitionPropertiesChanges?: Record<string, DocsSuggestedDropdownDefinitionProperties>
+  suggestedDropdownDefinitionPropertiesChanges?: { [key: string]: DocsSuggestedDropdownDefinitionProperties }
 }
 
 /** The styling that applies to a section. */
@@ -2391,7 +2391,7 @@ export type DocsTextRun = {
   /** The text of this run. Any non-text elements in the run are replaced with the Unicode character U+E907. */
   content?: string
   /** The suggested text style changes to this run, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
 }
 
 /** A tab stop within a paragraph. */
@@ -2562,11 +2562,11 @@ export type DocsTableColumnProperties = {
 /** A Google Docs document. */
 export type DocsDocument = {
   /** Output only. The inline objects in the document, keyed by object ID. Legacy field: Instead, use Document.tabs.documentTab.inlineObjects, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  inlineObjects?: Record<string, DocsInlineObject>
+  inlineObjects?: { [key: string]: DocsInlineObject }
   /** Output only. Tabs that are part of a document. Tabs can contain child tabs, a tab nested within another tab. Child tabs are represented by the Tab.childTabs field. */
   tabs?: Array<DocsTab>
   /** Output only. The footers in the document, keyed by footer ID. Legacy field: Instead, use Document.tabs.documentTab.footers, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  footers?: Record<string, DocsFooter>
+  footers?: { [key: string]: DocsFooter }
   /** Output only. The suggestions associated with the document. Only populated if the commentsViewMode parameter is set to require comments (such as `COMMENTS_VIEW_MODE_INCLUDED`). */
   suggestions?: Array<DocsSuggestionThread>
   /** Output only. The ID of the document. */
@@ -2576,11 +2576,11 @@ export type DocsDocument = {
   /** Output only. The style of the document. Legacy field: Instead, use Document.tabs.documentTab.documentStyle, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
   documentStyle?: DocsDocumentStyle
   /** Output only. The suggested changes to the style of the document, keyed by suggestion ID. Legacy field: Instead, use Document.tabs.documentTab.suggestedDocumentStyleChanges, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  suggestedDocumentStyleChanges?: Record<string, DocsSuggestedDocumentStyle>
+  suggestedDocumentStyleChanges?: { [key: string]: DocsSuggestedDocumentStyle }
   /** The title of the document. */
   title?: string
   /** Output only. The headers in the document, keyed by header ID. Legacy field: Instead, use Document.tabs.documentTab.headers, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  headers?: Record<string, DocsHeader>
+  headers?: { [key: string]: DocsHeader }
   /** Output only. The comments view mode applied to the document. */
   commentsViewMode?:
     | "COMMENTS_VIEW_MODE_UNSPECIFIED"
@@ -2588,7 +2588,7 @@ export type DocsDocument = {
     | "COMMENTS_VIEW_MODE_OMITTED"
     | "COMMENTS_VIEW_MODE_INCLUDED"
   /** Output only. The positioned objects in the document, keyed by object ID. Legacy field: Instead, use Document.tabs.documentTab.positionedObjects, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  positionedObjects?: Record<string, DocsPositionedObject>
+  positionedObjects?: { [key: string]: DocsPositionedObject }
   /** Output only. The suggestions view mode applied to the document. Note: When editing a document, changes must be based on a document with SUGGESTIONS_INLINE. */
   suggestionsViewMode?:
     | "DEFAULT_FOR_CURRENT_ACCESS"
@@ -2598,13 +2598,13 @@ export type DocsDocument = {
   /** Output only. The revision ID of the document. Can be used in update requests to specify which revision of a document to apply updates to and how the request should behave if the document has been edited since that revision. Only populated if the user has edit access to the document. The revision ID is not a sequential number but an opaque string. The format of the revision ID might change over time. A returned revision ID is only guaranteed to be valid for 24 hours after it has been returned and cannot be shared across users. If the revision ID is unchanged between calls, then the document has not changed. Conversely, a changed ID (for the same document and user) usually means the document has been updated. However, a changed ID can also be due to internal factors such as ID format changes. */
   revisionId?: string
   /** Output only. The footnotes in the document, keyed by footnote ID. Legacy field: Instead, use Document.tabs.documentTab.footnotes, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  footnotes?: Record<string, DocsFootnote>
+  footnotes?: { [key: string]: DocsFootnote }
   /** Output only. The suggested changes to the named styles of the document, keyed by suggestion ID. Legacy field: Instead, use Document.tabs.documentTab.suggestedNamedStylesChanges, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  suggestedNamedStylesChanges?: Record<string, DocsSuggestedNamedStyles>
+  suggestedNamedStylesChanges?: { [key: string]: DocsSuggestedNamedStyles }
   /** Output only. The lists in the document, keyed by list ID. Legacy field: Instead, use Document.tabs.documentTab.lists, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  lists?: Record<string, DocsList>
+  lists?: { [key: string]: DocsList }
   /** Output only. The named ranges in the document, keyed by name. Legacy field: Instead, use Document.tabs.documentTab.namedRanges, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
-  namedRanges?: Record<string, DocsNamedRanges>
+  namedRanges?: { [key: string]: DocsNamedRanges }
   /** Output only. The main body of the document. Legacy field: Instead, use Document.tabs.documentTab.body, which exposes the actual document content from all tabs when the includeTabsContent parameter is set to `true`. If `false` or unset, this field contains information about the first tab in the document. */
   body?: DocsBody
   /** Output only. The comments associated with the document. Only populated if the commentsViewMode parameter is set to require comments (such as `COMMENTS_VIEW_MODE_INCLUDED`). */
@@ -2712,7 +2712,7 @@ export type DocsColumnBreak = {
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this content. */
   suggestedDeletionIds?: Array<string>
   /** The suggested text style changes to this ColumnBreak, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
 }
 
 /** Represents a font family and weight of text. */
@@ -2740,31 +2740,31 @@ export type DocsDocumentTab = {
   /** The main body of the document tab. */
   body?: DocsBody
   /** The suggested changes to the named styles of the document tab, keyed by suggestion ID. */
-  suggestedNamedStylesChanges?: Record<string, DocsSuggestedNamedStyles>
+  suggestedNamedStylesChanges?: { [key: string]: DocsSuggestedNamedStyles }
   /** The named ranges in the document tab, keyed by name. */
-  namedRanges?: Record<string, DocsNamedRanges>
+  namedRanges?: { [key: string]: DocsNamedRanges }
   /** The positioned objects in the document tab, keyed by object ID. */
-  positionedObjects?: Record<string, DocsPositionedObject>
+  positionedObjects?: { [key: string]: DocsPositionedObject }
   /** The suggested changes to the style of the document tab, keyed by suggestion ID. */
-  suggestedDocumentStyleChanges?: Record<string, DocsSuggestedDocumentStyle>
+  suggestedDocumentStyleChanges?: { [key: string]: DocsSuggestedDocumentStyle }
   /** The style of the document tab. */
   documentStyle?: DocsDocumentStyle
   /** The headers in the document tab, keyed by header ID. */
-  headers?: Record<string, DocsHeader>
+  headers?: { [key: string]: DocsHeader }
   /** The inline objects in the document tab, keyed by object ID. */
-  inlineObjects?: Record<string, DocsInlineObject>
+  inlineObjects?: { [key: string]: DocsInlineObject }
   /** The named styles of the document tab. */
   namedStyles?: DocsNamedStyles
   /** The lists in the document tab, keyed by list ID. */
-  lists?: Record<string, DocsList>
+  lists?: { [key: string]: DocsList }
   /** The footnotes in the document tab, keyed by footnote ID. */
-  footnotes?: Record<string, DocsFootnote>
+  footnotes?: { [key: string]: DocsFootnote }
   /** The footers in the document tab, keyed by footer ID. */
-  footers?: Record<string, DocsFooter>
+  footers?: { [key: string]: DocsFooter }
   /** The comment anchors in a document tab, keyed by anchor ID. Only populated if the commentsViewMode parameter is set to require comments (such as `COMMENTS_VIEW_MODE_INCLUDED`). */
-  commentAnchors?: Record<string, DocsCommentAnchor>
+  commentAnchors?: { [key: string]: DocsCommentAnchor }
   /** The dropdown definitions in a document tab, keyed by dropdown definition ID. */
-  dropdownDefinitions?: Record<string, DocsDropdownDefinition>
+  dropdownDefinitions?: { [key: string]: DocsDropdownDefinition }
 }
 
 /** Inserts a CommentThread into the document. */
@@ -2804,7 +2804,7 @@ export type DocsUpdateDropdownDefinitionPropertiesRequest = {
   /** The ID of the tab that contains the dropdown definition to update. When omitted, the request is applied to the first tab. In a document containing a single tab: - If provided, must match the singular tab's ID. - If omitted, the request applies to the singular tab. In a document containing multiple tabs: - If provided, the request applies to the specified tab. - If omitted, the request applies to the first tab in the document. */
   tabId?: string
   /** A map of option IDs to their replacements, used to automatically reassign orphaned Dropdown chips when an option is deleted. The keys are the IDs of the options being deleted, and the values are the IDs of their replacement options. If an option being deleted is selected in one or more Dropdown chips in the document, a replacement entry for that option must be provided in this map, and the replacement option ID must exist in the updated DropdownDefinition. If a replacement is required but not provided, a 400 bad request error is returned. Options being deleted that are not selected in any Dropdown chips do not require a replacement. For example, if option A is being replaced by option B, the map should be `{"A": "B"}`. */
-  selectedOptionIdReplacements?: Record<string, string>
+  selectedOptionIdReplacements?: { [key: string]: string }
   /** The properties to update. */
   dropdownDefinitionProperties?: DocsDropdownDefinitionProperties
   /** The fields that should be updated. At least one field must be specified. The root `dropdown_definition_properties` is implied and should not be specified. A single `"*"` can be used as short-hand for listing every field. When `dropdown_definition_properties.options` is included in the field mask, the full, complete list of desired options must be provided in `dropdown_definition_properties.options`. */
@@ -2925,7 +2925,7 @@ export type DocsDateElement = {
   /** IDs for suggestions that remove this date from the document. A DateElement might have multiple deletion IDs if, for example, multiple users suggest deleting it. If empty, then this date isn't suggested for deletion. */
   suggestedDeletionIds?: Array<string>
   /** The suggested changes to the date element properties, keyed by suggestion ID. */
-  suggestedDateElementPropertiesChanges?: Record<string, DocsSuggestedDateElementProperties>
+  suggestedDateElementPropertiesChanges?: { [key: string]: DocsSuggestedDateElementProperties }
   /** IDs for suggestions that insert this date into the document. A DateElement might have multiple insertion IDs if it's a nested suggested change (a suggestion within a suggestion made by a different user, for example). If empty, then this date isn't a suggested insertion. */
   suggestedInsertionIds?: Array<string>
   /** The properties of this DateElement. */
@@ -2933,7 +2933,7 @@ export type DocsDateElement = {
   /** Output only. The unique ID of this date. */
   dateId?: string
   /** The suggested text style changes to this DateElement, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
 }
 
 /** A suggested change to ListProperties. */
@@ -2947,7 +2947,7 @@ export type DocsSuggestedListProperties = {
 /** A List represents the list attributes for a group of paragraphs that all belong to the same list. A paragraph that's part of a list has a reference to the list's ID in its bullet. */
 export type DocsList = {
   /** The suggested changes to the list properties, keyed by suggestion ID. */
-  suggestedListPropertiesChanges?: Record<string, DocsSuggestedListProperties>
+  suggestedListPropertiesChanges?: { [key: string]: DocsSuggestedListProperties }
   /** The suggested insertion ID. If empty, then this is not a suggested insertion. */
   suggestedInsertionId?: string
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this list. */
@@ -3175,7 +3175,7 @@ export type DocsRichLink = {
   /** Output only. The properties of this RichLink. This field is always present. */
   richLinkProperties?: DocsRichLinkProperties
   /** The suggested text style changes to this RichLink, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The text style of this RichLink. */
   textStyle?: DocsTextStyle
   /** IDs for suggestions that insert this link into the document. A RichLink might have multiple insertion IDs if it's a nested suggested change (a suggestion within a suggestion made by a different user, for example). If empty, then this person link isn't a suggested insertion. */
@@ -3203,9 +3203,9 @@ export type DocsCreateHeaderResponse = {
 /** A StructuralElement representing a paragraph. A paragraph is a range of content that's terminated with a newline character. */
 export type DocsParagraph = {
   /** The suggested paragraph style changes to this paragraph, keyed by suggestion ID. */
-  suggestedParagraphStyleChanges?: Record<string, DocsSuggestedParagraphStyle>
+  suggestedParagraphStyleChanges?: { [key: string]: DocsSuggestedParagraphStyle }
   /** The IDs of the positioned objects suggested to be attached to this paragraph, keyed by suggestion ID. */
-  suggestedPositionedObjectIds?: Record<string, DocsObjectReferences>
+  suggestedPositionedObjectIds?: { [key: string]: DocsObjectReferences }
   /** The style of this paragraph. */
   paragraphStyle?: DocsParagraphStyle
   /** The IDs of the positioned objects tethered to this paragraph. */
@@ -3213,7 +3213,7 @@ export type DocsParagraph = {
   /** The bullet for this paragraph. If not present, the paragraph does not belong to a list. */
   bullet?: DocsBullet
   /** The suggested changes to this paragraph's bullet. */
-  suggestedBulletChanges?: Record<string, DocsSuggestedBullet>
+  suggestedBulletChanges?: { [key: string]: DocsSuggestedBullet }
   /** The content of the paragraph, broken down into its component parts. */
   elements?: Array<DocsParagraphElement>
 }
@@ -3329,7 +3329,7 @@ export type DocsInlineObjectElement = {
   /** The suggested deletion IDs. If empty, then there are no suggested deletions of this content. */
   suggestedDeletionIds?: Array<string>
   /** The suggested text style changes to this InlineObject, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** The suggested insertion IDs. An InlineObjectElement may have multiple insertion IDs if it's a nested suggested change. If empty, then this is not a suggested insertion. */
   suggestedInsertionIds?: Array<string>
 }
@@ -3425,7 +3425,7 @@ export type DocsPerson = {
   /** Output only. The unique ID of this link. */
   personId?: string
   /** The suggested text style changes to this Person, keyed by suggestion ID. */
-  suggestedTextStyleChanges?: Record<string, DocsSuggestedTextStyle>
+  suggestedTextStyleChanges?: { [key: string]: DocsSuggestedTextStyle }
   /** IDs for suggestions that insert this person link into the document. A Person might have multiple insertion IDs if it's a nested suggested change (a suggestion within a suggestion made by a different user, for example). If empty, then this person link isn't a suggested insertion. */
   suggestedInsertionIds?: Array<string>
   /** The text style of this Person. */
@@ -4739,7 +4739,7 @@ export type SheetsBasicFilter = {
   /** The filter criteria per column. Both criteria and filter_specs are populated in responses. If both fields are specified in an update request, this field takes precedence. */
   filterSpecs?: Array<SheetsFilterSpec>
   /** The criteria for showing/hiding values per column. The map's key is the column index, and the value is the criteria for that column. This field is deprecated in favor of filter_specs. */
-  criteria?: Record<string, SheetsFilterCriteria>
+  criteria?: { [key: string]: SheetsFilterCriteria }
   /** The sort order per column. Later specifications are used when values are equal in the earlier specifications. */
   sortSpecs?: Array<SheetsSortSpec>
   /** The table this filter is backed by, if any. When writing, only one of range or table_id may be set. */
@@ -5634,7 +5634,7 @@ export type SheetsAddChartRequest = {
 /** A filter view. For more information, see [Manage data visibility with filters](https://developers.google.com/workspace/sheets/api/guides/filters). */
 export type SheetsFilterView = {
   /** The criteria for showing/hiding values per column. The map's key is the column index, and the value is the criteria for that column. This field is deprecated in favor of filter_specs. */
-  criteria?: Record<string, SheetsFilterCriteria>
+  criteria?: { [key: string]: SheetsFilterCriteria }
   /** The sort order per column. Later specifications are used when values are equal in the earlier specifications. */
   sortSpecs?: Array<SheetsSortSpec>
   /** The filter criteria for showing or hiding values per column. Both criteria and filter_specs are populated in responses. If both fields are specified in an update request, this field takes precedence. */
@@ -5986,7 +5986,7 @@ export type SheetsSortRangeRequest = {
 /** A pivot table. */
 export type SheetsPivotTable = {
   /** An optional mapping of filters per source column offset. The filters are applied before aggregating data into the pivot table. The map's key is the column offset of the source range that you want to filter, and the value is the criteria for that column. For example, if the source was `C10:E15`, a key of `0` will have the filter for column `C`, whereas the key `1` is for column `D`. This field is deprecated in favor of filter_specs. */
-  criteria?: Record<string, SheetsPivotFilterCriteria>
+  criteria?: { [key: string]: SheetsPivotFilterCriteria }
   /** Output only. The data execution status for data source pivot tables. */
   dataExecutionStatus?: SheetsDataExecutionStatus
   /** The range the pivot table is reading data from. */

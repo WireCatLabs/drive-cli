@@ -95,3 +95,14 @@ Run: pnpm generate
 | `sheets.spreadsheets.values.clear` | `POST v4/spreadsheets/{spreadsheetId}/values/{range}:clear` | `drive <profile> api sheets-spreadsheets-values-clear` | write | contract | generated | Clears values from a spreadsheet. The caller must specify the spreadsheet ID and range. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc..) are kept. |
 | `sheets.spreadsheets.values.get` | `GET v4/spreadsheets/{spreadsheetId}/values/{range}` | `drive <profile> api sheets-spreadsheets-values-get` | read | — | generated | Returns a range of values from a spreadsheet. The caller must specify the spreadsheet ID and a range. |
 | `sheets.spreadsheets.values.update` | `PUT v4/spreadsheets/{spreadsheetId}/values/{range}` | `drive <profile> api sheets-spreadsheets-values-update` | write | contract | generated | Sets values in a range of a spreadsheet. The caller must specify the spreadsheet ID, range, and a valueInputOption. |
+
+## Effects not taken from the HTTP method
+
+| Operation | Effect | Why |
+|---|---|---|
+| `drive.files.download` | read | override: a POST that starts a download; it changes no file |
+| `drive.files.emptyTrash` | destructive | override: permanently deletes every trashed file |
+| `driveactivity.activity.query` | read | override: a POST that only searches the activity history |
+| `sheets.spreadsheets.developerMetadata.search` | read | override: a POST that only searches developer metadata |
+| `sheets.spreadsheets.getByDataFilter` | read | override: a POST that only reads cells matching the filters |
+| `sheets.spreadsheets.values.batchGetByDataFilter` | read | override: a POST that only reads values matching the filters |
