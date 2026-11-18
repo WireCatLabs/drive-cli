@@ -35,7 +35,7 @@ jobs:
       contents: read
       actions: read
       security-events: write
-    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@92f177f38b68ad8fa5eda46f72815648e211c795 # v0.98.0
+    uses: WireCatLabs/cli-base/.github/workflows/release-checks.yml@183e25196cb9c9b777946b8783d0f7f222bd66f9 # v0.103.0
 
   build:
     needs: [checks, validation]
@@ -169,7 +169,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@52358852d3510f1150756d48e8a72cb8c8e698e0 # main, 2026-10-25
+    uses: openclaw/clawhub/.github/workflows/skill-publish.yml@bcb25920d7bf46881cbd911d71d6d2d26598d208 # main, 2026-10-25
     with:
       skill_path: skills/drive-cli
       owner: wirecat
