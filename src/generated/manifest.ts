@@ -2,7 +2,7 @@
 // Source: spec/google/*.json, verified by provenance.json
 // Run: pnpm generate
 
-import type { ManifestOperation } from "@wirecat/cli-base/codegen"
+import type { ManifestOperation, SecurityScheme } from "@wirecat/cli-base/codegen"
 
 export const operations: readonly ManifestOperation[] = [
   {
@@ -19,6 +19,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Applies one or more updates to the document. Each request is validated before being applied. If any request is not valid, then the entire request will fail and nothing will be applied. Some requests have replies to give you some information about how they are applied. Other requests do not need to return information; these each return an empty reply. The order of replies matches that of the requests. For example, suppose you call batchUpdate with four updates, and only the third one returns information. The response would have two empty replies, the reply to the third request, and another empty reply, in that order. Because other users may be editing the document, the document might not exactly reflect your changes: your changes may be altered with respect to collaborator changes. If there are no collaborators, the document should reflect your changes. In any case, the updates in your request are guaranteed to be applied together atomically.",
     tags: ["docs"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/documents",
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -121,6 +130,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a blank document using the title given in the request. Other fields in the request, including any provided content, are ignored. Returns the created document.",
     tags: ["docs"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/documents",
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -211,6 +229,17 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Gets the latest version of the specified document.",
     description: "Gets the latest version of the specified document.",
     tags: ["docs"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/documents",
+          "https://www.googleapis.com/auth/documents.readonly",
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -356,6 +385,19 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets information about the user, the user's Drive, and system capabilities. For more information, see [Return user info](https://developers.google.com/workspace/drive/api/guides/user-info). Required: The `fields` parameter must be set. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -443,6 +485,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Retrieves an access proposal by ID. For more information, see [Manage pending access proposals](https://developers.google.com/workspace/drive/api/guides/pending-access).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -550,6 +603,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "List the access proposals on a file. For more information, see [Manage pending access proposals](https://developers.google.com/workspace/drive/api/guides/pending-access). Note: Only approvers are able to list access proposals on a file. If the user isn't an approver, a 403 error is returned.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -668,6 +732,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Approves or denies an access proposal. For more information, see [Manage pending access proposals](https://developers.google.com/workspace/drive/api/guides/pending-access).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -776,6 +845,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Approves an approval. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). This is used to update the ReviewerResponse of the requesting user with a Response of `APPROVED`. If this is the last required reviewer response, this also completes the approval and sets the approval Status to `APPROVED`.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -888,6 +966,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Cancels an approval. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). Updates the approval Status to `CANCELLED`. This can be called by any user with the `writer` permission on the file while the approval Status is `IN_PROGRESS`.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1000,6 +1087,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Comments on an approval. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). This sends a notification to both the initiator and the reviewers. Additionally, a message is also added to the approval activity log.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1112,6 +1208,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Declines an approval. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). This is used to update the ReviewerResponse of the requesting user with a Response of `DECLINED`. This also completes the approval and sets the approval Status to `DECLINED`.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1224,6 +1329,18 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets an approval by ID. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1331,6 +1448,18 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists the approvals on a file. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). By default, this method returns a minimal response that may not include the items array. To retrieve approval details, you must explicitly specify the fields you want using the `fields` query parameter. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1451,6 +1580,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Reassigns the reviewers on an approval. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals). Adds or replaces reviewers in the ReviewerResponse of the approval. This can be called by any user with the `writer` permission on the file while the approval Status is `IN_PROGRESS` and the Response for the reviewer being reassigned is `NO_RESPONSE`. A user with the `reader` permission can only reassign an approval that's assigned to themselves. Removing a reviewer isn't allowed.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1563,6 +1701,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Starts an approval on a file. For more information, see [Manage approvals](https://developers.google.com/workspace/drive/api/guides/approvals).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1665,6 +1812,19 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a specific app. For more information, see [Return user info](https://developers.google.com/workspace/drive/api/guides/user-info).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.apps.readonly",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1762,6 +1922,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists a user's installed apps. For more information, see [Return user info](https://developers.google.com/workspace/drive/api/guides/user-info).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive.apps.readonly"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -1887,6 +2052,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets the starting pageToken for listing future changes. For more information, see [Retrieve changes](https://developers.google.com/workspace/drive/api/guides/manage-changes).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2020,6 +2199,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists the changes for a user or shared drive. For more information, see [Retrieve changes](https://developers.google.com/workspace/drive/api/guides/manage-changes).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2278,6 +2471,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Subscribes to changes for a user. For more information, see [Notifications for resource changes](https://developers.google.com/workspace/drive/api/guides/push).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2541,6 +2748,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Stops watching resources through this channel. For more information, see [Notifications for resource changes](https://developers.google.com/workspace/drive/api/guides/push).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2629,6 +2850,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a comment on a file. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments). Required: The `fields` parameter must be set. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2731,6 +2957,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Deletes a comment. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2834,6 +3065,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a comment by ID. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments). Required: The `fields` parameter must be set. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -2952,6 +3193,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists a file's comments. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments). Required: The `fields` parameter must be set. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3098,6 +3349,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Updates a comment with patch semantics. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments). Required: The `fields` parameter must be set. To return the exact fields you need, see [Return specific fields](https://developers.google.com/workspace/drive/api/guides/fields-parameter).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3210,6 +3466,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a shared drive. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3314,6 +3575,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Permanently deletes a shared drive for which the user is an `organizer`. The shared drive cannot contain any untrashed items. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3433,6 +3699,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a shared drive's metadata by ID. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.readonly"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3543,6 +3814,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Hides a shared drive from the default view. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3640,6 +3916,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       " Lists the user's shared drives. This method accepts the `q` parameter, which is a search query combining one or more search terms. For more information, see the [Search for shared drives](https://developers.google.com/workspace/drive/api/guides/search-shareddrives) guide.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.readonly"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3776,6 +4057,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Restores a shared drive to the default view. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3873,6 +4159,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Updates the metadata for a shared drive. For more information, see [Manage shared drives](https://developers.google.com/workspace/drive/api/guides/manage-shareddrives).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -3988,6 +4279,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a copy of a file and applies any requested updates with patch semantics. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4194,6 +4495,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       ' Creates a file. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file). This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads). Apps creating shortcuts with the `create` method must specify the MIME type `application/vnd.google-apps.shortcut`. Apps should specify a file extension in the `name` property when inserting files with the API. For example, an operation to insert a JPEG file should specify something like `"name": "cat.jpg"` in the metadata. Subsequent `GET` requests include the read-only `fileExtension` property populated with the extension originally specified in the `name` property. When a Google Drive user requests to download a file, or when the file is downloaded through the sync client, Drive builds a full filename (with extension) based on the name. In cases where the extension is missing, Drive attempts to determine the extension based on the file\'s MIME type.',
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4390,6 +4700,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Permanently deletes a file owned by the user without moving it to the trash. For more information, see [Trash or delete files and folders](https://developers.google.com/workspace/drive/api/guides/delete). If the file belongs to a shared drive, the user must be an `organizer` on the parent folder. If the target is a folder, all descendants owned by the user are also deleted.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4520,6 +4839,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Downloads the content of a file. For more information, see [Download and export files](https://developers.google.com/workspace/drive/api/guides/manage-downloads). Operations are valid for 24 hours from the time of creation.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4641,6 +4969,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Permanently deletes all of the user's trashed files. For more information, see [Trash or delete files and folders](https://developers.google.com/workspace/drive/api/guides/delete).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4748,6 +5081,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Exports a Google Workspace document to the requested MIME type and returns exported byte content. For more information, see [Download and export files](https://developers.google.com/workspace/drive/api/guides/manage-downloads). Note that the exported content is limited to 10 MB.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4851,6 +5194,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Generates a CSE token which can be used to create or update CSE files.",
     description: "Generates a CSE token which can be used to create or update CSE files.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -4962,6 +5310,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Generates a set of file IDs which can be provided in create or copy requests. For more information, see [Create and manage files](https://developers.google.com/workspace/drive/api/guides/create-file).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5089,6 +5446,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       " Gets a file's metadata or content by ID. For more information, see [Search for files and folders](https://developers.google.com/workspace/drive/api/guides/search-files). If you provide the URL parameter `alt=media`, then the response includes the file contents in the response body. Downloading content with `alt=media` only works if the file is stored in Drive. To download Google Docs, Sheets, and Slides use [`files.export`](https://developers.google.com/workspace/drive/api/reference/rest/v3/files/export) instead. For more information, see [Download and export files](https://developers.google.com/workspace/drive/api/guides/manage-downloads).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5244,6 +5615,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       " Lists the user's files. For more information, see [Search for files and folders](https://developers.google.com/workspace/drive/api/guides/search-files). This method accepts the `q` parameter, which is a search query combining one or more search terms. This method returns *all* files by default, including trashed files. If you don't want trashed files to appear in the list, use the `trashed=false` query parameter to remove trashed files from the results.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5509,6 +5894,18 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists the labels on a file. For more information, see [List labels on a file](https://developers.google.com/workspace/drive/api/guides/list-labels).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5632,6 +6029,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Modifies the set of labels applied to a file. For more information, see [Set a label field on a file](https://developers.google.com/workspace/drive/api/guides/set-label). Returns a list of the labels that were added or modified.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5734,6 +6140,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       " Updates a file's metadata, content, or both. When calling this method, only populate fields in the request that you want to modify. When updating fields, some fields might be changed automatically, such as `modifiedDate`. This method supports patch semantics. This method supports an */upload* URI and accepts uploaded media with the following characteristics: - *Maximum file size:* 5,120 GB - *Accepted Media MIME types:* `*/*` (Specify a valid MIME type, rather than the literal `*/*` value. The literal `*/*` is only used to indicate that any valid MIME type can be uploaded. For more information, see [Google Workspace and Google Drive supported MIME types](https://developers.google.com/workspace/drive/api/guides/mime-types).) For more information on uploading files, see [Upload file data](https://developers.google.com/workspace/drive/api/guides/manage-uploads).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.scripts",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -5947,6 +6364,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Subscribes to changes to a file. For more information, see [Notifications for resource changes](https://developers.google.com/workspace/drive/api/guides/push).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6107,6 +6538,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6204,6 +6645,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a permission for a file or shared drive. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing). **Warning:** Concurrent permission modifications (such as update or delete) on the same file, folder, or shared drive aren't supported across any users or clients; only the last update is applied.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6414,6 +6860,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Deletes a permission. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing). **Warning:** Concurrent permission modifications (such as update or delete) on the same file, folder, or shared drive aren't supported across any users or clients; only the last update is applied.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6565,6 +7016,19 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a permission by ID. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6708,6 +7172,19 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists a file's or shared drive's permissions. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -6880,6 +7357,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Updates a permission with patch semantics. For more information, see [Share files, folders, and drives](https://developers.google.com/workspace/drive/api/guides/manage-sharing). **Warning:** Concurrent permission modifications (such as update or delete) on the same file, folder, or shared drive aren't supported across any users or clients; only the last update is applied.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7064,6 +7546,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Creates a reply to a comment. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7176,6 +7663,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Deletes a reply. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7289,6 +7781,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a reply by ID. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7417,6 +7919,16 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists a comment's replies. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7563,6 +8075,11 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Updates a reply with patch semantics. For more information, see [Manage comments and replies](https://developers.google.com/workspace/drive/api/guides/manage-comments).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.file"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7685,6 +8202,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Permanently deletes a file version. You can only delete revisions for files with binary content in Google Drive, like images or videos. Revisions for other files, like Google Docs or Sheets, and the last remaining file version can't be deleted. For more information, see [Manage file revisions](https://developers.google.com/drive/api/guides/manage-revisions).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7788,6 +8314,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Gets a revision's metadata or content by ID. For more information, see [Manage file revisions](https://developers.google.com/workspace/drive/api/guides/manage-revisions).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -7908,6 +8448,20 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Lists a file's revisions. For more information, see [Manage file revisions](https://developers.google.com/workspace/drive/api/guides/manage-revisions). **Important:** The list of revisions returned by this method might be incomplete for files with a large revision history, including frequently edited Google Docs, Sheets, and Slides. Older revisions might be omitted from the response, meaning the first revision returned may not be the oldest existing revision. The revision history visible in the Workspace editor user interface might be more complete than the list returned by the API.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.meet.readonly",
+          "https://www.googleapis.com/auth/drive.metadata",
+          "https://www.googleapis.com/auth/drive.metadata.readonly",
+          "https://www.googleapis.com/auth/drive.photos.readonly",
+          "https://www.googleapis.com/auth/drive.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8033,6 +8587,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Updates a revision with patch semantics. For more information, see [Manage file revisions](https://developers.google.com/workspace/drive/api/guides/manage-revisions).",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.appdata",
+          "https://www.googleapis.com/auth/drive.file",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8143,6 +8706,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Deprecated: Use `drives.create` instead.",
     description: "Deprecated: Use `drives.create` instead.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8245,6 +8813,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Deprecated: Use `drives.delete` instead.",
     description: "Deprecated: Use `drives.delete` instead.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8336,6 +8909,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Deprecated: Use `drives.get` instead.",
     description: "Deprecated: Use `drives.get` instead.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.readonly"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8444,6 +9022,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Deprecated: Use `drives.list` instead.",
     description: "Deprecated: Use `drives.list` instead.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/drive.readonly"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8576,6 +9159,11 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Deprecated: Use `drives.update` instead.",
     description: "Deprecated: Use `drives.update` instead.",
     tags: ["drive"],
+    security: [
+      {
+        oauth2: ["https://www.googleapis.com/auth/drive"],
+      },
+    ],
     parameters: [
       {
         name: "fields",
@@ -8689,6 +9277,14 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Query past activity in Google Drive.",
     description: "Query past activity in Google Drive.",
     tags: ["driveactivity"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive.activity",
+          "https://www.googleapis.com/auth/drive.activity.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "alt",
@@ -8781,6 +9377,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Applies one or more updates to the spreadsheet. Each request is validated before being applied. If any request is not valid then the entire request will fail and nothing will be applied. Some requests have replies to give you some information about how they are applied. The replies will mirror the requests. For example, if you applied 4 updates and the 3rd one had a reply, then the response will have 2 empty replies, the actual reply, and another empty reply, in that order. Due to the collaborative nature of spreadsheets, it is not guaranteed that the spreadsheet will reflect exactly your changes after this completes, however it is guaranteed that the updates in the request will be applied together atomically. Your changes may be altered with respect to collaborator changes. If there are no collaborators, the spreadsheet should reflect your changes.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -8881,6 +9486,15 @@ export const operations: readonly ManifestOperation[] = [
     summary: "Creates a spreadsheet, returning the newly created spreadsheet.",
     description: "Creates a spreadsheet, returning the newly created spreadsheet.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -8973,6 +9587,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns the developer metadata with the specified ID. The caller must specify the spreadsheet ID and the developer metadata's unique metadataId. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata).",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9081,6 +9704,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns all developer metadata matching the specified DataFilter. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). If the provided DataFilter represents a DeveloperMetadataLookup object, this will return all DeveloperMetadata entries selected by it. If the DataFilter represents a location in a spreadsheet, this will return all developer metadata associated with locations intersecting that region.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9183,6 +9815,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. By default, data within grids is not returned. You can include grid data in one of 2 ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP * Set the includeGridData URL parameter to true. If a field mask is set, the `includeGridData` parameter is ignored For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want. To retrieve only subsets of spreadsheet data, use the ranges URL parameter. Ranges are specified using [A1 notation](https://developers.google.com/workspace/sheets/api/guides/concepts#cell). You can define a single cell (for example, `A1`) or multiple cells (for example, `A1:D5`). You can also get cells from other sheets within the same spreadsheet (for example, `Sheet2!A1:C4`) or retrieve multiple ranges at once (for example, `?ranges=A1:D5&ranges=Sheet2!A1:C4`). Limiting the range returns only the portions of the spreadsheet that intersect the requested ranges.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.readonly",
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/spreadsheets.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9333,6 +9976,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns the spreadsheet at the given ID. The caller must specify the spreadsheet ID. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). This method differs from GetSpreadsheet in that it allows selecting which subsets of spreadsheet data to return by specifying a dataFilters parameter. Multiple DataFilters can be specified. Specifying one or more data filters returns the portions of the spreadsheet that intersect ranges matched by any of the filters. By default, data within grids is not returned. You can include grid data in one of two ways: * Specify a [field mask](https://developers.google.com/workspace/sheets/api/guides/field-masks) listing your desired fields using the `fields` URL parameter in HTTP. * Set the includeGridData parameter to `true`. If a field mask is set, the `includeGridData` parameter is ignored. For large spreadsheets, as a best practice, retrieve only the specific spreadsheet fields that you want.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9435,6 +10087,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Copies a single sheet from a spreadsheet to another spreadsheet. Returns the properties of the newly created sheet.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9548,6 +10209,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       'Appends values to a spreadsheet. The input range is used to search for existing data and find a "table" within that range. Values will be appended to the next row of the table, starting with the first column of the table. See the [guide](https://developers.google.com/workspace/sheets/api/guides/values#appending_values) and [sample code](https://developers.google.com/workspace/sheets/api/samples/writing#append_values) for specific details of how tables are detected and data is appended. The caller must specify the spreadsheet ID, range, and a valueInputOption. The `valueInputOption` only controls how the input data will be added to the sheet (column-wise or row-wise), it does not influence what cell the data starts being written to.',
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9722,6 +10392,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Clears one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges. Only values are cleared -- all other properties of the cell (such as formatting and data validation) are kept.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9824,6 +10503,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Clears one or more ranges of values from a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges matching any of the specified data filters will be cleared. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc.) are kept.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -9926,6 +10614,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns one or more ranges of values from a spreadsheet. The caller must specify the spreadsheet ID and one or more ranges.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.readonly",
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/spreadsheets.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10077,6 +10776,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns one or more ranges of values that match the specified data filters. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID and one or more DataFilters. Ranges that match any of the data filters in the request will be returned.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10179,6 +10887,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Sets values in one or more ranges of a spreadsheet. The caller must specify the spreadsheet ID, a valueInputOption, and one or more ValueRanges.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10281,6 +10998,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Sets values in one or more ranges of a spreadsheet. For more information, see [Read, write, and search metadata](https://developers.google.com/workspace/sheets/api/guides/metadata). The caller must specify the spreadsheet ID, a valueInputOption, and one or more DataFilterValueRanges.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10383,6 +11109,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Clears values from a spreadsheet. The caller must specify the spreadsheet ID and range. Only values are cleared -- all other properties of the cell (such as formatting, data validation, etc..) are kept.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10496,6 +11231,17 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Returns a range of values from a spreadsheet. The caller must specify the spreadsheet ID and a range.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/drive.readonly",
+          "https://www.googleapis.com/auth/spreadsheets",
+          "https://www.googleapis.com/auth/spreadsheets.readonly",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10642,6 +11388,15 @@ export const operations: readonly ManifestOperation[] = [
     description:
       "Sets values in a range of a spreadsheet. The caller must specify the spreadsheet ID, range, and a valueInputOption.",
     tags: ["sheets"],
+    security: [
+      {
+        oauth2: [
+          "https://www.googleapis.com/auth/drive",
+          "https://www.googleapis.com/auth/drive.file",
+          "https://www.googleapis.com/auth/spreadsheets",
+        ],
+      },
+    ],
     parameters: [
       {
         name: "$.xgafv",
@@ -10792,3 +11547,38 @@ export const operations: readonly ManifestOperation[] = [
     },
   },
 ]
+
+export const securitySchemes: Readonly<Record<string, SecurityScheme>> = {
+  oauth2: {
+    type: "oauth2",
+    flows: {
+      authorizationCode: {
+        scopes: {
+          "https://www.googleapis.com/auth/drive.metadata": "View and manage metadata of files in your Google Drive",
+          "https://www.googleapis.com/auth/drive.photos.readonly":
+            "View the photos, videos and albums in your Google Photos",
+          "https://www.googleapis.com/auth/drive.appdata":
+            "See, create, and delete its own configuration data in your Google Drive",
+          "https://www.googleapis.com/auth/drive.metadata.readonly": "See information about your Google Drive files",
+          "https://www.googleapis.com/auth/drive.readonly": "See and download all your Google Drive files",
+          "https://www.googleapis.com/auth/drive.apps.readonly": "View your Google Drive apps",
+          "https://www.googleapis.com/auth/drive.file":
+            "See, edit, create, and delete only the specific Google Drive files you use with this app",
+          "https://www.googleapis.com/auth/drive.meet.readonly":
+            "See and download your Google Drive files that were created or edited by Google Meet.",
+          "https://www.googleapis.com/auth/drive.scripts": "Modify your Google Apps Script scripts' behavior",
+          "https://www.googleapis.com/auth/drive": "See, edit, create, and delete all of your Google Drive files",
+          "https://www.googleapis.com/auth/documents.readonly": "See all your Google Docs documents",
+          "https://www.googleapis.com/auth/documents": "See, edit, create, and delete all your Google Docs documents",
+          "https://www.googleapis.com/auth/drive.activity":
+            "View and add to the activity record of files in your Google Drive",
+          "https://www.googleapis.com/auth/drive.activity.readonly":
+            "View the activity record of files in your Google Drive",
+          "https://www.googleapis.com/auth/spreadsheets":
+            "See, edit, create, and delete all your Google Sheets spreadsheets",
+          "https://www.googleapis.com/auth/spreadsheets.readonly": "See all your Google Sheets spreadsheets",
+        },
+      },
+    },
+  },
+}

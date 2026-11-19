@@ -373,7 +373,7 @@ drive <profile> folders list [query]
 |---|---|---|
 | `query` | optional | field:value terms that narrow the list — the fields are below. |
 
-**Returns:** selected folder — id; every field: drive commands info folders list
+**Returns:** selected folder — id, name, path; every field: drive commands info folders list
 
 **Example:** `drive personal folders list`
 
