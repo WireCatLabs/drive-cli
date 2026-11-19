@@ -2,6 +2,7 @@ import { describeProgram } from "@wirecat/cli-base/commands"
 import { toolsFromCommands } from "@wirecat/cli-core/mcp"
 import { ownCatalogue } from "@wirecat/cli-core/testing"
 import { describe, expect, it, vi } from "vitest"
+import { writeConfig } from "./config.js"
 import { createProgram } from "./program.js"
 import { callTool, mcpClient } from "./testing/mcp.js"
 import { fixture } from "./testing.js"
@@ -111,6 +112,24 @@ describe("MCP validation through the SDK", () => {
     } finally {
       await close()
     }
+  })
+
+  it("serves its tools with no profile on the computer, and refuses each call with how to set one up", async () => {
+    const f = fixture()
+    writeConfig(f.env, { profiles: {} })
+    const call = vi.fn()
+    const { client, close } = await mcpClient({ env: f.env, api: { call } }, [], ["mcp", "serve", "--profiles", "all"])
+    const { tools } = await client.listTools()
+    expect(tools.length).toBeGreaterThan(0)
+    for (const tool of tools) expect(tool.inputSchema.required).toContain("profile")
+    const answer = await client.callTool({
+      name: "drive_read",
+      arguments: { profile: "default", command: "api drive-files-get", arguments: { file_id: "fixture-file" } },
+    })
+    expect(answer.isError).toBe(true)
+    expect(JSON.stringify(answer.content)).toContain("no drive profile on this computer yet")
+    expect(call).not.toHaveBeenCalled()
+    expect(await close()).toBe(0)
   })
 
   it("pins drive's own MCP catalogue; cli-core pins the commands it mounts", async () => {

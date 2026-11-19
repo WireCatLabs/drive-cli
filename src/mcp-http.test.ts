@@ -268,13 +268,6 @@ describe("drive mcp serve --http", () => {
     expect(existsSync(tokenFile(f, "default"))).toBe(true)
   })
 
-  it("says so when drive mcp serve --profiles all has no profile to serve", async () => {
-    const f = fixture()
-    writeConfig(f.env, { profiles: {} })
-    const { running } = await run(f, ["mcp", "serve", "--profiles", "all", "--json"])
-    await expect(running).rejects.toThrow(/no drive profile on this computer yet/)
-  })
-
   it.each([
     [["--http"], "configuration_error"],
     [["--http", "--public-url", "http://device.example"], "validation_error"],
