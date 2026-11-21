@@ -5,6 +5,7 @@ minimumReleaseAgeExclude:
   - "@wirecat/*"
 
 overrides:
+  "@wirecat/cli-core": file:/var/tmp/claude/claude-1000/-home-leemour-Projects-AI-cli-template/dea9073e-ae20-4c9e-9afb-f068dda7cf8e/scratchpad/core-pack/wirecat-cli-core-0.688.0.tgz
   # markdownlint 0.42.0 (its latest) pins re2js 2.8.6 exactly (GHSA-gg6h-894w-4m9c).
   markdownlint>re2js: 2.8.7
   micromark-extension-math>katex: 0.18.2
