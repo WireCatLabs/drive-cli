@@ -33,6 +33,11 @@ const ENTRIES: Entry[] = [
   ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
   ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
+  [
+    "file.native-google",
+    "validation_error",
+    "a Google Doc, Sheet or other native file has no stored content; change it with documents or sheets commands",
+  ],
   ["file.unreadable", "validation_error", "the file to upload could not be read"],
   ["policy.confirm", "confirmation_required", "the profile policy asks to confirm {permission}", ["permission"]],
   ["policy.denied", "permission_error", "the profile policy refuses {permission}", ["permission"]],

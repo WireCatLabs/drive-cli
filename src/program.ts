@@ -39,6 +39,7 @@ import {
   skillCommand,
 } from "@wirecat/cli-core/cli"
 import { oauthClientReport } from "@wirecat/cli-core/constants"
+import { fileVersions } from "@wirecat/cli-core/documents"
 import { levelFor, newOperationId } from "@wirecat/cli-core/sends"
 import type { Command } from "commander"
 import { validateRequest } from "./api-contract.js"
@@ -76,6 +77,7 @@ import {
   profileRequired,
   readConfig,
 } from "./config.js"
+import { driveFileTarget } from "./drive-files.js"
 import { googleError, offlineRefused } from "./errors.js"
 import { memoryModel } from "./extraction.js"
 import { FIRST_SCREEN, guide, placeInSections } from "./first-screen.js"
@@ -423,6 +425,52 @@ const installDrive = (program: Command) => {
       ])
       return googleDownload(client)(id, mime)
     },
+    replace: async (id, from, mime) => {
+      const method = "drive.files.update"
+      const flags = policyFlags()
+      for (const key of methodPolicyKeys(method)) await checkPolicy(env, selected(), key, true, flags, askOnce)
+      const act = async () => {
+        let request = environment().uploadRequest
+        if (!request) {
+          const [{ googleUploadRequest }, client] = await Promise.all([
+            import("./google-api.js"),
+            signedIn(selected(), apiMethod(method).scope),
+          ])
+          request = googleUploadRequest(client)
+        }
+        return uploadFile({
+          path: from,
+          fileId: id,
+          ...(mime ? { mime } : {}),
+          stateDir: profileDir(env, selected()),
+          request,
+        })
+      }
+      return guardedGoogleWrite(env, selected(), `api.${method}`, act, flags, askOnce, newOperationId())
+    },
+    edits: {
+      port: (plainText) => {
+        const stop = signal()
+        return {
+          target: driveFileTarget({
+            call: (method, params, body) => remote.call(method, params, body),
+            download: (id) => remote.download(id),
+            replace: (id, from, mime) => remote.replace(id, from, mime),
+            identity: async () => activeProfile(env, selected()).principal ?? selected(),
+            prefix: `drive ${selected()}`,
+            plainText,
+          }),
+          versions: fileVersions(join(profileDir(env, selected()), "files.versions")),
+          ...(stop ? { signal: stop } : {}),
+        }
+      },
+      check: async (keys) => {
+        const flags = policyFlags()
+        for (const key of keys) await checkPolicy(env, selected(), key, true, flags, askOnce)
+      },
+      prefix: () => `drive ${selected()}`,
+      stdin: () => environment().stdin ?? process.stdin,
+    },
     upload: async (path, args) => {
       const method = "drive.files.create"
       const flags = policyFlags()
@@ -558,7 +606,8 @@ const installDrive = (program: Command) => {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    if (agent() && EXPORTS.has(words)) {
+    // Without --output, files download answers the text and writes nothing.
+    if (agent() && EXPORTS.has(words) && !(words === "files download" && action.opts().output === undefined)) {
       const name = action.opts().output
       if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
         throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")

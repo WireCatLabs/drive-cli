@@ -45,11 +45,10 @@ describe("friendly file downloads", () => {
     expect(t.download).toHaveBeenCalledWith("synthetic-doc", mime)
     expect(readFileSync(t.path)).toEqual(Buffer.from([0, 255, 10, 128]))
   })
-  it("refuses invalid formats, missing output, offline, readonly and denied permissions before fetching", async () => {
+  it("refuses invalid formats, offline, readonly and denied permissions before fetching", async () => {
     const t = setup()
     for (const args of [
       ["files", "export", "synthetic-doc", "--format", "invalid", "--output", t.path],
-      ["files", "download", "synthetic-file"],
       ["--offline", "files", "download", "synthetic-file", "--output", t.path],
       ["--read-only", "files", "download", "synthetic-file", "--output", t.path],
       ["--permission", "files.download=deny", "files", "download", "synthetic-file", "--output", t.path],

@@ -17,7 +17,7 @@ export interface UploadResponse {
 }
 export type UploadRequest = (request: {
   url: string
-  method: "POST" | "PUT"
+  method: "POST" | "PUT" | "PATCH"
   headers: Record<string, string>
   body?: Buffer | string
 }) => Promise<UploadResponse>
@@ -27,6 +27,8 @@ export interface UploadInput {
   name?: string
   parent?: string
   mime?: string
+  /** An existing file whose content the upload replaces; its name, folder and id stay. */
+  fileId?: string
   /** Where the session URI waits between runs, so an interrupted upload continues instead of starting again. */
   stateDir: string
   request: UploadRequest
@@ -81,11 +83,12 @@ export const uploadFile = async (input: UploadInput): Promise<UploadedFile> => {
     throw new CliError("validation_error", "upload takes one file, not a folder", { reason: "file.not-a-file" })
   const size = stat.size
   const name = input.name ?? basename(path)
+  const replacing = input.fileId
   const chunk = input.chunkBytes ?? CHUNK_BYTES
   if (chunk % QUANTUM !== 0) throw new CliError("validation_error", "a chunk must be a multiple of 256 KiB")
   const sleep = input.sleep ?? ((ms: number) => new Promise((wake) => setTimeout(wake, ms)))
   const key = createHash("sha256")
-    .update(JSON.stringify([path, size, stat.mtimeMs, name, input.parent ?? ""]))
+    .update(JSON.stringify([path, size, stat.mtimeMs, name, input.parent ?? "", ...(replacing ? [replacing] : [])]))
     .digest("hex")
     .slice(0, 24)
   const checkpointPath = join(input.stateDir, "uploads", `${key}.json`)
@@ -110,10 +113,10 @@ export const uploadFile = async (input: UploadInput): Promise<UploadedFile> => {
   const clearCheckpoint = () => rmSync(checkpointPath, { force: true })
 
   const start = async (): Promise<string> => {
-    const metadata = JSON.stringify({ name, ...(input.parent ? { parents: [input.parent] } : {}) })
+    const metadata = JSON.stringify(replacing ? {} : { name, ...(input.parent ? { parents: [input.parent] } : {}) })
     const response = await input.request({
-      url: `${START}?uploadType=resumable&supportsAllDrives=true&fields=${FIELDS}`,
-      method: "POST",
+      url: `${START}${replacing ? `/${replacing}` : ""}?uploadType=resumable&supportsAllDrives=true&fields=${FIELDS}`,
+      method: replacing ? "PATCH" : "POST",
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         "X-Upload-Content-Type": input.mime ?? "application/octet-stream",

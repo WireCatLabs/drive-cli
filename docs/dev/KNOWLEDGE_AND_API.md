@@ -132,7 +132,8 @@ drive personal files mkdir 'Research' --parent FOLDER_ID
 drive personal files upload ./backup.db.zst --parent FOLDER_ID
 drive personal files copy FILE_ID --name 'Review copy' --parent FOLDER_ID
 drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID
-drive personal files update FILE_ID --body '{"name":"Renamed"}'
+drive personal api drive-files-update --file-id FILE_ID --body '{"name":"Renamed"}'
+drive personal files update FILE_ID --text '# Notes' --expected-fingerprint SHA256
 drive personal files trash FILE_ID
 drive personal files restore FILE_ID
 drive personal documents create --title 'Planning'

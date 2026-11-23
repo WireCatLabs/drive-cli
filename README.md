@@ -61,6 +61,10 @@ Agent:  (edits 3 lines under "## Risks" in plans/q4.md)
 - **What your agent gets that a plain Drive connector does not give.** Claude's built-in Google Drive connector can
   create a new file and change a file's title or folder, but not its text (its `update_file` tool, checked
   on 2026-11-17). With drive, the agent edits the text itself.
+- **Word, Excel and text files in Drive edited in place.** `files sheets update` changes cells of an uploaded `.xlsx`,
+  `files documents update` paragraphs of a `.docx`, and `files update` the text of a Markdown or CSV file. Each
+  write needs the `sha256` the file was read at and keeps the replaced content on your computer
+  ([edit a file stored in Drive](docs/usage.md#edit-a-file-stored-in-google-drive)).
 - **Search that stays on your computer.** Google Docs are read across all their tabs, and a document keeps its identity
   through renames and moves. Keyword search and optional local embeddings come from WireCat's shared search.
 - **Safe to give to an agent.** Reads are the default. Changes in Google need a sign-in with `--grant write`, and

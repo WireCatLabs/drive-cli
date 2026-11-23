@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { CliError, resolvePaths, saveConfigFile } from "@wirecat/cli-base"
 import {
   AI_ENTRIES,
+  type ConditionalKey,
   type ConfigIssue,
   checkConfigText,
   commandPathKey,
@@ -96,7 +97,24 @@ const keyOf = (path: readonly string[]) => {
   return operation ? `api.${operation.id}` : commandPathKey(path)
 }
 
-export const permissions = commandPermissions({ keyOf, extra: [...permissionKeys([])], defaults: DEFAULT_LEVELS })
+/** The key a write over a file's content also asks: the content it replaces leaves the file. */
+export const DELETE_KEY = "files.delete"
+/** cli-core's file edits replace a file only at the sha256 it was read at, which the flag carries. */
+const OVERWRITES = { key: DELETE_KEY, when: "with --expected-fingerprint" }
+/** What a file edit checks beside its own key, so `--dry-run` shows the same keys as the run. */
+const FILES_CHECKS: Readonly<Record<string, readonly (string | ConditionalKey)[]>> = {
+  "files update": [OVERWRITES],
+  "files restore": [OVERWRITES],
+  "files sheets update": [DELETE_KEY],
+  "files documents update": [DELETE_KEY],
+}
+
+export const permissions = commandPermissions({
+  keyOf,
+  extra: [...permissionKeys([])],
+  defaults: DEFAULT_LEVELS,
+  alsoChecks: (path) => FILES_CHECKS[path.join(" ")] ?? [],
+})
 
 /**
  * The shared settings over drive's own file: the same `config.json`, read with drive's schema, so a file written by
