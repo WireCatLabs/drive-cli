@@ -33,8 +33,8 @@ stdin/stdout connection keeps working as before.
 - **Whoever logs in reads your documents.** The login needs the access code from your terminal.
   Never put a tunnel in front of `drive personal mcp serve` without `--http`: that mode has no login at all.
 - **Profile permissions decide what the app may change.** `deny` and `readonly` block writes;
-  `ask` and `allow` let a requested MCP write go through without a form on the server. The app's own
-  approval is separate and depends on its settings. Google sign-in and file roles stay independent:
+  `ask` and `allow` let an MCP write run without asking you. Only the app may still ask, and that
+  depends on its own settings. Google sign-in and file roles stay independent:
   a write also needs the write grant: reconnect with `--grant write`
   ([recipes](recipes.md), [configuration](configuration.md), [security](security.md)).
 - **The computer that runs `drive` must stay on.** To use it from a phone, run all of this on a small

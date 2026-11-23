@@ -69,7 +69,8 @@ drive config show --json
 ```
 
 These permissions restrict the live file/Doc command families. Local sync and local notes use
-separate keys. `--read-only` is broader: it also blocks local changes, so do not use it when
+separate keys. A change set to `ask` asks first in a terminal. Over MCP nobody is there to answer, so it runs
+without asking: set a key to `readonly` or `deny` to stop an agent. `--read-only` is broader: it also blocks local changes, so do not use it when
 you want to import or tag documents. Inspect the [command reference](commands.md) and
 [data permissions](security.md) before choosing broader rules.
 
