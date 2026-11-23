@@ -48,6 +48,8 @@ if npm view "@wirecat/drive-cli@$version" version --prefer-online >/dev/null 2>&
   echo "$version is already published; prepare a new version in a pull request" >&2
   exit 1
 fi
+# The code released is the code a person checked against real Google Drive with bin/live (WC-REL-17).
+npx -y -p @wirecat/cli-base@0.132.0 cli-dev live check --version "$version"
 last_run() {
   gh run list --workflow release.yml --branch main --event workflow_dispatch --limit 1 \
     --json databaseId --jq '.[0].databaseId // ""'

@@ -62,6 +62,29 @@ See npm's [official trusted publishing guide](https://docs.npmjs.com/trusted-pub
 The initial publication of a new package needs separate publisher setup. Drive's subsequent
 releases use the workflow below.
 
+## Live check
+
+`bin/release` refuses a version that has no passed live check in [live-checks.txt](live-checks.txt): the code
+released is the code someone ran against real Google Drive. On the release branch, with its pull request open, run:
+
+```sh
+bin/live <profile>
+```
+
+`<profile>` is a drive profile signed in to a test Google account, never one that matters. Sign it in once, with
+the full Drive scope the edits need:
+
+```sh
+drive <profile> session start --grant write
+```
+
+The sign-in stays in the keyring (`service drive-cli account <profile>`) for later releases. `bin/live` shows the
+account Google names for the profile and asks before it changes anything. [scripts/live.sh](../../scripts/live.sh)
+then works in a new folder `drive-live-<time>` in My Drive and moves it to the trash at the end, also after a
+failure. On a pass, `bin/live` adds the line to `live-checks.txt`, commits and pushes it, and names it in the pull
+request's Conformance section. The line hashes `src/`, `package.json` and the lockfile, so a later change to them
+needs a new check.
+
 ## Publish a release
 
 Date the top version section, update package.json and complete review. From clean, up-to-date
