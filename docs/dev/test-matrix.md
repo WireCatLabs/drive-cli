@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**266 ✅ · 973 ⛔ · 0 ❌** — 214 commands, 1025 options.
+**273 ✅ · 973 ⛔ · 0 ❌** — 216 commands, 1030 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -80,6 +80,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `documents show` |  | ✅ |  |
 | `documents export` |  | ✅ |  |
 | `documents export` | `--output` | ✅ |  |
+| `documents history` |  | ✅ |  |
+| `documents history` | `--revision` | ✅ |  |
 | `documents add` |  | ✅ |  |
 | `documents add` | `--profiles` | ✅ |  |
 | `documents add` | `--title` | ✅ |  |
@@ -91,10 +93,12 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `documents create` | `--title` | ✅ |  |
 | `documents update` |  | ✅ |  |
 | `documents update` | `--body` | ✅ |  |
-| `documents history` |  | ✅ |  |
-| `documents history` | `--limit` | ✅ |  |
-| `documents history` | `--cursor` | ✅ |  |
-| `documents history` | `--activity` | ✅ |  |
+| `changes` |  | ✅ |  |
+| `changes` | `--since` | ✅ |  |
+| `changes` | `--until` | ✅ |  |
+| `changes` | `--event` | ✅ |  |
+| `changes` | `--limit` | ✅ |  |
+| `changes` | `--page` | ✅ |  |
 | `search` |  | ✅ |  |
 | `search` | `--limit` | ✅ |  |
 | `search` | `--page` | ✅ |  |
@@ -1167,6 +1171,9 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files upload` |  | ✅ |  |
 | `files upload` | `--parent` | ✅ |  |
 | `files upload` | `--name` | ✅ |  |
+| `activities list` |  | ✅ |  |
+| `activities list` | `--limit` | ✅ |  |
+| `activities list` | `--cursor` | ✅ |  |
 | `comments reply` |  | ✅ |  |
 | `comments resolve` |  | ✅ |  |
 | `comments reopen` |  | ✅ |  |

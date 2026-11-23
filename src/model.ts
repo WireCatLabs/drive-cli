@@ -5,10 +5,12 @@ import type {
   SourceChange,
   SourceContent,
   SourceFile,
+  SourceRemoval,
   SourceSkip,
   SourceState,
   SourceWork,
 } from "@wirecat/cli-core/documents"
+import type { DocumentHistoryPort } from "@wirecat/cli-core/documents/cli"
 import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store"
 
 export type { PictureWriter, TabText } from "@wirecat/cli-core/documents"
@@ -93,7 +95,9 @@ export interface DocumentIndex {
   save(principal: string, content: DocumentContent, hash: string): Promise<string>
   /** A live document synced from the same Google file answers as the duplicate, whatever its text now. */
   addSource?(input: AddedSourceInput, driveFileId?: string): Promise<AddedSource>
-  remove(principal: string, id: string): Promise<void>
+  remove(principal: string, id: string, reason?: SourceRemoval): Promise<void>
+  prune?(principal: string, before: string): Promise<unknown>
+  history?: DocumentHistoryPort
   openPictures(): Promise<PictureWriter>
   search(
     principal: string,

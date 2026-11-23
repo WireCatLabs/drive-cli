@@ -18,7 +18,7 @@ describe("command data effects", () => {
       "files get",
       "files list",
       "documents get",
-      "documents history",
+      "activities list",
       "documents check",
       "comments get",
       "permissions get",

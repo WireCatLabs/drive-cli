@@ -14,6 +14,7 @@ import {
 } from "@wirecat/cli-core/cli"
 import { googleApp } from "@wirecat/cli-core/constants"
 import { MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
+import { DOCUMENT_HISTORY_SETTINGS, keepVersionsForDays } from "@wirecat/cli-core/documents/cli"
 import { TRANSCRIPT_WORDS } from "@wirecat/cli-core/meetings"
 import type { OAuthClient } from "@wirecat/cli-core/oauth"
 import { LEVELS } from "@wirecat/cli-core/sends"
@@ -28,6 +29,7 @@ const Common = {
   permissions: v.optional(v.record(v.string(), v.picklist(LEVELS))),
   max_text_chars: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(MAX_TEXT_CHARS))),
   google_client_id: v.optional(v.pipe(v.string(), v.trim(), v.minLength(1))),
+  ...DOCUMENT_HISTORY_SETTINGS.profile,
 }
 /** Whether and how long runs are kept: one choice for the whole tool, since a failure may come before a profile. */
 const RunSettings = {
@@ -111,6 +113,7 @@ export const configuration = settingsFor(DRIVE_APP, {
     storage: v.optional(v.picklist(["keyring", "file"])),
     max_text_chars: Common.max_text_chars,
     google_client_id: Common.google_client_id,
+    ...DOCUMENT_HISTORY_SETTINGS.profile,
     ...Transcripts,
   },
   settings: [
@@ -124,6 +127,7 @@ export const configuration = settingsFor(DRIVE_APP, {
       default: DEFAULT_ADD_PROFILES,
       description: "the most profiles documents add may try for one document",
     },
+    ...DOCUMENT_HISTORY_SETTINGS.settings,
   ],
   permissions,
 })
@@ -263,6 +267,8 @@ export const checkTextLimit = (value: unknown): number => {
 }
 export const textLimit = (env: NodeJS.ProcessEnv, name: string): number =>
   activeProfile(env, name).max_text_chars ?? readConfig(env).defaults?.max_text_chars ?? MAX_TEXT_CHARS
+export const keepVersions = (env: NodeJS.ProcessEnv, name: string): number =>
+  keepVersionsForDays({ configured: activeProfile(env, name), shared: readConfig(env).defaults ?? {} })
 export const transcriptsOf = (env: NodeJS.ProcessEnv, name: string) => {
   const profile = activeProfile(env, name)
   return { mode: profile.transcripts, words: profile.transcript_words ?? [...TRANSCRIPT_WORDS] }

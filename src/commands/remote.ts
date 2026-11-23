@@ -381,41 +381,38 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .action(async (id: string, args) =>
       output(itemOf(await call("docs.documents.batchUpdate", { documentId: fileId(id) }, args.body))),
     )
-  page(
-    examples(
-      annotate(documents.command("history"), { effects: GOOGLE_READ })
-        .description("list the revisions Google kept, or who did what with --activity")
-        .argument("<document>", documentArgument),
-      ["drive personal documents history DOC_ID", "drive personal documents history DOC_ID --activity"],
-    ),
+  const activities = annotate(program.command("activities"), { effects: GOOGLE_READ }).description(
+    "read who did what with a file in Google Drive",
   )
-    .option("--activity", "list activity events instead of revisions; needs session start --grant activity")
-    .action(async (id: string, args) => {
-      const file = fileId(id)
-      const data = args.activity
-        ? await call(
-            "driveactivity.activity.query",
-            {},
-            {
-              itemName: `items/${file}`,
-              pageSize: args.limit,
-              ...(args.cursor ? { pageToken: args.cursor } : {}),
-            },
-          )
-        : await call("drive.revisions.list", {
-            fileId: file,
-            pageSize: args.limit,
-            ...(args.cursor ? { pageToken: args.cursor } : {}),
-            fields:
-              "nextPageToken,revisions(id,mimeType,modifiedTime,lastModifyingUser(permissionId,displayName,emailAddress),size)",
-          })
-      output(
-        pageOf("documents history", data, args.activity ? "activities" : "revisions", args.limit, {
-          document: id,
-          activity: args.activity,
-        }),
-      )
-    })
+  const activityRow = v.looseObject({ timestamp: v.optional(v.string()) })
+  const activityQuery = unfilteredQuery("drive_remote_activity", activityRow)
+  bindQuery(
+    page(
+      examples(
+        annotate(activities.command("list"), { effects: GOOGLE_READ })
+          .description("list who did what with a file (needs session start --grant activity)")
+          .argument("<file>", fileArgument),
+        ["drive personal activities list FILE_ID"],
+      ),
+    ),
+    activityQuery,
+    activityRow,
+  ).action(async (id: string, words: string[], args) => {
+    queryTerms(words, activityQuery, "activities list")
+    return output(
+      pageOf(
+        "activities list",
+        await call(
+          "driveactivity.activity.query",
+          {},
+          { itemName: `items/${fileId(id)}`, pageSize: args.limit, ...(args.cursor ? { pageToken: args.cursor } : {}) },
+        ),
+        "activities",
+        args.limit,
+        { file: id },
+      ),
+    )
+  })
   for (const resource of ["comments", "permissions", "revisions"] as const) {
     const one = resource.slice(0, -1)
     const group = annotate(program.command(resource), { effects: GOOGLE_READ }).description(

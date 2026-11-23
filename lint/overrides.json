@@ -1,19 +1,5 @@
 [
   {
-    "rule": "unknown-resource",
-    "target": "mirrors",
-    "reason": "A mirror is a saved pairing of a local folder and a Google Drive folder that mirrors sync writes into; no shared noun names it. Add mirrors to the cli-base vocabulary if a second CLI adopts the push engine from cli-core.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
-  },
-  {
-    "rule": "option-role",
-    "target": "mirrors sync --keep",
-    "reason": "Picks which side wins where a file changed both locally and in Google (local, google or both); no shared flag names a conflict side. Add it to the cli-base vocabulary if a second CLI adopts two-way sync from cli-core.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
-  },
-  {
     "rule": "option-role",
     "target": "files download --overwrite",
     "reason": "Explicit replacement of an existing local output, including a symlink, is distinct from policy confirmation. Review when the shared vocabulary names this file-replacement control.",
@@ -29,13 +15,6 @@
   },
   {
     "rule": "unknown-verb",
-    "target": "comments reply",
-    "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-11-24"
-  },
-  {
-    "rule": "unknown-verb",
     "target": "comments reopen",
     "reason": "Google comment threads expose reply, resolve and reopen as distinct actions. These friendly commands use the same Drive replies.create contract and permission checks; review when the shared vocabulary includes comment-thread actions.",
     "owner": "@WireCatLabs",
@@ -45,6 +24,34 @@
     "rule": "unknown-resource",
     "target": "transcripts",
     "reason": "Google Meet transcripts and Gemini notes as Google Docs, chosen by name for sync; the vocabulary has the singular transcript (the text of speech) but no collection of them. Add transcripts to the cli-base vocabulary when a Meet CLI lists them too.",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "changes",
+    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
+  },
+  {
+    "rule": "flag-two-meanings",
+    "target": "--until",
+    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
+  },
+  {
+    "rule": "option-role",
+    "target": "changes --event",
+    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
+    "owner": "@WireCatLabs",
+    "review_after": "2026-12-22"
+  },
+  {
+    "rule": "option-role",
+    "target": "changes --since",
+    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
     "owner": "@WireCatLabs",
     "review_after": "2026-12-22"
   }
