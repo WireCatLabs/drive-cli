@@ -1,5 +1,63 @@
 # Changelog
 
+## 0.72.0 — 23.11.2026
+
+### Added
+
+- **Earlier versions of every synced document, and a change log** (cli-core 0.722.0, was 0.707.0, and cli-base
+  0.128.0, was 0.124.0). Sync keeps a document's text, title and front matter before each change and before it
+  leaves the copy. `documents history <document>` lists the versions and `--revision <n>` shows one.
+  `changes --since 1d` lists what was added, changed, deleted, no longer visible or came back. Both read the local
+  copy, so agents get them over MCP too ([recipes](docs/recipes.md#see-earlier-versions-and-what-changed)).
+- **`keep_versions_for_days`, 365 by default**, for a profile or `defaults`. A sync that finishes its pass drops older
+  versions and change log rows ([configuration](docs/configuration.md#saved-settings)).
+
+### Changed — may break callers
+
+- **`documents history` reads the local versions now, and Google's own history moved.** Google's revisions are
+  `revisions list <file>`, as before. Who did what is `activities list <file>`, which was `documents history --activity`.
+  The permission key of that Google read is `activities.list`, which was `documents.history`. A config that set
+  `permissions.documents.history` for the Google read sets `permissions.activities.list` instead.
+- **The MCP Registry entry asks which profiles to serve.** It started `mcp serve --profiles all`, so a client that
+  installed the server from the registry reached every account on the computer without the owner choosing. Now
+  `--profiles` is a required argument with the example `personal`: the client asks for one profile, a
+  comma-separated list or `all`. Why: a CLI never picks an account for the owner
+  ([WC-MCP-9](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/mcp.md#wc-mcp-9--a-server-serves-the-profiles-it-is-told-with-one-connection-for-each)). Watch for: a client set up from the old entry keeps `--profiles all` until it is set up again; a
+  server added by hand or with `mcp config` does not change.
+
+### Fixed
+
+- **The usage guide no longer says a catalog holds at most 10,000 entries** and asks for narrower folders. A scope of
+  any size reaches it over several syncs, and the guide and README now say a sync also stops after 15 minutes in a
+  terminal or 45 seconds over MCP and the next one goes on (cli-core 0.676.0, was 0.673.0; cli-base 0.104.0, was
+  0.102.1).
+- **A listing past 10,000 entries names the listing that is too large**: one folder (choose smaller folders) or the
+  transcript search (set more specific `transcript_words`). It said the chosen folders together held too many, the
+  ceiling a sync no longer has. The change-feed error says to run `sync --rescan` once and then plain `sync`, instead
+  of saying it works only while the folders hold at most 10,000 entries.
+- **A sync stops in time at its deadline and says to sync again** (15 minutes in a terminal, 45 seconds over MCP, or
+  `--timeout`). drive did not pass the run's budget and deadline to the sync, so a long sync was cut off with
+  `command.timed-out` instead.
+- **`sync --embed` no longer turns a sync's own stop into a timeout.** After a sync that stopped early, or with no
+  time left before the deadline, it skips embedding and says so in `embeddings` (`skipped`, `next`); the next
+  `sync --embed` goes on.
+- **A file Google stops showing keeps its text.** A removal in Google's change feed, a 404 or lost access marks the
+  document no longer visible: it leaves lists and search, keeps its text, and comes back as it was. Only a file in the
+  trash counts as deleted. Before, sync blanked the text in both cases.
+- **`drive mcp serve --profiles all` starts on a computer with no profile yet** (cli-core 0.707.0, was 0.687.0;
+  cli-base 0.124.0, was 0.109.0). It answers the handshake and lists its tools, and each tool call says how to set up
+  the first profile. Directories such as Glama start a server in an empty container only to read its tools, and
+  marked drive as one that cannot be deployed.
+- **An agent that runs drive itself writes its relationships as suggestions.** drive took only a call over its own MCP
+  server for an agent's, so an agent running `drive relationships add` in a terminal (Claude Code, Codex and others,
+  by `CLAUDECODE` or `AI_AGENT`) wrote a confirmed link as the owner. drive now asks cli-core's shared check, as
+  notion does: the link waits unconfirmed until the owner adds the same relationship or removes it. Memories and facts
+  an agent writes follow the same check.
+- **cli-core 0.687.0 and cli-base 0.109.0.** The profile's account is now recorded by cli-core's documents engine
+  instead of drive's own copy, and a Drive folder no longer shows up in search (a hit with
+  `not_read: "folder metadata only"` is gone). The start token and the root folder's read now count toward a sync's
+  request budget.
+
 ## 0.71.0 — 16.11.2026
 
 ### Changed — may break callers
