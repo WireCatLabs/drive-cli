@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**284 ✅ · 973 ⛔ · 1 ❌** — 221 commands, 1037 options.
+**285 ✅ · 973 ⛔ · 0 ❌** — 221 commands, 1037 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1172,7 +1172,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files sheets update` |  | ✅ |  |
 | `files sheets update` | `--values` | ✅ |  |
 | `files sheets update` | `--expected-fingerprint` | ✅ |  |
-| `files sheets update` | `--replace` | ❌ |  |
+| `files sheets update` | `--replace` | ✅ |  |
 | `files documents show` |  | ✅ |  |
 | `files documents update` |  | ✅ |  |
 | `files documents update` | `--payload` | ✅ |  |
