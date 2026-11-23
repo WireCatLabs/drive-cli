@@ -1,6 +1,6 @@
 {
   "name": "@wirecat/drive-cli",
-  "version": "0.72.1",
+  "version": "0.73.0",
   "description": "Google Drive and Docs sync, Markdown snapshots and local search",
   "mcpName": "dev.wirecat/drive-cli",
   "license": "Apache-2.0",
