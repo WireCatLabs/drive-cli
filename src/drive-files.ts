@@ -94,14 +94,17 @@ export const driveFileTarget = (port: DriveFilePort): FileTarget => {
     const file = await meta(id)
     return file && !file.trashed ? editable(id, file) : undefined
   }
-  const hashOf = async (id: string, file: Meta) => {
-    if (file.sha256Checksum) return file.sha256Checksum
-    // Google fills sha256Checksum only "if available"; the bytes themselves still prove what the file holds.
+  /**
+   * Whether the file still holds the content read at `sha256`. Google's sha256Checksum is the quick answer; Google
+   * fills it only "if available" and may lag an upload, so when it is missing or differs, the bytes decide.
+   */
+  const holds = async (id: string, file: Meta, sha256: string) => {
+    if (file.sha256Checksum === sha256) return true
     const source = await port.download(id)
     const hash = createHash("sha256")
     if (source instanceof Uint8Array) hash.update(source)
     else for await (const chunk of source) hash.update(chunk as Buffer)
-    return hash.digest("hex")
+    return hash.digest("hex") === sha256
   }
   const changed = (id: string) =>
     new CliError("conflict", `${id} is not the file that was read`, { reason: "mirror.remote-changed" })
@@ -128,7 +131,7 @@ export const driveFileTarget = (port: DriveFilePort): FileTarget => {
           { reason: "file.not-found" },
         )
       const file = await there(id)
-      if (!file || (await hashOf(id, file)) !== expect.sha256) throw changed(id)
+      if (!file || !(await holds(id, file, expect.sha256))) throw changed(id)
       const done = await port.replace(id, from, file.mimeType)
       return {
         path: id,

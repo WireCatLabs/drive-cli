@@ -27,6 +27,8 @@ interface Stored {
   trashed?: boolean
   /** Google fills sha256Checksum only "if available"; false leaves it out. */
   hashed?: boolean
+  /** A sha256Checksum Google has not updated yet. */
+  staleHash?: string
 }
 
 /** Google Drive as the edits reach it: files.get metadata, alt=media downloads and resumable PATCH uploads. */
@@ -55,7 +57,7 @@ const fakeDrive = () => {
       mimeType: file.mimeType,
       trashed: file.trashed ?? false,
       ...(native ? {} : { size: String(file.bytes.length), md5Checksum: md5(file.bytes) }),
-      ...(native || file.hashed === false ? {} : { sha256Checksum: sha256(file.bytes) }),
+      ...(native || file.hashed === false ? {} : { sha256Checksum: file.staleHash ?? sha256(file.bytes) }),
     }
   })
   const download = vi.fn(async (id: string) => {
@@ -178,11 +180,16 @@ describe("files update", () => {
     expect(t.drive.text("notes-id")).toBe("another device's edit")
   })
 
-  it("proves the content by its bytes when Google gives no sha256Checksum", async () => {
-    const t = setup()
+  it("proves the content by its bytes when Google gives no sha256Checksum, or an old one", async () => {
+    const t = setup({})
     ;(t.drive.files.get("notes-id") as Stored).hashed = false
     await t.run(["update", "notes-id", "--text", NEW, "--expected-fingerprint", sha256(OLD)])
     expect(t.drive.text("notes-id")).toBe(NEW)
+    const notes = t.drive.files.get("notes-id") as Stored
+    notes.hashed = true
+    notes.staleHash = sha256(OLD)
+    await t.run(["update", "notes-id", "--text", OLD, "--expected-fingerprint", sha256(NEW)])
+    expect(t.drive.text("notes-id")).toBe(OLD)
   })
 
   it("refuses a Google Doc, a .docx, a .xlsx, a missing fingerprint and a file that is not there", async () => {

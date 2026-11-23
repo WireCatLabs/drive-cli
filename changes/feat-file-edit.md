@@ -3,8 +3,8 @@
 - **Edit Word, Excel and text files stored in Google Drive in place** (cli-core 0.735.0, was 0.724.0, and cli-base
   0.132.0, was 0.130.0). `files sheets show|update` reads and writes cells of an uploaded `.xlsx`, `files documents
   show|update` paragraphs of a `.docx`, and `files update FILE_ID --text` the whole text of a Markdown, text or CSV
-  file. Each write needs `--expected-fingerprint`, the `sha256` the file was read at, asks as `files.delete` does, and
-  keeps the replaced content on this computer. `files history` lists those versions and `files restore FILE_ID
+  file. Each write needs `--expected-fingerprint`, the `sha256` the file was read at, checks the `files.delete`
+  permission, and keeps the replaced content on this computer. `files history` lists those versions and `files restore FILE_ID
   <version>` puts one back. Google Drive has no conditional upload, so the file is checked just before the write; a
   change in that moment is not caught, but what the write replaced is kept. A Google Doc or Sheet is refused with
   the command that changes it ([usage](../docs/usage.md#edit-a-file-stored-in-google-drive),

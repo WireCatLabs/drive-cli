@@ -313,8 +313,9 @@ An edit replaces a file only at the content it was read at. Read the file's `sha
 `--expected-fingerprint`: `files download FILE_ID --json` gives it for a text file, and `files sheets show` and
 `files documents show` give it for a workbook or a Word file. Before the upload, drive downloads the file, keeps
 its content on this computer in the profile's state folder, and checks that it still has that `sha256`. Just before
-the upload it checks Google's hash of the file once more. If the file changed, the answer is a `conflict` that
-names the command to read it again, and nothing is uploaded.
+the upload it checks the file once more: by Google's own `sha256` of the file, or, when Google has none or another
+one, by downloading the bytes again. If the file changed, the answer is a `conflict` that names the command to read
+it again, and nothing is uploaded.
 
 Google Drive has no conditional upload: its API gives a file no version tag that an upload could be made to depend
 on. So a change that lands in the moment between that last check and the upload is not caught. Its content is not
@@ -325,7 +326,8 @@ lost: the content drive replaced is kept on this computer, and Drive keeps its o
 new file goes up with `files upload`. It refuses a PDF, `.docx` or `.xlsx`, whose text is extracted on a read.
 `sheets update` writes a text as text, even one that starts with `=`, and refuses to overwrite a formula unless
 `--replace`. `documents update` refuses a paragraph with a tracked change, a field, an image, a comment, a link or a
-footnote, and says why. Every edit also asks as `files.delete` does.
+footnote, and says why. Every write over a file also checks the `files.delete` permission: a profile that sets it to
+`ask` asks first, and `deny` refuses the edit ([configuration](configuration.md)).
 
 These commands do not change a Google Doc or Sheet, which has no stored file. They refuse one and name the command
 that does: `documents update` for a Doc, the [`sheets` commands](recipes.md#read-and-change-spreadsheet-cells) for a
