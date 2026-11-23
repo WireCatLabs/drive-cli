@@ -42,6 +42,10 @@ Find your way with the tool itself, not this file:
 
 - Local changes (`tags add`, `notes add`, `memories extract --yes`) stay in the local store.
 - Commands that change Google files need a sign-in with `--grant write` and the owner's request.
+- A text, `.docx` or `.xlsx` file stored in Drive: read it (`files download FILE_ID --json`, `files sheets show`,
+  `files documents show`), then write with `files update`, `files sheets update` or `files documents update` and
+  `--expected-fingerprint <sha256 you read>`. A `conflict` means it changed: read it again and redo the edit. Never
+  write back a text with `truncated: true` or no `sha256`.
 - `--read-only`, or `DRIVE_READ_ONLY=1` in the environment, refuses every change with exit 5.
 - `memories extract` sends the document's text to the owner's configured model; ask before running it on
   a document the owner has not named.

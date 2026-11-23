@@ -272,12 +272,6 @@ describe("remote action commands", () => {
       { addParents: "root", removeParents: "old" },
       {},
     ],
-    [
-      ["files", "update", "doc-a", "--body", '{"name":"Renamed"}'],
-      "drive.files.update",
-      { fileId: "doc-a" },
-      { name: "Renamed" },
-    ],
     [["files", "trash", "doc-a"], "drive.files.update", { fileId: "doc-a" }, { trashed: true }],
     [["files", "restore", "doc-a"], "drive.files.update", { fileId: "doc-a" }, { trashed: false }],
     [["files", "mkdir", "Folder", "--parent", "root"], "drive.files.create", {}, { name: "Folder", parents: ["root"] }],

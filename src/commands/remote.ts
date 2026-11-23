@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import type { QueryRegistry } from "@wirecat/cli-base/query"
@@ -21,6 +22,7 @@ import {
   unfilteredQuery,
   withQuery,
 } from "@wirecat/cli-core/cli"
+import { fileText } from "@wirecat/cli-core/documents"
 import { type Command, Option } from "commander"
 import * as v from "valibot"
 import { changedCopy, freshness } from "../age.js"
@@ -28,12 +30,19 @@ import { jsonObject, operationOf, operations, schemas } from "../api-contract.js
 import { apiMethods, validateApiParams } from "../api-methods.js"
 import { fileId } from "../config.js"
 import { type Download, EXPORT_FORMATS, saveDownload } from "../download.js"
+import { bytesOf } from "../drive-files.js"
 import { bindQuery, driveFileQuery, FILES_QUERY, fileRow } from "../list-queries.js"
 import { allOf } from "../output.js"
 import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
 import { requestSchema } from "../schema.js"
 import { utcDriveQuery } from "../time.js"
+import type { UploadedFile } from "../upload.js"
+import { type FileEdits, installFileEditCommands } from "./file-edit.js"
 import { installSheetsCommands } from "./sheets.js"
+
+/** The most of a file's text one answer holds, and the most bytes read to find it. */
+const TEXT_LIMIT = 200_000
+const MAX_TEXT_BYTES = 64 * 1024 * 1024
 
 const API_METHOD_QUERY = {
   entity: "api_method",
@@ -81,6 +90,8 @@ export interface RemoteCommands {
   stored(input: string): { id: string; doc: { metadata: { modifiedAt?: string } } }
   download: Download
   upload(path: string, options: { name?: string; parent?: string }): Promise<unknown>
+  replace(id: string, from: string, mime: string | undefined): Promise<UploadedFile>
+  edits: FileEdits
 }
 export const installRemoteCommands = (program: Command, helpers: RemoteCommands) => {
   const { call, output, positive } = helpers
@@ -157,24 +168,35 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     const command = examples(
       annotate(files.command(exporting ? "export" : "download"), { effects: FETCH })
         .argument("<file>", fileArgument)
-        .description(exporting ? "export a Google document to a local file" : "download a stored file to a local file"),
-      [
-        exporting
-          ? "drive personal files export DOC_ID --format pdf --output document.pdf"
-          : "drive personal files download FILE_ID --output download.bin",
-      ],
+        .summary(exporting ? "export a Google document to a local file" : "download a stored file, or answer its text")
+        .description(
+          exporting
+            ? "export a Google document to a local file"
+            : "download a stored file to a local file, or answer its text and sha256 without --output. A text " +
+                `longer than ${TEXT_LIMIT.toLocaleString("en")} characters is cut there with truncated: true and no ` +
+                "sha256: never write a cut text back over the file, it would lose the rest",
+        ),
+      exporting
+        ? ["drive personal files export DOC_ID --format pdf --output document.pdf"]
+        : [
+            "drive personal files download FILE_ID --output download.bin",
+            "drive personal files download FILE_ID --json",
+          ],
     )
-      .requiredOption("--output <file>", "local file to write")
-      .option("--overwrite", "replace an existing output file")
     if (exporting)
-      command.addOption(
-        new Option("--format <format>", "format Google should export")
-          .choices(Object.keys(EXPORT_FORMATS))
-          .makeOptionMandatory(),
-      )
+      command
+        .requiredOption("--output <file>", "local file to write")
+        .addOption(
+          new Option("--format <format>", "format Google should export")
+            .choices(Object.keys(EXPORT_FORMATS))
+            .makeOptionMandatory(),
+        )
+    else command.option("--output <file>", "local file to write, instead of answering the text")
+    command.option("--overwrite", "replace an existing output file")
     command.action(
-      async (input: string, args: { output: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
+      async (input: string, args: { output?: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)
+        if (args.output === undefined) return output(itemOf(await textOf(id)))
         const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
         const bytes = await saveDownload(
           args.output,
@@ -185,6 +207,38 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         output(itemOf({ id, bytes, ...(args.format ? { format: args.format } : {}) }))
       },
     )
+  }
+  /** The whole text of a stored file and the sha256 of the bytes it came from, to write back with files update. */
+  const textOf = async (id: string) => {
+    const file = (await call("drive.files.get", {
+      fileId: id,
+      fields: "id,name,mimeType,size",
+      supportsAllDrives: true,
+    })) as { name?: string; mimeType?: string; size?: string }
+    const mime = file.mimeType ?? "application/octet-stream"
+    if (mime.startsWith("application/vnd.google-apps."))
+      throw new CliError(
+        "validation_error",
+        `${id} is a Google ${mime.slice("application/vnd.google-apps.".length)} file with no stored content; ` +
+          "read a Google Doc with documents get, or save any native file with files export",
+        { reason: "file.native-google" },
+      )
+    const bytes = await bytesOf(await helpers.download(id), MAX_TEXT_BYTES)
+    const name = file.name ?? id
+    const text = await fileText(bytes, { name, mime }, "drive")
+    const truncated = text.length > TEXT_LIMIT
+    // The sha256 promises the whole file: a cut text, or one read out of a PDF, docx or xlsx, written back with
+    // files update would replace the file with less.
+    const whole = !truncated && Buffer.from(bytes).toString("utf8") === text
+    return {
+      id,
+      name,
+      mime_type: mime,
+      size: bytes.byteLength,
+      sha256: whole ? createHash("sha256").update(bytes).digest("hex") : null,
+      text: text.slice(0, TEXT_LIMIT),
+      truncated,
+    }
   }
   bindQuery(
     page(
@@ -273,33 +327,14 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         ),
       ),
     )
+  const trashed = (id: string, trashed: boolean) =>
+    call("drive.files.update", { fileId: id, supportsAllDrives: true }, { trashed }) as Promise<object>
   examples(
-    annotate(files.command("update"), { effects: GOOGLE_WRITE })
-      .description("change a file's Google Drive metadata")
+    annotate(files.command("trash"), { effects: GOOGLE_WRITE })
+      .description("move a file to the Google Drive trash")
       .argument("<file>", fileArgument),
-    [`drive personal files update FILE_ID --body '{"name":"Renamed"}'`],
-  )
-    .requiredOption("--body <json>", "the metadata fields to change, as a JSON object", jsonObject)
-    .action(async (id: string, args) =>
-      output(itemOf(await call("drive.files.update", { fileId: fileId(id), supportsAllDrives: true }, args.body))),
-    )
-  for (const name of ["trash", "restore"] as const)
-    examples(
-      annotate(files.command(name), { effects: GOOGLE_WRITE })
-        .description(name === "trash" ? "move a file to the Google Drive trash" : "take a file out of the trash")
-        .argument("<file>", fileArgument),
-      [`drive personal files ${name} FILE_ID`],
-    ).action(async (id: string) =>
-      output(
-        itemOf(
-          await call(
-            "drive.files.update",
-            { fileId: fileId(id), supportsAllDrives: true },
-            { trashed: name === "trash" },
-          ),
-        ),
-      ),
-    )
+    ["drive personal files trash FILE_ID"],
+  ).action(async (id: string) => output(itemOf(await trashed(fileId(id), true))))
   examples(
     annotate(files.command("mkdir"), { effects: GOOGLE_WRITE })
       .description("create an empty folder in Google Drive")
@@ -340,6 +375,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
         ),
       ),
     )
+  installFileEditCommands(files, helpers.edits, output, (id) => trashed(id, false))
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   const documentArgument = "document id or Google Docs URL"
   examples(

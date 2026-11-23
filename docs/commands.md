@@ -3688,7 +3688,7 @@ read and change files in Google Drive; nothing is imported
 
 ### `drive files download`
 
-download a stored file to a local file
+download a stored file to a local file, or answer its text and sha256 without --output. A text longer than 200,000 characters is cut there with truncated: true and no sha256: never write a cut text back over the file, it would lose the rest
 
 This command changes local state.
 
@@ -3702,10 +3702,10 @@ drive <profile> files download <file> [options]
 
 | Option | What it does |
 |---|---|
-| `--output <file>` | local file to write. |
+| `--output <file>` | local file to write, instead of answering the text. |
 | `--overwrite` | replace an existing output file. |
 
-**Example:** `drive personal files download FILE_ID --output download.bin`
+**Example:** `drive personal files download FILE_ID --output download.bin`, `drive personal files download FILE_ID --json`
 
 ### `drive files export`
 
@@ -3724,8 +3724,8 @@ drive <profile> files export <file> [options]
 | Option | What it does |
 |---|---|
 | `--output <file>` | local file to write. |
-| `--overwrite` | replace an existing output file. |
 | `--format <format>` | format Google should export. One of: `pdf`, `docx`, `xlsx`, `csv`. |
+| `--overwrite` | replace an existing output file. |
 
 **Example:** `drive personal files export DOC_ID --format pdf --output document.pdf`
 
@@ -3808,26 +3808,6 @@ drive <profile> files move <file> [options]
 
 **Example:** `drive personal files move FILE_ID --parent NEW_FOLDER_ID --old-parent OLD_FOLDER_ID`
 
-### `drive files update`
-
-change a file's Google Drive metadata
-
-This command can change Google data or send data to the configured model.
-
-```sh
-drive <profile> files update <file> [options]
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `file` | required | file id or Google Drive URL. |
-
-| Option | What it does |
-|---|---|
-| `--body <json>` | the metadata fields to change, as a JSON object. |
-
-**Example:** `drive personal files update FILE_ID --body '{"name":"Renamed"}'`
-
 ### `drive files trash`
 
 move a file to the Google Drive trash
@@ -3843,22 +3823,6 @@ drive <profile> files trash <file>
 | `file` | required | file id or Google Drive URL. |
 
 **Example:** `drive personal files trash FILE_ID`
-
-### `drive files restore`
-
-take a file out of the trash
-
-This command can change Google data or send data to the configured model.
-
-```sh
-drive <profile> files restore <file>
-```
-
-| Argument | | What it is |
-|---|---|---|
-| `file` | required | file id or Google Drive URL. |
-
-**Example:** `drive personal files restore FILE_ID`
 
 ### `drive files mkdir`
 
@@ -3900,6 +3864,143 @@ drive <profile> files upload <path> [options]
 | `--name <name>` | name in Google Drive; the local file name when omitted. |
 
 **Example:** `drive personal files upload ./backup.db.zst --parent FOLDER_ID`
+
+### `drive files sheets`
+
+the cells of an Excel workbook (.xlsx) on Google Drive, read and changed in place
+
+#### `drive files sheets show`
+
+show a workbook's stored cells, each with its value, type, formula and format, and the file's sha256 to pass as --expected-fingerprint to sheets update. Formulas show the value Excel saved last
+
+```sh
+drive <profile> files sheets show <path> [range]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the .xlsx file on Google Drive. |
+| `range` | optional | the cells to show: Sheet1!A1:C10, a sheet's name, or A1:C10 on every sheet; all without it. |
+
+**Example:** `drive personal files sheets show FILE_ID "Sheet1!A1:C10"`, `drive personal files sheets show FILE_ID`
+
+#### `drive files sheets update`
+
+write values into a workbook's cells in place: the rest of the file, its formatting and its other sheets stay as they are. It needs --expected-fingerprint from sheets show and asks as files.delete does; what it replaced is kept on this computer (see history). A text is written as text, even one that starts with =. A formula cell is refused unless --replace
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files sheets update <path> <range> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the .xlsx file on Google Drive. |
+| `range` | required | where the values go: Sheet1!B2:C3, or its first cell Sheet1!B2; the sheet may be left out when there is one. |
+
+| Option | What it does |
+|---|---|
+| `--values <json>` | the cell values as JSON rows; null empties a cell. |
+| `--expected-fingerprint <hash>` | the sha256 sheets show gave for the file. |
+| `--replace` | replace a formula with the value instead of refusing it. |
+
+**Example:** `drive personal files sheets update FILE_ID "Sheet1!B2:C2" --values '[[120, "paid"]]' --expected-fingerprint 9f86d081…`
+
+### `drive files documents`
+
+the paragraphs of a Word document (.docx) on Google Drive, read and changed in place
+
+#### `drive files documents show`
+
+show a Word document's paragraphs by index, with their style, whether each can be edited and why not, and the file's sha256 to pass as --expected-fingerprint to documents update
+
+```sh
+drive <profile> files documents show <path>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the .docx file on Google Drive. |
+
+**Example:** `drive personal files documents show FILE_ID`
+
+#### `drive files documents update`
+
+replace, insert or delete a Word document's paragraphs in place; the rest of the file stays as it is. Indexes are the ones documents show gave. It needs --expected-fingerprint from documents show and asks as files.delete does; what it replaced is kept on this computer (see history). A paragraph that is not editable is refused with its reason, and a replaced one with mixed formatting takes its first run's
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files documents update <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the .docx file on Google Drive. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | the edits as JSON: {index, text}, {insert_after, text, style_from?} or {delete}. |
+| `--expected-fingerprint <hash>` | the sha256 documents show gave for the file. |
+
+**Example:** `drive personal files documents update FILE_ID --payload '[{"index": 2, "text": "Revenue grew 12%."}]' --expected-fingerprint 9f86d081…`
+
+### `drive files history`
+
+list what the writes and syncs of this profile replaced in a file, newest last. Each entry's version is the sha256 of the content it replaced, kept on this computer while available is true; files restore puts it back
+
+```sh
+drive <profile> files history <path>
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the file on Google Drive. |
+
+**Example:** `drive personal files history FILE_ID`
+
+### `drive files restore`
+
+with no version, bring a file or folder back from Google Drive's trash. With one, put back a version history lists: it is written as files update writes, so a file there needs --expected-fingerprint, asks as files.delete does, and is kept first
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files restore <path> [version] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the file on Google Drive, or its path in the trash. |
+| `version` | optional | the version's sha256, from history. |
+
+| Option | What it does |
+|---|---|
+| `--expected-fingerprint <hash>` | the sha256 the file has now; required when it exists. |
+
+**Example:** `drive personal files restore FILE_ID 2c26b46b… --expected-fingerprint 9f86d081…`
+
+### `drive files update`
+
+replace a Google Drive file's text. A file already there is replaced only with --expected-fingerprint, the sha256 read from it; it asks as files.delete does. The file is checked just before the write, and what it replaced is kept on this computer. Write back only a whole plain-text file: a text cut with truncated: true would replace the whole file, and a .pdf, .docx or .xlsx is refused
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files update <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the file on Google Drive. |
+
+| Option | What it does |
+|---|---|
+| `--text <text>` | the file's new text; without it, the text is read from stdin. |
+| `--expected-fingerprint <hash>` | the sha256 the file had when it was read; required when it exists. |
+
+**Example:** `drive personal files update FILE_ID --text "# Notes" --expected-fingerprint 9f86d081…`
 
 ## `drive activities`
 

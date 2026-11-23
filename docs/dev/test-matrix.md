@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**273 ✅ · 973 ⛔ · 0 ❌** — 216 commands, 1030 options.
+**285 ✅ · 973 ⛔ · 0 ❌** — 221 commands, 1037 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -1148,8 +1148,8 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files download` | `--overwrite` | ✅ |  |
 | `files export` |  | ✅ |  |
 | `files export` | `--output` | ✅ |  |
-| `files export` | `--overwrite` | ✅ |  |
 | `files export` | `--format` | ✅ |  |
+| `files export` | `--overwrite` | ✅ |  |
 | `files list` |  | ✅ |  |
 | `files list` | `--limit` | ✅ |  |
 | `files list` | `--cursor` | ✅ |  |
@@ -1162,15 +1162,27 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `files move` |  | ✅ |  |
 | `files move` | `--parent` | ✅ |  |
 | `files move` | `--old-parent` | ✅ |  |
-| `files update` |  | ✅ |  |
-| `files update` | `--body` | ✅ |  |
 | `files trash` |  | ✅ |  |
-| `files restore` |  | ✅ |  |
 | `files mkdir` |  | ✅ |  |
 | `files mkdir` | `--parent` | ✅ |  |
 | `files upload` |  | ✅ |  |
 | `files upload` | `--parent` | ✅ |  |
 | `files upload` | `--name` | ✅ |  |
+| `files sheets show` |  | ✅ |  |
+| `files sheets update` |  | ✅ |  |
+| `files sheets update` | `--values` | ✅ |  |
+| `files sheets update` | `--expected-fingerprint` | ✅ |  |
+| `files sheets update` | `--replace` | ✅ |  |
+| `files documents show` |  | ✅ |  |
+| `files documents update` |  | ✅ |  |
+| `files documents update` | `--payload` | ✅ |  |
+| `files documents update` | `--expected-fingerprint` | ✅ |  |
+| `files history` |  | ✅ |  |
+| `files restore` |  | ✅ |  |
+| `files restore` | `--expected-fingerprint` | ✅ |  |
+| `files update` |  | ✅ |  |
+| `files update` | `--text` | ✅ |  |
+| `files update` | `--expected-fingerprint` | ✅ |  |
 | `activities list` |  | ✅ |  |
 | `activities list` | `--limit` | ✅ |  |
 | `activities list` | `--cursor` | ✅ |  |

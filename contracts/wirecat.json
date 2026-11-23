@@ -2057,7 +2057,7 @@
         "files",
         "download"
       ],
-      "summary": "download a stored file to a local file",
+      "summary": "download a stored file, or answer its text",
       "effects": {
         "remote": "read",
         "local": "write"
@@ -2128,18 +2128,6 @@
     {
       "path": [
         "files",
-        "update"
-      ],
-      "summary": "change a file's Google Drive metadata",
-      "effects": {
-        "remote": "write",
-        "local": "none"
-      },
-      "permission": "files.update"
-    },
-    {
-      "path": [
-        "files",
         "trash"
       ],
       "summary": "move a file to the Google Drive trash",
@@ -2148,18 +2136,6 @@
         "local": "none"
       },
       "permission": "files.trash"
-    },
-    {
-      "path": [
-        "files",
-        "restore"
-      ],
-      "summary": "take a file out of the trash",
-      "effects": {
-        "remote": "write",
-        "local": "none"
-      },
-      "permission": "files.restore"
     },
     {
       "path": [
@@ -2184,6 +2160,94 @@
         "local": "none"
       },
       "permission": "files.upload"
+    },
+    {
+      "path": [
+        "files",
+        "sheets",
+        "show"
+      ],
+      "summary": "show a workbook's cells and the sha256 to edit them at",
+      "effects": {
+        "remote": "read",
+        "local": "read"
+      },
+      "permission": "files.sheets.show"
+    },
+    {
+      "path": [
+        "files",
+        "sheets",
+        "update"
+      ],
+      "summary": "write values into a workbook's cells, at the sha256 it was read at",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "files.sheets.update"
+    },
+    {
+      "path": [
+        "files",
+        "documents",
+        "show"
+      ],
+      "summary": "show a document's paragraphs and the sha256 to edit them at",
+      "effects": {
+        "remote": "read",
+        "local": "read"
+      },
+      "permission": "files.documents.show"
+    },
+    {
+      "path": [
+        "files",
+        "documents",
+        "update"
+      ],
+      "summary": "replace, insert or delete paragraphs, at the sha256 it was read at",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "files.documents.update"
+    },
+    {
+      "path": [
+        "files",
+        "history"
+      ],
+      "summary": "list the earlier versions of a file kept on this computer",
+      "effects": {
+        "remote": "read",
+        "local": "read"
+      },
+      "permission": "files.history"
+    },
+    {
+      "path": [
+        "files",
+        "restore"
+      ],
+      "summary": "bring a file back from the trash, or put back a version kept here",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "files.restore"
+    },
+    {
+      "path": [
+        "files",
+        "update"
+      ],
+      "summary": "replace a Google Drive file's text",
+      "effects": {
+        "remote": "write",
+        "local": "write"
+      },
+      "permission": "files.update"
     },
     {
       "path": [

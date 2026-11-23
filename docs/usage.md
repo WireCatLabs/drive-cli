@@ -292,6 +292,51 @@ it. Results contain the file ID and byte count, without the document name or loc
 Both commands write a local file, so `--read-only` refuses them; `--dry-run` previews without fetching.
 The existing `documents export --output PATH` writes an imported Markdown snapshot offline.
 
+Without `--output`, `files download FILE_ID --json` saves nothing and answers the file's text with the `sha256` of
+its bytes, for an edit (below). A text longer than 200,000 characters is cut there with `truncated: true` and no
+`sha256`. A PDF, `.docx` or `.xlsx` answers its extracted text, also without a `sha256`: written back, that text would
+replace the document.
+
+## Edit a file stored in Google Drive
+
+These commands change a file that is stored in Drive as a file: Markdown, text or CSV, and uploaded Word (`.docx`)
+and Excel (`.xlsx`) files. They need a sign-in with `--grant write`.
+
+| Command | What it changes |
+| --- | --- |
+| `files update FILE_ID --text <text>` (or the text on stdin) | the whole text of a plain-text file |
+| `files sheets update FILE_ID <range> --values <json>` | cells of an `.xlsx`, from `files sheets show`; the rest of the workbook stays as it is |
+| `files documents update FILE_ID --payload <json>` | paragraphs of a `.docx`, by the indexes `files documents show` gives |
+| `files restore FILE_ID <version>` | puts back a version `files history` lists |
+
+An edit replaces a file only at the content it was read at. Read the file's `sha256` first and pass it as
+`--expected-fingerprint`: `files download FILE_ID --json` gives it for a text file, and `files sheets show` and
+`files documents show` give it for a workbook or a Word file. Before the upload, drive downloads the file, keeps
+its content on this computer in the profile's state folder, and checks that it still has that `sha256`. Just before
+the upload it checks the file once more: by Google's own `sha256` of the file, or, when Google has none or another
+one, by downloading the bytes again. If the file changed, the answer is a `conflict` that names the command to read
+it again, and nothing is uploaded.
+
+Google Drive has no conditional upload: its API gives a file no version tag that an upload could be made to depend
+on. So a change that lands in the moment between that last check and the upload is not caught. Its content is not
+lost: the content drive replaced is kept on this computer, and Drive keeps its own earlier revisions of a stored file
+(`revisions list FILE_ID`). The file keeps its id, name and folder.
+
+`files update` writes over a file that is there; it does not create one. Google Drive names a file by its id, so a
+new file goes up with `files upload`. It refuses a PDF, `.docx` or `.xlsx`, whose text is extracted on a read.
+`sheets update` writes a text as text, even one that starts with `=`, and refuses to overwrite a formula unless
+`--replace`. `documents update` refuses a paragraph with a tracked change, a field, an image, a comment, a link or a
+footnote, and says why. Every write over a file also checks the `files.delete` permission: a profile that sets it to
+`ask` asks first, and `deny` refuses the edit ([configuration](configuration.md)).
+
+These commands do not change a Google Doc or Sheet, which has no stored file. They refuse one and name the command
+that does: `documents update` for a Doc, the [`sheets` commands](recipes.md#read-and-change-spreadsheet-cells) for a
+Sheet.
+
+`files history FILE_ID` lists what this profile's edits replaced, newest last. Each `version` is the `sha256` of the
+replaced content, and `available` says whether it is still kept. `files restore FILE_ID` with no version still takes
+a file out of the trash. See [edit a file with your agent](recipes.md#edit-a-file-stored-in-drive-with-your-agent).
+
 ## Export or stop importing
 
 ```sh

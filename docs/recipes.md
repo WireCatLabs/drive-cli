@@ -21,6 +21,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | Inspect comments or history | Yes | No automatic import | No |
 | Create or edit a Doc | Yes | Imported on the next sync | Yes |
 | Read or edit spreadsheet cells | Yes | Imported on the next sync | Only when explicitly changing cells |
+| Edit a text, Word or Excel file stored in Drive | Yes | Keeps the replaced content | Yes |
 | Organize spreadsheet tabs and formatting | Yes | Imported on the next sync | Yes |
 
 ## First searchable folder, without extra exports
@@ -479,6 +480,55 @@ tg personal chats documents list CHAT_ID
 Drive's own search includes the document's reference, Google URL and last Google edit time. The
 chat list shows the imported document title when its link has been connected. Empty results can
 mean that the relevant documents or messages have not been imported.
+
+## Edit a file stored in Drive with your agent
+
+The agent reads the file, edits it, and writes it back with the `sha256` it read. If someone changed the file in the
+meantime, the write is refused and nothing is uploaded: the agent reads it again and redoes the edit. What each edit
+replaced is kept on this computer. This is for files stored in Drive, such as Markdown, text, CSV, `.docx` and
+`.xlsx`. A Google Doc or Sheet is changed with `documents update` and the [`sheets` commands](#read-and-change-spreadsheet-cells).
+
+A Markdown note:
+
+```text prompt
+Use drive CLI with profile personal. In the file plan.md in my Drive (FILE_ID), tick "send the invoice" and add
+"call the bank" under Friday. Keep everything else as it is.
+```
+
+```sh
+drive personal files download FILE_ID --json
+drive personal files update FILE_ID --expected-fingerprint <sha256 from the download> < plan.md
+```
+
+The download answers the whole text and its `sha256`. A text cut at 200,000 characters has no `sha256`, so it can
+never be written back.
+
+A spreadsheet:
+
+```text prompt
+Use drive CLI with profile personal. In budget.xlsx in my Drive (FILE_ID), set the March rent to 1300 and mark it
+paid.
+```
+
+```sh
+drive personal files sheets show FILE_ID "Sheet1!A1:D20" --json
+drive personal files sheets update FILE_ID "Sheet1!B3:C3" --values '[[1300, "paid"]]' --expected-fingerprint <sha256>
+```
+
+Only those cells change; the formatting, the other sheets and the formulas stay. A formula cell is refused unless the
+agent adds `--replace`.
+
+A Word document:
+
+```sh
+drive personal files documents show FILE_ID --json
+drive personal files documents update FILE_ID --payload '[{"index": 2, "text": "Revenue grew 12%."}]' --expected-fingerprint <sha256>
+```
+
+To undo an edit, `files history FILE_ID` lists the versions kept here, and `files restore FILE_ID <version>
+--expected-fingerprint <sha256 now>` puts one back. Google Drive has no conditional upload, so drive checks the file
+just before the write; a change in that moment is not caught, but what the write replaced is kept
+([details](usage.md#edit-a-file-stored-in-google-drive)).
 
 ## Read and change spreadsheet cells
 
