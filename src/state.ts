@@ -61,7 +61,14 @@ const State = v.object({
       cursor: v.string(),
       scope: v.string(),
       folders: v.record(ID, File),
-      jobs: v.array(v.object({ id: ID, kind: v.picklist(["save", "remove"]), file: v.optional(File) })),
+      jobs: v.array(
+        v.object({
+          id: ID,
+          kind: v.picklist(["save", "remove"]),
+          file: v.optional(File),
+          reason: v.optional(v.picklist(["deleted", "unavailable", "unsynced"])),
+        }),
+      ),
       skipped: v.array(Skip),
       matched: v.optional(v.array(ID)),
     }),

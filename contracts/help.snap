@@ -5,28 +5,31 @@ Usage: drive <profile> <command> [options]
 Account commands start with your profile, a name you choose; none is ever assumed.
 
 What you can do:
-  folders add <url>                   choose folders; only these are imported
-  sync --embed                        import what changed and index it by meaning
-  search "budget decision"            every imported document, by words and meaning
-  documents context <doc>             a document with its tags, notes and editors
-  documents history <doc> --activity  who did what (needs --grant activity)
-  memories extract <doc>              memories with exact quotes, proposed by a model
-  documents export <doc>              Markdown in a new file (--output); never overwrites
-  --read-only …                       this run refuses every change
+  folders add <url>         choose folders; only these are imported
+  sync --embed              import what changed and index it by meaning
+  search "budget decision"  every imported document, by words and meaning
+  documents context <doc>   a document with its tags, notes and editors
+  documents history <doc>   earlier versions kept by sync
+  activities list <doc>     who did what (needs --grant activity)
+  memories extract <doc>    memories with exact quotes, proposed by a model
+  documents export <doc>    Markdown in a new file (--output); never overwrites
+  --read-only …             this run refuses every change
 
 Works with:
-  tg                                  Telegram in the same local store: search, review and tasks offline
-  max                                 MAX in the same local store: search, review and tasks offline
-  wa                                  WhatsApp in the same local store: search, review and tasks offline
-  zm                                  Zoom meetings: transcripts and summaries, searchable with your other WireCat data
-  gcal                                Google Calendar events, searchable with your other WireCat data
-  memo context <person>               one person across messengers, mail, notes and meetings
-  mail                                IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
-  b24                                 Bitrix24 CRM: deals, leads and pipelines, searchable with your other WireCat data
-  amo                                 amoCRM and Kommo: deals, contacts and companies, searchable with your other WireCat data
-  pbx                                 Asterisk PBX calls and recordings, searchable with your other WireCat data
-  notion                              Notion pages and databases as local text, searchable with your other WireCat data
-  ydisk                               Yandex Disk folders as local text, searchable with your other WireCat data
+  tg                        Telegram in the same local store: search, review and tasks offline
+  max                       MAX in the same local store: search, review and tasks offline
+  wa                        WhatsApp in the same local store: search, review and tasks offline
+  zm                        Zoom meetings: transcripts and summaries, searchable with your other WireCat data
+  gcal                      Google Calendar events, searchable with your other WireCat data
+  memo context <person>     one person across messengers, mail, notes and meetings
+  mail                      IMAP mail in the same local store: search your mailbox offline, next to your other WireCat data
+  b24                       Bitrix24 CRM: deals, leads and pipelines, searchable with your other WireCat data
+  amo                       amoCRM and Kommo: deals, contacts and companies, searchable with your other WireCat data
+  pbx                       Asterisk PBX calls and recordings, searchable with your other WireCat data
+  notion                    Notion pages and databases as local text, searchable with your other WireCat data
+  ydisk                     Yandex Disk folders as local text, searchable with your other WireCat data
+  wordpress                 WordPress posts and pages, searchable with your other WireCat data
+  linear                    Linear issues and projects, searchable with your other WireCat data
 
 Start here:   drive personal session start  (any profile name works)
 Next:         drive commands                every command, by section

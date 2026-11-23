@@ -44,7 +44,7 @@ export const methodPolicyKeys = (method: string, body?: Record<string, unknown>)
       : method.startsWith("sheets.spreadsheets.")
         ? `sheets.${method === "sheets.spreadsheets.get" ? "info" : method === "sheets.spreadsheets.values.get" ? "show" : verb === "append" ? "add" : verb}`
         : method === "driveactivity.activity.query"
-          ? "documents.history"
+          ? "activities.list"
           : method.startsWith("drive.")
             ? `${parts[1]}.${verb}`
             : undefined

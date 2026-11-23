@@ -8,7 +8,7 @@ steps:
     why: the document's text with its tabs, to read the passage in full
   - run: drive personal documents context DOC_ID
     why: its tags, notes, memories and editors, kept in the local store
-  - run: drive personal documents history DOC_ID --activity
+  - run: drive personal activities list DOC_ID
     why: who did what to it, from Drive Activity; needs a sign-in with --grant activity
 look:
   - the hit's Google URL, to cite it

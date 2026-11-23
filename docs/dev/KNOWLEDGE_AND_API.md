@@ -38,9 +38,9 @@ path must be the same in every tool that should share references.
 drive personal identities list DOC_ID
 drive personal identities link DOC_ID GOOGLE_ID person:PERSON_UID
 drive personal documents list person:PERSON_UID
-drive personal documents history DOC_ID --limit 100
+drive personal revisions list DOC_ID --limit 100
 drive personal session start --client-file /path/to/client.json --grant activity
-drive personal documents history DOC_ID --activity
+drive personal activities list DOC_ID
 ```
 
 Sync saves the owners and last modifying user that Google exposes. Their permission IDs identify

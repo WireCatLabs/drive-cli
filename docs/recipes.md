@@ -17,6 +17,7 @@ file. [Import and storage](usage.md) explains what the saved copy contains.
 | Browse and organize the cached folder tree | No | Tags/notes, when requested | No |
 | Add follow-up tags, notes or links | No | Yes | No |
 | Propose memories with an AI provider | Sends cached text to the configured provider | Only with `--yes` or confirmation | No |
+| See earlier versions and what changed | No | No | No |
 | Inspect comments or history | Yes | No automatic import | No |
 | Create or edit a Doc | Yes | Imported on the next sync | Yes |
 | Read or edit spreadsheet cells | Yes | Imported on the next sync | Only when explicitly changing cells |
@@ -349,10 +350,26 @@ Reversal applies to accepted decisions. Other fact kinds cannot be reversed. The
 require the fact to belong to the selected document and account, work offline and respect
 `--read-only`. Use `--dry-run` to preview the operation without changing local facts.
 
+## See earlier versions and what changed
+
+Each sync keeps a document's text, title and front matter before it changes or leaves the copy. These reads use
+the saved copy only:
+
+```sh
+drive personal documents history DOC_ID
+drive personal documents history DOC_ID --revision 3
+drive personal changes --since 7d
+drive personal changes --since 1d --event deleted,unavailable
+```
+
+A file in the Google Drive trash counts as `deleted`. A file Google stops showing, a lost share or a 404 counts as
+`unavailable`: it leaves lists and search but keeps its text, and comes back as it was when Google shows it again.
+Versions and the change log are kept for `keep_versions_for_days`, one year by default.
+
 ## Inspect revisions or optional activity history
 
 ```sh
-drive personal documents history DOC_ID --json
+drive personal revisions list DOC_ID --json
 drive personal comments list DOC_ID --json
 ```
 
@@ -361,7 +378,7 @@ Drive Activity API and reconnect with its additional permission:
 
 ```sh
 drive personal session start --client-file /path/to/desktop-client.json --grant activity
-drive personal documents history DOC_ID --activity --json
+drive personal activities list DOC_ID --json
 ```
 
 Pass `page.next_cursor` to the same command's `--cursor` option to continue. Google's

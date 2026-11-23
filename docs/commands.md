@@ -530,7 +530,7 @@ drive <profile> documents list [query] [options]
 | `--limit <n>` | how many documents to return. Default: `50`. |
 | `--page <n>` | which page to return. Default: `1`. |
 
-**Next usually:** `drive documents show <document>`, `drive documents context <document>`, `drive documents get <document>`
+**Next usually:** `drive documents show <document>`, `drive documents history <document>`, `drive documents context <document>`
 
 **Example:** `drive personal documents list`, `drive personal documents list tag:budget`, `drive personal documents list person:PERSON_UID --limit 10`
 
@@ -567,6 +567,24 @@ drive <profile> documents export <document> [options]
 | `--output <file>` | path of the Markdown file to write; an existing file is refused. |
 
 **Example:** `drive personal documents export DOC_ID --output notes.md`
+
+### `drive documents history`
+
+list the versions of a document kept in the local copy, or show one with --revision
+
+```sh
+drive <profile> documents history <document> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `document` | required | document id, Google Docs URL, or a search hit's document: ref. |
+
+| Option | What it does |
+|---|---|
+| `--revision <n>` | show the text of this version. |
+
+**Example:** `drive personal documents history DOC_ID`, `drive personal documents history DOC_ID --revision 3`
 
 ### `drive documents add`
 
@@ -668,25 +686,23 @@ drive <profile> documents update <document> [options]
 
 **Example:** `drive personal documents update DOC_ID --body '{"requests":[]}'`
 
-### `drive documents history`
+## `drive changes`
 
-list the revisions Google kept, or who did what with --activity
+list the documents the sync added, changed, removed or brought back, newest first
 
 ```sh
-drive <profile> documents history <document> [options]
+drive <profile> changes [options]
 ```
-
-| Argument | | What it is |
-|---|---|---|
-| `document` | required | document id or Google Docs URL. |
 
 | Option | What it does |
 |---|---|
-| `--limit <n>` | how many items one page holds. Default: `100`. |
-| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
-| `--activity` | list activity events instead of revisions; needs session start --grant activity. |
+| `--since <when>` | from this time: an ISO 8601 time, today, yesterday, or 30m, 2h, 1d ago. Default: `1d`. |
+| `--until <when>` | up to this time, in the same forms. |
+| `--event <events>` | only these, comma separated: added, changed, restored, deleted, unavailable, unsynced. |
+| `--limit <n>` | how many changes to return. Default: `50`. |
+| `--page <n>` | which page to return. Default: `1`. |
 
-**Example:** `drive personal documents history DOC_ID`, `drive personal documents history DOC_ID --activity`
+**Example:** `drive personal changes`, `drive personal changes --since 7d --event deleted,unavailable`
 
 ## `drive search`
 
@@ -736,7 +752,7 @@ drive <profile> catalog show <file>
 |---|---|---|
 | `file` | required | Google file or folder id, or its Drive URL. |
 
-**Next usually:** `drive documents show <document>`, `drive documents context <document>`, `drive documents get <document>`
+**Next usually:** `drive documents show <document>`, `drive documents history <document>`, `drive documents context <document>`
 
 **Example:** `drive personal catalog show FILE_ID --offline`
 
@@ -757,7 +773,7 @@ drive <profile> catalog list [query] [options]
 | `--limit <n>` | how many entries to return (at most 1000). Default: `50`. |
 | `--page <n>` | which page to return. Default: `1`. |
 
-**Next usually:** `drive documents show <document>`, `drive documents context <document>`, `drive documents get <document>`
+**Next usually:** `drive documents show <document>`, `drive documents history <document>`, `drive documents context <document>`
 
 **Example:** `drive personal catalog list "parent:FOLDER_ID AND kind:file" --offline`
 
@@ -778,7 +794,7 @@ drive <profile> catalog search <query> [options]
 | `--limit <n>` | how many entries to return (at most 1000). Default: `50`. |
 | `--page <n>` | which page to return. Default: `1`. |
 
-**Next usually:** `drive documents show <document>`, `drive documents context <document>`, `drive documents get <document>`
+**Next usually:** `drive documents show <document>`, `drive documents history <document>`, `drive documents context <document>`
 
 **Example:** `drive personal catalog search "budget AND person:Rin*" --offline`
 
@@ -3884,6 +3900,32 @@ drive <profile> files upload <path> [options]
 | `--name <name>` | name in Google Drive; the local file name when omitted. |
 
 **Example:** `drive personal files upload ./backup.db.zst --parent FOLDER_ID`
+
+## `drive activities`
+
+read who did what with a file in Google Drive
+
+### `drive activities list`
+
+list who did what with a file (needs session start --grant activity)
+
+```sh
+drive <profile> activities list <file> [query] [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `file` | required | file id or Google Drive URL. |
+| `query` | optional | field:value terms; this list filters by none yet. |
+
+| Option | What it does |
+|---|---|
+| `--limit <n>` | how many items one page holds. Default: `100`. |
+| `--cursor <cursor>` | continue from page.next_cursor of the previous answer. |
+
+**Returns:** drive remote activity — timestamp; every field: drive commands info activities list
+
+**Example:** `drive personal activities list FILE_ID`
 
 ## `drive comments`
 

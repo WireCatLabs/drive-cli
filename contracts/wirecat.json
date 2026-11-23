@@ -374,6 +374,18 @@
     {
       "path": [
         "documents",
+        "history"
+      ],
+      "summary": "list the versions of a document kept in the local copy, or show one with…",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      },
+      "permission": "documents.history"
+    },
+    {
+      "path": [
+        "documents",
         "add"
       ],
       "summary": "keep a Drive document's text in memory, read by the first profile that opens it",
@@ -445,15 +457,14 @@
     },
     {
       "path": [
-        "documents",
-        "history"
+        "changes"
       ],
-      "summary": "list the revisions Google kept, or who did what with --activity",
+      "summary": "list the documents the sync added, changed, removed or brought back, newest…",
       "effects": {
-        "remote": "read",
-        "local": "none"
+        "remote": "none",
+        "local": "read"
       },
-      "permission": "documents.history"
+      "permission": "changes"
     },
     {
       "path": [
@@ -2176,6 +2187,19 @@
     },
     {
       "path": [
+        "activities",
+        "list"
+      ],
+      "summary": "list who did what with a file (needs session start --grant activity)",
+      "effects": {
+        "remote": "read",
+        "local": "none"
+      },
+      "permission": "activities.list",
+      "entity": "drive_remote_activity"
+    },
+    {
+      "path": [
         "comments",
         "reply"
       ],
@@ -2670,6 +2694,11 @@
         "modified_time",
         "created_time",
         "viewed_by_me_time"
+      ]
+    },
+    "drive_remote_activity": {
+      "fields": [
+        "timestamp"
       ]
     },
     "drive_remote_comment": {

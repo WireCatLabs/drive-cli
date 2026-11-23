@@ -290,15 +290,10 @@ describe("remote action commands", () => {
       { requests: [] },
     ],
     [
-      ["documents", "history", "doc-a", "--cursor", "next"],
-      "drive.revisions.list",
-      { fileId: "doc-a", pageToken: "next" },
-    ],
-    [
-      ["documents", "history", "doc-a", "--activity", "--cursor", "next"],
+      ["activities", "list", "doc-a", "--limit", "5", "--cursor", "next"],
       "driveactivity.activity.query",
       {},
-      { itemName: "items/doc-a", pageToken: "next" },
+      { itemName: "items/doc-a", pageSize: 5, pageToken: "next" },
     ],
     [["comments", "list", "doc-a"], "drive.comments.list", { fileId: "doc-a" }],
     [["comments", "get", "doc-a", "comment-one"], "drive.comments.get", { commentId: "comment-one" }],
@@ -318,7 +313,6 @@ describe("remote action commands", () => {
       "drive.permissions.list",
       { pageSize: 5, pageToken: "next" },
     ],
-    [["documents", "history", "doc-a", "--limit", "5"], "drive.revisions.list", { fileId: "doc-a", pageSize: 5 }],
     [
       ["revisions", "list", "doc-a", "--limit", "5", "--cursor", "next"],
       "drive.revisions.list",

@@ -320,7 +320,7 @@ are under `item.hits`, and sync/status counters are under `item`. Help and shell
 text; `commands --json` uses the shared discovery document with contract `4`. Command `effects`
 describe remote and local reads/writes; `api_operation` identifies a generated Google method.
 Local lists use `page.mode: "page"` and return `next_page` when more results remain; Google lists
-(`files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives`, `documents history`)
+(`files list`, `comments list`, `permissions list`, `revisions list`, `shared-drives`, `activities list`)
 use `page.mode: "cursor"` and return `next_cursor`. Search and note lists use `--page`, not `--offset`. JSONL emits `{"type":"item","data":…}` records followed by
 one `{"type":"end",…}` record with `complete` and page metadata. Errors include `error.retry.safe`, and the process exit code names the kind (`2` bad input, `4` not signed in,
 `5` not allowed, `6` not found, `9` timeout; the full table is under [exit codes](commands.md#exit-codes));

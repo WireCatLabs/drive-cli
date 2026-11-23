@@ -44,10 +44,10 @@ describe("answers", () => {
     expect(answer.missing[0].field).toBe("files")
   })
 
-  it("pages documents history by Google's token", async () => {
-    const call = async () => ({ nextPageToken: "more", revisions: [{ id: "r1" }] })
-    const answer = await drive(call, "documents", "history", "doc-a", "--json")
-    expect(answer.items).toEqual([{ id: "r1" }])
+  it("pages activities list by Google's token", async () => {
+    const call = async () => ({ nextPageToken: "more", activities: [{ timestamp: "2026-01-01T00:00:00Z" }] })
+    const answer = await drive(call, "activities", "list", "doc-a", "--json")
+    expect(answer.items).toEqual([{ timestamp: "2026-01-01T00:00:00Z" }])
     expect(answer.page.next_cursor).toBe("more")
   })
 

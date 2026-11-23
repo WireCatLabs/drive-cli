@@ -1,7 +1,7 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { FETCH, itemOf } from "@wirecat/cli-core/cli"
-import { addLocalDocumentCommands } from "@wirecat/cli-core/documents/cli"
+import { addDocumentHistoryCommands, addLocalDocumentCommands } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
 import { activeProfile, fileId, textLimit } from "../config.js"
 import { addDocument, profilesToAdd } from "../documents-add.js"
@@ -89,6 +89,16 @@ export const installDocumentCommands = (program: Command, context: CommandContex
       return { id, metadata: metadataJson(snapshot.metadata), snapshot }
     },
     lastSync: () => readState(env, selected(), activeProfile(env, selected()).principal).lastSync,
+  })
+  addDocumentHistoryCommands(program, {
+    words: DRIVE_WORDS,
+    output,
+    run: (fn) =>
+      withIndex((index) => {
+        if (!index.history) throw new CliError("configuration_error", "index has no document history")
+        return fn(index.history, activeProfile(env, selected()).principal)
+      }),
+    id: fileId,
   })
   examples(
     annotate(documents.command("add"), { mcp: false, effects: FETCH })

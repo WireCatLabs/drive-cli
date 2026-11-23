@@ -29,8 +29,10 @@ Find your way with the tool itself, not this file:
 - `drive personal documents show DOC_ID` reads the text and tabs; `drive personal documents context DOC_ID`
   adds tags, notes, memories and editors. Each takes a hit's `document:<n>` ref too; a bare number is refused.
 - `drive personal documents list --compact` prints one line per document instead of JSON.
-- `drive personal documents history DOC_ID --activity` says who did what; it needs a sign-in with
-  `--grant activity`.
+- `drive personal documents history DOC_ID` lists the earlier versions sync kept, `--revision N` shows one, and
+  `drive personal changes --since 1d` lists what was added, changed, deleted or is no longer visible. Both read the
+  local copy.
+- `drive personal activities list DOC_ID` says who did what. It needs a sign-in with `--grant activity`.
 - An empty result means nothing matched in the imported folders, not that Drive has no such document.
   `drive personal status` shows what is imported and pending.
 - Not signed in: the owner runs `drive <profile> session start` on the computer running drive, or signs in from

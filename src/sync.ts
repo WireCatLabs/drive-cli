@@ -2,7 +2,7 @@ import { resolve } from "node:path"
 import { syncDocuments } from "@wirecat/cli-core/documents"
 import type { DocumentSyncArgs } from "@wirecat/cli-core/documents/cli"
 import { storePath } from "@wirecat/cli-core/store"
-import { activeProfile, textLimit, transcriptsOf } from "./config.js"
+import { activeProfile, keepVersions, textLimit, transcriptsOf } from "./config.js"
 import { googleError } from "./errors.js"
 import { type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource, type Skip } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
@@ -59,6 +59,7 @@ export const sync = async (
       rescan,
       pictures: profile.picture_search,
       textLimit: textLimit(env, name),
+      keepVersionsForDays: keepVersions(env, name),
       maxEntries: MAX_ENTRIES,
       isFolder: (file) => file.mime === FOLDER,
       skipReason,
