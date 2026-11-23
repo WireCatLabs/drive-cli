@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.72.1 — 23.11.2026
+
+### Fixed
+
+- **`changes --since <time>` and `--until <time>` in help** (cli-core 0.724.0, was 0.722.0, and cli-base 0.130.0, was
+  0.128.0). `--until` said `<when>`. The flags take the same values as before. The vocabulary now knows `changes`,
+  `--since` and `--event`, so the command lint needs no exceptions for them.
+
 ## 0.72.0 — 23.11.2026
 
 ### Added
