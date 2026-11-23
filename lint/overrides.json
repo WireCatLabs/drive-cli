@@ -26,33 +26,5 @@
     "reason": "Google Meet transcripts and Gemini notes as Google Docs, chosen by name for sync; the vocabulary has the singular transcript (the text of speech) but no collection of them. Add transcripts to the cli-base vocabulary when a Meet CLI lists them too.",
     "owner": "@WireCatLabs",
     "review_after": "2026-12-22"
-  },
-  {
-    "rule": "unknown-verb",
-    "target": "changes",
-    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
-  },
-  {
-    "rule": "flag-two-meanings",
-    "target": "--until",
-    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
-  },
-  {
-    "rule": "option-role",
-    "target": "changes --event",
-    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
-  },
-  {
-    "rule": "option-role",
-    "target": "changes --since",
-    "reason": "cli-core 0.722.0 mounts the document change log as a bare changes command with --since, --until <when> and --event, outside the vocabulary. Fixed in cli-core, then this override goes: https://github.com/WireCatLabs/cli-core/issues/3227",
-    "owner": "@WireCatLabs",
-    "review_after": "2026-12-22"
   }
 ]
