@@ -6,7 +6,7 @@ const file = (name: string, mime: string) => ({ name, mime }) as FileMetadata
 
 describe("supported", () => {
   it("reads every format cli-core's readers read, and Google's own Docs and Sheets", () => {
-    for (const [name, mime] of [
+    for (const [name, mime] of <[string, string][]>[
       ["deck.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"],
       ["old.doc", "application/msword"],
       ["note.odt", "application/vnd.oasis.opendocument.text"],
