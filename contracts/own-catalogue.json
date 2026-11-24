@@ -1,4 +1,5 @@
 {
+  "session status": "read",
   "session list": "read",
   "folders browse": "read",
   "transcripts list": "read",

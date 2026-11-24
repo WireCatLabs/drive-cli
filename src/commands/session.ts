@@ -100,6 +100,27 @@ export const installSessionCommands = (program: Command, context: CommandContext
         )
       },
     )
+  examples(
+    annotate(session.command("status"), { effects: LOCAL_READ }).description(
+      "show whether this profile is signed in to Google here, and as which account; asks Google nothing",
+    ),
+    ["drive personal session status"],
+  ).action(async () => {
+    const name = selected()
+    const profile = readConfig(env).profiles[name]
+    if (!profile) return output(itemOf({ profile: name, signed_in: false, account: null }))
+    const { credentials, grantedScopes } = await import("../tokens.js")
+    const signedIn = credentials(env, profile.storage, options.keyring).read(name) !== undefined
+    output(
+      itemOf({
+        profile: name,
+        signed_in: signedIn,
+        account: profile.principal || null,
+        storage: profile.storage,
+        ...(signedIn ? { scopes: grantedScopes(env, name, options.keyring) ?? null } : {}),
+      }),
+    )
+  })
   bindQuery(
     examples(
       annotate(session.command("list"), { effects: LOCAL_READ }).description(

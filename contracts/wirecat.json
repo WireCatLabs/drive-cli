@@ -179,6 +179,17 @@
     {
       "path": [
         "session",
+        "status"
+      ],
+      "summary": "show whether this profile is signed in to Google here, and as which account; asks Google nothing",
+      "effects": {
+        "remote": "none",
+        "local": "read"
+      }
+    },
+    {
+      "path": [
+        "session",
         "list"
       ],
       "summary": "list the configured profiles; credentials are never printed",
