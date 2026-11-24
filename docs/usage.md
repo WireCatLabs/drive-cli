@@ -44,9 +44,9 @@ alone does not add it to local search. Search needs an import; an export is opti
 | Google folder | Stores metadata and parents in the database; traverses descendants | Browse with `catalog tree`, search metadata, attach local tags and notes |
 | Native Google Sheet | Exports the workbook as `.xlsx` and reads every sheet | Each sheet is a heading; each row reads as `Row 2: Column: value`, with the first row as column names when it is a text header |
 | Uploaded PDF, Word (`.docx`, `.doc`), Excel (`.xlsx`), PowerPoint (`.pptx`), OpenDocument (`.odt`, `.ods`, `.odp`), RTF, HTML, EPUB, CSV or TSV | Downloads and reads the text | Document and slide text, every Excel sheet, CSV rows. A file skipped as an unsupported type before is read on the next sync |
-| Scanned PDF without a text layer | Saved by name with the reason | No OCR; found by its name |
+| Scanned PDF without a text layer, JPEG, PNG or WebP picture | Read by OCR, as `read_scans` says: on this computer by default. A file over 20 pages, or a picture over 25 MB, is saved by name with the reason | Text can be searched and exported. With `read_scans` set to `off`, found by its name only. See [scans and pictures](#scans-and-pictures) |
 | Images, with `picture_search` on | Saved by name, then downloaded (up to 25 MB, only where Google allows downloads) and given a picture vector; the file is not kept | Found by what it shows, in `pictures`; see [picture search](search.md#search-images-by-what-they-show) |
-| Native Google Slides, `.ppt`, `.xlsm`, images (with `picture_search` off), audio, video, JSON or code | Saved by name with the reason | No extraction, OCR or transcription; found by its name |
+| Native Google Slides, `.ppt`, `.xlsm`, other images (TIFF, HEIC, with `picture_search` off), audio, video, JSON or code | Saved by name with the reason | No extraction or transcription. Found by its name |
 | Drive shortcut | Skipped | Target is not followed through the shortcut |
 | Download restricted by Google | Saved by name with the reason | Metadata access does not guarantee content access; found by its name |
 
@@ -55,6 +55,22 @@ alone does not add it to local search. Search needs an import; an export is opti
 output counts them in `pictures`. `pictures_too_large` counts images over 25 MB, which stay name-only.
 `pictures_skipped` says the picture model is not downloaded; the rest of the sync still finishes, and the
 images are picked up by a later sync once the model is there.
+
+## Scans and pictures
+
+A sync reads the text of a scanned PDF (one with no text layer) and of a JPEG, PNG or WebP picture by OCR. The
+profile's `read_scans` setting chooses who reads it:
+
+| `read_scans` | Who reads the text | What it needs |
+| --- | --- | --- |
+| `local` (default) | The `tesseract` program on this computer, in Russian and English. Nothing leaves the computer and nothing is downloaded | `tesseract` installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus` on Debian or Ubuntu, `brew install tesseract tesseract-lang` on macOS |
+| `anthropic` or `openai` | The model chosen with `drive ai set`, at that provider's own address. Each page is sent to the provider as a picture, and the provider charges for every page | `drive ai set` with that provider, and pictures allowed (`drive ai set --images`) |
+| `off` | No one | Scans and pictures are saved by name only |
+
+`drive personal config set read_scans '"anthropic"'` switches one profile. One file is read up to 20 pages, and one
+sync reads at most 100 pages. The pages over that wait for the next sync. A scan an older drive kept by name is
+read on the next sync. When `tesseract` is missing, the sync still finishes, and each scan's reason says how to
+install it. With `picture_search` on, a picture gets both its text and its picture vector.
 
 ## Meet transcripts and Gemini notes
 

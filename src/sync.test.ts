@@ -2,6 +2,7 @@ import { createHash } from "node:crypto"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import { CliError, captureStreams } from "@wirecat/cli-base"
+import type { ScanReader } from "@wirecat/cli-core/documents"
 import lockfile from "proper-lockfile"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
@@ -429,6 +430,31 @@ describe("durable source sync", () => {
       pending: 0,
       skipped: [{ id: "scan", reason: expect.stringContaining("no text layer") }],
     })
+  })
+  it("reads a scanned PDF and a picture through the scan reader, and keeps them by name with OCR off", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockResolvedValue([
+      file("scan", ["root"], "application/pdf"),
+      file("photo", ["root"], "image/png"),
+    ])
+    vi.mocked(f.source.content).mockImplementation(async (id) => {
+      if (id === "scan")
+        throw new CliError("validation_error", "file has no text layer (a scan or images only)", {
+          reason: "document.needs-ocr",
+        })
+      return content(file(id))
+    })
+    const off = await sync(f.source, f.index, f.env, "default", 200)
+    expect(off.skipped.map((skip) => skip.id).sort()).toEqual(["photo", "scan"])
+    const scans: ScanReader = {
+      extractor: "synthetic-ocr",
+      read: vi.fn(async (_bytes, read) => `text of ${read.mime}`),
+    }
+    const on = await sync(f.source, f.index, f.env, "default", 200, undefined, false, { scans })
+    expect(on).toMatchObject({ saved: 2, skipped: [] })
+    expect(f.stored.get("scan")?.text).toBe("text of application/pdf")
+    expect(f.stored.get("photo")?.text).toBe("text of image/png")
+    expect(readState(f.env, "default", "synthetic-principal").documents.photo?.ocr).toBe("synthetic-ocr")
   })
   it("prevents concurrent profile sync", async () => {
     const f = fixture()
