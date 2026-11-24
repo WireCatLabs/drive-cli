@@ -10,6 +10,7 @@ import {
 } from "@wirecat/cli-base/commands"
 import type { Effects } from "@wirecat/cli-base/standards"
 import { profileFree } from "@wirecat/cli-core/cli"
+import { DOCUMENT_UNTRUSTED } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
 import { VERSION } from "./version.js"
 
@@ -60,6 +61,21 @@ const PROFILE_FREE_COMMANDS = new Set([...ACCOUNT_FREE_COMMANDS, ...ANY_PROFILE_
 /** Calls Google and keeps nothing on this machine, unlike cli-core's REMOTE_READ and REMOTE_WRITE. */
 export const GOOGLE_READ: Effects = { remote: "read", local: "none" }
 export const GOOGLE_WRITE: Effects = { remote: "write", local: "none" }
+/**
+ * Other people's text in Google's own answers, at any depth: names, titles and text anyone who shares a file wrote, a
+ * Docs text run, comments and replies, the cells of a sheet, a rename's titles, and the names Google shows for people.
+ */
+export const GOOGLE_UNTRUSTED = [
+  ...DOCUMENT_UNTRUSTED,
+  "content",
+  "html_content",
+  "quoted_file_content.value",
+  "display_name",
+  "original_filename",
+  "old_title",
+  "new_title",
+  "values",
+] as const
 
 /** Examples go into `commands --json` for agents and under the options in `--help` for people. */
 export const examples = (command: Command, lines: string[]): Command => annotate(command, { examples: lines })

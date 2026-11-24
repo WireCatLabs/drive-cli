@@ -83,6 +83,8 @@ const Walk = v.object({
   folders: v.record(ID, File),
   files: v.array(File),
   discovered: v.number(),
+  // Without it a resumed walk would remove a file Google put in the trash as unavailable and keep its text.
+  deleted: v.optional(v.array(ID)),
 })
 export type Walk = v.InferOutput<typeof Walk>
 
