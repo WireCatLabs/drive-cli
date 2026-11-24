@@ -2201,19 +2201,6 @@
     {
       "path": [
         "files",
-        "sheets",
-        "create"
-      ],
-      "summary": "create a new workbook from rows of values and formulas",
-      "effects": {
-        "remote": "write",
-        "local": "write"
-      },
-      "permission": "files.sheets.create"
-    },
-    {
-      "path": [
-        "files",
         "documents",
         "show"
       ],
@@ -2236,19 +2223,6 @@
         "local": "write"
       },
       "permission": "files.documents.update"
-    },
-    {
-      "path": [
-        "files",
-        "documents",
-        "create"
-      ],
-      "summary": "create a new Word document from paragraphs and tables",
-      "effects": {
-        "remote": "write",
-        "local": "write"
-      },
-      "permission": "files.documents.create"
     },
     {
       "path": [
