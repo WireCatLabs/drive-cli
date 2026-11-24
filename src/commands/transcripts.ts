@@ -1,11 +1,12 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { LOCAL_READ } from "@wirecat/cli-core/cli"
+import { marksUntrusted } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
 import { transcriptsOf } from "../config.js"
 import { bindQuery, TRANSCRIPTS_QUERY, termsOf, transcriptRow } from "../list-queries.js"
 import { allOf } from "../output.js"
-import { examples, GOOGLE_READ } from "../registry.js"
+import { examples, GOOGLE_READ, GOOGLE_UNTRUSTED } from "../registry.js"
 import { findTranscripts } from "../transcripts.js"
 import type { CommandContext } from "./context.js"
 
@@ -27,7 +28,7 @@ export const installTranscriptCommands = (program: Command, context: CommandCont
   )
   bindQuery(
     examples(
-      annotate(transcripts.command("list"), { effects: GOOGLE_READ })
+      marksUntrusted(annotate(transcripts.command("list"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
         .summary("list Google Docs named like Meet transcripts or Gemini notes")
         .description(
           "list the Google Docs named like Meet transcripts or Gemini notes, wherever they sit; imports nothing",

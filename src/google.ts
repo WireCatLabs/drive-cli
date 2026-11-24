@@ -133,11 +133,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         return id
       }),
     children: (id) =>
-      listed(
-        `'${id}' in parents and trashed = false`,
-        "folder listing",
-        "choose smaller folders with `folders remove` and `folders add`",
-      ),
+      // Trashed rows too: a full walk removes one as deleted, while a file it does not find keeps its text.
+      listed(`'${id}' in parents`, "folder listing", "choose smaller folders with `folders remove` and `folders add`"),
     search: (q) => listed(q, "transcript search", "set more specific `transcript_words`"),
     startToken: () =>
       safe(async () => {

@@ -121,6 +121,49 @@ describe("durable source sync", () => {
     expect(f.source.startToken).toHaveBeenCalledTimes(2)
     expect(f.source.changes).not.toHaveBeenCalled()
   })
+  it("removes a document a rescan finds in the trash as deleted, and keeps one it does not find as unavailable", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    vi.mocked(f.source.children).mockResolvedValue([{ ...file("doc-a"), trashed: true }])
+    await sync(f.source, f.index, f.env, "default", 200, undefined, true)
+    expect(f.index.remove).toHaveBeenCalledWith("synthetic-principal", "doc-a", "deleted")
+    expect(f.index.remove).toHaveBeenCalledWith("synthetic-principal", "doc-b", "unavailable")
+  })
+  it("removes the documents of a folder in the trash as deleted, as Google marks them trashed too", async () => {
+    const f = fixture()
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root" ? [file("sub", ["root"], FOLDER)] : [file("doc-a", ["sub"])],
+    )
+    vi.mocked(f.source.content).mockImplementation(async (id) => content(file(id, ["sub"])))
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.stored.has("doc-a")).toBe(true)
+    vi.mocked(f.source.children).mockImplementation(async (id) =>
+      id === "root"
+        ? [{ ...file("sub", ["root"], FOLDER), trashed: true }]
+        : [{ ...file("doc-a", ["sub"]), trashed: true }],
+    )
+    await sync(f.source, f.index, f.env, "default", 200, undefined, true)
+    expect(f.index.remove).toHaveBeenCalledWith("synthetic-principal", "doc-a", "deleted")
+  })
+  it("keeps a trashed document deleted when a stopped rescan resumes from its walk file", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    let failSub = true
+    vi.mocked(f.source.children).mockImplementation(async (id) => {
+      if (id === "root") return [{ ...file("doc-a"), trashed: true }, file("doc-b"), file("sub", ["root"], FOLDER)]
+      if (failSub) {
+        failSub = false
+        throw new CliError("provider_error", "listing interrupted")
+      }
+      return []
+    })
+    await expect(sync(f.source, f.index, f.env, "default", 200, undefined, true)).rejects.toThrow("listing interrupted")
+    const walk = JSON.parse(readFileSync(join(profileDir(f.env, "default"), "walk.json"), "utf8"))
+    expect(walk.deleted).toEqual(["doc-a"])
+    await sync(f.source, f.index, f.env, "default", 200)
+    expect(f.index.remove).toHaveBeenCalledWith("synthetic-principal", "doc-a", "deleted")
+    expect(f.stored.has("doc-b")).toBe(true)
+  })
   it("keeps duplicate names distinct and captures the token before crawling", async () => {
     const f = fixture()
     const result = await sync(f.source, f.index, f.env, "default", 200)

@@ -23,6 +23,7 @@ import {
   withQuery,
 } from "@wirecat/cli-core/cli"
 import { fileText } from "@wirecat/cli-core/documents"
+import { marksUntrusted } from "@wirecat/cli-core/documents/cli"
 import { type Command, Option } from "commander"
 import * as v from "valibot"
 import { changedCopy, freshness } from "../age.js"
@@ -33,7 +34,7 @@ import { type Download, EXPORT_FORMATS, saveDownload } from "../download.js"
 import { bytesOf } from "../drive-files.js"
 import { bindQuery, driveFileQuery, FILES_QUERY, fileRow } from "../list-queries.js"
 import { allOf } from "../output.js"
-import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
+import { examples, GOOGLE_READ, GOOGLE_UNTRUSTED, GOOGLE_WRITE } from "../registry.js"
 import { requestSchema } from "../schema.js"
 import { utcDriveQuery } from "../time.js"
 import type { UploadedFile } from "../upload.js"
@@ -127,7 +128,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     output(itemOf({ operation: operationOf(method), request_schema: requestSchema(method) })),
   )
   examples(
-    annotate(api.command("call"), { mcp: false, effects: GOOGLE_WRITE })
+    marksUntrusted(annotate(api.command("call"), { mcp: false, effects: GOOGLE_WRITE }), GOOGLE_UNTRUSTED)
       .description("call one Google API method by name with JSON parameters")
       .argument("<method>", "Google method name, as api list prints it"),
     [
@@ -159,14 +160,22 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       )
     },
   })
-  for (const child of generated.commands) api.addCommand(child)
+  // Each generated operation answers Google's raw JSON, which carries the same text as files get or comments list.
+  const markAll = (command: Command): void => {
+    marksUntrusted(command, GOOGLE_UNTRUSTED)
+    for (const child of command.commands) markAll(child)
+  }
+  for (const child of generated.commands) {
+    markAll(child)
+    api.addCommand(child)
+  }
   installSheetsCommands(program, helpers)
   const files = annotate(program.command("files"), { effects: GOOGLE_READ }).description(
     "read and change files in Google Drive; nothing is imported",
   )
   for (const exporting of [false, true]) {
     const command = examples(
-      annotate(files.command(exporting ? "export" : "download"), { effects: FETCH })
+      marksUntrusted(annotate(files.command(exporting ? "export" : "download"), { effects: FETCH }), GOOGLE_UNTRUSTED)
         .argument("<file>", fileArgument)
         .summary(exporting ? "export a Google document to a local file" : "download a stored file, or answer its text")
         .description(
@@ -243,7 +252,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   bindQuery(
     page(
       examples(
-        annotate(files.command("list"), { effects: GOOGLE_READ }).description(
+        marksUntrusted(annotate(files.command("list"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED).description(
           "list files in Google Drive, one page at a time",
         ),
         ["drive personal files list --parent FOLDER_ID", `drive personal files list 'name:"Example plan"' --limit 20`],
@@ -274,7 +283,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       return output({ ...found, items: found.items.map(snakeKeys), meta: { timezone } })
     })
   examples(
-    annotate(files.command("get"), { effects: GOOGLE_READ })
+    marksUntrusted(annotate(files.command("get"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
       .description("show one file's Google Drive metadata")
       .argument("<file>", fileArgument),
     ["drive personal files get FILE_ID"],
@@ -379,7 +388,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   const documents = program.commands.find((command) => command.name() === "documents") as Command
   const documentArgument = "document id or Google Docs URL"
   examples(
-    annotate(documents.command("get"), { effects: GOOGLE_READ })
+    marksUntrusted(annotate(documents.command("get"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
       .argument("<document>", documentArgument)
       .description("read a document live from Google Docs, as JSON with every tab"),
     ["drive personal documents get DOC_ID --json"],
@@ -425,7 +434,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   bindQuery(
     page(
       examples(
-        annotate(activities.command("list"), { effects: GOOGLE_READ })
+        marksUntrusted(annotate(activities.command("list"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
           .description("list who did what with a file (needs session start --grant activity)")
           .argument("<file>", fileArgument),
         ["drive personal activities list FILE_ID"],
@@ -482,7 +491,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     bindQuery(
       page(
         examples(
-          annotate(group.command("list"), { effects: GOOGLE_READ })
+          marksUntrusted(annotate(group.command("list"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
             .description(`list a file's ${resource}`)
             .argument("<file>", fileArgument),
           [`drive personal ${resource} list FILE_ID`],
@@ -509,7 +518,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
       )
     })
     examples(
-      annotate(group.command("get"), { effects: GOOGLE_READ })
+      marksUntrusted(annotate(group.command("get"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
         .description(`show one ${one} of a file`)
         .argument("<file>", fileArgument)
         .argument(`<${one}-id>`, `${one} id, as ${resource} list prints it`),
@@ -529,9 +538,10 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   }
   page(
     examples(
-      annotate(program.command("shared-drives"), { effects: GOOGLE_READ }).description(
-        "list the shared drives this account can open",
-      ),
+      marksUntrusted(
+        annotate(program.command("shared-drives"), { effects: GOOGLE_READ }),
+        GOOGLE_UNTRUSTED,
+      ).description("list the shared drives this account can open"),
       ["drive personal shared-drives"],
     ),
   ).action(async (args) =>

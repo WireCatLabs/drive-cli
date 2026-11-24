@@ -100,6 +100,8 @@ describe("official Google SDK source", () => {
     const f = scripted((request) => {
       expect(request.params?.supportsAllDrives).toBe(true)
       expect(request.params?.includeItemsFromAllDrives).toBe(true)
+      // A full walk needs the trashed rows to remove them as deleted.
+      expect(request.params?.q).toBe("'root' in parents")
       return request.params?.pageToken
         ? { files: [metadata("doc-b")] }
         : { files: [metadata()], nextPageToken: "second" }

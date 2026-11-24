@@ -1,9 +1,10 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { apiPlainJson, itemOf, parseApiJson } from "@wirecat/cli-core/cli"
+import { marksUntrusted } from "@wirecat/cli-core/documents/cli"
 import { type Command, Option } from "commander"
 import { fileId } from "../config.js"
-import { examples, GOOGLE_READ, GOOGLE_WRITE } from "../registry.js"
+import { examples, GOOGLE_READ, GOOGLE_UNTRUSTED, GOOGLE_WRITE } from "../registry.js"
 import { namedRectangle } from "../sheets-input.js"
 import type { RemoteCommands } from "./remote.js"
 import { installSheetsStructureCommands } from "./sheets-structure.js"
@@ -71,7 +72,7 @@ export const installSheetsCommands = (program: Command, { call, output }: Remote
   installSheetsStructureCommands(group, { call, output })
   const sheetArg = "spreadsheet ID or Google Sheets URL"
   examples(
-    annotate(group.command("info"), { effects: GOOGLE_READ })
+    marksUntrusted(annotate(group.command("info"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
       .description("list spreadsheet properties and tabs without downloading grid data")
       .argument("<spreadsheet>", sheetArg),
     ["drive personal sheets info SHEET_ID"],
@@ -87,7 +88,7 @@ export const installSheetsCommands = (program: Command, { call, output }: Remote
     ),
   )
   examples(
-    annotate(group.command("show"), { effects: GOOGLE_READ })
+    marksUntrusted(annotate(group.command("show"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED)
       .description("read a live A1 range; choose formatted values, raw values or formulas")
       .argument("<spreadsheet>", sheetArg)
       .argument("<range>", "A1 range, such as Budget!A1:C4"),

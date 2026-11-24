@@ -1,12 +1,12 @@
 import { CliError } from "@wirecat/cli-base"
 import { annotate } from "@wirecat/cli-base/commands"
 import { answerEntity } from "@wirecat/cli-core/cli"
-import { addDocumentFolderCommands } from "@wirecat/cli-core/documents/cli"
+import { addDocumentFolderCommands, marksUntrusted } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
 import { BROWSE_HELP, browseFolders, browseRow, type Call, SHARED_WITH_ME } from "../browse.js"
 import { activeProfile, fileId, readConfig, selectedFolders, writeConfig } from "../config.js"
 import { FOLDER } from "../model.js"
-import { examples, GOOGLE_READ } from "../registry.js"
+import { examples, GOOGLE_READ, GOOGLE_UNTRUSTED } from "../registry.js"
 import { type CommandContext, DRIVE_WORDS } from "./context.js"
 
 export const installFolderCommands = (program: Command, context: CommandContext, call: Call) => {
@@ -31,7 +31,7 @@ export const installFolderCommands = (program: Command, context: CommandContext,
     browse: (folders) => {
       examples(
         answerEntity(
-          annotate(folders.command("browse"), { effects: GOOGLE_READ }).description(
+          marksUntrusted(annotate(folders.command("browse"), { effects: GOOGLE_READ }), GOOGLE_UNTRUSTED).description(
             "list Google Drive folders one level at a time, to choose one for folders add",
           ),
           "drive_remote_folder",
