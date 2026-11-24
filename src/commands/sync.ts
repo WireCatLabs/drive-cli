@@ -50,7 +50,7 @@ export const installSyncCommands = (program: Command, context: CommandContext) =
         skipped: state.skipped.map(({ id, reason }) => ({ id, reason })),
         last_sync: state.lastSync ?? null,
         coverage:
-          "Google Docs/Sheets, PDF/DOCX/XLSX and Markdown/TXT/CSV/TSV; native export layout, tab fidelity and assets are not verified",
+          "Google Docs/Sheets, PDF, Word, Excel, PowerPoint, OpenDocument, RTF, HTML, EPUB and Markdown/TXT/CSV/TSV; native export layout, tab fidelity and assets are not verified",
         remote_checked: false,
       }
     },

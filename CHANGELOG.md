@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.74.0 — 24.11.2026
+
+### Added
+
+- **Search reads more uploaded formats** (cli-core 0.739.0, was 0.735.0). A sync now reads the text of Word 97–2003
+  (`.doc`), PowerPoint (`.pptx`), OpenDocument (`.odt`, `.ods`, `.odp`), RTF, HTML and EPUB files, through
+  cli-core's readers in place of drive's own list. A file kept by name as an unsupported type is read on the next
+  sync ([usage](docs/usage.md)).
+
+### Fixed
+
+- **`files sheets create` and `files documents create` are not offered.** cli-core 0.739.0 adds them for CLIs that
+  name a file by its path; Google Drive names a file by an id it gives, so they could not work here
+  ([#393](https://github.com/WireCatLabs/drive-cli/issues/393)).
+
 ## 0.73.0 — 24.11.2026
 
 ### Added
