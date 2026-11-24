@@ -289,6 +289,16 @@ drive <profile> session start [options]
 
 **Example:** `drive personal session start`, `drive work session start --grant write,activity`, `drive work session start --client-id 1234-abc.apps.googleusercontent.com`
 
+### `drive session status`
+
+show whether this profile is signed in here, and as which Google account
+
+```sh
+drive <profile> session status
+```
+
+**Example:** `drive personal session status`
+
 ### `drive session list`
 
 list the configured profiles; credentials are never printed

@@ -115,7 +115,8 @@ drive session list --json
 ```
 
 Find `personal` in the returned profiles. This lists local configuration without printing tokens;
-it does not contact Google or verify that an older sign-in is still valid. The import in step 3
+it does not contact Google or verify that an older sign-in is still valid. `drive personal session status --json`
+says whether that profile holds a sign-in here, as which account and with which grants. The import in step 3
 checks access to your selected folder. Continue to [step 3](#check-your-first-result).
 
 If the browser does not open, repeat sign-in with `--no-browser` and open the printed link on the
