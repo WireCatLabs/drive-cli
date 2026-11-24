@@ -5,6 +5,7 @@ import {
   DISCOVERY_DESCRIPTIONS,
   environmentOf,
   NO_EFFECTS,
+  notLocalPaths,
   sharedCommandTemplate,
 } from "@wirecat/cli-core/cli"
 import type { Command } from "commander"
@@ -15,7 +16,9 @@ import type { CommandContext } from "./context.js"
 
 const installCommandsCommandDefinition = (program: Command, { print, streams }: CommandContext) => {
   examples(
-    annotate(program.command("commands"), { effects: NO_EFFECTS }).description(DISCOVERY_DESCRIPTIONS.commands),
+    notLocalPaths(annotate(program.command("commands"), { effects: NO_EFFECTS }), "path").description(
+      DISCOVERY_DESCRIPTIONS.commands,
+    ),
     ["drive commands", "drive commands files copy --json"],
   )
     .argument("[path...]", "only this command or group, as words")

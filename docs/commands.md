@@ -3917,6 +3917,27 @@ drive <profile> files sheets update <path> <range> [options]
 
 **Example:** `drive personal files sheets update FILE_ID "Sheet1!B2:C2" --values '[[120, "paid"]]' --expected-fingerprint 9f86d081…`
 
+#### `drive files sheets create`
+
+create a new .xlsx on Google Drive from rows from A1: one sheet, or several given as [{name, rows, header?}]. Numbers and booleans are typed, a text stays text, even one that starts with =. A formula is only {"formula": "SUM(B2:B3)"}, computed when the file opens; {"value": "Total", "bold": true} is a bold cell and header: true makes a sheet's first row bold. A file already there is refused: change it with sheets update
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files sheets create <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the new .xlsx file on Google Drive. |
+
+| Option | What it does |
+|---|---|
+| `--values <json>` | the rows as JSON, or [{"name", "rows", "header"?}] for several sheets; a cell is a text, number, boolean, null (empty), {"formula": "…", "bold"?} or {"value": …, "bold"?}. |
+| `--name <name>` | the sheet's name when --values is rows; Sheet1 without it. |
+
+**Example:** `drive personal files sheets create FILE_ID --values '[["Item", "Cost"], ["Rent", 950]]' --name Budget`, `drive personal files sheets create FILE_ID --values '[{"name": "Budget", "header": true, "rows": [["Item", "Cost"], ["Rent", 950], ["Food", 300], [{"value": "Total", "bold": true}, {"formula": "SUM(B2:B3)"}]]}]'`
+
 ### `drive files documents`
 
 the paragraphs of a Word document (.docx) on Google Drive, read and changed in place
@@ -3955,6 +3976,26 @@ drive <profile> files documents update <path> [options]
 | `--expected-fingerprint <hash>` | the sha256 documents show gave for the file. |
 
 **Example:** `drive personal files documents update FILE_ID --payload '[{"index": 2, "text": "Revenue grew 12%."}]' --expected-fingerprint 9f86d081…`
+
+#### `drive files documents create`
+
+create a new .docx on Google Drive with these paragraphs, each in a style: Title, Heading1, Heading2, Heading3, Normal, ListBullet (Normal without one; ListBullet is a bullet list), and tables. A paragraph is bold or italic as a whole, or made of runs that each are; a table is rows of cell texts, its first row bold with header: true. A file already there is refused: change it with documents update
+
+This command can change Google data or send data to the configured model.
+
+```sh
+drive <profile> files documents create <path> [options]
+```
+
+| Argument | | What it is |
+|---|---|---|
+| `path` | required | the new .docx file on Google Drive. |
+
+| Option | What it does |
+|---|---|
+| `--payload <json>` | the body as JSON, in order: [{text, style?, bold?, italic?}, {runs: [{text, bold?, italic?}], style?}, {table: [[cell, …], …], header?}]. |
+
+**Example:** `drive personal files documents create FILE_ID --payload '[{"text": "Report", "style": "Title"}, {"text": "Revenue grew 12%."}]'`, `drive personal files documents create FILE_ID --payload '[{"runs": [{"text": "Revenue "}, {"text": "grew 12%", "bold": true}]}, {"table": [["Item", "Cost"], ["Rent", "950"]], "header": true}]'`
 
 ### `drive files history`
 

@@ -1,6 +1,7 @@
 import { listQuery } from "@wirecat/cli-core/cli"
 import { proposalRegistry } from "@wirecat/cli-core/services"
-import { IMPORTED_DOCUMENT_QUERY, openStore } from "@wirecat/cli-core/store"
+import { openStore } from "@wirecat/cli-core/store"
+import { IMPORTED_DOCUMENT_QUERY } from "@wirecat/cli-core/store/areas"
 import { describe, expect, it } from "vitest"
 import { openIndex } from "./store.js"
 import { content, file, fixture } from "./testing.js"

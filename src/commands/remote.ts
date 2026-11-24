@@ -14,6 +14,7 @@ import {
   LOCAL_READ,
   listOf,
   NO_EFFECTS,
+  notLocalPaths,
   ownerOnlyOption,
   queryTerms,
   readApiBody,
@@ -172,7 +173,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     api.addCommand(child)
   }
   installSheetsCommands(program, helpers)
-  const files = annotate(program.command("files"), { effects: GOOGLE_READ }).description(
+  const files = notLocalPaths(annotate(program.command("files"), { effects: GOOGLE_READ }), "file").description(
     "read and change files in Google Drive; nothing is imported",
   )
   for (const exporting of [false, true]) {
@@ -434,9 +435,10 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
     .action(async (id: string, args) =>
       output(itemOf(await call("docs.documents.batchUpdate", { documentId: fileId(id) }, args.body))),
     )
-  const activities = annotate(program.command("activities"), { effects: GOOGLE_READ }).description(
-    "read who did what with a file in Google Drive",
-  )
+  const activities = notLocalPaths(
+    annotate(program.command("activities"), { effects: GOOGLE_READ }),
+    "file",
+  ).description("read who did what with a file in Google Drive")
   const activityRow = v.looseObject({ timestamp: v.optional(v.string()) })
   const activityQuery = unfilteredQuery("drive_remote_activity", activityRow)
   bindQuery(
@@ -468,7 +470,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
   })
   for (const resource of ["comments", "permissions", "revisions"] as const) {
     const one = resource.slice(0, -1)
-    const group = annotate(program.command(resource), { effects: GOOGLE_READ }).description(
+    const group = notLocalPaths(annotate(program.command(resource), { effects: GOOGLE_READ }), "file").description(
       `read the ${resource} of a file in Google Drive`,
     )
     if (resource === "comments") {

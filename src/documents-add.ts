@@ -1,5 +1,5 @@
 import { CliError, isCliError } from "@wirecat/cli-base"
-import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store"
+import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store/areas"
 import {
   activeProfile,
   fileId,

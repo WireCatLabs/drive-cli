@@ -1,4 +1,4 @@
-import type { CatalogEntry, CatalogInput, CatalogQuery } from "@wirecat/cli-core/store"
+import type { CatalogEntry, CatalogInput, CatalogQuery } from "@wirecat/cli-core/store/areas"
 import { type FileMetadata, FOLDER } from "./model.js"
 
 export const catalogInput = (file: FileMetadata): CatalogInput => ({

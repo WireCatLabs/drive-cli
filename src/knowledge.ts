@@ -4,7 +4,8 @@ import {
   documentKnowledge as sharedKnowledge,
 } from "@wirecat/cli-core/documents"
 import { factItem, memoryItem } from "@wirecat/cli-core/documents/cli"
-import type { LinkInput, MessageStore, PersonRecord } from "@wirecat/cli-core/store"
+import type { MessageStore, PersonRecord } from "@wirecat/cli-core/store"
+import type { LinkInput } from "@wirecat/cli-core/store/areas"
 import type { FileMetadata, GoogleUser } from "./model.js"
 export interface DocumentKnowledge extends SharedDocumentKnowledge {
   context(principal: string, ref: string): Promise<unknown>

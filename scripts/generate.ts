@@ -12,6 +12,9 @@ import {
   writeArtifacts,
 } from "@wirecat/cli-base/codegen"
 
+// The generated files ship in the CLI: the stable runtime entry keeps a generator change from reaching them.
+const RUNTIME = "@wirecat/cli-base/codegen/runtime"
+
 const root = resolve(import.meta.dirname, "..")
 const { model, metadata } = adaptDiscovery(readDiscovery(`${root}/spec/google`), {
   sourceRevision: "spec/google/provenance.json",
@@ -22,8 +25,8 @@ const artifacts = generate(
   [
     typesGenerator({ path: "src/generated/types.ts" }),
     valibotGenerator({ path: "src/generated/schemas.ts", typesImport: "./types.js" }),
-    manifestGenerator({ path: "src/generated/manifest.ts" }),
-    definitionsGenerator({ path: "src/generated/definitions.ts" }),
+    manifestGenerator({ path: "src/generated/manifest.ts", coreImport: RUNTIME }),
+    definitionsGenerator({ path: "src/generated/definitions.ts", coreImport: RUNTIME }),
     coverageGenerator({
       path: "docs/dev/API_COVERAGE.md",
       title: "Google API coverage",

@@ -2,7 +2,7 @@
 // Source: spec/google/*.json, verified by provenance.json
 // Run: pnpm generate
 
-import type { ManifestOperation, SecurityScheme } from "@wirecat/cli-base/codegen"
+import type { ManifestOperation, SecurityScheme } from "@wirecat/cli-base/codegen/runtime"
 
 export const operations: readonly ManifestOperation[] = [
   {
