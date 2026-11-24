@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.75.1 — 24.11.2026
+
+### Fixed
+
+- **A picture OCR finds no text in keeps its picture search** (cli-core 0.742.0, was 0.740.0). With `picture_search`
+  on and `tesseract` installed, a photo without text was kept by name only: it lost its picture vector, so it was not
+  found by what it shows, and each sync downloaded it and ran OCR on it again. It now gets its vector, and the same
+  reader does not read it again until the file or the reader changes.
+
 ## 0.75.0 — 24.11.2026
 
 ### Added
