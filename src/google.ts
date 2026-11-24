@@ -6,7 +6,7 @@ import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
 import { DOC, type FileMetadata, type GoogleSource, type GoogleUser, SHEET, type TabText } from "./model.js"
-import { MAX_ENTRIES, READABLE, supported, tooManyEntries, XLSX } from "./supported.js"
+import { MAX_ENTRIES, plainText, supported, tooManyEntries, XLSX } from "./supported.js"
 
 export { MAX_ENTRIES, supported, tooManyEntries } from "./supported.js"
 
@@ -230,7 +230,7 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           markdown = exported
           // Search covers all tabs independently of the native export's tab-flattening behaviour.
           text = tabs.map((tab) => `${tab.title ? `# ${tab.title}\n\n` : ""}${tab.text}`).join("\n\n")
-        } else if (before.mime === SHEET || READABLE.has(before.mime)) {
+        } else if (before.mime === SHEET || !plainText(before)) {
           const mime = before.mime === SHEET ? XLSX : before.mime
           const bytes = (before.mime === SHEET
             ? await api.files.export({ fileId: id, mimeType: XLSX }, { responseType: "arraybuffer", timeout: 120000 })

@@ -1,4 +1,5 @@
 import { CliError } from "@wirecat/cli-base"
+import { readableFile } from "@wirecat/cli-core/documents"
 import { DOC, type FileMetadata, SHEET } from "./model.js"
 
 /** One folder's listing, a transcript search or a change list is read whole into memory in one sync. */
@@ -11,15 +12,14 @@ export const tooManyEntries = (what: string, fix: string) =>
     { reason: "listing.too-large" },
   )
 export const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-export const READABLE = new Set([
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  XLSX,
-  "text/csv",
-  "text/tab-separated-values",
-])
+const PLAIN = /\.(md|markdown|txt)$/i
+
+/** Read as it is, without a document reader. */
+export const plainText = (file: FileMetadata) =>
+  file.mime === "text/plain" || file.mime === "text/markdown" || PLAIN.test(file.name)
+
 export const supported = (file: FileMetadata): boolean => {
-  if (file.mime === DOC || file.mime === SHEET || READABLE.has(file.mime)) return true
+  if (file.mime === DOC || file.mime === SHEET) return true
   if (file.mime.startsWith("application/vnd.google-apps.")) return false
-  return file.mime === "text/plain" || file.mime === "text/markdown" || /\.(md|markdown|txt)$/i.test(file.name)
+  return readableFile(file)
 }

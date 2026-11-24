@@ -148,8 +148,8 @@ lists configured profiles. `session end` removes local sign-in while retaining c
 configuration so re-login preserves document identities. `account remove --keep-data` or `--delete-data` goes
 further. It revokes the sign-in at Google and forgets the profile, and `--delete-data` also deletes its snapshots.
 
-Sources supported for import now: native Google Docs and Sheets, PDF, docx, xlsx, CSV, TSV, and uploaded
-Markdown or TXT. Other types and shortcuts are reported as skipped, and shortcuts are not followed outside the
+Sources supported for import now: native Google Docs and Sheets, PDF, Word (docx, doc), xlsx, PowerPoint (pptx),
+OpenDocument (odt, ods, odp), RTF, HTML, EPUB, CSV, TSV, and uploaded Markdown or TXT. Other types and shortcuts are reported as skipped, and shortcuts are not followed outside the
 selected scope.
 
 ## Search and export

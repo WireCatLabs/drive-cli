@@ -41,6 +41,7 @@ export const installFileEditCommands = (
     read: (act) => act(edits.port(false)),
     restoreFromTrash: (input) => untrash(fileId(input)),
     deleteKey: DELETE_KEY,
+    creates: false,
   })
   for (const command of files.commands.flatMap((one) => [one, ...one.commands]))
     if (hasSharedContract(command) && metaOf(command).examples?.length)
