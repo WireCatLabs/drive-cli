@@ -181,7 +181,7 @@
         "session",
         "status"
       ],
-      "summary": "show whether this profile is signed in to Google here, and as which account; asks Google nothing",
+      "summary": "show whether this profile is signed in here, and as which Google account",
       "effects": {
         "remote": "none",
         "local": "read"

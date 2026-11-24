@@ -102,7 +102,7 @@ export const installSessionCommands = (program: Command, context: CommandContext
     )
   examples(
     annotate(session.command("status"), { effects: LOCAL_READ }).description(
-      "show whether this profile is signed in to Google here, and as which account; asks Google nothing",
+      "show whether this profile is signed in here, and as which Google account",
     ),
     ["drive personal session status"],
   ).action(async () => {

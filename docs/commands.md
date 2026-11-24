@@ -291,7 +291,7 @@ drive <profile> session start [options]
 
 ### `drive session status`
 
-show whether this profile is signed in to Google here, and as which account; asks Google nothing
+show whether this profile is signed in here, and as which Google account
 
 ```sh
 drive <profile> session status
