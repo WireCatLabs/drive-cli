@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**285 ✅ · 973 ⛔ · 0 ❌** — 221 commands, 1037 options.
+**286 ✅ · 973 ⛔ · 0 ❌** — 222 commands, 1037 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -53,6 +53,7 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `session start` | `--credential-storage` | ✅ |  |
 | `session start` | `--no-browser` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
 | `session start` | `--grant` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
+| `session status` |  | ✅ |  |
 | `session list` |  | ✅ |  |
 | `session end` |  | ✅ |  |
 | `account remove` |  | ✅ |  |
