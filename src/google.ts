@@ -66,16 +66,20 @@ export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: stri
   )
   // A truncated read is caught by the caller's length limit, which names the setting to raise.
   if (read.status === "extracted") return read.text
+  if (read.status === "needs-agent")
+    throw new CliError(
+      "validation_error",
+      "file has no text layer (a scan or images only); a sync reads it with OCR unless read_scans is off",
+      { reason: "document.needs-ocr" },
+    )
   const reason =
-    read.status === "needs-agent"
-      ? "file has no text layer (a scan or images only); OCR is not supported"
-      : read.status === "engine-missing"
-        ? `${ENGINE_LABEL[read.engine]} files need the package ${read.engine} installed next to drive; then run drive <profile> sync --rescan`
-        : read.status === "unreadable"
-          ? "file could not be read as text; it may be damaged or protected"
-          : read.status === "unsupported"
-            ? "file contents do not match its type"
-            : `file is too large for the document readers (over 50 MB, or over ${MAX_TEXT_CHARS} characters of text)`
+    read.status === "engine-missing"
+      ? `${ENGINE_LABEL[read.engine]} files need the package ${read.engine} installed next to drive; then run drive <profile> sync --rescan`
+      : read.status === "unreadable"
+        ? "file could not be read as text; it may be damaged or protected"
+        : read.status === "unsupported"
+          ? "file contents do not match its type"
+          : `file is too large for the document readers (over 50 MB, or over ${MAX_TEXT_CHARS} characters of text)`
   throw new CliError("validation_error", reason)
 }
 

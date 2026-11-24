@@ -1,5 +1,5 @@
 import { resolve } from "node:path"
-import { syncDocuments } from "@wirecat/cli-core/documents"
+import { type ScanReader, scanRetry, scanSkipReason, syncDocuments } from "@wirecat/cli-core/documents"
 import type { DocumentSyncArgs } from "@wirecat/cli-core/documents/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import { activeProfile, keepVersions, textLimit, transcriptsOf } from "./config.js"
@@ -36,7 +36,7 @@ export const sync = async (
   max: number,
   signal?: AbortSignal,
   rescan = false,
-  run: Pick<DocumentSyncArgs, "budget" | "deadline"> = {},
+  run: Pick<DocumentSyncArgs, "budget" | "deadline"> & { scans?: ScanReader | undefined } = {},
 ) => {
   const profile = activeProfile(env, name)
   const lock = await lockProfile(env, name)
@@ -50,6 +50,7 @@ export const sync = async (
       ...(query ? { query } : {}),
       ...(run.budget ? { budget: run.budget } : {}),
       ...(run.deadline ? { deadline: run.deadline } : {}),
+      ...(run.scans ? { scans: run.scans } : {}),
       source,
       index,
       principal: profile.principal,
@@ -62,8 +63,8 @@ export const sync = async (
       keepVersionsForDays: keepVersions(env, name),
       maxEntries: MAX_ENTRIES,
       isFolder: (file) => file.mime === FOLDER,
-      skipReason,
-      retryable,
+      skipReason: (file) => scanSkipReason(run.scans, file, skipReason(file)),
+      retryable: (skip, limit) => retryable(skip, limit) || scanRetry(run.scans, skip.reason),
       errorOf: googleError,
       assertHeld: () => lock.assertHeld(),
       storeVersion: VERSION,

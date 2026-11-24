@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.75.0 — 24.11.2026
+
+### Added
+
+- **A sync reads the text of scans and pictures.** A PDF with no text layer and a JPEG, PNG or WebP picture are read
+  by OCR, chosen by the profile's `read_scans`: `local` by default (the `tesseract` program on this computer, Russian
+  and English, nothing downloaded), `anthropic` or `openai` (the `ai set` model at that provider's own address, with
+  pictures allowed, each page sent to it and paid per page), or `off`. At most 20 pages a file and 100 a sync. A scan
+  an older drive kept by name is read on the next sync, and a sync with no `tesseract` says how to install it
+  ([scans and pictures](docs/usage.md#scans-and-pictures)). Built on cli-core 0.740.0.
+
+### Fixed
+
+- **drive marks other people's text in its own Google reads for a scheduled agent.** In a run locked read-only
+  with a mark (`DRIVE_READ_ONLY=1`, `DRIVE_UNTRUSTED_MARK`), `files list|get`, `documents get`, `comments`,
+  `permissions` and `revisions list|get`, `activities list`, `shared-drives`, `sheets info|show`, `transcripts list`,
+  `folders browse`, `api call` and every `api <operation>` answer names, titles, descriptions, text, comments, cells and people's names between the run's markers, as
+  cli-core's shared `documents`, `search` and `catalog` reads already do. Outside such a run no answer changes.
+- **A `sync --rescan` removes a document Google put in the trash as deleted.** The walk of the chosen folders now
+  lists trashed files and folders too, so a full walk removes such a document and its text with the reason
+  `deleted`, where it used to keep it as `unavailable`. A file the walk does not find still stays `unavailable` with
+  its text kept, and so does a transcript kept by `transcripts: include`. A walk stopped midway remembers the files
+  it found in the trash, so the sync that resumes it removes them as deleted too.
+
 ## 0.74.0 — 24.11.2026
 
 ### Added

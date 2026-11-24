@@ -188,11 +188,12 @@ describe("official Google SDK source", () => {
     })
     expect((await f.source.content("long", 11)).text).toBe("0123456789")
   })
-  it("refuses a PDF without a text layer instead of guessing", async () => {
+  it("hands a PDF without a text layer to OCR instead of guessing", async () => {
     const f = scripted((request) => (request.params?.alt === "media" ? pdf() : metadata("scan", "application/pdf")))
     await expect(f.source.content("scan")).rejects.toMatchObject({
       code: "validation_error",
-      message: expect.stringContaining("no text layer"),
+      message: expect.stringMatching(/^file has no text layer \(a scan or images only\)/),
+      details: { reason: "document.needs-ocr" },
     })
   })
   it("names Google's export cap when a Sheet is too large to export", async () => {
