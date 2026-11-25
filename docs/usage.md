@@ -140,7 +140,11 @@ may repeat the last batch when resumed.
 The initial scan is recursive; `files list --parent` lists immediate children only. If Google
 has more, the answer's `page.next_cursor` holds the token; pass it to `files list --cursor TOKEN` for the next page.
 
-`folders list` shows selected roots. `catalog tree` shows their cached hierarchy, and
+`folders list` shows selected roots by id and name, without asking Google. The name is the one `folders add` saw,
+and each sync refreshes it, so a renamed folder shows its new name after the next sync. A folder chosen before
+drive kept names shows only its id until that sync. The list gives no `path`: Google Drive stores no path for a
+folder, and building one costs a request per parent folder, often ending at a shared parent you cannot see.
+`catalog tree` shows their cached hierarchy, and
 `catalog list "parent:FOLDER_ID"` lists a folder's direct children without Google. Documents remain grouped
 by account in the content index; moving them in Google does not change their local reference.
 Duplicate names are safe: use IDs, rather than titles, to select a source.

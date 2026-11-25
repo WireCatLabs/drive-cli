@@ -113,6 +113,21 @@ export const readState = (env: NodeJS.ProcessEnv, name: string, principal: strin
 export const saveState = (env: NodeJS.ProcessEnv, name: string, state: SyncState): void => {
   writeSecurely(statePath(env, name), `${JSON.stringify(state)}\n`, 0o600)
 }
+// Kept beside the config, not in it: older drive versions refuse a config with a key they do not know.
+const folderNamesPath = (env: NodeJS.ProcessEnv, name: string) => join(profileDir(env, name), "folder-names.json")
+/** The chosen folders' names as `folders add` or the last sync saw them; empty when unknown or unreadable. */
+export const readFolderNames = (env: NodeJS.ProcessEnv, name: string): Record<string, string> => {
+  try {
+    const parsed = v.safeParse(v.record(ID, v.string()), JSON.parse(readFileSync(folderNamesPath(env, name), "utf8")))
+    return parsed.success ? parsed.output : {}
+  } catch {
+    return {}
+  }
+}
+export const saveFolderNames = (env: NodeJS.ProcessEnv, name: string, names: Record<string, string>): void => {
+  if (JSON.stringify(names) === JSON.stringify(readFolderNames(env, name))) return
+  writeSecurely(folderNamesPath(env, name), `${JSON.stringify(names)}\n`, 0o600)
+}
 const walkPath = (env: NodeJS.ProcessEnv, name: string) => join(profileDir(env, name), "walk.json")
 /** The first folder walk of a scope, saved as it goes so an interrupted walk resumes where it stopped. */
 export const readWalk = (env: NodeJS.ProcessEnv, name: string, scope: string): Walk | undefined => {

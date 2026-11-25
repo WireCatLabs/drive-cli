@@ -318,8 +318,15 @@ export const googleAppOf = (env: NodeJS.ProcessEnv, { file, clientId, profile }:
 export const application = (env: NodeJS.ProcessEnv, choice: AppChoice = {}): OAuthApplication =>
   googleAppOf(env, choice).client
 
-export const selectedFolders = (env: NodeJS.ProcessEnv, profile: string, filter: { id?: string } = {}) =>
-  activeProfile(env, profile).roots.flatMap((id) => (filter.id === undefined || id === filter.id ? [{ id }] : []))
+export const selectedFolders = (
+  env: NodeJS.ProcessEnv,
+  profile: string,
+  filter: { id?: string } = {},
+  names: Record<string, string> = {},
+) =>
+  activeProfile(env, profile).roots.flatMap((id) =>
+    filter.id === undefined || id === filter.id ? [names[id] === undefined ? { id } : { id, name: names[id] }] : [],
+  )
 export const configuredMirrors = (env: NodeJS.ProcessEnv, profile: string, filter: Partial<Mirror> = {}) =>
   (activeProfile(env, profile).mirrors ?? []).filter((row) =>
     Object.entries(filter).every(([key, value]) => row[key as keyof Mirror] === value),

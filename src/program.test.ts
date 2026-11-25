@@ -4,6 +4,7 @@ import { captureStreams } from "@wirecat/cli-base"
 import { flatten, parseCommandsDocument } from "@wirecat/cli-base/commands"
 import { type RunOptions, run } from "@wirecat/cli-core/cli"
 import { describe, expect, it, vi } from "vitest"
+import { FOLDER } from "./model.js"
 import { definition } from "./program.js"
 
 import { describeDriveProgram } from "./registry.js"
@@ -216,6 +217,31 @@ describe("standalone command workflow", () => {
       from: "user",
     })
     expect(commandResult(listed.stdout.join("")).items).toEqual([])
+  })
+  it("names each chosen folder: from folders add, then as the last sync saw it", async () => {
+    const f = fixture([])
+    const named = (id: string) => (id === "project" ? "Project plans" : "Same name")
+    f.source.metadata = vi.fn(async (id) => ({ ...file(id, [], FOLDER), name: named(id) }))
+    const cli = async (...args: string[]) => {
+      const streams = captureStreams()
+      await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(["default", ...args], {
+        from: "user",
+      })
+      return commandResult(streams.stdout.join(""))
+    }
+    await cli("folders", "add", "project")
+    await cli("folders", "add", "archive")
+    expect((await cli("folders", "list", "--json")).items).toEqual([
+      { id: "project", name: "Project plans" },
+      { id: "archive", name: "Same name" },
+    ])
+    f.source.metadata = vi.fn(async (id) => ({ ...file(id, [], FOLDER), name: `Renamed ${id}` }))
+    await cli("sync")
+    expect((await cli("folders", "list", "id:project", "--json")).items).toEqual([
+      { id: "project", name: "Renamed project" },
+    ])
+    await cli("folders", "remove", "project")
+    expect((await cli("folders", "list", "--json")).items).toEqual([{ id: "archive", name: "Renamed archive" }])
   })
   it("exposes shared registry metadata without remote access", async () => {
     const f = fixture()

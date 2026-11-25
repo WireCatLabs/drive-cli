@@ -7,6 +7,7 @@ import { BROWSE_HELP, browseFolders, browseRow, type Call, SHARED_WITH_ME } from
 import { activeProfile, fileId, readConfig, selectedFolders, writeConfig } from "../config.js"
 import { FOLDER } from "../model.js"
 import { examples, GOOGLE_READ, GOOGLE_UNTRUSTED } from "../registry.js"
+import { readFolderNames, saveFolderNames } from "../state.js"
 import { type CommandContext, DRIVE_WORDS } from "./context.js"
 
 export const installFolderCommands = (program: Command, context: CommandContext, call: Call) => {
@@ -25,9 +26,10 @@ export const installFolderCommands = (program: Command, context: CommandContext,
       if (!profile.roots.includes(metadata.id)) profile.roots.push(metadata.id)
       config.profiles[name] = profile
       writeConfig(env, config)
+      saveFolderNames(env, name, { ...readFolderNames(env, name), [metadata.id]: metadata.name })
       return { id: metadata.id, name: metadata.name }
     },
-    list: (filter) => selectedFolders(env, selected(), filter),
+    list: (filter) => selectedFolders(env, selected(), filter, readFolderNames(env, selected())),
     browse: (folders) => {
       examples(
         answerEntity(
@@ -59,6 +61,8 @@ export const installFolderCommands = (program: Command, context: CommandContext,
       profile.roots = profile.roots.filter((root) => root !== id)
       config.profiles[name] = profile
       writeConfig(env, config)
+      const { [id]: _, ...names } = readFolderNames(env, name)
+      saveFolderNames(env, name, names)
       return id
     },
   })

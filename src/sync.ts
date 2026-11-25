@@ -4,9 +4,19 @@ import type { DocumentSyncArgs } from "@wirecat/cli-core/documents/cli"
 import { storePath } from "@wirecat/cli-core/store"
 import { activeProfile, keepVersions, textLimit, transcriptsOf } from "./config.js"
 import { googleError } from "./errors.js"
-import { type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource, type Skip } from "./model.js"
+import { type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource, type Skip, type SyncState } from "./model.js"
 import { lockProfile } from "./profile-lock.js"
-import { readState, readWalk, removeSnapshot, removeWalk, saveSnapshot, saveState, saveWalk } from "./state.js"
+import {
+  readFolderNames,
+  readState,
+  readWalk,
+  removeSnapshot,
+  removeWalk,
+  saveFolderNames,
+  saveSnapshot,
+  saveState,
+  saveWalk,
+} from "./state.js"
 import { MAX_ENTRIES, supported } from "./supported.js"
 import { transcriptQuery } from "./transcripts.js"
 import { VERSION } from "./version.js"
@@ -15,6 +25,17 @@ export type { SyncResult } from "@wirecat/cli-core/documents"
 export { within } from "./scope.js"
 
 const MESSAGE_LINKS_VERSION = 1
+
+// Sync reads each chosen folder's metadata anyway, so `folders list` learns a rename, and the name of a folder
+// chosen before names were kept.
+const keepRootNames = (env: NodeJS.ProcessEnv, name: string, roots: readonly string[], state: SyncState) => {
+  const names = readFolderNames(env, name)
+  for (const root of roots) {
+    const seen = state.folders[root]?.name ?? state.pending?.folders[root]?.name
+    if (seen !== undefined) names[root] = seen
+  }
+  saveFolderNames(env, name, names)
+}
 
 const skipReason = (file: FileMetadata) =>
   !file.canDownload ? "downloads restricted" : supported(file) ? undefined : `unsupported type: ${file.mime}`
@@ -46,6 +67,7 @@ export const sync = async (
     const started = new Date().toISOString()
     const transcripts = transcriptsOf(env, name)
     const query = transcriptQuery(transcripts.mode, transcripts.words, source?.search)
+    let saved: SyncState | undefined
     const result = await syncDocuments({
       ...(query ? { query } : {}),
       ...(run.budget ? { budget: run.budget } : {}),
@@ -70,7 +92,10 @@ export const sync = async (
       storeVersion: VERSION,
       state: {
         read: () => readState(env, name, profile.principal),
-        save: (state) => saveState(env, name, { ...state, store: resolve(storePath(env)) }),
+        save: (state) => {
+          saved = state
+          saveState(env, name, { ...state, store: resolve(storePath(env)) })
+        },
         readWalk: (scope) => readWalk(env, name, scope),
         saveWalk: (walk) => saveWalk(env, name, walk),
         removeWalk: () => removeWalk(env, name),
@@ -78,6 +103,7 @@ export const sync = async (
         removeSnapshot: (id) => removeSnapshot(env, name, id),
       },
     })
+    if (saved) keepRootNames(env, name, profile.roots, saved)
     if (index.linkMessages) {
       const state = readState(env, name, profile.principal)
       const documents = Object.entries(state.documents).map(([fileId, doc]) => ({ fileId, reference: doc.reference }))
