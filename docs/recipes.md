@@ -448,8 +448,9 @@ profile and guards. Denied commands and their arguments remain discoverable, wit
 `availability.available: false`, a reason and the relevant permission key. The write tool remains
 listed even when writes are blocked. Commands that need missing Google scopes are marked unavailable;
 sign in with `--grant write`, `activity` or `apps` as appropriate, then restart the server. Settings writes and skill installation require the owner to allow `permissions.mcp.authority`;
-an agent cannot change that guard itself. Exports and downloads take a filename within the profile’s
-cache export folder. For ChatGPT or Claude in the browser or on a phone, see
+an agent cannot change that guard itself. Exports take a filename within the profile’s
+cache export folder; `files download` answers the file's text and
+never saves it. For ChatGPT or Claude in the browser or on a phone, see
 [remote MCP](remote.md). Use
 [the full command reference](commands.md) to discover other supported operations.
 

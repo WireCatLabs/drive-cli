@@ -147,16 +147,20 @@ describe("MCP parity and authority", () => {
     }
   })
 
-  it("refuses a download and an export under read-only before writing", async () => {
+  it("reads a file's text under read-only, and refuses to write a download or an export", async () => {
     const t = setup()
     await createProgram({ ...t.options(), streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
-    const download = vi.fn(async () => Uint8Array.of(0, 255))
+    const download = vi.fn(async () => new TextEncoder().encode("plan text"))
     const server = await mcpClient({ ...t.options({ ...t.env, DRIVE_READ_ONLY: "1" }), download })
     const binary = join(t.directory, "download.bin")
     const markdown = join(t.directory, "document.md")
     try {
+      t.call.mockResolvedValue({ id: "synthetic-file", name: "plan.txt", mimeType: "text/plain" })
+      expect(await callTool(server.client, "drive_read", "files download", { file: "synthetic-file" })).toMatchObject({
+        structuredContent: { item: { text: "plan text" } },
+      })
       expect(
-        await callTool(server.client, "drive_write", "files download", { file: "synthetic-file", output: binary }),
+        await callTool(server.client, "drive_read", "files download", { file: "synthetic-file", output: binary }),
       ).toHaveProperty("isError", true)
       expect(
         await callTool(server.client, "drive_write", "documents export", { document: "doc-a", output: markdown }),
@@ -183,17 +187,16 @@ describe("MCP parity and authority", () => {
     }
   })
 
-  it("confines a download and an export to the profile export folder", async () => {
+  it("never lets an agent save a download, and confines an export to the profile export folder", async () => {
     const t = setup()
     await createProgram({ ...t.options(), streams: captureStreams() }).parseAsync(["default", "sync"], { from: "user" })
     const download = vi.fn(async () => Uint8Array.of(0, 255))
     const server = await mcpClient({ ...t.options(), download })
-    const binary = join(t.directory, "escape.bin")
     const markdown = join(t.directory, "escape.md")
     try {
-      const downloaded = await callTool(server.client, "drive_write", "files download", {
+      const downloaded = await callTool(server.client, "drive_read", "files download", {
         file: "synthetic-file",
-        output: binary,
+        output: "download.bin",
       })
       const exported = await callTool(server.client, "drive_write", "documents export", {
         document: "doc-a",
@@ -201,7 +204,9 @@ describe("MCP parity and authority", () => {
       })
       expect(downloaded).toHaveProperty("isError", true)
       expect(exported).toHaveProperty("isError", true)
-      expect(existsSync(binary) || existsSync(markdown)).toBe(false)
+      expect(existsSync(markdown)).toBe(false)
+      expect(existsSync(join(t.options().env?.DRIVE_CACHE_DIR ?? "", "exports", "default", "download.bin"))).toBe(false)
+      expect(download).not.toHaveBeenCalled()
     } finally {
       await server.close()
     }
