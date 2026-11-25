@@ -4,6 +4,7 @@ import {
   commandsText,
   DISCOVERY_DESCRIPTIONS,
   environmentOf,
+  hasSharedContract,
   NO_EFFECTS,
   notLocalPaths,
   sharedCommandTemplate,
@@ -24,16 +25,21 @@ const installCommandsCommandDefinition = (program: Command, { print, streams }: 
     .argument("[path...]", "only this command or group, as words")
     .action((path: string[]) => {
       const document = commandsDocument(program, path)
-      const annotateAvailability = (commands: readonly CommandInfo[]): CommandInfo[] =>
+      const annotateAvailability = (commands: readonly CommandInfo[], parent: Command | undefined): CommandInfo[] =>
         commands.map((command) => {
           const availability = environmentOf(program).discoveryAvailability?.(command)
+          const own = parent?.commands.find((child) => child.name() === command.name)
           return {
             ...command,
             ...(availability ? { availability } : {}),
-            commands: annotateAvailability(command.commands),
+            ...(own && hasSharedContract(own) && command.origin !== "generated" ? { origin: "cli-core" as const } : {}),
+            commands: annotateAvailability(command.commands, own),
           }
         })
-      document.commands = annotateAvailability(document.commands)
+      const parent = path
+        .slice(0, -1)
+        .reduce<Command | undefined>((at, word) => at?.commands.find((child) => child.name() === word), program)
+      document.commands = annotateAvailability(document.commands, parent)
       const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
       // By format, not by terminal: piped, a reader got hundreds of kilobytes of JSON it never asked for.
       if (!json && !jsonl)

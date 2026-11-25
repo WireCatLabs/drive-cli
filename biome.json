@@ -29,7 +29,7 @@
                 "patterns": [
                   {
                     "group": ["@googleapis/**", "google-auth-library"],
-                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, tokens); the rest of drive speaks its own model"
                   },
                   {
                     "group": ["@modelcontextprotocol/**"],
@@ -47,14 +47,7 @@
       }
     },
     {
-      "includes": [
-        "src/google.ts",
-        "src/google-api.ts",
-        "src/documents.ts",
-        "src/login.ts",
-        "src/tokens.ts",
-        "!**/*.test.ts"
-      ],
+      "includes": ["src/google.ts", "src/google-api.ts", "src/documents.ts", "src/tokens.ts", "!**/*.test.ts"],
       "linter": {
         "rules": {
           "style": {
@@ -88,7 +81,7 @@
                 "patterns": [
                   {
                     "group": ["@googleapis/**", "google-auth-library"],
-                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, tokens); the rest of drive speaks its own model"
                   },
                   {
                     "group": ["proper-lockfile"],
@@ -112,7 +105,7 @@
                 "patterns": [
                   {
                     "group": ["@googleapis/**", "google-auth-library"],
-                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, login, tokens); the rest of drive speaks its own model"
+                    "message": "Google's SDK and auth library stay in the Google modules (google, google-api, documents, tokens); the rest of drive speaks its own model"
                   },
                   {
                     "group": ["@modelcontextprotocol/**"],

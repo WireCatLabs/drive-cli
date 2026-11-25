@@ -8,7 +8,7 @@ No SQL or separate embedding engine exists here.
 | Module | Responsibility |
 | --- | --- |
 | google.ts, documents.ts | SDK reads and all-tab content extraction |
-| login.ts, tokens.ts | browser OAuth, scopes and shared credential storage |
+| tokens.ts | the saved Google sign-in, its refreshes and the signed-in client; `session` itself is cli-core's `oauthSessionCommand` |
 | config.ts, state.ts | selected folders, validated checkpoints and snapshots |
 | sync.ts | bind Google classification/errors, profile settings, locks and state I/O to Core sync |
 | store.ts | bind Google metadata, catalog keys and contributor callbacks to Core ingestion; enrich scoped search results |

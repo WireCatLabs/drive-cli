@@ -2,17 +2,19 @@ import { mkdtempSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { crc32 } from "node:zlib"
-import { errorObjectOf } from "@wirecat/cli-base"
+import { Credentials, errorObjectOf, isMovedRun, type KeyringStore } from "@wirecat/cli-base"
 import { itemEnvelopeSchema, listEnvelopeSchema } from "@wirecat/cli-base/standards"
 import { failureContext } from "@wirecat/cli-core"
 import { type RunOptions, run } from "@wirecat/cli-core/cli"
+import { oauthAccount } from "@wirecat/cli-core/oauth"
 import type { Command } from "commander"
 import * as v from "valibot"
 import { vi } from "vitest"
-import { writeConfig } from "./config.js"
+import { paths, writeConfig } from "./config.js"
 import { DRIVE_APP } from "./identity.js"
 import { DOC, type DocumentContent, type DocumentIndex, type FileMetadata, FOLDER, type GoogleSource } from "./model.js"
 import { createProgram, definition, type ProgramOptions } from "./program.js"
+import { PROVIDER } from "./scopes.js"
 
 export const file = (id: string, parents = ["root"], mime = DOC): FileMetadata => ({
   id,
@@ -204,3 +206,40 @@ export const testProgram = (options: ProgramOptions = {}): Command => {
 
 /** The error object a failure becomes, as `run` reports it. */
 export const errorObject = (error: unknown) => errorObjectOf(error, failureContext(DRIVE_APP.errors))
+
+/** The keyring account `session start` writes; drive before 0.78 wrote the bare profile name. */
+export const sessionAccount = (profile: string) => oauthAccount(PROVIDER, profile)
+
+/** drive's own sign-in store, as the run addresses it: the keyring with its file fallback, or the file alone. */
+export const signIns = (env: NodeJS.ProcessEnv, storage: "keyring" | "file" = "keyring", keyring?: KeyringStore) =>
+  new Credentials({
+    service: "drive-cli",
+    configDir: paths(env).config,
+    storage: storage === "keyring" ? "auto" : "file",
+    env,
+    isolated: isMovedRun({ appName: "drive-cli", prefix: "DRIVE", env }),
+    ...(keyring ? { keyring } : {}),
+  })
+
+export interface SyntheticSession {
+  principal: string
+  clientId: string
+  clientSecret?: string
+  tokens: {
+    access_token?: string | null
+    refresh_token: string
+    expiry_date?: number | null
+    scope?: string
+    token_type?: string | null
+  }
+}
+
+/** A sign-in saved where `session start` keeps it, or with `legacy` where drive before 0.78 kept it. */
+export const saveSession = (
+  env: NodeJS.ProcessEnv,
+  name: string,
+  session: SyntheticSession,
+  storage: "keyring" | "file" = "keyring",
+  keyring?: KeyringStore,
+  legacy = false,
+) => signIns(env, storage, keyring).write(legacy ? name : sessionAccount(name), JSON.stringify(session))

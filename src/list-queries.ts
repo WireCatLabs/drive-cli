@@ -23,11 +23,6 @@ const registry = (
     field.native ? { ...field, operators: ["term", "phrase"] } : field,
   ),
 })
-export const sessionRow = v.strictObject({
-  profile: v.string(),
-  selected_folders: v.number(),
-  storage: v.picklist(["keyring", "file"]),
-})
 export const fileRow = v.looseObject({
   id: v.optional(v.string()),
   name: v.optional(v.string()),
@@ -45,10 +40,6 @@ export const transcriptRow = v.strictObject({
 })
 export const TRANSCRIPTS_QUERY = registry("drive_transcript", transcriptRow, ["owned_by_me"], {
   owned_by_me: "owned_by_me:false",
-})
-export const SESSIONS_QUERY = registry("drive_session", sessionRow, ["profile", "storage"], {
-  profile: "profile:personal",
-  storage: "storage:keyring",
 })
 export const FILES_QUERY: QueryRegistry = {
   entity: "drive_remote_file",

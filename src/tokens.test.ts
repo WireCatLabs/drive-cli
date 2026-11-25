@@ -5,8 +5,8 @@ import { describe, expect, it, vi } from "vitest"
 import { application, paths } from "./config.js"
 import { googleError } from "./errors.js"
 import { googleApi } from "./google-api.js"
-import { fixture } from "./testing.js"
-import { authorizedClient, credentials, grantedScopes, READ_SCOPE, saveSession } from "./tokens.js"
+import { fixture, saveSession, sessionAccount, signIns } from "./testing.js"
+import { authorizedClient, grantedScopes, READ_SCOPE } from "./tokens.js"
 
 describe("shared credential persistence", () => {
   const session = {
@@ -19,7 +19,7 @@ describe("shared credential persistence", () => {
   const tokenResponse = (body: Record<string, unknown>, status = 200) =>
     vi.fn(async () => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } }))
   const savedSession = (keyring: ReturnType<typeof memoryKeyring>, env: NodeJS.ProcessEnv) =>
-    JSON.parse(credentials(env, "keyring", keyring).read("default")?.secret ?? "{}")
+    JSON.parse(signIns(env, "keyring", keyring).read(sessionAccount("default"))?.secret ?? "{}")
 
   it("refreshes through the shared keeper and, in a moved run, keeps the refresh in memory only", async () => {
     const f = fixture()

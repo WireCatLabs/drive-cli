@@ -61,7 +61,7 @@ import { installKnowledgeCommands } from "./commands/knowledge.js"
 import { installMirrorCommands } from "./commands/mirrors.js"
 import { installRemoteCommands, type RemoteCommands } from "./commands/remote.js"
 import { installSearchCommand } from "./commands/search.js"
-import { installSessionCommands } from "./commands/session.js"
+import { sessionCommand } from "./commands/session.js"
 import { installStoreCommands } from "./commands/store.js"
 import { installSyncCommands } from "./commands/sync.js"
 import { installTranscriptCommands } from "./commands/transcripts.js"
@@ -314,7 +314,7 @@ const installDrive = (program: Command) => {
   })
   runsOf.set(program, runs)
   const imported = importedDocument(context)
-  installSessionCommands(program, context)
+  program.addCommand(sessionCommand(context))
   installAccountCommands(program, context)
   installFolderCommands(program, context, (method, params) => remote.call(method, params))
   installSyncCommands(program, context)

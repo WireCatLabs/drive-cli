@@ -10,8 +10,8 @@ import { googleApi } from "./google-api.js"
 import { run } from "./program.js"
 import { requestSchema } from "./schema.js"
 import { callTool, mcpClient } from "./testing/mcp.js"
-import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
-import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, saveSession, WRITE_SCOPE } from "./tokens.js"
+import { commandResult, testProgram as createProgram, fixture, saveSession } from "./testing.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./tokens.js"
 
 describe("schema-generated Google contracts", () => {
   it("keeps all 85 operations and validates required IDs, bounds, enums and recursive bodies", () => {
