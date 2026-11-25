@@ -32,6 +32,11 @@ export interface PolicyFlags {
   dryRun?: boolean
   /** Only fetches from Google into the local store (`fetchesOnly`): a `readonly` level lets it run, `deny` does not. */
   fetches?: boolean
+  /**
+   * Writes nothing this run though its effects say it may (`files download` without `--output`): the read-only lock
+   * and `--read-only` let it read, while a `readonly` level still refuses it, as cli-core's MCP check does.
+   */
+  writesNothing?: boolean
   /** The keys this program checks (`permissionKeys`); with them, a permission naming no command is refused. */
   permissionKeys?: Set<string>
 }
@@ -125,9 +130,11 @@ export const checkPolicy = async (
 ) => {
   const { levels, readOnly, lock } = policySettings(env, profile, flags)
   const { level } = levelFor(levels, key, defaults)
-  if (mutates && lock) throw readOnlyRefusal(lock, "change local or Google data")
+  if (mutates && !flags.writesNothing && lock) throw readOnlyRefusal(lock, "change local or Google data")
   const fetchOnly = flags.fetches === true && flags.readOnly !== true
-  if (level === "deny" || (mutates && !fetchOnly && (readOnly || level === "readonly")))
+  // Left for a run that writes nothing: only the setup ceiling, which is a level, not a lock.
+  const shut = flags.writesNothing ? readOnly && lock === undefined && flags.readOnly !== true : readOnly
+  if (level === "deny" || (mutates && !fetchOnly && (shut || level === "readonly")))
     throw new CliError("permission_error", "profile policy refuses this operation", {
       reason: "policy.denied",
       permission: key,

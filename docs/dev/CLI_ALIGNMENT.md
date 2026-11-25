@@ -96,7 +96,8 @@ stdin reads and untyped raw API dispatch are excluded from the agent surface.
 `session list`, `config show`, `skill show` and `guide` are available reads. `config set` and `models set`
 require the owner to allow `permissions.mcp.authority` in the profile; a tool cannot change that guard,
 replace permissions wholesale or change `read_only`. The CLI rechecks authority for each invocation.
-`documents export` takes a filename and writes within `<cache>/exports/<profile>/`, never an arbitrary path.
+`documents export` and `files export` take a filename and write within `<cache>/exports/<profile>/`, never an
+arbitrary path. `files download` answers the text and never saves a file for a tool.
 
 ## Checks and compatibility
 

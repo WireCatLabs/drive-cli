@@ -14,6 +14,7 @@ import {
   LOCAL_READ,
   listOf,
   NO_EFFECTS,
+  ownerOnlyOption,
   queryTerms,
   readApiBody,
   snakeKeys,
@@ -21,6 +22,7 @@ import {
   typedQuery,
   unfilteredQuery,
   withQuery,
+  writesFileOnlyWith,
 } from "@wirecat/cli-core/cli"
 import { fileText } from "@wirecat/cli-core/documents"
 import { marksUntrusted } from "@wirecat/cli-core/documents/cli"
@@ -200,8 +202,14 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
             .choices(Object.keys(EXPORT_FORMATS))
             .makeOptionMandatory(),
         )
-    else command.option("--output <file>", "local file to write, instead of answering the text")
-    command.option("--overwrite", "replace an existing output file")
+        .option("--overwrite", "replace an existing output file")
+    else
+      writesFileOnlyWith(
+        command
+          .addOption(ownerOnlyOption("--output <file>", "local file to write, instead of answering the text"))
+          .addOption(ownerOnlyOption("--overwrite", "replace an existing output file")),
+        "output",
+      )
     command.action(
       async (input: string, args: { output?: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)

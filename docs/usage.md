@@ -312,13 +312,16 @@ the long-running API download flow and are not supported by these friendly comma
 
 An existing output, including a symlink, is refused before downloading. Pass `--overwrite` to replace
 it. Results contain the file ID and byte count, without the document name or local output path.
-Both commands write a local file, so `--read-only` refuses them; `--dry-run` previews without fetching.
+Both commands write a local file, so `--read-only` and `DRIVE_READ_ONLY=1` refuse them; `--dry-run` previews without
+fetching.
 The existing `documents export --output PATH` writes an imported Markdown snapshot offline.
 
 Without `--output`, `files download FILE_ID --json` saves nothing and answers the file's text with the `sha256` of
 its bytes, for an edit (below). A text longer than 200,000 characters is cut there with `truncated: true` and no
 `sha256`. A PDF, `.docx` or `.xlsx` answers its extracted text, also without a `sha256`: written back, that text would
 replace the document.
+Since it writes nothing here, a read-only run (`--read-only`, `DRIVE_READ_ONLY=1`) reads the text too, and an
+agent over MCP runs it with `drive_read`. `--output` is the owner's alone: no MCP tool offers it.
 
 ## Edit a file stored in Google Drive
 

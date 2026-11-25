@@ -120,7 +120,7 @@ const eachItem = (body: Body, change: (item: unknown) => unknown): Body =>
 class Preview extends Error {}
 
 // An agent names only a file, which lands in the profile's export folder, never a path of its choosing.
-const EXPORTS = new Set(["documents export", "files download", "files export"])
+const EXPORTS = new Set(["documents export", "files export"])
 
 const googleOnly = (effects: Effects | undefined) => effects?.local === "none" && effects.remote !== "none"
 
@@ -606,8 +606,7 @@ const installDrive = (program: Command) => {
       refuseUnderReadOnly(env, "change a setting")
       return previewWrite()
     }
-    // Without --output, files download answers the text and writes nothing.
-    if (agent() && EXPORTS.has(words) && !(words === "files download" && action.opts().output === undefined)) {
+    if (agent() && EXPORTS.has(words)) {
       const name = action.opts().output
       if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(name))
         throw new CliError("validation_error", "MCP exports take a filename inside the profile export folder")
@@ -648,10 +647,11 @@ const installDrive = (program: Command) => {
       if (flags.allowDangerous && !action.opts().allowDelete) action.setOptionValue("allowDelete", true)
     }
     const mutates = method ? apiMethod(method).mutates : writes(metadata.effects)
+    const writesNothing = words === "files download" && action.opts().output === undefined
     const key = method ? `api.${method}` : path.join(".")
     const fetches = !method && fetchesOnly(action)
     for (const permission of method ? methodPolicyKeys(method) : [key])
-      await checkPolicy(env, selected(), permission, mutates, { ...flags, fetches }, askOnce)
+      await checkPolicy(env, selected(), permission, mutates, { ...flags, fetches, writesNothing }, askOnce)
     checkedMethod = method
     if (flags.offline && (method || metadata.effects?.remote !== "none")) throw offlineRefused()
     if (flags.dryRun && !googleOnly(metadata.effects)) preview()
