@@ -6,7 +6,8 @@
 # It uses the profile's own sign-in, which stays in the keyring entry `service drive-cli account <profile>`; this
 # script never reads it. Everything it writes in Google lives in a new folder drive-live-<time> in My Drive, which goes
 # to the trash at the end, also after a failure. On this computer it adds only the profile's kept versions
-# (<state>/profiles/<profile>/files.versions).
+# (<state>/profiles/<profile>/files.versions), the write journal <state>/sends/<profile>.jsonl, the recipients list
+# <state>/recipients/<profile>.json and, while an upload runs, its checkpoint under <state>/uploads/.
 # The edits: Google's sha256Checksum against the sha256 of the downloaded bytes, after an upload and after an update;
 # files update at a wrong and the right sha256, keeping the id, name and MIME type; history and restore of a version;
 # sheets update of a small .xlsx and documents update of a small .docx (src/testing/fixtures); a Google Doc refused;
@@ -73,6 +74,7 @@ printf '# Notes %s\n\nthe second draft\n' "$stamp" >"$work/notes-2.md"
 old=$(hash_of "$work/notes.md")
 new=$(hash_of "$work/notes-2.md")
 notes=$(upload "$work/notes.md")
+[ -n "$notes" ] || fail "files upload answered no id"
 echo "notes.md: $notes"
 "${cli[@]}" files download "$notes" --json >"$work/read.json"
 [ "$(field "$work/read.json" item.sha256)" = "$old" ] || fail "files download answered another sha256 for notes.md"
@@ -111,6 +113,7 @@ node -e '
 
 fixtures="$root/src/testing/fixtures"
 budget=$(upload "$fixtures/budget.xlsx")
+[ -n "$budget" ] || fail "files upload answered no id"
 wait_checksum "$budget" "$(hash_of "$fixtures/budget.xlsx")"
 "${cli[@]}" files sheets show "$budget" "Synthetic Budget!A1:C4" --json >"$work/s-show.json"
 fingerprint=$(field "$work/s-show.json" item.sha256)
@@ -128,6 +131,7 @@ node -e '
   fail "sheets update changed the workbook's MIME type"
 
 letter=$(upload "$fixtures/letter.docx")
+[ -n "$letter" ] || fail "files upload answered no id"
 "${cli[@]}" files documents show "$letter" --json >"$work/d-show.json"
 fingerprint=$(field "$work/d-show.json" item.sha256)
 "${cli[@]}" files documents update "$letter" --payload "[{\"index\": 2, \"text\": \"Edited live $stamp.\"}]" \
@@ -143,11 +147,13 @@ node -e '
   --body "{\"name\":\"live doc $stamp\",\"mimeType\":\"application/vnd.google-apps.document\",\"parents\":[\"$folder\"]}" \
   --yes --json >"$work/doc.json"
 doc=$(field "$work/doc.json" item.id)
+[ -n "$doc" ] || fail "api drive-files-create answered no id"
 "${cli[@]}" files update "$doc" --text x --expected-fingerprint "$zeros" --yes --json >"$work/native.json" 2>&1 || true
 [ "$(field "$work/native.json" error.reason)" = file.native-google ] || fail "files update did not refuse a Google Doc"
 
 printf 'trash me %s\n' "$stamp" >"$work/trash.txt"
 trashed=$(upload "$work/trash.txt")
+[ -n "$trashed" ] || fail "files upload answered no id"
 "${cli[@]}" files trash "$trashed" --yes --json >/dev/null
 "${cli[@]}" files restore "$trashed" --yes --json >/dev/null
 "${cli[@]}" files get "$trashed" --json >"$work/untrashed.json"

@@ -362,4 +362,11 @@ describe("the MCP catalogue", () => {
       "files history": false,
     })
   })
+
+  it("offers no sheets or documents create: Google Drive names a new file by the id it gives", () => {
+    const tools = toolsFromCommands(describeProgram(commandTree()), { includeUnavailable: true, exclude: [["mcp"]] })
+    const paths = tools.map((tool) => tool.path.join(" "))
+    expect(paths).not.toContain("files sheets create")
+    expect(paths).not.toContain("files documents create")
+  })
 })

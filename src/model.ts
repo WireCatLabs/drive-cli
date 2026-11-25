@@ -11,7 +11,7 @@ import type {
   SourceWork,
 } from "@wirecat/cli-core/documents"
 import type { DocumentHistoryPort } from "@wirecat/cli-core/documents/cli"
-import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store"
+import type { AddedSource, AddedSourceInput } from "@wirecat/cli-core/store/areas"
 
 export type { PictureWriter, TabText } from "@wirecat/cli-core/documents"
 export const FOLDER = "application/vnd.google-apps.folder"

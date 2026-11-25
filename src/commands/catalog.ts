@@ -1,3 +1,4 @@
+import { notLocalPaths } from "@wirecat/cli-core/cli"
 import { addDocumentCatalogCommands } from "@wirecat/cli-core/documents/cli"
 import type { Command } from "commander"
 import { catalogFiles } from "../catalog.js"
@@ -52,4 +53,7 @@ export const installCatalogCommands = (program: Command, helpers: Helpers) => {
     id: fileId,
     roots: () => activeProfile(env, selected()).roots,
   })
+  // cli-core marks only catalog's <file>; `catalog tree [folder]` takes a Drive folder too.
+  const catalog = program.commands.find((command) => command.name() === "catalog")
+  if (catalog) notLocalPaths(catalog, "folder")
 }
