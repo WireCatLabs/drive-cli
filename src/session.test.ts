@@ -155,7 +155,7 @@ describe("drive session on cli-core's oauthSessionCommand", () => {
 })
 
 describe("a sign-in kept by drive before 0.78, under the bare profile name", () => {
-  it("is copied to the new entry in the owner's run, with no new sign-in, and session end removes both", async () => {
+  it("is copied to the new entry in the owner's run, with no new sign-in, and account remove removes both", async () => {
     owner.run = true
     const f = fixture()
     const keyring = memoryKeyring()
