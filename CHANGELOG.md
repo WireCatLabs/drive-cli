@@ -1,5 +1,38 @@
 # Changelog
 
+## 0.78.0 — 25.11.2026
+
+### Changed — may break callers
+
+- **drive runs on cli-core 1.0 and cli-base 1.0** (cli-core 1.0.0, was 0.750.0; cli-base 1.0.0, was 0.132.0).
+  cli-core 1.0 moves the message store to version 74 the first time it opens it: an id is never handed out twice,
+  and a JSON column holds valid JSON. After that, only tools on cli-core 1.0 open the store. Watch for: upgrade every
+  installed WireCat CLI to its 1.0 release first, and stop `serve`, `mcp` and every sync while the store migrates;
+  the migration writes a rollback copy first and refuses to run without one. See
+  [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+
+### Fixed
+
+- **A read-only run can read a stored file's text** ([#402](https://github.com/WireCatLabs/drive-cli/issues/402)).
+  `drive <profile> files download FILE_ID` without `--output` writes nothing on this computer, so `DRIVE_READ_ONLY=1`
+  and `--read-only` now let it answer the text, marked as untrusted in a scheduled agent's run.
+  Saving the file with `--output` is still refused there. As in ydisk, `--output` and `--overwrite` are now the
+  owner's alone: an agent over MCP reads the text with `drive_read` and can no longer save a download into the
+  profile's export folder. `files export` always writes a file and is unchanged
+  ([usage](docs/usage.md#download-or-convert-a-file-from-google)).
+- **Over MCP, a Drive file or folder is passed as the agent wrote it.** The file id or URL of `drive files get`,
+  `copy`, `move`, `trash`, `download` and `export`, of `drive comments`, `permissions`, `revisions` and
+  `activities`, the folder of `drive catalog tree`, and the command path of `drive commands` were made absolute
+  against the client's folder, as if they named a file on this computer.
+
+### Security
+
+- **An MCP call cannot name a credential folder, a WireCat tool's folder or the message store.** Every option and
+  argument that takes a local file or folder (`drive files upload <path>`, `drive files download --output`,
+  `--body-file` and the rest) is checked by its real path before the call runs, so neither a link nor `..` gets
+  past. A refused call answers `permission_error` (`access.denied`) with the option in `param`. A run in a terminal
+  is unchanged.
+
 ## 0.77.0 — 25.11.2026
 
 ### Added
