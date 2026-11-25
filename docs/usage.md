@@ -70,7 +70,10 @@ profile's `read_scans` setting chooses who reads it:
 `drive personal config set read_scans '"anthropic"'` switches one profile. One file is read up to 20 pages, and one
 sync reads at most 100 pages. The pages over that wait for the next sync. A scan an older drive kept by name is
 read on the next sync. When `tesseract` is missing, the sync still finishes, and each scan's reason says how to
-install it. With `picture_search` on, a picture gets both its text and its picture vector.
+install it. With `picture_search` on, a picture gets both its text and its picture vector. `local` turns a page
+lying on its side before it reads it, with `tesseract`'s orientation data (`sudo apt install tesseract-ocr-osd`
+where it is not installed with `tesseract`). Without that data such a page reads as garbled text, and the sync's
+`warnings` say `document.scan-unturned`.
 
 ## Meet transcripts and Gemini notes
 

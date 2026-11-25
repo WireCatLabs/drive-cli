@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.76.1 — 25.11.2026
+
+### Fixed
+
+- **A scan of a page lying on its side is now read** (cli-core 0.750.0, was 0.742.0). Local OCR
+  (`read_scans: local`) turns the page first, so its text is found by search instead of coming out garbled. Scans
+  read before are read again once, at the next sync. Without tesseract's orientation data
+  (`apt install tesseract-ocr-osd`) a scan reads as before, and the sync warns with `document.scan-unturned`
+  ([scans and pictures](docs/usage.md#scans-and-pictures)).
+
 ## 0.76.0 — 24.11.2026
 
 ### Added
