@@ -1148,11 +1148,11 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `sheets clear` |  | ✅ |  |
 | `files download` |  | ✅ |  |
 | `files download` | `--output` | ✅ |  |
-| `files download` | `--overwrite` | ✅ |  |
+| `files download` | `--replace` | ✅ |  |
 | `files export` |  | ✅ |  |
 | `files export` | `--output` | ✅ |  |
 | `files export` | `--format` | ✅ |  |
-| `files export` | `--overwrite` | ✅ |  |
+| `files export` | `--replace` | ✅ |  |
 | `files list` |  | ✅ |  |
 | `files list` | `--limit` | ✅ |  |
 | `files list` | `--cursor` | ✅ |  |

@@ -33,7 +33,7 @@ describe("friendly file downloads", () => {
       details: { reason: "download.exists" },
     })
     expect(t.download).toHaveBeenCalledTimes(1)
-    await t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")
+    await t.run("files", "download", "synthetic-file", "--output", t.path, "--replace")
     expect(t.download).toHaveBeenCalledTimes(2)
   })
   it.each(Object.entries(EXPORT_FORMATS))("exports %s through the Google media seam", async (format, mime) => {
@@ -41,7 +41,7 @@ describe("friendly file downloads", () => {
     const result = await t.run("files", "export", "synthetic-doc", "--format", format, "--output", t.path)
     expect(result).toMatchObject({ id: "synthetic-doc", format, bytes: 4 })
     expect(result).not.toHaveProperty("path")
-    await t.run("files", "export", "synthetic-doc", "--format", format, "--output", t.path, "--overwrite")
+    await t.run("files", "export", "synthetic-doc", "--format", format, "--output", t.path, "--replace")
     expect(t.download).toHaveBeenCalledWith("synthetic-doc", mime)
     expect(readFileSync(t.path)).toEqual(Buffer.from([0, 255, 10, 128]))
   })
@@ -81,7 +81,7 @@ describe("friendly file downloads", () => {
     expect(existsSync(t.path)).toBe(false)
     writeFileSync(t.path, "kept")
     t.download.mockRejectedValueOnce(new Error("synthetic provider failure"))
-    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")).rejects.toThrow(
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--replace")).rejects.toThrow(
       "synthetic provider failure",
     )
     expect(readFileSync(t.path, "utf8")).toBe("kept")
@@ -94,7 +94,7 @@ describe("friendly file downloads", () => {
     await expect(t.run("files", "download", "synthetic-file", "--output", t.path)).rejects.toMatchObject({
       details: { reason: "download.exists" },
     })
-    await t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")
+    await t.run("files", "download", "synthetic-file", "--output", t.path, "--replace")
     expect(readFileSync(target, "utf8")).toBe("kept")
     expect(readFileSync(t.path)).toHaveLength(4)
   })
@@ -111,7 +111,7 @@ describe("friendly file downloads", () => {
       })(),
     )
     t.download.mockResolvedValueOnce(broken as never)
-    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--overwrite")).rejects.toThrow()
+    await expect(t.run("files", "download", "synthetic-file", "--output", t.path, "--replace")).rejects.toThrow()
     expect(readFileSync(t.path, "utf8")).toBe("abcde")
     expect(readdirSync(t.directory).filter((name) => name.endsWith(".tmp"))).toEqual([])
   })

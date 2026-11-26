@@ -310,7 +310,7 @@ CSV exports only the first sheet. Google limits native exports to 10 MB; Drive b
 at 50 MB. Neither command imports the file into search or changes it in Google. Google Vids require
 the long-running API download flow and are not supported by these friendly commands.
 
-An existing output, including a symlink, is refused before downloading. Pass `--overwrite` to replace
+An existing output, including a symlink, is refused before downloading. Pass `--replace` to replace
 it. Results contain the file ID and byte count, without the document name or local output path.
 Both commands write a local file, so `--read-only` and `DRIVE_READ_ONLY=1` refuse them; `--dry-run` previews without
 fetching.
