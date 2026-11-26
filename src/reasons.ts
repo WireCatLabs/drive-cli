@@ -31,7 +31,7 @@ const ENTRIES: Entry[] = [
     ["profiles", "tried"],
   ],
   ["ref.bare-number", "validation_error", "a bare number names no document; give its document:<n> ref"],
-  ["download.exists", "validation_error", "the output file already exists; pass --overwrite to replace it"],
+  ["download.exists", "validation_error", "the output file already exists; pass --replace to replace it"],
   ["export.too-large", "validation_error", "Google exports at most 10 MB of a native file"],
   [
     "file.native-google",

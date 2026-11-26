@@ -203,22 +203,22 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
             .choices(Object.keys(EXPORT_FORMATS))
             .makeOptionMandatory(),
         )
-        .option("--overwrite", "replace an existing output file")
+        .option("--replace", "replace an existing output file")
     else
       writesFileOnlyWith(
         command
           .addOption(ownerOnlyOption("--output <file>", "local file to write, instead of answering the text"))
-          .addOption(ownerOnlyOption("--overwrite", "replace an existing output file")),
+          .addOption(ownerOnlyOption("--replace", "replace an existing output file")),
         "output",
       )
     command.action(
-      async (input: string, args: { output?: string; overwrite?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
+      async (input: string, args: { output?: string; replace?: boolean; format?: keyof typeof EXPORT_FORMATS }) => {
         const id = fileId(input)
         if (args.output === undefined) return output(itemOf(await textOf(id)))
         const mime = args.format ? EXPORT_FORMATS[args.format] : undefined
         const bytes = await saveDownload(
           args.output,
-          args.overwrite === true,
+          args.replace === true,
           () => helpers.download(id, mime),
           helpers.mcp === true,
         )

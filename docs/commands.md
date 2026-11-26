@@ -3712,7 +3712,7 @@ drive <profile> files download <file> [options]
 | Option | What it does |
 |---|---|
 | `--output <file>` | local file to write, instead of answering the text. |
-| `--overwrite` | replace an existing output file. |
+| `--replace` | replace an existing output file. |
 
 **Example:** `drive personal files download FILE_ID --output download.bin`, `drive personal files download FILE_ID --json`
 
@@ -3734,7 +3734,7 @@ drive <profile> files export <file> [options]
 |---|---|
 | `--output <file>` | local file to write. |
 | `--format <format>` | format Google should export. One of: `pdf`, `docx`, `xlsx`, `csv`. |
-| `--overwrite` | replace an existing output file. |
+| `--replace` | replace an existing output file. |
 
 **Example:** `drive personal files export DOC_ID --format pdf --output document.pdf`
 

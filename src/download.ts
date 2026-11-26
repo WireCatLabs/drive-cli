@@ -25,7 +25,7 @@ export const EXPORT_FORMATS = {
 export type Download = (id: string, mime?: string) => Promise<Uint8Array | Readable>
 
 const exists = () =>
-  new CliError("validation_error", "the output file already exists; pass --overwrite to replace it", {
+  new CliError("validation_error", "the output file already exists; pass --replace to replace it", {
     reason: "download.exists",
     param: "--output",
   })
