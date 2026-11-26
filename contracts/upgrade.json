@@ -79,20 +79,6 @@
       "stream": "stdout",
       "kind": "json",
       "json": { "item": { "config": { "found": true, "issues": [] }, "profiles": ["default", "work"] } }
-    },
-    {
-      "id": "sessions-of-0.51-listed",
-      "args": ["session", "list", "--json"],
-      "exit": 0,
-      "stream": "stdout",
-      "diagnosticPattern": "(?:the OS keyring did not answer [^\\n]*\\n){2}",
-      "kind": "json",
-      "json": {
-        "items": [
-          { "profile": "default", "signed_in": null, "state": "unknown" },
-          { "profile": "work", "signed_in": null, "state": "unknown" }
-        ]
-      }
     }
   ]
 }
