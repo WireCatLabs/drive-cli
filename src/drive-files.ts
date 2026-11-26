@@ -3,7 +3,7 @@ import { createReadStream, createWriteStream } from "node:fs"
 import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import { CliError, isCliError } from "@wirecat/cli-base"
-import type { FileTarget, RemoteFile } from "@wirecat/cli-core/documents"
+import { type FileTarget, type RemoteFile, sizeText } from "@wirecat/cli-core/documents"
 import type { Download } from "./download.js"
 import { FOLDER } from "./model.js"
 import type { UploadedFile } from "./upload.js"
@@ -157,9 +157,13 @@ export const bytesOf = async (source: Uint8Array | Readable, max: number): Promi
     size += (chunk as Buffer).length
     if (size > max) {
       source.destroy()
-      throw new CliError("validation_error", `the file is larger than ${max} bytes; save it with --output`, {
-        reason: "file.too-large",
-      })
+      throw new CliError(
+        "validation_error",
+        `the file is larger than ${sizeText(max)}; save it with --output or configure MESSAGING_ATTACHMENT_MAX_MIB`,
+        {
+          reason: "file.too-large",
+        },
+      )
     }
     chunks.push(chunk as Buffer)
   }

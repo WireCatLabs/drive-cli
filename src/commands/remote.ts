@@ -25,7 +25,7 @@ import {
   withQuery,
   writesFileOnlyWith,
 } from "@wirecat/cli-core/cli"
-import { fileText } from "@wirecat/cli-core/documents"
+import { attachmentMaxBytes, fileText } from "@wirecat/cli-core/documents"
 import { marksUntrusted } from "@wirecat/cli-core/documents/cli"
 import { type Command, Option } from "commander"
 import * as v from "valibot"
@@ -44,9 +44,8 @@ import type { UploadedFile } from "../upload.js"
 import { type FileEdits, installFileEditCommands } from "./file-edit.js"
 import { installSheetsCommands } from "./sheets.js"
 
-/** The most of a file's text one answer holds, and the most bytes read to find it. */
+/** The most of a file's text one answer holds. */
 const TEXT_LIMIT = 200_000
-const MAX_TEXT_BYTES = 64 * 1024 * 1024
 
 const API_METHOD_QUERY = {
   entity: "api_method",
@@ -241,7 +240,7 @@ export const installRemoteCommands = (program: Command, helpers: RemoteCommands)
           "read a Google Doc with documents get, or save any native file with files export",
         { reason: "file.native-google" },
       )
-    const bytes = await bytesOf(await helpers.download(id), MAX_TEXT_BYTES)
+    const bytes = await bytesOf(await helpers.download(id), attachmentMaxBytes())
     const name = file.name ?? id
     const text = await fileText(bytes, { name, mime }, "drive")
     const truncated = text.length > TEXT_LIMIT

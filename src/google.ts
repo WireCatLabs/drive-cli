@@ -1,7 +1,7 @@
 import { docs } from "@googleapis/docs"
 import { drive, type drive_v3 } from "@googleapis/drive"
 import { CliError } from "@wirecat/cli-base"
-import { type Engine, extractText, MAX_TEXT_CHARS } from "@wirecat/cli-core/documents"
+import { attachmentMaxBytes, type Engine, extractText, MAX_TEXT_CHARS, sizeText } from "@wirecat/cli-core/documents"
 import type { OAuth2Client } from "google-auth-library"
 import { documentTabs } from "./documents.js"
 import { googleError } from "./errors.js"
@@ -17,7 +17,6 @@ export const userOf = (user: drive_v3.Schema$User): GoogleUser => ({
   ...(user.displayName ? { name: user.displayName } : {}),
 })
 const MAX_PAGES = 1000
-const MAX_BYTES = 50 * 1024 * 1024
 export const metadataOf = (file: drive_v3.Schema$File): FileMetadata => {
   if (!file.id || !file.mimeType || file.name === undefined || file.name === null)
     throw new CliError("invalid_response", "Google returned incomplete file metadata")
@@ -79,7 +78,7 @@ export const readFile = async (bytes: Uint8Array, file: FileMetadata, mime: stri
         ? "file could not be read as text; it may be damaged or protected"
         : read.status === "unsupported"
           ? "file contents do not match its type"
-          : `file is too large for the document readers (over 50 MB, or over ${MAX_TEXT_CHARS} characters of text)`
+          : `file is too large for the document readers (over ${sizeText(attachmentMaxBytes())}, or over ${MAX_TEXT_CHARS} characters of text)`
   throw new CliError("validation_error", reason)
 }
 
@@ -208,8 +207,12 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
         if (!before.canDownload) throw new CliError("permission_error", "downloads are restricted for this source")
         if (!supported(before))
           throw new CliError("validation_error", "this source type is not supported for text ingestion")
-        if ((before.size ?? 0) > MAX_BYTES)
-          throw new CliError("validation_error", "file exceeds the ingestion bound; it was not downloaded")
+        const max = attachmentMaxBytes()
+        if ((before.size ?? 0) > max)
+          throw new CliError(
+            "validation_error",
+            `file is larger than ${sizeText(max)}; it was not downloaded. Configure MESSAGING_ATTACHMENT_MAX_MIB`,
+          )
         let markdown: string
         let text: string
         let tabs: TabText[] = []
@@ -254,8 +257,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
           ).data as string
           text = markdown
         }
-        if (Buffer.byteLength(markdown) > MAX_BYTES)
-          throw new CliError("validation_error", "document text is over 50 MB; it was not imported")
+        if (Buffer.byteLength(markdown) > max)
+          throw new CliError("validation_error", `document text is over ${sizeText(max)}; it was not imported`)
         // >= so text the reader cut off at exactly its cap is never stored as complete.
         if (text.length >= maxChars)
           throw new CliError(
@@ -272,8 +275,8 @@ export const googleSource = (auth: OAuth2Client): GoogleSource => {
             retryable: true,
           })
         const result = { metadata: after, markdown, text: text.replace(/\r\n?/g, "\n"), tabs, ...(raw ? { raw } : {}) }
-        if (Buffer.byteLength(JSON.stringify(result)) > MAX_BYTES)
-          throw new CliError("validation_error", "document snapshot exceeds the ingestion bound")
+        if (Buffer.byteLength(JSON.stringify(result)) > max)
+          throw new CliError("validation_error", `document snapshot is over ${sizeText(max)}; it was not imported`)
         return result
       }),
   }
