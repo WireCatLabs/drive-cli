@@ -9,7 +9,7 @@
 //
 // The profile is a drive profile signed in to a test Google account, never one that matters. Sign it in once:
 //   drive <profile> session start --grant write
-// The sign-in stays in the keyring entry `service drive-cli account <profile>` and is used by every later run; this
+// The sign-in stays in the keyring entry `service drive-cli account oauth:google:<profile>` and is used by every later run; this
 // script never reads it. `drive <profile> session end` signs the profile out when it is no longer needed.
 // Linux and macOS: it runs scripts/live.sh with bash. A version whose shipped code already has a record is not checked
 // again.
@@ -71,7 +71,7 @@ const requireCurrentBranch = () => {
 
 const profiles = () => {
   const listed = drive("session", "list")
-  return listed.status === 0 ? JSON.parse(listed.stdout).item.items.map((row) => row.profile) : []
+  return listed.status === 0 ? JSON.parse(listed.stdout).items.map((row) => row.profile) : []
 }
 
 // Who the profile is signed in to, from Google itself, so the owner sees which account the check will change.
