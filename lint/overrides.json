@@ -26,5 +26,82 @@
     "reason": "Google Meet transcripts and Gemini notes as Google Docs, chosen by name for sync; the vocabulary has the singular transcript (the text of speech) but no collection of them. Add transcripts to the cli-base vocabulary when a Meet CLI lists them too.",
     "owner": "@WireCatLabs",
     "review_after": "2026-12-22"
+  },
+  {
+    "rule": "option-role",
+    "target": "models set --purpose",
+    "reason": "Names the task a model is set for (memories, facts and the rest); the vocabulary has no role for a task choice yet. Review when it does.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-resource",
+    "target": "permissions",
+    "reason": "The Google Drive API resource of the same name, the sharing settings of a file.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-resource",
+    "target": "revisions",
+    "reason": "The Google Drive API resource of the same name, the stored versions of a file.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "comments get",
+    "reason": "Mirrors the Google Drive API method of the same name (comments.get), which reads one item; renaming it would break callers. Review when the shared vocabulary rules on get beside show for one item.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "documents get",
+    "reason": "Mirrors the Google Drive API method of the same name (documents.get), which reads one item; renaming it would break callers. Review when the shared vocabulary rules on get beside show for one item.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "files get",
+    "reason": "Mirrors the Google Drive API method of the same name (files.get), which reads one item; renaming it would break callers. Review when the shared vocabulary rules on get beside show for one item.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "permissions get",
+    "reason": "Mirrors the Google Drive API method of the same name (permissions.get), which reads one item; renaming it would break callers. Review when the shared vocabulary rules on get beside show for one item.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "revisions get",
+    "reason": "Mirrors the Google Drive API method of the same name (revisions.get), which reads one item; renaming it would break callers. Review when the shared vocabulary rules on get beside show for one item.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "files mkdir",
+    "reason": "Creates a Drive folder, the word people know for it; renaming it would break callers. Review when the shared vocabulary names folder creation.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "files trash",
+    "reason": "Moves a file to the Drive bin, which Drive keeps apart from a permanent delete; the two need different words. Review when the shared vocabulary names a move to the bin.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
+  },
+  {
+    "rule": "unknown-verb",
+    "target": "shared-drives",
+    "reason": "The Google Drive API resource of the same name (drives), the team drives an account belongs to. Review when the shared vocabulary has it.",
+    "owner": "@WireCatLabs",
+    "review_after": "2027-02-26"
   }
 ]

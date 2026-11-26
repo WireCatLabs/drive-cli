@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import type { Command } from "commander"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
@@ -106,7 +106,7 @@ describe("explicit account selection", () => {
       ["config", "show"],
     ]) {
       const streams = captureStreams()
-      await createProgram({ env: f.env, streams }).parseAsync(args, { from: "user" })
+      await createProgram({ env: f.env, streams, keyring: memoryKeyring() }).parseAsync(args, { from: "user" })
       expect(streams.stdout.join("")).toContain("default")
     }
   })

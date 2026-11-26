@@ -1,10 +1,10 @@
 import { captureStreams } from "@wirecat/cli-base"
 import { expect, it, vi } from "vitest"
-import { configuredMirrors, configuredSessions, readConfig, selectedFolders, writeConfig } from "./config.js"
+import { configuredMirrors, readConfig, selectedFolders, writeConfig } from "./config.js"
 
 import { commandResult, testProgram as createProgram, fixture } from "./testing.js"
 
-it("selects configured folders, mirrors and profiles without changing their saved state", () => {
+it("selects configured folders and mirrors without changing their saved state", () => {
   const f = fixture(["root", "other"])
   const config = readConfig(f.env)
   const profile = config.profiles.default
@@ -17,9 +17,6 @@ it("selects configured folders, mirrors and profiles without changing their save
   writeConfig(f.env, config)
   expect(selectedFolders(f.env, "default", { id: "other" })).toEqual([{ id: "other" }])
   expect(configuredMirrors(f.env, "default", { folder: "root" })).toEqual([profile.mirrors[0]])
-  expect(configuredSessions(f.env, { storage: "file" }, new Set())).toEqual([
-    { profile: "second", selected_folders: 0, storage: "file" },
-  ])
   expect(readConfig(f.env)).toEqual(config)
 })
 it("sends canonical file selectors before pagination and preserves their query in the continuation", async () => {

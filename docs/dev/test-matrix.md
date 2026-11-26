@@ -7,7 +7,7 @@ ran it · ⛔ not tested offline, with the reason and where it is checked instea
 Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 [TESTING.md](TESTING.md) for how, and for the states and failures that cut across commands.
 
-**286 ✅ · 973 ⛔ · 0 ❌** — 222 commands, 1037 options.
+**288 ✅ · 973 ⛔ · 0 ❌** — 222 commands, 1039 options.
 
 | Command | Option | | Note |
 |---|---|---|---|
@@ -48,14 +48,16 @@ Measured from the test run (`coverage/argv.jsonl`), not searched for — see
 | `mcp check` |  | ⛔ | starts the installed drive as a child process, as the agent would; cli-core's appMcpCommand; its app-mcp-command tests drive it |
 | `mcp check` | `--permission` | ⛔ | starts the installed drive as a child process, as the agent would; cli-core's appMcpCommand; its app-mcp-command tests drive it |
 | `session start` |  | ✅ |  |
-| `session start` | `--client-file` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
-| `session start` | `--client-id` | ✅ |  |
-| `session start` | `--credential-storage` | ✅ |  |
 | `session start` | `--no-browser` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
-| `session start` | `--grant` | ⛔ | a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it only to a declined consent |
+| `session start` | `--credential-storage` | ✅ |  |
+| `session start` | `--answer-stdin` | ⛔ | cli-core's oauthSessionCommand; its oauth-session tests answer the redirect on stdin |
+| `session start` | `--client-file` | ✅ |  |
+| `session start` | `--client-id` | ✅ |  |
+| `session start` | `--grant` | ✅ |  |
 | `session status` |  | ✅ |  |
-| `session list` |  | ✅ |  |
+| `session status` | `--check` | ⛔ | asks Google whose the sign-in is; cli-core's oauth-session tests drive it with a fake service |
 | `session end` |  | ✅ |  |
+| `session list` |  | ✅ |  |
 | `account remove` |  | ✅ |  |
 | `account remove` | `--keep-data` | ✅ |  |
 | `account remove` | `--delete-data` | ✅ |  |

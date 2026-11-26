@@ -10,12 +10,10 @@ import type { CommandContext } from "./context.js"
 
 const removal: AccountRemoval = {
   signOut: async (profile, { env, keyring, mayRevoke }) => {
-    const storage = readConfig(env).profiles[profile]?.storage ?? "keyring"
     const { sessionKeeper } = await import("../tokens.js")
     const { revoked } = await sessionKeeper({
       env,
       name: profile,
-      storage,
       client: application(env, { profile }),
       ...(keyring ? { keyring } : {}),
     }).signOut({ revoke: mayRevoke })

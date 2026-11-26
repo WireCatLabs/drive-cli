@@ -6,8 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { paths, readConfig, writeConfig } from "./config.js"
 import { lockProfile } from "./profile-lock.js"
 import { profileDir } from "./state.js"
-import { commandResult, fixture, testProgram } from "./testing.js"
-import { credentials, saveSession } from "./tokens.js"
+import { commandResult, fixture, saveSession, sessionAccount, signIns, testProgram } from "./testing.js"
 
 const setup = () => {
   const t = fixture()
@@ -56,7 +55,7 @@ const setup = () => {
     }
     return { error, item: streams.stdout.length ? commandResult(streams.stdout.join("")) : undefined }
   }
-  const signedIn = (name: string) => credentials(t.env, "keyring", keyring).read(name)?.secret !== undefined
+  const signedIn = (name: string) => signIns(t.env, "keyring", keyring).read(sessionAccount(name))?.secret !== undefined
   return { ...t, keyring, mirrored, remove, signedIn }
 }
 
@@ -116,7 +115,7 @@ describe("drive account remove", () => {
 
   it("succeeds for a profile that is already signed out", async () => {
     const t = setup()
-    credentials(t.env, "keyring", t.keyring).remove("default")
+    signIns(t.env, "keyring", t.keyring).remove(sessionAccount("default"))
 
     expect((await t.remove("--keep-data")).error).toBeUndefined()
     expect(readConfig(t.env).profiles.default).toBeUndefined()

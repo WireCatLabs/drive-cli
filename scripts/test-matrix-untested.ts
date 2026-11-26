@@ -72,6 +72,16 @@ export const UNTESTED: { command: string; option?: string; reason: string }[] = 
       "a finished sign-in goes through Google's consent page and the OS keyring; src/profiles.test.ts drives it " +
       "only to a declined consent",
   })),
+  {
+    command: "session start",
+    option: "--answer-stdin",
+    reason: "cli-core's oauthSessionCommand; its oauth-session tests answer the redirect on stdin",
+  },
+  {
+    command: "session status",
+    option: "--check",
+    reason: "asks Google whose the sign-in is; cli-core's oauth-session tests drive it with a fake service",
+  },
   ...[undefined, "--port", "--public-url"].map((option) => ({
     command: "mcp server start",
     ...(option ? { option } : {}),

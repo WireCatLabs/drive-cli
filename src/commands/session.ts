@@ -1,12 +1,12 @@
-import { CliError } from "@wirecat/cli-base"
-import { annotate } from "@wirecat/cli-base/commands"
-import { itemOf, LOCAL_READ, LOCAL_WRITE, REMOTE_WRITE, signInSteps } from "@wirecat/cli-core/cli"
-import type { Command } from "commander"
-import { activeProfile, application, configuredSessions, readConfig, writeConfig } from "../config.js"
-import { bindQuery, SESSIONS_QUERY, sessionRow, termsOf } from "../list-queries.js"
+import { CliError, Credentials } from "@wirecat/cli-base"
+import { environmentOf, oauthSessionCommand } from "@wirecat/cli-core/cli"
+import { driveSessionCodec, googleProvider, oauthAccount } from "@wirecat/cli-core/oauth"
+import { type Command, Option } from "commander"
+import { application, configuration, paths, readConfig, writeConfig } from "../config.js"
+import { DRIVE_APP } from "../identity.js"
 import { permissionNames } from "../policy.js"
-import { examples } from "../registry.js"
-import type { CommandContext } from "./context.js"
+import { ACTIVITY_SCOPE, APPS_SCOPE, PROVIDER, READ_SCOPE, WRITE_SCOPE } from "../scopes.js"
+import type { CommandContext, DriveEnvironment } from "./context.js"
 
 const GRANTS = ["write", "activity", "apps"] as const
 type Grant = (typeof GRANTS)[number]
@@ -18,150 +18,82 @@ const grants = (raw: string): Set<Grant> => {
   return new Set(values as Grant[])
 }
 
-export const installSessionCommands = (program: Command, context: CommandContext) => {
-  const { env, streams, options, selected, output, policyFlags } = context
-  const session = annotate(program.command("session"), { effects: LOCAL_READ }).description(
-    "sign in to Google and manage local profiles",
-  )
-  examples(
-    annotate(session.command("start"), { mcp: false, effects: REMOTE_WRITE }).description(
-      "sign in to Google in the browser; read-only unless you pass --grant write",
-    ),
-    [
-      "drive personal session start",
-      "drive work session start --grant write,activity",
-      "drive work session start --client-id 1234-abc.apps.googleusercontent.com",
-    ],
-  )
-    .option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's")
-    .option(
-      "--client-id <id>",
-      "your own Desktop OAuth client ID, used instead of WireCat's; its secret comes from DRIVE_GOOGLE_CLIENT_SECRET",
-    )
-    .option(
-      "--credential-storage <storage>",
-      "where the sign-in is kept: keyring (the default, which falls back to a private file by itself when no " +
-        "keyring works), or file, not recommended",
-      "keyring",
-    )
-    .option("--no-browser", "print the sign-in URL instead of opening a browser")
-    .option(
-      "--grant <scopes>",
-      "also ask for these permissions, comma-separated: write (change Drive files and Docs), " +
-        "activity (read Drive Activity history), apps (see installed Drive apps)",
-      grants,
-    )
-    .action(
-      async (
-        args: {
-          clientFile?: string
-          clientId?: string
-          credentialStorage: string
-          browser: boolean
-          grant?: Set<Grant>
-        },
-        command: Command,
-      ) => {
-        if (args.credentialStorage !== "keyring" && args.credentialStorage !== "file")
-          throw new CliError("validation_error", "credential storage is keyring or file")
-        const signal = context.signal()
-        const { json, jsonl } = program.opts<{ json?: boolean; jsonl?: boolean }>()
-        // Nothing is asked: Google answers the browser on a local port, so a window only needs the address.
-        const steps = signInSteps({
-          diagnostic: streams.diagnostic,
-          json: json === true || jsonl === true || !process.stdout.isTTY,
-          answers: false,
-        })
-        const app = application(env, { file: args.clientFile, clientId: args.clientId, profile: selected() })
-        if (!app.clientSecret)
-          streams.diagnostic(
-            "your Google app has no secret here, and Google refuses a Desktop app without one: set DRIVE_GOOGLE_CLIENT_SECRET\n",
-          )
-        const { login } = await import("../login.js")
-        output(
-          itemOf(
-            await login({
-              env,
-              profile: selected(),
-              application: app,
-              storage: args.credentialStorage,
-              ...Object.fromEntries([...(args.grant ?? [])].map((grant) => [grant, true])),
-              ...(options.keyring ? { keyring: options.keyring } : {}),
-              ...(signal ? { signal } : {}),
-              openBrowser: async (url) => {
-                if (args.browser) await options.openBrowser?.(url, command)
-              },
-              showUrl: (url) => {
-                steps.openUrl(url, "Choose the Google account and allow access to Drive")
-                streams.diagnostic(`Open Google sign-in: ${url}\n`)
-              },
-            }),
-          ),
-        )
-      },
-    )
-  examples(
-    annotate(session.command("status"), { effects: LOCAL_READ }).description(
-      "show whether this profile is signed in here, and as which Google account",
-    ),
-    ["drive personal session status"],
-  ).action(async () => {
-    const name = selected()
-    const profile = readConfig(env).profiles[name]
-    if (!profile) return output(itemOf({ profile: name, signed_in: false, account: null }))
-    const { credentials, grantedScopes } = await import("../tokens.js")
-    const signedIn = credentials(env, profile.storage, options.keyring).read(name) !== undefined
-    output(
-      itemOf({
-        profile: name,
-        signed_in: signedIn,
-        account: profile.principal || null,
-        storage: profile.storage,
-        ...(signedIn ? { scopes: grantedScopes(env, name, options.keyring) ?? null } : {}),
-      }),
-    )
-  })
-  bindQuery(
-    examples(
-      annotate(session.command("list"), { effects: LOCAL_READ }).description(
-        "list the configured profiles; credentials are never printed",
-      ),
-      ["drive session list"],
-    ),
-    SESSIONS_QUERY,
-    sessionRow,
-  ).action((words: string[]) => {
-    const filter = termsOf(words, SESSIONS_QUERY, "session list")
-    return output(
-      itemOf({
-        scope: "all-configured-profiles",
-        items: configuredSessions(env, filter, permissionNames(policyFlags().permissionKeys ?? new Set())),
-      }),
-    )
-  })
-  examples(
-    annotate(session.command("end"), { mcp: false, effects: LOCAL_WRITE }).description(
-      "sign this profile out; imported documents stay",
-    ),
-    ["drive personal session end"],
-  ).action(async () => {
-    const name = selected()
-    const config = readConfig(env)
-    const profile = activeProfile(env, name)
-    const { credentials } = await import("../tokens.js")
-    const store = credentials(env, profile.storage, options.keyring)
-    store.remove(name)
-    // Preserve the principal and roots so reauthorization resumes the same source identities.
-    writeConfig(env, config)
-    // A run with moved folders never removes the owner's entry (WC-SECR-24), so it still reads back.
-    const kept = store.read(name)?.source === "keyring"
-    output(
-      itemOf({
-        profile: name,
-        signed_out: !kept,
-        ...(kept ? { kept: "owners-sign-in" } : {}),
-        cached_data: "retained",
-      }),
-    )
-  })
+interface StartOptions {
+  clientFile?: string
+  clientId?: string
+  grant?: Set<Grant>
 }
+
+const START_OPTIONS = [
+  new Option("--client-file <file>", "path to your own Desktop OAuth client JSON, used instead of WireCat's"),
+  new Option(
+    "--client-id <id>",
+    "your own Desktop OAuth client ID, used instead of WireCat's; its secret comes from DRIVE_GOOGLE_CLIENT_SECRET",
+  ),
+  new Option(
+    "--grant <scopes>",
+    "also ask for these permissions, comma-separated: write (change Drive files and Docs), " +
+      "activity (read Drive Activity history), apps (see installed Drive apps)",
+  ).argParser(grants),
+]
+
+export const sessionCommand = (context: CommandContext): Command =>
+  oauthSessionCommand({
+    app: DRIVE_APP,
+    resolveSettings: configuration.resolveSettings,
+    providerId: PROVIDER,
+    service: "Google",
+    startOptions: START_OPTIONS,
+    preset: (command, steps) => {
+      const { clientFile, clientId, grant = new Set() } = command.opts<StartOptions>()
+      const client = application(context.env, { file: clientFile, clientId, profile: context.selected() })
+      if (steps && !client.clientSecret)
+        context.streams.diagnostic(
+          "your Google app has no secret here, and Google refuses a Desktop app without one: set DRIVE_GOOGLE_CLIENT_SECRET\n",
+        )
+      return {
+        provider: googleProvider(client),
+        scopes: [
+          grant.has("write") ? WRITE_SCOPE : READ_SCOPE,
+          ...(grant.has("activity") ? [ACTIVITY_SCOPE] : []),
+          ...(grant.has("apps") ? [APPS_SCOPE] : []),
+        ],
+        rotating: false,
+      }
+    },
+    codec: driveSessionCodec,
+    verify: async (command, accessToken) => {
+      const fake = environmentOf<DriveEnvironment>(command).source
+      const principal = await (fake
+        ? fake(context.selected())
+        : import("../tokens.js").then((tokens) => tokens.tokenSource(accessToken, context.signal()))
+      ).then((source) => source.identity())
+      // A client without a secret must not inherit the secret of the app this profile signed in with before.
+      return { id: principal, account: { account: principal }, extra: { principal, clientSecret: undefined } }
+    },
+    claim: (env, profile, principal) => {
+      const { profiles } = readConfig(env)
+      const previous = profiles[profile]
+      if (previous && previous.principal !== principal)
+        throw new CliError("authentication_error", "this profile belongs to another account; use a new profile", {
+          reason: "profile.wrong-account",
+        })
+      if (Object.entries(profiles).some(([other, row]) => other !== profile && row.principal === principal))
+        throw new CliError(
+          "validation_error",
+          "this Google account already has a profile; reuse it to preserve source identity",
+        )
+    },
+    legacyAccounts: (_env, profile) => [profile],
+    afterSignIn: (_command, { env, profile, id }) => {
+      const kept = new Credentials({ service: DRIVE_APP.appName, configDir: paths(env).config, storage: "file", env })
+      // cli-base drops the file copy once a sign-in reaches the keyring, so the file holds it only when it was kept there.
+      const storage = kept.read(oauthAccount(PROVIDER, profile)) ? "file" : "keyring"
+      const config = readConfig(env)
+      const previous = config.profiles[profile]
+      config.profiles[profile] = { ...previous, principal: id, roots: previous?.roots ?? [], storage }
+      writeConfig(env, config)
+    },
+    profiles: (env) =>
+      Object.keys(readConfig(env, permissionNames(context.policyFlags().permissionKeys ?? new Set())).profiles).sort(),
+  })

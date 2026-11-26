@@ -79,21 +79,6 @@
       "stream": "stdout",
       "kind": "json",
       "json": { "item": { "config": { "found": true, "issues": [] }, "profiles": ["default", "work"] } }
-    },
-    {
-      "id": "sessions-of-0.51-listed",
-      "args": ["session", "list", "--json"],
-      "exit": 0,
-      "stream": "stdout",
-      "kind": "json",
-      "json": {
-        "item": {
-          "items": [
-            { "profile": "default", "selected_folders": 0, "storage": "keyring" },
-            { "profile": "work", "selected_folders": 1, "storage": "file" }
-          ]
-        }
-      }
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { CliError, Credentials, isCliError, isMovedRun, type KeyringStore, systemKeyring } from "@wirecat/cli-base"
+import { CliError, isCliError, isMovedRun, type KeyringStore, systemKeyring } from "@wirecat/cli-base"
 import { type FetchLike, hostFetch } from "@wirecat/cli-base/http"
 import { providerRequest } from "@wirecat/cli-core/cli"
 import {
@@ -6,31 +6,20 @@ import {
   driveSessionCodec,
   googleProvider,
   type OAuthClient,
+  oauthAccount,
+  type StoredTokens,
   type TokenKeeper,
+  type TokenStorage,
   tokenKeeper,
 } from "@wirecat/cli-core/oauth"
 import { OAuth2Client } from "google-auth-library"
-import * as v from "valibot"
 import { activeProfile, paths } from "./config.js"
 import { googleError } from "./errors.js"
-import { DESKTOP } from "./identity.js"
-import { READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
+import { DESKTOP, DRIVE_APP } from "./identity.js"
+import { PROVIDER, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
 
-export { ACTIVITY_SCOPE, APPS_SCOPE, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
+export { ACTIVITY_SCOPE, APPS_SCOPE, PROVIDER, READ_SCOPE, WRITE_SCOPE } from "./scopes.js"
 
-const Session = v.object({
-  principal: v.string(),
-  clientId: v.string(),
-  clientSecret: v.optional(v.string()),
-  tokens: v.object({
-    access_token: v.optional(v.nullable(v.string())),
-    refresh_token: v.pipe(v.string(), v.minLength(1)),
-    expiry_date: v.optional(v.nullable(v.number())),
-    scope: v.optional(v.string()),
-    token_type: v.optional(v.nullable(v.string())),
-  }),
-})
-export type Session = v.InferOutput<typeof Session>
 // Made per call: hostFetch takes the global fetch when it is made, and a test that stubs fetch stubs it later.
 const viaDeclaredHosts =
   (timeoutMs?: number): FetchLike =>
@@ -46,41 +35,28 @@ export const transporterOptions = (signal?: AbortSignal) => ({
   fetchImplementation: sdkFetch,
   ...(signal ? { signal } : {}),
 })
-const credentialOptions = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore) => ({
-  configDir: paths(env).config,
-  service: "drive-cli",
-  // The keyring falls back to the private file by itself (WC-SECR-4); `file` skips the keyring.
-  storage: storage === "keyring" ? ("auto" as const) : storage,
-  env,
-  isolated: isMovedRun({ appName: "drive-cli", prefix: "DRIVE", env }),
-  ...(keyring ? { keyring } : {}),
-})
-export const credentials = (env: NodeJS.ProcessEnv, storage: "keyring" | "file", keyring?: KeyringStore): Credentials =>
-  new Credentials(credentialOptions(env, storage, keyring))
-export const notSaved = () =>
-  new CliError(
-    "configuration_error",
-    "could not save Google sign-in: the private credentials file cannot be read; move it aside and sign in again",
-    { reason: "oauth.not-saved" },
-  )
-export const saveSession = (
-  env: NodeJS.ProcessEnv,
-  name: string,
-  session: Session,
-  storage: "keyring" | "file",
-  keyring?: KeyringStore,
-): void => {
-  try {
-    credentials(env, storage, keyring).write(name, JSON.stringify(session))
-  } catch {
-    throw notSaved()
-  }
-}
+/**
+ * The entry `session start` keeps, as cli-core's session command addresses it. Versions before 0.78 kept it under the
+ * bare profile name; the first read copies it, so nobody signs in again.
+ */
+export const sessionStorage = (env: NodeJS.ProcessEnv, name: string, keyring?: KeyringStore): TokenStorage =>
+  credentialStorage({
+    credentials: {
+      configDir: paths(env).config,
+      service: DRIVE_APP.appName,
+      storage: "auto",
+      env,
+      isolated: isMovedRun({ appName: DRIVE_APP.appName, prefix: DRIVE_APP.envPrefix, env }),
+      keyring: keyring ?? systemKeyring,
+    },
+    account: oauthAccount(PROVIDER, name),
+    legacyAccounts: [name],
+    codec: driveSessionCodec,
+  })
 /** One profile's saved sign-in, refreshed and saved under a lock every drive process shares. */
 export const sessionKeeper = (options: {
   env: NodeJS.ProcessEnv
   name: string
-  storage: "keyring" | "file"
   client: OAuthClient
   keyring?: KeyringStore
   signal?: AbortSignal
@@ -88,11 +64,7 @@ export const sessionKeeper = (options: {
 }): TokenKeeper =>
   tokenKeeper({
     provider: googleProvider(options.client),
-    storage: credentialStorage({
-      credentials: { ...credentialOptions(options.env, options.storage), keyring: options.keyring ?? systemKeyring },
-      account: options.name,
-      codec: driveSessionCodec,
-    }),
+    storage: sessionStorage(options.env, options.name, options.keyring),
     lockDir: paths(options.env).config,
     fetch: options.fetch ?? googleFetch,
     signInCommand: `drive ${options.name} session start`,
@@ -106,56 +78,45 @@ export const authorizedClient = (
   keyring?: KeyringStore,
   signal?: AbortSignal,
 ): OAuth2Client => {
-  const profile = activeProfile(env, name)
-  const unreadable = () =>
-    new CliError("authentication_error", `could not load Google sign-in — run drive ${name} session start again`, {
-      reason: "oauth.expired",
-    })
-  let secret: string | undefined
+  activeProfile(env, name)
+  let saved: StoredTokens | undefined
   try {
-    secret = credentials(env, profile.storage, keyring).read(name)?.secret
+    saved = sessionStorage(env, name, keyring).read()
   } catch {
-    throw unreadable()
+    throw new CliError(
+      "authentication_error",
+      `could not load Google sign-in — run drive ${name} session start again`,
+      {
+        reason: "oauth.expired",
+      },
+    )
   }
-  if (!secret)
+  if (!saved?.client)
     throw new CliError(
       "authentication_error",
       `this profile has no saved Google sign-in — run drive ${name} session start`,
-      {
-        reason: "session.missing",
-      },
+      { reason: "session.missing" },
     )
-  let parsed: v.SafeParseResult<typeof Session>
-  try {
-    parsed = v.safeParse(Session, JSON.parse(secret))
-  } catch {
-    throw unreadable()
-  }
-  if (!parsed.success || parsed.output.principal !== profile.principal)
-    throw new CliError("authentication_error", "saved sign-in is invalid or belongs to another account", {
-      reason: "oauth.expired",
-    })
-  const session = parsed.output
+  const { client: app, tokens } = saved
   const keeper = sessionKeeper({
     env,
     name,
-    storage: profile.storage,
-    client: { clientId: session.clientId, ...(session.clientSecret ? { clientSecret: session.clientSecret } : {}) },
+    client: app,
     ...(keyring ? { keyring } : {}),
     ...(signal ? { signal } : {}),
   })
   const client = new OAuth2Client({
-    clientId: session.clientId,
-    clientSecret: session.clientSecret,
+    clientId: app.clientId,
+    clientSecret: app.clientSecret,
     transporterOptions: transporterOptions(signal),
   })
   // Without the refresh token the client cannot refresh on its own: every refresh goes through the keeper's
   // lock, so two drive processes never spend the same refresh token.
   client.refreshHandler = async () => {
     try {
-      const tokens = await keeper.tokens()
-      if (!tokens.accessToken || tokens.expiresAt === undefined) throw new Error("no access token")
-      return { access_token: tokens.accessToken, expiry_date: tokens.expiresAt }
+      const fresh = await keeper.tokens()
+      if (!fresh.accessToken || fresh.expiresAt === undefined) throw new Error("no access token")
+      return { access_token: fresh.accessToken, expiry_date: fresh.expiresAt }
     } catch (error) {
       if (isCliError(error) && error.code !== "authentication_error") throw error
       throw new CliError("authentication_error", `Google sign-in expired — run drive ${name} session start again`, {
@@ -163,9 +124,20 @@ export const authorizedClient = (
       })
     }
   }
-  const { refresh_token: _refresh, ...current } = session.tokens
-  client.setCredentials(current)
+  client.setCredentials({
+    access_token: tokens.accessToken ?? null,
+    expiry_date: tokens.expiresAt ?? null,
+    ...(tokens.scopes.length ? { scope: tokens.scopes.join(" ") } : {}),
+    token_type: tokens.tokenType ?? null,
+  })
   return observeRequests(client)
+}
+/** Whose an access token is, asked before a sign-in is kept. */
+export const tokenSource = async (accessToken: string, signal?: AbortSignal) => {
+  const { googleSource } = await import("./google.js")
+  const client = new OAuth2Client({ transporterOptions: transporterOptions(signal) })
+  client.setCredentials({ access_token: accessToken })
+  return googleSource(client)
 }
 export const covers = (granted: readonly string[], required: string): boolean =>
   granted.includes(required) || (required === READ_SCOPE && granted.includes(WRITE_SCOPE))
@@ -175,10 +147,9 @@ export const covers = (granted: readonly string[], required: string): boolean =>
  */
 export const grantedScopes = (env: NodeJS.ProcessEnv, name: string, keyring?: KeyringStore): string[] | undefined => {
   try {
-    const secret = credentials(env, activeProfile(env, name).storage, keyring).read(name)?.secret
-    const parsed = secret ? v.safeParse(Session, JSON.parse(secret)) : undefined
-    if (!parsed?.success) return []
-    return parsed.output.tokens.scope?.split(/\s+/).filter(Boolean)
+    const saved = sessionStorage(env, name, keyring).read()
+    if (!saved) return []
+    return saved.tokens.scopes.length ? saved.tokens.scopes : undefined
   } catch {
     return []
   }
