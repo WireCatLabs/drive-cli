@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import type { Level } from "@wirecat/cli-core/sends"
 import { describe, expect, it, vi } from "vitest"
 import { readConfig, writeConfig } from "./config.js"
@@ -10,7 +10,14 @@ import { testProgram as createProgram, fixture } from "./testing.js"
 const setup = () => {
   const f = fixture()
   const call = vi.fn()
-  const options = (env = f.env) => ({ env, api: { call }, source: async () => f.source, index: async () => f.index })
+  const keyring = memoryKeyring()
+  const options = (env = f.env) => ({
+    env,
+    keyring,
+    api: { call },
+    source: async () => f.source,
+    index: async () => f.index,
+  })
   const serve = async (flags: string[] = [], env = f.env) => {
     const server = await mcpClient(options(env), flags)
     return {

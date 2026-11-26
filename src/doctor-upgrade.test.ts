@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process"
 import { chmodSync, statSync } from "node:fs"
 import { dirname } from "node:path"
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import { describe, expect, it, vi } from "vitest"
 import { configPath, readConfig, writeConfig } from "./config.js"
 
@@ -14,7 +14,7 @@ const run = async (env: NodeJS.ProcessEnv, args: string[], options: Parameters<t
 }
 
 describe("doctor", () => {
-  it("is a command, not a profile, and lists the profiles without opening the keyring or store", async () => {
+  it("is a command, not a profile, and lists the profiles without opening the store", async () => {
     const f = fixture()
     const config = readConfig(f.env)
     config.profiles.work = { principal: "synthetic-principal", roots: ["root"], storage: "keyring" }
@@ -27,8 +27,8 @@ describe("doctor", () => {
       store: { exists: false },
       oauth_client: { client: "wirecat", source: "constants" },
     })
-    expect(await run(f.env, ["session", "list"])).toMatchObject({
-      items: expect.arrayContaining([{ profile: "work", selected_folders: 1, storage: "keyring" }]),
+    expect(await run(f.env, ["session", "list"], { keyring: memoryKeyring() })).toMatchObject({
+      items: expect.arrayContaining([{ profile: "work", signed_in: false, state: "missing" }]),
     })
     expect(index).not.toHaveBeenCalled()
   })

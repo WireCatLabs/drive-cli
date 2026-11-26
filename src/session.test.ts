@@ -237,7 +237,7 @@ describe("drive commands", () => {
     }
     const { commands } = await discover()
     const origin = (name: string) => commands.find((command: { name: string }) => command.name === name)?.origin
-    for (const name of ["doctor", "mcp", "complete"]) expect(origin(name)).toBe("cli-core")
+    for (const name of ["doctor", "mcp", "complete", "session"]) expect(origin(name)).toBe("cli-core")
     expect(origin("files")).toBe("handwritten")
     const scoped = await discover("doctor")
     expect(scoped.commands[0].origin).toBe("cli-core")

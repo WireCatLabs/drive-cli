@@ -4,6 +4,7 @@ import { driveSessionCodec, googleProvider, oauthAccount } from "@wirecat/cli-co
 import { type Command, Option } from "commander"
 import { application, configuration, paths, readConfig, writeConfig } from "../config.js"
 import { DRIVE_APP } from "../identity.js"
+import { permissionNames } from "../policy.js"
 import { ACTIVITY_SCOPE, APPS_SCOPE, PROVIDER, READ_SCOPE, WRITE_SCOPE } from "../scopes.js"
 import type { CommandContext, DriveEnvironment } from "./context.js"
 
@@ -50,11 +51,8 @@ export const sessionCommand = (context: CommandContext): Command =>
         context.streams.diagnostic(
           "your Google app has no secret here, and Google refuses a Desktop app without one: set DRIVE_GOOGLE_CLIENT_SECRET\n",
         )
-      // Google revokes on the token host, which cli-core 1.1.0 would list twice in its host check and refuse; no
-      // session command revokes, `account remove` does with its own keeper.
-      const { revokeUrl: _revoke, ...provider } = googleProvider(client)
       return {
-        provider,
+        provider: googleProvider(client),
         scopes: [
           grant.has("write") ? WRITE_SCOPE : READ_SCOPE,
           ...(grant.has("activity") ? [ACTIVITY_SCOPE] : []),
@@ -96,5 +94,6 @@ export const sessionCommand = (context: CommandContext): Command =>
       config.profiles[profile] = { ...previous, principal: id, roots: previous?.roots ?? [], storage }
       writeConfig(env, config)
     },
-    profiles: (env) => Object.keys(readConfig(env).profiles).sort(),
+    profiles: (env) =>
+      Object.keys(readConfig(env, permissionNames(context.policyFlags().permissionKeys ?? new Set())).profiles).sort(),
   })

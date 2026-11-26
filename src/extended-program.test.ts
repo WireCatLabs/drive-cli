@@ -1,4 +1,4 @@
-import { captureStreams } from "@wirecat/cli-base"
+import { captureStreams, memoryKeyring } from "@wirecat/cli-base"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { readConfig } from "./config.js"
 
@@ -165,9 +165,10 @@ describe("document knowledge commands", () => {
   })
   it("pages and limits the local lists, and takes the global options", async () => {
     const f = fixture()
+    const keyring = memoryKeyring()
     const call = async (...args: string[]) => {
       const streams = captureStreams()
-      await createProgram({ env: f.env, streams, source: async () => f.source }).parseAsync(
+      await createProgram({ env: f.env, streams, keyring, source: async () => f.source }).parseAsync(
         ["default", ...args, "--json"],
         { from: "user" },
       )
