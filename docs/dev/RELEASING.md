@@ -78,7 +78,7 @@ the full Drive scope the edits need:
 drive <profile> session start --grant write
 ```
 
-The sign-in stays in the keyring (`service drive-cli account <profile>`) for later releases. `bin/live` shows the
+The sign-in stays in the keyring (`service drive-cli account oauth:google:<profile>`) for later releases. `bin/live` shows the
 account Google names for the profile and asks before it changes anything. [scripts/live.sh](../../scripts/live.sh)
 then works in a new folder `drive-live-<time>` in My Drive and moves it to the trash at the end, also after a
 failure. On a pass, `bin/live` adds the line to `live-checks.txt`, commits and pushes it, and names it in the pull

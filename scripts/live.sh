@@ -3,7 +3,7 @@
 # which prints the `# Needs:` lines below, shows the account the profile is signed in to, asks first, runs this script
 # and records the pass.
 #   scripts/live.sh <profile>
-# It uses the profile's own sign-in, which stays in the keyring entry `service drive-cli account <profile>`; this
+# It uses the profile's own sign-in, which stays in the keyring entry `service drive-cli account oauth:google:<profile>`; this
 # script never reads it. Everything it writes in Google lives in a new folder drive-live-<time> in My Drive, which goes
 # to the trash at the end, also after a failure. On this computer it adds only the profile's kept versions
 # (<state>/profiles/<profile>/files.versions), the write journal <state>/sends/<profile>.jsonl, the recipients list

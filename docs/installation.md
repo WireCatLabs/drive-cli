@@ -114,9 +114,9 @@ your own app. Use the link on Google's screen that goes on to it, then approve a
 drive session list --json
 ```
 
-Find `personal` in the returned profiles. This lists local configuration without printing tokens;
-it does not contact Google or verify that an older sign-in is still valid. `drive personal session status --json`
-says whether that profile holds a sign-in here, as which account and with which grants. The import in step 3
+Find `personal` in the returned profiles, with `state: "saved"`. This reads only this computer and prints no
+token. It does not contact Google or check that an older sign-in still works. `drive personal session status --json`
+says whether that profile holds a sign-in here and with which grants. Add `--check` to ask Google which account it is. The import in step 3
 checks access to your selected folder. Continue to [step 3](#check-your-first-result).
 
 If the browser does not open, repeat sign-in with `--no-browser` and open the printed link on the
