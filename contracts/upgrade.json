@@ -85,14 +85,13 @@
       "args": ["session", "list", "--json"],
       "exit": 0,
       "stream": "stdout",
+      "diagnosticPattern": "(?:the OS keyring did not answer [^\\n]*\\n){2}",
       "kind": "json",
       "json": {
-        "item": {
-          "items": [
-            { "profile": "default", "selected_folders": 0, "storage": "keyring" },
-            { "profile": "work", "selected_folders": 1, "storage": "file" }
-          ]
-        }
+        "items": [
+          { "profile": "default", "signed_in": null, "state": "unknown" },
+          { "profile": "work", "signed_in": null, "state": "unknown" }
+        ]
       }
     }
   ]
