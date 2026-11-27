@@ -33,6 +33,7 @@ Works with:
   linear                    Linear issues and projects, searchable with your other WireCat data
 
 Start here:   drive personal session start  (any profile name works)
+              drive session list            your profiles and their logged-in accounts
 Next:         drive commands                every command, by section
               drive guide                   scenarios: command sequences for common tasks
               drive help options            output, offline, timeouts, dry run
