@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.80.0 — 27.11.2026
+
+### Changed — may break callers
+
+- **`files download` and `files export` take `--replace` instead of `--overwrite`** to write over an existing output
+  file. `--replace` is the shared WireCat name for this, as in mail-cli. A script that passes `--overwrite`
+  now fails with an unknown option and must pass `--replace`. The refusal without it names `--replace`.
+- **drive runs on cli-core 2.0** (cli-core 2.0.0, was 1.2.0, and cli-base 1.1.0, was 1.0.0). cli-core 2.0 moves the
+  message store to version 78 the first time it opens it: an agent is `agent` and `agent:<id>`, and a sender bot is
+  `bot:<id>` (it was `sender-bot:<id>`). In the JSON, an author or actor that is an agent says `"agent"` where it said
+  `"bot"`. After the move, tools on cli-core 1.x refuse the store, so upgrade every WireCat CLI and WireCat Desktop the
+  same day, with `serve`, `mcp` and syncs stopped. See
+  [cli-core's changelog](https://github.com/WireCatLabs/cli-core/blob/main/CHANGELOG.md).
+
 ## 0.79.0 — 26.11.2026
 
 ### Changed — may break callers
