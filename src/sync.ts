@@ -47,7 +47,10 @@ const retryable = (skip: Skip, limit: number) =>
   // The store's own bounds change only with the shared package drive pins.
   (skip.storeRefusedIn !== undefined && skip.storeRefusedIn !== VERSION) ||
   // 0.2.0 and earlier skipped text over 200 000 characters with this reason and no recorded limit.
-  (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000)
+  (skip.reason.startsWith("document exceeds the ingestion bound") && limit > 200000) ||
+  // A file kept by name for its size is checked again: the file budget may have been raised since.
+  skip.reason.startsWith("file exceeds the ingestion bound") ||
+  skip.reason.startsWith("file is larger than ")
 
 export const sync = async (
   source: GoogleSource | undefined,

@@ -415,6 +415,17 @@ describe("durable source sync", () => {
     saveState(f.env, "default", state)
     expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
   })
+  it("checks a file kept by name for its size again, since the file budget may have been raised", async () => {
+    const f = fixture()
+    await sync(f.source, f.index, f.env, "default", 200)
+    const state = readState(f.env, "default", "synthetic-principal")
+    delete state.documents["doc-a"]
+    state.skipped = [
+      { id: "doc-a", reason: "file exceeds the ingestion bound; it was not downloaded", file: file("doc-a") },
+    ]
+    saveState(f.env, "default", state)
+    expect((await sync(f.source, f.index, f.env, "default", 200)).saved).toBe(1)
+  })
   it("skips a scanned PDF with its reason and keeps the batch moving", async () => {
     const f = fixture()
     vi.mocked(f.source.children).mockResolvedValue([file("scan", ["root"], "application/pdf"), file("doc-a")])

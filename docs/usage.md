@@ -98,7 +98,7 @@ meeting.
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
 Google exports at most 10 MB of a native file, so a larger Sheet is skipped with that reason.
-Files over 50 MB are skipped before download, and so is text of 2 000 000 characters or more
+Files over 10 GB are skipped before download (`MESSAGING_ATTACHMENT_MAX_MIB` sets another limit, in MiB), and so is text of 2 000 000 characters or more
 (lower it with the [`max_text_chars` setting](configuration.md#saved-settings)). Files skipped by an older version only for their type
 are read on the next sync.
 A different filename does not convert a binary document into text. Native Docs search includes
@@ -306,8 +306,8 @@ drive personal files export SHEET_ID --format csv --output ./sheet.csv
 
 `download` saves an uploaded file's bytes. `export` asks Google to convert a native document;
 choose a format that Google supports for its type (PDF or DOCX for Docs, XLSX or CSV for Sheets).
-CSV exports only the first sheet. Google limits native exports to 10 MB; Drive bounds every download
-at 50 MB. Neither command imports the file into search or changes it in Google. Google Vids require
+CSV exports only the first sheet. Google limits native exports to 10 MB; an uploaded file is saved whatever its size.
+Neither command imports the file into search or changes it in Google. Google Vids require
 the long-running API download flow and are not supported by these friendly commands.
 
 An existing output, including a symlink, is refused before downloading. Pass `--replace` to replace

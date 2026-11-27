@@ -210,10 +210,20 @@ describe("official Google SDK source", () => {
       message: expect.stringContaining("10 MB"),
     })
   })
-  it("refuses a file over the size bound before downloading it", async () => {
-    const f = scripted(() => ({ ...metadata("huge", "application/pdf"), size: String(60 * 1024 * 1024) }))
-    await expect(f.source.content("huge")).rejects.toMatchObject({ code: "validation_error" })
+  it("refuses a file over 10 GiB before downloading it, or over MESSAGING_ATTACHMENT_MAX_MIB", async () => {
+    const f = scripted(() => ({ ...metadata("huge", "application/pdf"), size: String(10 * 1024 ** 3 + 1) }))
+    await expect(f.source.content("huge")).rejects.toMatchObject({
+      code: "validation_error",
+      message: "file is larger than 10 GiB; it was not downloaded. Configure MESSAGING_ATTACHMENT_MAX_MIB",
+    })
     expect(f.request.mock.calls.some(([request]) => request.params?.alt === "media")).toBe(false)
+    vi.stubEnv("MESSAGING_ATTACHMENT_MAX_MIB", "1")
+    try {
+      const small = scripted(() => ({ ...metadata("two", "application/pdf"), size: String(2 * 1024 ** 2) }))
+      await expect(small.source.content("two")).rejects.toThrow("file is larger than 1 MiB")
+    } finally {
+      vi.unstubAllEnvs()
+    }
   })
   it("sanitizes provider errors instead of printing request credentials", async () => {
     const f = scripted(() => {
