@@ -8,7 +8,7 @@ The agent quotes the passage and gives the document's title and Google link. It 
 When you allow it, it can also change a Doc or a Sheet.
 
 `drive` is the command-line tool that copies those folders. It keeps them in the local store, the one database file
-on your computer that every WireCat tool shares, so Memo finds a document together with the chat about it. You need
+on your computer that every WireCat tool shares, so `wcat` finds a document together with the chat about it. You need
 a Google account with access to the folders. Each connected account gets a short name, its profile, such as
 `personal`, and every account command names it.
 
@@ -23,7 +23,7 @@ a Google account with access to the folders. Each connected account gets a short
 ## What you can do
 
 - Find a decision across imported documents and return its passage, title and original Google link.
-- Find imported documents alongside saved messages and notes through Memo, Telegram and MAX.
+- Find imported documents alongside saved messages and notes through `wcat`, Telegram and MAX.
 - Read cached text and file metadata, navigate folder trees and find unreadable files without opening Drive.
 - Keep selected folders current through repeatable sync, including documents in subfolders.
 - Add local tags, notes and source-backed memories that survive renames and ordinary updates.
