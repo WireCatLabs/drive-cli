@@ -21,11 +21,21 @@ export const DRIVE_APP: AppIdentity = {
 export const DESKTOP: ManifestIdentity & { hosts: readonly string[] } = {
   ...DRIVE_APP,
   docs: "https://github.com/WireCatLabs/drive-cli#readme",
+  // One port per WireCat tool, so two servers never collide (wirecat-desktop docs/dev/cli-registry.md).
+  mcpPort: 8769,
   tagline: "Your Google Drive files and Docs, searchable offline",
   syncs: "Drive files and Google Docs",
   signIn: {
     gives: "Lets your agent find and read your Google Drive files. It cannot change them.",
     asks: "Your browser opens Google: choose the account and allow read-only access to Drive.",
+    methods: [
+      {
+        id: "browser",
+        label: "Browser",
+        words: ["{profile}", "session", "start", "--json"],
+        clientFile: "--client-file",
+      },
+    ],
   },
   hosts: [
     "accounts.google.com",
