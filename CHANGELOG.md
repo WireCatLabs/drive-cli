@@ -83,7 +83,8 @@
 
 ### Added
 
-- **`drive <profile> folders list` names each chosen folder**, as in the other WireCat tools for documents. The name comes from `folders add` and is refreshed by each sync, so a rename shows after the next sync.
+- **`drive <profile> folders list` names each chosen folder**, as the shared folders row of the documents CLIs
+  allows. The name comes from `folders add` and is refreshed by each sync, so a rename shows after the next sync.
   A folder chosen with an older drive shows only its id until then. No `path` is given: Google Drive keeps none,
   and building one would cost a request per parent folder, often ending at a parent shared with you that you
   cannot see ([usage](docs/usage.md)).
@@ -104,14 +105,14 @@
 
 - **`drive <profile> session status` says whether the profile is signed in to Google here**, as which account (the
   Google account's permission id) and with which grants, without asking Google. drive now has all four session
-  commands: `session start`, `session status`, `session end` and `session list`.
+  commands ([WC-ACCT-12](https://github.com/WireCatLabs/cli-base/blob/main/docs/standards/accounts.md#wc-acct-12--sign-in-is-session-start-status-and-end-and-session-list-names-the-profiles)).
 
 ## 0.75.1 — 24.11.2026
 
 ### Fixed
 
-- **A picture with no text in it is still found by what it shows** (cli-core 0.742.0, was 0.740.0). With
-  `picture_search` on and `tesseract` installed, a photo without text was kept by name only: it lost its picture vector, so it was not
+- **A picture OCR finds no text in keeps its picture search** (cli-core 0.742.0, was 0.740.0). With `picture_search`
+  on and `tesseract` installed, a photo without text was kept by name only: it lost its picture vector, so it was not
   found by what it shows, and each sync downloaded it and ran OCR on it again. It now gets its vector, and the same
   reader does not read it again until the file or the reader changes.
 
@@ -121,8 +122,8 @@
 
 - **A sync reads the text of scans and pictures.** A PDF with no text layer and a JPEG, PNG or WebP picture are read
   by OCR, chosen by the profile's `read_scans`: `local` by default (the `tesseract` program on this computer, Russian
-  and English, nothing downloaded), `anthropic` or `openai` (the model chosen with `memo models ai set` at that
-  provider's own address, with pictures allowed, each page sent to it and paid per page), or `off`. At most 20 pages a file and 100 a sync. A scan
+  and English, nothing downloaded), `anthropic` or `openai` (the `ai set` model at that provider's own address, with
+  pictures allowed, each page sent to it and paid per page), or `off`. At most 20 pages a file and 100 a sync. A scan
   an older drive kept by name is read on the next sync, and a sync with no `tesseract` says how to install it
   ([scans and pictures](docs/usage.md#scans-and-pictures)). Built on cli-core 0.740.0.
 
@@ -374,6 +375,9 @@
   `drive <profile> documents add <url>` reads with that profile only. `--title` and `--subject` name it and what it
   is about. A file a sync already imported is answered as `duplicate_of`. Not available over MCP.
   - Known limit: adding the same file again after it changed keeps a second copy; the first is not replaced yet.
+- **A pull request adds its changelog entries as a fragment, `changes/<branch>.md`.** Open pull requests no longer
+  conflict under `## Unreleased`. `pnpm docs:check` checks each fragment, and `bin/release` collects them into the
+  version's section. An entry under `## Unreleased` still works during the move.
 
 ### Changed — may break callers
 
