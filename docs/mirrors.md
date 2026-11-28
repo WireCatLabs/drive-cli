@@ -6,23 +6,23 @@ It reports conflicts before choosing between competing edits.
 
 ## When a Markdown file in Drive is enough
 
-Google Docs now opens `.md` files directly: people read and edit them in Docs, and the file stays
+Google Docs opens `.md` files directly: people read and edit them in Docs, and the file stays
 Markdown. Put the file in Drive with `drive personal files upload` or Google's desktop app, and
 `drive personal sync` reads it like any other document. No mirror is needed when people do the editing
 and the file may change the way Docs writes it.
 
 Use a mirror when:
 
-- a program, or you from a local editor, keeps changing a document while people edit it in Google too.
+- A program, or you from a local editor, keeps changing a document while people edit it in Google too.
   Google lets programs change a Markdown file only by replacing all of it, while a mirror's Google Doc
-  takes small edits next to theirs;
-- comments must stay out of the file. Docs writes a comment into the `.md` file itself, with the
-  commenter's name and text, so it travels wherever the file goes, a git repository included;
-- a CSV file should become a Sheet.
+  takes small edits next to theirs.
+- Comments must stay out of the file. Docs writes a comment into the `.md` file itself, with the
+  commenter's name and text, so it travels wherever the file goes, a git repository included.
+- A CSV file should become a Sheet.
 
 The tests behind this are in cli-testing:
 [what programs can do with the file](https://github.com/WireCatLabs/cli-testing/tree/main/performance/documents/native-markdown)
-and [what an edit in Docs writes into it](https://github.com/WireCatLabs/cli-testing/blob/main/performance/documents/drive-push/README.md#google-docs-own-markdown-editing-2026-10-23).
+and [what an edit in Docs writes into it](https://github.com/WireCatLabs/cli-testing/blob/main/performance/documents/drive-push/README.md).
 
 ## Connect a folder
 
@@ -47,7 +47,7 @@ Pass a mirror ID to `status` or `sync` to choose just that mirror; omit it for e
 
 ## Sync in both directions
 
-Run `mirrors sync` again after editing. For Markdown, Drive compares document blocks against the
+Run `mirrors sync` again after editing. For Markdown, `drive` compares document blocks against the
 last sync: changes to different parts can be combined, and unchanged text keeps its Google comments.
 For CSV or TSV, Google cell changes can return to the local file. Local XLSX changes can be sent to
 Sheets, but Sheets changes cannot be written back to XLSX.

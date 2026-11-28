@@ -177,7 +177,7 @@ drive models download e5-small
 drive personal sync --embed
 ```
 
-Drive never downloads a model on its own, and a missing one is reported. `--exact` searches words without semantic
+`drive` never downloads a model on its own, and a missing one is reported. `--exact` searches words without semantic
 retrieval.
 
 ## Keep it current
@@ -241,7 +241,7 @@ Documents use the same local WireCat database as Memo, Telegram and MAX. Imports
 across those tools, alongside messages and notes. `MESSAGING_STORE` selects another database, and
 `WIRECAT_STATE_DIR` moves the default WireCat directory. Google sign-ins remain separate.
 
-On first use after an upgrade, Drive rebuilds old document references from its managed snapshots,
+On first use after an upgrade, `drive` rebuilds old document references from its managed snapshots,
 without fetching Google. It retains the old database. If that database contains tags, notes,
 memories, facts or relationships, Drive refuses to strand them. Keep using that file through
 `MESSAGING_STORE` until those annotations are transferred.

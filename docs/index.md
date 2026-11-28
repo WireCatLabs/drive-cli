@@ -1,9 +1,24 @@
 # Google Drive
 
-WireCat Drive is a command-line tool for working with Google Drive and Google Docs yourself or
-through an AI agent. Browse and manage Google files, import the folders you choose, and keep
-their supported contents in a searchable local database. Use this guide to decide what to
-connect, what to keep offline and which task to try first.
+Ask your AI agent where a decision was written down, and get the exact passage with a link to the Google document.
+Your proposals, budgets and meeting notes from the Google Drive folders you choose are kept as text on your
+computer, so the agent searches them even without the internet.
+
+The agent quotes the passage and gives the document's title and Google link. It lists the files it could not read.
+When you allow it, it can also change a Doc or a Sheet.
+
+`drive` is the command-line tool that copies those folders. It keeps them in the local store, the one database file
+on your computer that every WireCat tool shares, so Memo finds a document together with the chat about it. You need
+a Google account with access to the folders. Each connected account gets a short name, its profile, such as
+`personal`, and every account command names it.
+
+**On this page:**
+
+1. [What you can do](#what-you-can-do)
+2. [Choose the way you want to work](#choose-the-way-you-want-to-work)
+3. [What the local copy contains](#what-the-local-copy-contains)
+4. [Ask for your first result](#ask-for-your-first-result)
+5. [Supported content and connections](#supported-content-and-connections)
 
 ## What you can do
 
@@ -17,13 +32,9 @@ connect, what to keep offline and which task to try first.
 - Create and edit native Docs, copy or move files, and manage folders when you explicitly grant write access.
 - Let a terminal agent or local MCP client use the same commands, account profiles and permissions.
 
-A **profile** names one connected Google account, such as `personal` or `work`. Every account
-command names it. A **local copy** is the text, metadata and context saved on the computer where
-Drive runs; it is separate from the original Google files.
-
 ## Choose the way you want to work
 
-| Your task | What Drive does | Start here |
+| Your task | What `drive` does | Start here |
 | --- | --- | --- |
 | Explore a folder or inspect a file | Reads Google directly; browsing alone does not add documents to search | [Browse and import](usage.md#choose-the-right-operation) |
 | Give an agent a project to remember | Imports supported documents into the local database and managed snapshots | [Import a folder](usage.md#import-a-folder-and-check-coverage) |
@@ -76,7 +87,8 @@ drive personal sync --json
 drive personal --offline search 'budget' --exact --json
 ```
 
-Replace `FOLDER_ID` and the profile name. Continue sync while pending work remains.
+Replace `FOLDER_ID` and the profile name. `drive personal folders browse` lists your folders one level at a time, if you
+would rather pick one there than copy its URL. Continue sync while pending work remains.
 
 ## Supported content and connections
 
