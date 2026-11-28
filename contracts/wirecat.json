@@ -2890,7 +2890,20 @@
     ],
     "signIn": {
       "gives": "Lets your agent find and read your Google Drive files. It cannot change them.",
-      "asks": "Your browser opens Google: choose the account and allow read-only access to Drive."
+      "asks": "Your browser opens Google: choose the account and allow read-only access to Drive.",
+      "methods": [
+        {
+          "id": "browser",
+          "label": "Browser",
+          "words": [
+            "{profile}",
+            "session",
+            "start",
+            "--json"
+          ],
+          "clientFile": "--client-file"
+        }
+      ]
     },
     "skill": {
       "status": [
@@ -2914,6 +2927,7 @@
       ]
     },
     "mcpServer": {
+      "port": 8769,
       "start": [
         "mcp",
         "server",
