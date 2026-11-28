@@ -44,7 +44,7 @@ by name only), or another WireCat tool on this computer is older than `drive`.
 | A file was skipped | Check its type and download permission. Scanned PDFs and pictures are read by OCR: install `tesseract`, or check that `read_scans` is not `off`. A scan over 20 pages, Slides and shortcuts are kept by name only. See [scans and pictures](usage.md#scans-and-pictures). |
 | Sync stopped with errors | Repeat the sync; pending work resumes. Read the report rather than treating a partial import as complete. |
 | Search by meaning reports a missing model | Download the shared model as described in [search](search.md#search-by-meaning), or use `--exact`. |
-| Another tool says the store was written by a newer version | Run `upgrade` for that tool, for example `memo upgrade`. See [the store section](#another-tool-says-the-store-was-written-by-a-newer-version). |
+| Another tool says the store was written by a newer version | Run `upgrade` for that tool, for example `wcat upgrade`. See [the store section](#another-tool-says-the-store-was-written-by-a-newer-version). |
 | A link target cannot be found | Use a reference from the selected database. Check that every tool uses the same MESSAGING_STORE override before linking to messenger people or projects. |
 
 ```sh
@@ -113,9 +113,9 @@ error code when asking for help rather than SDK responses or private content.
 ## Another tool says the store was written by a newer version
 
 Your Drive documents are kept in their own account in the shared store. An up-to-date `drive` moves them there the
-first time it opens the store. After that, an older WireCat tool that uses the same store, such as Memo,
+first time it opens the store. After that, an older WireCat tool that uses the same store, such as `wcat`,
 stops with `the message store was written by a newer version` and asks you to upgrade it. Run `upgrade` for that tool,
-for example `memo upgrade`. Your documents, tags, notes and `document:<id>` references are kept; nothing needs
+for example `wcat upgrade`. Your documents, tags, notes and `document:<id>` references are kept; nothing needs
 to be imported again.
 
 ## The store upgrade reports existing annotations

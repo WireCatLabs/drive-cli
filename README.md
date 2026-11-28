@@ -237,7 +237,7 @@ The shared path helper chooses platform-appropriate config, data and cache direc
 drive-cli. Override with `DRIVE_CONFIG_DIR`, `DRIVE_STATE_DIR` and `DRIVE_CACHE_DIR`. Snapshots are
 `profiles/<profile>/documents/<file-id>.md` plus private JSON metadata and raw Docs responses.
 
-Documents use the same local WireCat database as Memo, Telegram and MAX. Imports become searchable
+Documents use the same local WireCat database as `wcat`, Telegram and MAX. Imports become searchable
 across those tools, alongside messages and notes. `MESSAGING_STORE` selects another database, and
 `WIRECAT_STATE_DIR` moves the default WireCat directory. Google sign-ins remain separate.
 

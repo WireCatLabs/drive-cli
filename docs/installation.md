@@ -356,6 +356,6 @@ npm uninstall -g @wirecat/drive-cli   # or pnpm remove -g, or bun remove -g
 rm -rf ~/.config/drive-cli ~/.local/share/drive-cli   # settings, snapshots and checkpoints (Linux paths)
 ```
 
-The shared database stays. Memo, Telegram and MAX use it too, and it holds the imported documents with your
+The shared database stays. `wcat`, Telegram and MAX use it too, and it holds the imported documents with your
 tags and notes. Delete `~/.local/share/WireCat/` only if no other tool uses it. On macOS and Windows the
 folders are listed in [where files live](configuration.md#where-the-files-live).

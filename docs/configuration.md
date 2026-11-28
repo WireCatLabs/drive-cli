@@ -42,7 +42,7 @@ before moving or deleting them.
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
 | `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
 | `keep_versions_for_days` | How many days earlier versions of synced documents and the change log are kept, `365` by default. A sync that finishes its pass drops older ones | A profile or `defaults` |
-| `read_scans` | Who reads scans and pictures by OCR: `local` (default) uses the `tesseract` program on this computer, which must be installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus`. `anthropic` or `openai` send each page as a picture to that provider, at the model chosen with `memo models ai set` (with `--allow-remote`), and cost per page. `off` keeps them by name only. See [scans and pictures](usage.md#scans-and-pictures) | A profile or `defaults` |
+| `read_scans` | Who reads scans and pictures by OCR: `local` (default) uses the `tesseract` program on this computer, which must be installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus`. `anthropic` or `openai` send each page as a picture to that provider, at the model chosen with `wcat models ai set` (with `--allow-remote`), and cost per page. `off` keeps them by name only. See [scans and pictures](usage.md#scans-and-pictures) | A profile or `defaults` |
 | `record` | `false` keeps only failed runs in `drive runs list`; default `true`, every run | `defaults` only |
 | `record_input` | A kept run holds the command as typed, a secret or phone number written `[redacted]`; `"failed"` keeps the typed words only in a failed run; `false` writes every value that may be content as `[redacted]` too | `defaults` only |
 | `max_add_profiles` | The most profiles `documents add` may try for one document; default `5`, at most `50` | `defaults` only |
@@ -207,7 +207,7 @@ See [memory extraction](recipes.md#remember-a-source-backed-decision) for review
 
 ## Shared documents and messages
 
-`drive` uses the WireCat database that Memo, Telegram and MAX use. Imported documents can appear
+`drive` uses the WireCat database that `wcat`, Telegram and MAX use. Imported documents can appear
 in their local searches, with the Google URL and last Google edit time. A successful sync records
 the selected `drive` profile alongside its imported collection. `drive` search reads that selected
 Google account; combined searches in other tools can cover multiple stored sources.

@@ -14,11 +14,11 @@ export HOME="$scratch/home" MESSAGING_STORE="$scratch/store" WIRECAT_STATE_DIR="
 mkdir -p "$HOME"
 npm install -g --prefix "$scratch/prefix" --cache "$npm_cache" --fetch-retries 6 --fetch-retry-mintimeout 20000 \
   --fetch-retry-maxtimeout 120000 --maxsockets 4 --ignore-scripts --no-audit --no-fund --loglevel error \
-  @wirecat/tg-cli @wirecat/max-cli @wirecat/whatsapp-cli @wirecat/cli-memo @wirecat/drive-cli @wirecat/zoom-cli \
+  @wirecat/tg-cli @wirecat/max-cli @wirecat/whatsapp-cli @wirecat/wirecat @wirecat/drive-cli @wirecat/zoom-cli \
   @wirecat/gcal-cli
 bin="$scratch/prefix/bin"
 others=()
-for cli in tg max wa memo drive zm gcal; do
+for cli in tg max wa wcat-wirecat drive zm gcal; do
   [ "$cli" = "$command" ] || others+=(--cli "$bin/$cli")
 done
 "$root/node_modules/.bin/cli-dev" audit --cli "$root/dist/bin/$command.js" "${others[@]}" --for "$command" \

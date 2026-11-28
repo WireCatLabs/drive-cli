@@ -80,7 +80,7 @@ profile's `read_scans` setting chooses who reads it:
 | `read_scans` | Who reads the text | What it needs |
 | --- | --- | --- |
 | `local` (default) | The `tesseract` program on this computer, in Russian and English. Nothing leaves the computer and nothing is downloaded | `tesseract` installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus` on Debian or Ubuntu, `brew install tesseract tesseract-lang` on macOS |
-| `anthropic` or `openai` | The model chosen with `memo models ai set`, at that provider's own address. Each page is sent to the provider as a picture, and the provider charges for every page | `memo models ai set` with that provider, and pictures allowed (`--allow-remote`) |
+| `anthropic` or `openai` | The model chosen with `wcat models ai set`, at that provider's own address. Each page is sent to the provider as a picture, and the provider charges for every page | `memo models ai set` with that provider, and pictures allowed (`--allow-remote`) |
 | `off` | No one | Scans and pictures are saved by name only |
 
 `drive personal config set read_scans '"anthropic"'` switches one profile. One file is read up to 20 pages, and one
@@ -165,8 +165,8 @@ folder, and building one costs a request per parent folder, often ending at a sh
 by account in the content index; moving them in Google does not change their local reference.
 Duplicate names are safe: use IDs, rather than titles, to select a source.
 
-The same imported documents can supply [project evidence through Memo](recipes.md#gather-project-context-with-memo).
-Sync the selected folders first; browsing a file through a connected app alone does not retain it in Memo.
+The same imported documents can supply [project evidence through `wcat`](recipes.md#gather-project-context-with-wcat).
+Sync the selected folders first; browsing a file through a connected app alone does not retain it in `wcat`.
 Use the same shared database in both tools and choose the imported Drive profile explicitly.
 
 ## Read content and metadata offline
