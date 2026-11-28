@@ -1,25 +1,26 @@
 # ChatGPT, Codex or Claude in the browser
 
-Use this page when you want an AI app that runs in the browser or on your phone, for example
-ChatGPT, Codex web or Claude, to search and read your Google Drive documents. Such an app cannot
-start `drive` on your computer, so you give it an internet address instead. At the end, the app is
-connected to `drive` through a private HTTPS address, it can do only what your profile permits, and
-you know how to stop it or take its access back.
+Ask ChatGPT, Codex web or Claude in the browser or on your phone about your Google Drive documents. The app
+searches and reads your documents through `drive` on your computer, and it can do only what your profile permits. You can stop it or take its access back at any time.
 
-Terms used on this page:
+Such an app cannot start `drive` on your computer, so you give it an internet address instead. It connects over MCP
+(Model Context Protocol), the standard way an AI app calls outside tools. `drive personal mcp serve --http` is the MCP
+server; it listens on `127.0.0.1`. An HTTPS tunnel, a program that gives a port on your computer a public HTTPS
+address, makes it reachable. This page uses [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel),
+which needs no domain of your own; Cloudflare Tunnel also works. You pass that public address, for example
+`https://laptop.tail1234.ts.net`, to `drive` as `--public-url`, and the app gets it with `/mcp` at the end. The app's
+login page asks for a one-time access code that `drive` prints in your terminal, so only a person who sees that
+terminal can connect an app. For apps on your own computer, see
+[use a local MCP client](recipes.md#use-a-local-mcp-client).
 
-- **MCP** (Model Context Protocol) is the standard way an AI app calls outside tools. `drive personal mcp serve`
-  is the MCP server that comes with `drive`; [use a local MCP client](recipes.md#use-a-local-mcp-client)
-  covers apps on your own computer.
-- **Remote connection** means the app connects from its own servers, over the internet, to the
-  address you give it. `drive personal mcp serve --http` serves the same tools over HTTP on `127.0.0.1` for this.
-- **HTTPS tunnel** is a program that gives a port on your computer a public HTTPS address.
-  This page uses [Tailscale Funnel](https://tailscale.com/docs/features/tailscale-funnel); Cloudflare
-  Tunnel also works. You do not need to buy a domain for Funnel.
-- **Public URL** is that address, for example `https://laptop.tail1234.ts.net`. You pass it to
-  `drive` as `--public-url`, and the app gets it with `/mcp` at the end.
-- **Access code** is a one-time code that `drive` prints in your terminal. The app's login page asks
-  for it, so only a person who sees that terminal can connect an app.
+**On this page:**
+
+1. [Before you start](#before-you-start)
+2. [Start the tunnel and server](#start-the-tunnel-and-server)
+3. [Connect the app](#connect-the-app)
+4. [Permissions for this server process](#permissions-for-this-server-process)
+5. [Stop or revoke access](#stop-or-revoke-access)
+6. [If it does not work](#if-it-does-not-work)
 
 ```text
 ChatGPT / Claude ──internet──▶ Tailscale Funnel ──▶ drive personal mcp serve --http (login) ──▶ Google Drive
@@ -42,9 +43,6 @@ stdin/stdout connection keeps working as before.
 - **Check that your app or workspace allows custom MCP connections.** Availability and administrator
   controls depend on the app. Follow the current [OpenAI connection guide](https://developers.openai.com/api/docs/guides/custom-mcp-server)
   or [Claude connector guide](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
-
-The setup steps for each operating system have not all been tried on that system. If a step does
-not work, [open an issue](https://github.com/WireCatLabs/drive-cli/issues).
 
 ## Start the tunnel and server
 
@@ -85,12 +83,12 @@ On Windows, in PowerShell run as Administrator:
 Second window, as your normal user, without `sudo` (on Windows, `drive.cmd`):
 
 ```sh
-drive personal mcp serve --http --port 8765 --public-url https://<device>.<network>.ts.net
+drive personal mcp serve --http --port 8765 --public-url https://laptop.tail1234.ts.net
 ```
 
 To run `drive` beside `tg` or `max`, give each server its own local port and public HTTPS port: for
 example, a second Funnel with `--https=8443 8766` and `drive personal mcp serve --http --port 8766
---public-url https://<device>.<network>.ts.net:8443`. Funnel supports public ports `443`, `8443` and
+--public-url https://laptop.tail1234.ts.net:8443`. Funnel supports public ports `443`, `8443` and
 `10000` ([Funnel command reference](https://tailscale.com/docs/reference/tailscale-cli/funnel)).
 
 ### Alternative: Cloudflare Tunnel
@@ -110,7 +108,7 @@ To keep the server running after its window closes, start it in the background i
 with the connector address and the login code:
 
 ```sh
-drive personal mcp server start --port 8765 --public-url https://<device>.<network>.ts.net
+drive personal mcp server start --port 8765 --public-url https://laptop.tail1234.ts.net
 drive personal mcp server status   # running, port, connector address, the current login code, apps logged in
 drive personal mcp server stop     # stops only a server that `mcp server start` started
 ```
@@ -127,7 +125,7 @@ MCP server.
 ## Connect the app
 
 The address for the app is your tunnel origin with `/mcp` at the end, for example
-`https://<device>.<network>.ts.net/mcp`. Add it as a remote MCP connector:
+`https://laptop.tail1234.ts.net/mcp`. Add it as a remote MCP connector:
 
 - **ChatGPT or Codex web:** open **Plugins**, choose **+ Add custom MCP server**, and create a
   plugin with the `/mcp` address and OAuth, as the
@@ -173,7 +171,7 @@ Those apps must log in again with a new code. This does not sign `drive` out of 
 ## If it does not work
 
 - **The app says it cannot connect:** open
-  `https://<device>.<network>.ts.net/.well-known/oauth-protected-resource/mcp` in a browser. It
+  `https://laptop.tail1234.ts.net/.well-known/oauth-protected-resource/mcp` in a browser. It
   must show a short JSON. If it does not, Funnel is not running, is not enabled in your Tailscale
   network, or points at another port.
 - **The login page says "Too many wrong codes":** wait 30 seconds, then type the new code from the terminal

@@ -1,11 +1,19 @@
 # Data and permissions
 
-Choose what Drive and your agent may read or change before connecting sensitive sources.
-This guide explains Google grants, local storage and command permissions so you can choose
-an appropriate scope, see where data goes and disconnect without confusing sign-out with deletion.
+Decide what your agent may read or change in your Google account before you connect folders with sensitive
+documents. You see what each Google permission allows, what is kept on your computer, what leaves it, and how to
+disconnect.
 
-The [shared WireCat security guide](https://wirecat.dev/en/docs/security) explains protections and
-reporting that apply to every tool. This page covers Drive grants and document storage.
+`drive` asks Google for read access only, unless you grant writes. Your documents are kept as text in the local
+store on your computer, and nothing goes to a WireCat server. The [shared WireCat security
+guide](https://wirecat.dev/en/docs/security) covers the protections that every tool shares.
+
+**On this page:**
+
+1. [Google access and command permissions](#google-access-and-command-permissions)
+2. [What is stored locally](#what-is-stored-locally)
+3. [What goes to other services](#what-goes-to-other-services)
+4. [Disconnect or remove your local copy](#disconnect-or-remove-your-local-copy)
 
 ## Google access and command permissions
 
@@ -71,9 +79,11 @@ This removes the profile's local sign-in credentials and retains settings and ca
 A run with moved folders (`DRIVE_CONFIG_DIR` and the other `DRIVE_*_DIR` variables, or a different `HOME` or XDG
 folder) uses your own sign-in but never removes it: there `session end` answers `ended: false` with a `why`
 that says so, and removes only a sign-in made in that run.
+To remove one account and keep the others, run `drive personal account remove --keep-data` (its documents stay
+searchable) or `--delete-data`. It signs the profile out first. Add `--dry-run` to see what it would remove.
 Remove the application from [Google Account connections](https://myaccount.google.com/connections)
-to revoke its Google access. Removing an import root and syncing reconciles managed source
-records and snapshots; separate notes, memories, exports and backups can remain.
+to revoke its Google access. A folder you remove leaves search after the next sync; your own notes, memories,
+exports and backups can remain.
 
 To remove all local data, first identify the configured directories and database. Do not delete
 a store shared with other tools unless you intend to delete their data as well. Uninstalling the

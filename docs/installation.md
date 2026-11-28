@@ -1,21 +1,31 @@
 # Install and connect
 
-Set up Drive on the computer where you or your AI agent will use it. By the end, your Google
-account is connected and a small folder is saved locally so you can search its documents.
-Drive is a command-line tool: you can run it in a terminal or let an agent run it for you.
+Search your Google Drive documents from your computer, or let your AI agent do it, in a few minutes. By the end,
+your Google account is connected and a small folder is saved on your computer, ready to search.
 
-Follow three steps: [install Drive](#install-the-tool), [connect Google](#connect-your-account),
-then [import and search a folder](#check-your-first-result). Already installed? Start at step 2.
-Already signed in? Start at step 3.
+`drive` is a command-line tool: you run it in a terminal, or an agent runs it for you. It takes three steps: install
+`drive`, connect Google, then import and search a folder. Already installed? Start at step 2. Already signed in?
+Start at step 3.
 
 You need a Google account with access to the folder and a Windows, macOS or Linux computer.
 Use the same computer for installation, browser sign-in and your agent's commands. An agent
 helping with setup needs terminal access there.
 
+**On this page:**
+
+1. [Install `drive`](#install-the-tool)
+2. [Connect your account](#connect-your-account)
+3. [Import and search a folder](#check-your-first-result)
+4. [Connection repairs](#connection-repairs)
+5. [Optional: your own Google app](#prepare-google-sign-in)
+6. [Other installation options](#other-installation-options)
+7. [Update](#update)
+8. [Uninstall or remove one account](#uninstall)
+
 <a id="install-the-tool"></a>
 <a id="install-yourself-or-ask-an-agent"></a>
 
-## 1. Install Drive
+## 1. Install `drive`
 
 **Choose one of the two options below.** Both install the same tool; once it works, continue to
 step 2. Installing the package does not sign in to Google or download files.
@@ -46,7 +56,7 @@ npm --version
 
 You need **Node.js 22.16+ within 22.x, or Node.js 24+**. If either command is missing or Node.js
 is older, [install Node.js](https://nodejs.org/en/download), reopen the terminal and check again.
-Node.js runs Drive; npm downloads and installs its package.
+Node.js runs `drive`; npm downloads and installs its package.
 
 Install the package and check it:
 
@@ -91,8 +101,7 @@ drive personal session start
 
 ### If Google refuses the sign-in
 
-Making a shared Google application public for Drive is complex, so Google may refuse the sign-in
-with WireCat's application or stop it with a warning screen. If that happens, use
+Google may refuse the sign-in with WireCat's application or stop it with a warning screen. If that happens, use
 [your own Google application](#prepare-google-sign-in): it takes a few minutes and costs nothing.
 
 If Google shows "Google hasn't verified this app" for your own application, that is expected: it is
@@ -132,11 +141,14 @@ This makes it easy to check that import and search work before adding more files
 does not import your whole Drive.
 
 1. **Choose the folder.** Open it in Google Drive and copy its URL from the address bar. Replace
-   the example URL below with yours, then run:
+   the example URL with yours, then run:
 
    ```sh
    drive personal folders add https://drive.google.com/drive/folders/FOLDER_ID
    ```
+
+   To pick it without the browser, `drive personal folders browse` lists your folders one level at a time, and
+   `--parent` with a folder's id lists the folders inside it. Pass the id you want to `folders add`.
 
 2. **Import the selected folder and its subfolders.** Run these commands in order:
 
@@ -206,10 +218,10 @@ Find each API, open its page and press **Enable**. Check them under **Enabled AP
 | [Google Drive API](https://console.cloud.google.com/apis/library/drive.googleapis.com) | Folders, files, exports, comments, revisions and permissions | Always |
 | [Google Docs API](https://console.cloud.google.com/apis/library/docs.googleapis.com) | Reading all Doc tabs and creating/editing native Docs | Always |
 | [Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com) | Live tab/range reads and cell/formula updates | Optional live Sheets commands; not needed for XLSX-based import |
-| [Google Drive Activity API](https://console.cloud.google.com/apis/library/driveactivity.googleapis.com) | Actor/activity history | Optional `--grant activity`; enable it for the shared app's full feature set |
+| [Google Drive Activity API](https://console.cloud.google.com/apis/library/driveactivity.googleapis.com) | Actor/activity history | Optional `--grant activity` |
 
-Enabling an API makes it available to the project; it does not grant any user access. Sheets uses the same existing Drive read/write grants. Slides, People and Gmail APIs are not used
-by the current connector.
+Enabling an API makes it available to the project; it does not grant any user access. Sheets uses the same existing Drive read/write grants. `drive` does not use the Slides, People or
+Gmail APIs.
 
 ### 2. Configure the consent screen: Branding
 
@@ -234,8 +246,7 @@ explains Branding, Audience and Data Access.
 Open **Google Auth platform → Audience**
 ([direct link](https://console.cloud.google.com/auth/audience)). For an External application in
 Testing, use **Test users → Add users**, enter the Google account you will connect and save.
-Testing is enough for your initial run. Publishing for general users is a separate owner task.
-Testing grants usually expire after seven days; reconnect when Google requests it.
+Testing is enough for your own use. Testing grants usually expire after seven days; reconnect when Google requests it.
 
 ### 4. Declare the permissions
 
@@ -251,9 +262,9 @@ from the table, use the manual scope entry field.
 | `https://www.googleapis.com/auth/drive.activity.readonly` | Optional history with `--grant activity` |
 | `https://www.googleapis.com/auth/drive.apps.readonly` | Optional installed-Drive-application metadata with `--grant apps` |
 
-For a personal read-only test, the first scope is enough. For the shared app, declare the optional
-scopes it will offer too; the CLI requests them only when their flags are selected. A separate
-Docs scope is unnecessary for the current operations, which accept these Drive grants. Folder
+For read-only use, the first scope is enough. Declare an optional scope only if you will use its flag; the CLI
+requests it only when you pass that flag. A separate Docs scope is not needed: Docs operations accept these Drive
+grants. Folder
 selection limits local ingestion; the granted Google read permission covers the account's Drive.
 See Google's [Drive scope reference](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
 and [Docs scope reference](https://developers.google.com/workspace/docs/api/auth).
@@ -320,9 +331,6 @@ bun add -g @wirecat/drive-cli
 Then check `drive --version` and `drive --help` and continue to step 2. To inspect help without a
 global installation, use `npx @wirecat/drive-cli --help`; the steps above assume a global installation.
 
-The [official repository installation guide](https://github.com/WireCatLabs/drive-cli/blob/main/docs/installation.md)
-is the source for these instructions.
-
 ## Update
 
 To update an existing installation with the package manager that installed it:
@@ -336,7 +344,11 @@ drive upgrade
 
 ## Uninstall
 
-Sign out of each profile first, so its token leaves the keyring:
+To remove one account and keep the others, run `drive personal account remove --keep-data`: its documents stay
+searchable. `--delete-data` deletes them too. The command signs the profile out, then forgets its settings
+and its saved sign-in. Add `--dry-run` to see what it would remove.
+
+To remove `drive` itself, sign out of each profile first, so its token leaves the keyring:
 
 ```sh
 drive personal session end

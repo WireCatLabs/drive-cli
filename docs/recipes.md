@@ -69,13 +69,13 @@ it; it prints Docs JSON and does not make that document searchable.
 ## Gather project context with Memo
 
 Use this when project information is spread across Drive documents and other sources your agent can
-read through Memo. Drive keeps the selected documents locally; Memo finds cited evidence about the
+read through Memo. `drive` keeps the selected documents locally; Memo finds cited evidence about the
 project in that saved material. Both tools must use the same WireCat database. Connect the Drive
 profile first using [the installation guide](installation.md), and install
 [Memo](https://wirecat.dev/en/docs/memo/installation) if it is not already available.
 
 ```text prompt
-Use Drive profile personal and Memo to gather context for Cobalt Orchard. First show the selected
+Use drive CLI with profile personal, and Memo, to gather context for Cobalt Orchard. First show the selected
 Drive folders and let me choose a narrow project folder. Sync it, report skipped or unfinished work,
 then gather evidence from that Drive profile for the last 60 days. Show original document links,
 source dates and gaps in coverage. Do not change Google files or create project relationships.
@@ -96,7 +96,7 @@ memo projects evidence COB --source drive:personal --json
 
 Replace `COB` with an existing project's key, name or alias from `memo projects list`. A new project
 name can also be searched without creating a project. Replace `personal` in both commands if your
-Drive profile has another name. Successful sync registers that profile for local source selection;
+`drive` profile has another name. Successful sync registers that profile for local source selection;
 `drive:personal` tells Memo which imported account to read.
 
 `--limit 50` bounds content reads in that sync invocation; it does not limit recursive discovery to
@@ -241,7 +241,7 @@ drive personal relationships add DOC_ID person:PERSON_ID --kind about
 drive personal documents context DOC_ID --json
 ```
 
-Use references returned by the same store. Drive links existing records; it does not create
+Use references returned by the same store. `drive` links existing records; it does not create
 projects or tasks. Observed owners/last editors are not a complete contributor history. To link
 messenger records, use the same `MESSAGING_STORE` override in every tool if you change the default. Separate databases do not
 share IDs. See [configuration](configuration.md) and
@@ -425,10 +425,9 @@ it does not convert local Markdown into a formatted Google Doc.
 
 ## Use a local MCP client
 
-Add `--read-only` when this server should refuse writes: every tool call then runs as under `DRIVE_READ_ONLY=1`.
-
-For an agent without terminal access, set executable `drive` and arguments
-`personal mcp serve`. The connected account must be on the computer running this server. To give one agent
+An app on your computer that connects to MCP servers can run `drive` for you, even an agent without terminal
+access. Set the program to `drive` and its arguments to `personal mcp serve`. Add `--read-only` when the app must not
+change anything: every tool call then runs as under `DRIVE_READ_ONLY=1`. The connected account must be on the computer running this server. To give one agent
 several accounts, use `mcp serve --profiles work,personal` or `--profiles all`; each tool call then names its
 profile. Plain `drive mcp serve`, with no profile, refuses and lists the profiles.
 
@@ -460,11 +459,11 @@ After importing a folder, use Memo, Telegram or MAX to find its documents alongs
 messages and notes. Ask your agent:
 
 ```text prompt
-Use Drive CLI to sync my personal profile's selected folders. Find the budget document in the
+Use drive CLI to sync my personal profile's selected folders. Find the budget document in the
 shared WireCat search, show its Google link, then find the stored conversations that shared it.
 ```
 
-Drive sync links imported documents to Google file URLs in messages already stored by the
+A `drive` sync links imported documents to Google file URLs in messages already stored by the
 messenger tools. Later syncs also link newly stored messages and document URLs added by edits to older stored messages,
 even when the document has not changed. Your messenger tool must first save the edited message locally.
 No messenger history is fetched and nothing is marked read. Links hidden behind formatted text
@@ -537,7 +536,7 @@ Use live Sheets commands when you need current cells or formulas. Importing a sp
 its saved text searchable; a live range read does not import it, and a live write reaches the
 local search index only after the next sync. Live commands require the Google Sheets API in the OAuth application project. For a user-owned
 application, [enable Google Sheets API](https://console.cloud.google.com/apis/library/sheets.googleapis.com)
-in that project; WireCat maintains the shared application configuration.
+in that project. With WireCat's included app, you set up nothing.
 
 ```text prompt
 Use drive CLI with profile personal. Inspect the tabs in the spreadsheet I select, then read
@@ -574,7 +573,7 @@ large identifiers as quoted strings. Values must be JSON rows of strings, finite
 booleans or `null`, with at most 10,000 supplied cells. `null` skips a cell; `""` clears its value.
 Update rows must fit the selected rectangle; omitted cells stay unchanged.
 
-Friendly write commands require a tab and finite cell rectangle. Append uses that rectangle to
+The `sheets` write commands require a tab and finite cell rectangle. Append uses that rectangle to
 find Google's existing table, then inserts rows **after the detected table**; the appended rows
 can be outside the search rectangle. Check `updates.updated_range` and returned values rather
 than assuming the range is the insertion location. Clear removes values and formulas while
@@ -590,7 +589,7 @@ For bounded tab creation, insertion and formatting, follow
 [Organize tabs and format selected cells](#organize-tabs-and-format-selected-cells) below.
 For additional operations or multiple ranges in one request, use the generated Sheets API commands
 in the [command reference](commands.md). Generated requests use Google's JSON schemas and the same
-permission, offline and read-only guards. They do not have the friendly commands' finite-range
+permission, offline and read-only guards. They do not have the `sheets` commands' finite-range
 or 10,000-cell checks. Raw `api call` writes also require `--allow-writes`. Generated repeated `--ranges` values are
 comma-separated; use a JSON array in raw `api call --params` when a tab name itself contains a comma.
 Some POST-based lookup methods require the broader Drive grant even though their effect is a read;
@@ -640,7 +639,7 @@ Only the formatting properties you provide are included in the request's field m
 bold. Both color channels (`red`, `green`, `blue`, `alpha`) and theme-color styles are supported.
 For other formatting fields or multiple operations in one request, use the generated
 `api sheets-spreadsheets-batch-update` command. A generic batch has broader effects and none of
-the friendly formatter's 10,000-cell/allowed-field limits.
+the 10,000-cell and allowed-field limits of `sheets format`.
 
 All paths retain profile policy, OAuth write, offline/read-only, dry-run and uncertain-write
 handling. A profile denial such as `sheets.rename` also applies to an equivalent raw/generated

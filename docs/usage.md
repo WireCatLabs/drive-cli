@@ -1,13 +1,29 @@
 # Import and organize
 
-Turn selected Google folders into a local copy your agent can search and read without returning
-to Drive for every question. This guide shows how to choose the scope, check what was saved,
-keep it current and export a document when another tool needs it. Examples use profile
-`personal`; replace it with your connected profile's name.
+Keep the Google folders you choose on your computer, so your agent searches and reads them without going back to
+Google for every question. You choose what to copy, check what was saved, keep it current, and export a document
+when another tool needs it as a file.
 
-**Sync** downloads supported source content and updates its local index. A **snapshot** is the
-saved source content and metadata from that sync. An **export** is an additional file you request;
-it is not required for search.
+A sync downloads the text of the chosen folders and updates the search index. The saved copy of each document, its
+snapshot, is what search and offline reads use; an export is an extra file you ask for, and search does not need
+it. Examples use the profile `personal`, the short name you gave the Google account.
+
+**On this page:**
+
+1. [Choose the right operation](#choose-the-right-operation)
+2. [Which document types are searchable?](#which-document-types-are-searchable)
+3. [Scans and pictures](#scans-and-pictures)
+4. [Meet transcripts and Gemini notes](#meet-transcripts-and-gemini-notes)
+5. [Import a folder and check coverage](#import-a-folder-and-check-coverage)
+6. [Read content and metadata offline](#read-content-and-metadata-offline)
+7. [Browse and organize the local catalog](#browse-and-organize-the-local-catalog)
+8. [Keep the index current](#keep-the-index-current)
+9. [Disk use: index without an export directory](#disk-use-index-without-an-export-directory)
+10. [Add tags and notes](#add-tags-and-notes)
+11. [Download or convert a file from Google](#download-or-convert-a-file-from-google)
+12. [Edit a file stored in Google Drive](#edit-a-file-stored-in-google-drive)
+13. [Export or stop importing](#export-or-stop-importing)
+14. [Use structured output](#use-structured-output)
 
 ## Choose the right operation
 
@@ -15,7 +31,7 @@ it is not required for search.
 | --- | --- | --- | --- |
 | Browse a folder before importing | `drive personal files list --parent FOLDER_ID` | Google, immediately | No document import |
 | Read a native Google Doc now | `drive personal documents get DOC_ID` | Google, immediately | No local import; prints Docs JSON |
-| Keep one Drive document in memory, outside the synced folders | `drive documents add DOC_URL --profiles work,personal` | Google, through the first named profile that opens it | Its text, as a source added by hand; never synced again |
+| Add one document outside the chosen folders to search | `drive documents add DOC_URL --profiles work,personal` | Google, through the first named profile that opens it | Its text, as a source added by hand; never synced again |
 | Keep a folder searchable | `drive personal folders add FOLDER_ID`, then `drive personal sync` | Google folder and descendants | Index, snapshots and sync checkpoint |
 | Read an imported source | `drive personal documents show DOC_ID` | Local snapshot | Nothing new |
 | Save a Markdown file for another tool | `drive personal documents export DOC_ID --output ./decision.md` | Local snapshot | The file you requested |
@@ -64,7 +80,7 @@ profile's `read_scans` setting chooses who reads it:
 | `read_scans` | Who reads the text | What it needs |
 | --- | --- | --- |
 | `local` (default) | The `tesseract` program on this computer, in Russian and English. Nothing leaves the computer and nothing is downloaded | `tesseract` installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus` on Debian or Ubuntu, `brew install tesseract tesseract-lang` on macOS |
-| `anthropic` or `openai` | The model chosen with `drive ai set`, at that provider's own address. Each page is sent to the provider as a picture, and the provider charges for every page | `drive ai set` with that provider, and pictures allowed (`drive ai set --images`) |
+| `anthropic` or `openai` | The model chosen with `memo models ai set`, at that provider's own address. Each page is sent to the provider as a picture, and the provider charges for every page | `memo models ai set` with that provider, and pictures allowed (`--allow-remote`) |
 | `off` | No one | Scans and pictures are saved by name only |
 
 `drive personal config set read_scans '"anthropic"'` switches one profile. One file is read up to 20 pages, and one
@@ -92,8 +108,8 @@ The profile's `transcripts` setting decides what sync does with them; nothing is
 
 `drive personal config set transcripts '"include"'` turns it on. Drive keeps no mark that a document came from
 Meet, so the name decides; `transcript_words` replaces the words (`drive personal config set transcript_words
-'["Transcript","Notes by Gemini"]'`). The Russian and Spanish forms are Google's names as best known and have not
-been seen in a real Drive yet. A transcript a meeting tool also stored is shown once in WireCat's search, as the
+'["Transcript","Notes by Gemini"]'`). If your transcripts have other names, set
+`transcript_words`. A transcript a meeting tool also stored is shown once in WireCat's search, as the
 meeting.
 
 Markdown/TXT recognition uses the text MIME type or `.md`, `.markdown` or `.txt` suffix.
@@ -106,7 +122,7 @@ body text, tables and footnotes; headers, footers, comments, images and suggeste
 excluded. Search text and Google's Markdown export are separate representations, so inspect the
 export when layout or tab coverage matters. Check the sync report for each skipped source.
 
-A file Drive cannot read is still saved by its name, type, size, owners and link, with no text. `drive personal sync` counts
+A file `drive` cannot read is still saved by its name, type, size, owners and link, with no text. `drive personal sync` counts
 these as `names_only` and lists each reason under `skipped`. `search` finds them by the words in their name, and
 the hit carries `not_read` with the reason, so open its `url` instead of quoting text that is not there.
 Meaning search ignores them. They leave the index like any other file: trashed, moved out of the folders or deleted.
@@ -227,11 +243,10 @@ drive personal documents context FOLDER_ID --offline --json
 ```
 
 Use Google IDs or URLs in these commands and project references from the same local store.
-Tags, notes and relationships reuse the shared knowledge records. Folder tags do not propagate
-to children, and do not change Google labels or permissions. Renames and moves retain the
-reference. Sources outside the selected scope leave the active catalog; metadata reconciliation
-preserves their identity and annotations. Ordinary content-removal jobs still remove source
-text and its document tags using the existing index rules.
+Tags, notes and relationships are the same ones every WireCat tool reads from the store. A folder's tags do not
+pass to the files inside it, and do not change Google labels or permissions. A renamed or moved file keeps its
+reference. A source outside the chosen folders leaves the catalog but keeps its tags and notes. When a source's text
+is removed from the index, its document tags go with it.
 
 Each account's catalog is isolated, with bounded metadata and tree output. A scope of any size
 reaches it over several syncs.
@@ -262,10 +277,9 @@ Normal sync already avoids creating a folder of user-facing downloads. It stores
 - a JSON snapshot with source/tab metadata and a Markdown snapshot for each imported document;
 - folder ancestry, change checkpoints and pending jobs in profile state.
 
-The managed snapshots support cached reads, Markdown export and memory evidence. Sync currently
-retains them: there is no download→index→discard mode or automatic snapshot pruning. Deleting
-managed snapshot files by hand breaks those workflows even if indexed text remains searchable.
-To avoid extra copies, search/read the cache and export only documents another tool needs.
+Sync keeps these snapshots: local reads, Markdown export and memories need them. Do not delete them by hand;
+search still finds the text, but reads and exports break. To save space, export only the documents another tool
+needs.
 
 The database is shared with other WireCat tools. `DRIVE_STATE_DIR` controls snapshots
 and checkpoints; `MESSAGING_STORE` selects the database. `DRIVE_CACHE_DIR` does not relocate source
@@ -308,7 +322,7 @@ drive personal files export SHEET_ID --format csv --output ./sheet.csv
 choose a format that Google supports for its type (PDF or DOCX for Docs, XLSX or CSV for Sheets).
 CSV exports only the first sheet. Google limits native exports to 10 MB; an uploaded file is saved whatever its size.
 Neither command imports the file into search or changes it in Google. Google Vids require
-the long-running API download flow and are not supported by these friendly commands.
+the long-running API download flow and these commands do not support them.
 
 An existing output, including a symlink, is refused before downloading. Pass `--replace` to replace
 it. Results contain the file ID and byte count, without the document name or local output path.
@@ -373,8 +387,8 @@ drive personal sync --json
 
 Export refuses to overwrite an existing file. Removing a selected root reconciles managed source
 snapshots and indexed source records on the next sync. Sources covered by another root remain.
-Google originals and independently exported files are untouched. This is source reconciliation,
-not a promise that SQLite shrinks or every separately created note is erased.
+Your Google files and your own exports stay. The database file does not get smaller by itself, and notes you
+created separately stay.
 
 Check that the document list and search now match your selected scope. Continue with
 [searching documents](search.md) or [complete task recipes](recipes.md).

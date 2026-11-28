@@ -1,13 +1,22 @@
 # Settings
 
-Control where Drive keeps its local copy, which actions a profile may perform and which AI
-provider optional memory extraction uses. Use this guide when you want a saved choice for future
-runs or a different setup for one account. You will learn where the file lives, how to change a
-value and how saved settings differ from environment variables and command options.
+Save a choice once and every later run of `drive` keeps it: where the local copy lives, what your agent may do with
+each account, and who reads your scanned PDFs. You can also give one Google account, a profile, its own setup.
 
-A **setting** is a saved value in `config.json`. A **profile** is the named configuration for one
-Google account. An **environment variable** comes from the terminal or agent process; a **flag**
-changes one command invocation. These are different ways to control the tool.
+Each saved value, a setting, lives in `config.json`. An environment variable from the terminal or the agent
+changes it for one process, and a command option changes it for one command.
+
+**On this page:**
+
+1. [Where the files live](#where-the-files-live)
+2. [Saved settings](#saved-settings)
+3. [Change and check a value](#change-and-check-a-value)
+4. [Fix a problem in the file](#fix-a-problem-in-the-file)
+5. [Keep the file private](#keep-the-file-private)
+6. [Environment variables](#environment-variables)
+7. [Options for one command](#options-for-one-command)
+8. [Optional AI extraction](#optional-ai-extraction)
+9. [Shared documents and messages](#shared-documents-and-messages)
 
 ## Where the files live
 
@@ -33,7 +42,7 @@ before moving or deleting them.
 | `permissions` | Per-command access levels: `deny`, `readonly`, `ask` or `allow` | A profile or `defaults` |
 | `max_text_chars` | Most characters of text one file may have to be imported; default and maximum `2000000`, the most the document readers return | A profile or `defaults` |
 | `keep_versions_for_days` | How many days earlier versions of synced documents and the change log are kept, `365` by default. A sync that finishes its pass drops older ones | A profile or `defaults` |
-| `read_scans` | Who reads scans and pictures by OCR: `local` (default) uses the `tesseract` program on this computer, which must be installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus`. `anthropic` or `openai` send each page as a picture to that provider, at the model chosen with `ai set`, and cost per page. `off` keeps them by name only. See [scans and pictures](usage.md#scans-and-pictures) | A profile or `defaults` |
+| `read_scans` | Who reads scans and pictures by OCR: `local` (default) uses the `tesseract` program on this computer, which must be installed, for example `sudo apt install tesseract-ocr tesseract-ocr-rus`. `anthropic` or `openai` send each page as a picture to that provider, at the model chosen with `memo models ai set` (with `--allow-remote`), and cost per page. `off` keeps them by name only. See [scans and pictures](usage.md#scans-and-pictures) | A profile or `defaults` |
 | `record` | `false` keeps only failed runs in `drive runs list`; default `true`, every run | `defaults` only |
 | `record_input` | A kept run holds the command as typed, a secret or phone number written `[redacted]`; `"failed"` keeps the typed words only in a failed run; `false` writes every value that may be content as `[redacted]` too | `defaults` only |
 | `max_add_profiles` | The most profiles `documents add` may try for one document; default `5`, at most `50` | `defaults` only |
@@ -140,7 +149,7 @@ Windows is not checked: it has no such modes.
 
 ## Environment variables
 
-These values apply to the process that runs Drive; they are not saved by `config set`.
+These values apply to the process that runs `drive`; they are not saved by `config set`.
 
 | Variable | Purpose |
 | --- | --- |
@@ -198,18 +207,18 @@ See [memory extraction](recipes.md#remember-a-source-backed-decision) for review
 
 ## Shared documents and messages
 
-Drive uses the WireCat database that Memo, Telegram and MAX use. Imported documents can appear
+`drive` uses the WireCat database that Memo, Telegram and MAX use. Imported documents can appear
 in their local searches, with the Google URL and last Google edit time. A successful sync records
-the selected Drive profile alongside its imported collection. Drive search reads that selected
+the selected `drive` profile alongside its imported collection. `drive` search reads that selected
 Google account; combined searches in other tools can cover multiple stored sources.
 Snapshots and checkpoints remain under `DRIVE_STATE_DIR`; `MESSAGING_STORE` selects the database.
 Sharing storage does not share sign-ins or Google permissions.
 
-When moving from an older separate database, Drive rebuilds document references from local
+When moving from an older separate database, `drive` rebuilds document references from local
 snapshots and retains the original file. An interrupted rebuild can be retried. If snapshots are
 missing, run `drive personal sync --rescan` to fetch the selected sources again.
 
-Drive stops if the previous database contains annotations that would be left behind. To continue
+`drive` stops if the previous database contains annotations that would be left behind. To continue
 using them, set `MESSAGING_STORE` to the previous database path; do not delete it. Transfer of owner
 annotations between databases is not automatic.
 
